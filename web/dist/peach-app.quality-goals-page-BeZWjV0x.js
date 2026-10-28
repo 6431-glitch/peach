@@ -1,45 +1,45 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f5c89ca7-5af8-4135-9b68-d1f145ae11ee", e._sentryDebugIdIdentifier = "sentry-dbid-f5c89ca7-5af8-4135-9b68-d1f145ae11ee");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e119031d-bd4c-43a2-afa8-5619e4cc34e3", e._sentryDebugIdIdentifier = "sentry-dbid-e119031d-bd4c-43a2-afa8-5619e4cc34e3");
 	} catch {}
 })();
-import { Button as e, CloudDownloadDialog as t, CollectionSummary as n, EmptyState as r, LOC as i, Note as a, OA as o, QUALITY_GOALS_KEY as s, __toESM as c, cardClass as l, errorMessage as u, fetchQualityGoals as d, fmtDur as f, fmtSize as p, previewUrl as m, require_jsx_runtime as h, require_react as g, useQuery as _ } from "./peach-app.js";
-import { Page as v } from "./peach-app.page-QAncjzM1.js";
+import { Button as e, CloudDownloadDialog as t, CollectionSummary as n, EmptyState as r, LOC as i, Note as a, OA as o, QUALITY_GOALS_KEY as s, __toESM as c, cardClass as l, errorMessage as u, fetchQualityGoals as d, fmtDur as f, fmtSize as p, jsx as m, jsxs as h, previewUrl as g, require_react as _, useQuery as v } from "./peach-app.js";
+import { Page as y } from "./peach-app.page-CW3QRN2N.js";
 // src/react/quality-goals/quality-goals-page.tsx
-var y = /* @__PURE__ */ c(g(), 1), b = h();
+var b = /* @__PURE__ */ c(_(), 1);
 function x({ item: t, openItem: n, searchResources: r, javTitleHtml: a, javDisplayName: o, srcBadge: s }) {
 	let c = () => n(t.id);
-	return /* @__PURE__ */ (0, b.jsxs)("li", {
+	return /* @__PURE__ */ h("li", {
 		"data-goal-id": t.id,
 		className: l({
 			padding: "none",
 			bordered: "soft",
 			className: "flex flex-col gap-3 p-3"
 		}),
-		children: [/* @__PURE__ */ (0, b.jsxs)("div", {
+		children: [/* @__PURE__ */ h("div", {
 			className: "flex min-w-0 gap-4",
-			children: [/* @__PURE__ */ (0, b.jsxs)("button", {
+			children: [/* @__PURE__ */ h("button", {
 				type: "button",
 				onClick: c,
 				"aria-label": `打开 ${o(t)}`,
 				className: "relative inline-grid w-card-cover shrink-0 self-start aspect-card-cover cursor-pointer place-items-center overflow-hidden rounded-2lg bg-background-tertiary-default",
-				children: [/* @__PURE__ */ (0, b.jsx)("span", {
+				children: [/* @__PURE__ */ m("span", {
 					className: "text-caption-1-regular text-text-secondary",
 					children: "暂无预览"
-				}), /* @__PURE__ */ (0, b.jsx)("img", {
-					src: m(t),
+				}), /* @__PURE__ */ m("img", {
+					src: g(t),
 					alt: "",
 					loading: "lazy",
 					onError: (e) => e.currentTarget.remove(),
 					className: "absolute inset-0 size-full object-contain"
 				})]
-			}), /* @__PURE__ */ (0, b.jsxs)("div", {
+			}), /* @__PURE__ */ h("div", {
 				className: "flex min-w-0 flex-col gap-1.5",
 				children: [
-					/* @__PURE__ */ (0, b.jsx)("h3", {
+					/* @__PURE__ */ m("h3", {
 						className: "text-headline-medium text-text-primary",
-						children: /* @__PURE__ */ (0, b.jsx)("button", {
+						children: /* @__PURE__ */ m("button", {
 							type: "button",
 							onClick: c,
 							title: o(t),
@@ -47,27 +47,27 @@ function x({ item: t, openItem: n, searchResources: r, javTitleHtml: a, javDispl
 							dangerouslySetInnerHTML: { __html: a(t) }
 						})
 					}),
-					/* @__PURE__ */ (0, b.jsxs)("p", {
+					/* @__PURE__ */ h("p", {
 						className: "flex flex-wrap items-center gap-2 text-body-2-regular text-text-secondary",
 						children: [
-							/* @__PURE__ */ (0, b.jsx)("span", {
+							/* @__PURE__ */ m("span", {
 								className: "contents",
 								dangerouslySetInnerHTML: { __html: s(t.location, t.cost) }
 							}),
-							/* @__PURE__ */ (0, b.jsx)("span", { children: i[t.location] ?? t.location }),
-							/* @__PURE__ */ (0, b.jsx)("span", { children: f(t.duration) }),
-							/* @__PURE__ */ (0, b.jsx)("span", { children: Number(t.size) > 0 ? p(Number(t.size)) : "大小未知" })
+							/* @__PURE__ */ m("span", { children: i[t.location] ?? t.location }),
+							/* @__PURE__ */ m("span", { children: f(t.duration) }),
+							/* @__PURE__ */ m("span", { children: Number(t.size) > 0 ? p(Number(t.size)) : "大小未知" })
 						]
 					}),
-					t.reason ? /* @__PURE__ */ (0, b.jsx)("p", {
+					t.reason ? /* @__PURE__ */ m("p", {
 						className: "border-t border-separator-border pt-3 text-body-2-regular text-text-secondary wrap-anywhere",
 						children: t.reason
 					}) : null
 				]
 			})]
-		}), /* @__PURE__ */ (0, b.jsxs)("footer", {
+		}), /* @__PURE__ */ h("footer", {
 			className: "flex flex-wrap justify-end gap-2",
-			children: [t.code ? /* @__PURE__ */ (0, b.jsx)(e, {
+			children: [t.code ? /* @__PURE__ */ m(e, {
 				variant: "secondary",
 				size: "small",
 				onClick: () => r({
@@ -76,10 +76,10 @@ function x({ item: t, openItem: n, searchResources: r, javTitleHtml: a, javDispl
 					origin: `asset:${t.id}`,
 					searchReason: t.reason || "",
 					duration: t.duration,
-					cover: m(t)
+					cover: g(t)
 				}),
 				children: "查找资源"
-			}) : null, /* @__PURE__ */ (0, b.jsx)(e, {
+			}) : null, /* @__PURE__ */ m(e, {
 				variant: "secondary",
 				size: "small",
 				onClick: c,
@@ -89,40 +89,40 @@ function x({ item: t, openItem: n, searchResources: r, javTitleHtml: a, javDispl
 	});
 }
 function S({ toast: e, ...i }) {
-	let [c, l] = (0, y.useState)(null), f = _({
+	let [c, l] = (0, b.useState)(null), f = v({
 		queryKey: s,
 		queryFn: ({ signal: e }) => d(e)
 	}), p = f.data;
-	if (!p) return /* @__PURE__ */ (0, b.jsx)(v, { children: /* @__PURE__ */ (0, b.jsx)(a, {
+	if (!p) return /* @__PURE__ */ m(y, { children: /* @__PURE__ */ m(a, {
 		tone: "error",
 		title: "高清版目标读取失败",
 		children: f.error ? u(f.error) : "未取得高清版目标，请刷新页面重试。"
 	}) });
-	let m = p.items || [];
-	return m.length ? /* @__PURE__ */ (0, b.jsxs)(v, { children: [
-		/* @__PURE__ */ (0, b.jsx)(n, {
+	let g = p.items || [];
+	return g.length ? /* @__PURE__ */ h(y, { children: [
+		/* @__PURE__ */ m(n, {
 			label: "待升级",
 			figure: `${Number(p.total || 0).toLocaleString()} 部作品`,
 			flush: !0
 		}),
-		/* @__PURE__ */ (0, b.jsx)("ul", {
+		/* @__PURE__ */ m("ul", {
 			className: "card-grid-cover gap-5",
-			children: m.map((e) => /* @__PURE__ */ (0, b.jsx)(x, {
+			children: g.map((e) => /* @__PURE__ */ m(x, {
 				item: e,
 				...i,
 				searchResources: l
 			}, e.id))
 		}),
-		Number(p.total || 0) > m.length ? /* @__PURE__ */ (0, b.jsx)("p", {
+		Number(p.total || 0) > g.length ? /* @__PURE__ */ m("p", {
 			className: "mt-6 text-center text-caption-1-regular text-text-secondary",
-			children: `显示前 ${m.length.toLocaleString()} 部，共 ${Number(p.total).toLocaleString()} 部。`
+			children: `显示前 ${g.length.toLocaleString()} 部，共 ${Number(p.total).toLocaleString()} 部。`
 		}) : null,
-		/* @__PURE__ */ (0, b.jsx)(t, {
+		/* @__PURE__ */ m(t, {
 			prefill: c,
 			close: () => l(null),
 			receipt: e
 		})
-	] }) : /* @__PURE__ */ (0, b.jsx)(v, { children: /* @__PURE__ */ (0, b.jsx)(r, {
+	] }) : /* @__PURE__ */ m(y, { children: /* @__PURE__ */ m(r, {
 		icon: o,
 		title: "没有标记中的高清版目标",
 		children: "现有版本都已满足条件，或还没有加入追踪。"
@@ -130,4 +130,4 @@ function S({ toast: e, ...i }) {
 }
 export { S as QualityGoalsPage };
 
-//# debugId=f5c89ca7-5af8-4135-9b68-d1f145ae11ee
+//# debugId=e119031d-bd4c-43a2-afa8-5619e4cc34e3
