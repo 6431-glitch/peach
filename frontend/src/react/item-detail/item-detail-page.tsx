@@ -15,8 +15,9 @@ import {
 } from '@peach/card-art';
 import { confirmModal, spinnerHtml } from '@peach/legacy/ui';
 
-import { apiGet, apiSend } from '../../api';
+import { apiGet, apiSend, errorMessage } from '../../api';
 import { Button } from '@/components/base/buttons/button';
+import { Input } from '@/components/base/input/input';
 import { RiArrowDownSLine } from '@remixicon/react';
 import { CatalogGridPage } from '../catalog-grid/catalog-grid-page';
 import { patchCatalogItems, replaceCatalogItem } from '../catalog-grid/catalog-grid';
@@ -393,6 +394,7 @@ function Side({ item, queue, write, helpers, actions }: {
         </div>
         {(item.medium || 'video') === 'video' && !online && !String(item.name || '').toLowerCase().endsWith('.iso')
           ? <ExternalPlayback key={item.id} id={item.id} onOpened={() => actions.toast('已请求打开本地播放器')} /> : null}
+        {(item.medium || 'video') === 'video' && !online ? <MetadataSearch item={item} actions={actions} /> : null}
         <Identity item={item} helpers={helpers} actions={actions} />
         <Tags item={item} write={write} helpers={helpers} actions={actions} />
         <LibraryCompletionPrompt assetIds={missingPreviewIds([item], helpers.javImage())}
@@ -427,6 +429,56 @@ function Side({ item, queue, write, helpers, actions }: {
   );
 }
 
+type MetadataCandidate = { id: string; title: string; date: string; studio: string; url: string; actors: string[] };
+type MetadataResults = { candidates: MetadataCandidate[]; truncated: boolean; revision: number };
+
+function MetadataSearch({ item, actions }: { item: DetailItem; actions: ItemDetailActions }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState('');
+  const [result, setResult] = useState<MetadataResults | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const search = async () => {
+    setBusy(true); setError(''); setResult(null);
+    try {
+      setResult(await apiSend<MetadataResults>('/api/configuration/stashdb/preview', {
+        asset_id: item.id, ...(title.trim() ? { search_title: title.trim() } : {}),
+      }, 'POST'));
+    } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
+  };
+  const apply = (candidate: MetadataCandidate) => {
+    if (!result) return;
+    void confirmModal({ title: 'Apply metadata match', confirmLabel: 'Apply match',
+      body: `Apply “${candidate.title}” from StashDB? Available title, date, studio, cast, and cover will replace this video's existing values.`,
+      onConfirm: async () => {
+        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/stashdb/apply', {
+          asset_id: item.id, candidate_id: candidate.id, revision: result.revision,
+        });
+        setResult(null); setOpen(false);
+        await queryClient.invalidateQueries({ queryKey: itemKey(item.id) });
+        await queryClient.invalidateQueries();
+        actions.toast(outcome.image_errors.length ? 'Match applied, but some artwork could not be downloaded.' : 'Metadata match applied');
+      },
+    });
+  };
+  return <section className="flex flex-col items-start gap-2 mb-4" aria-label="Find metadata">
+    <Button type="button" variant="secondary" onClick={() => setOpen(value => !value)} aria-expanded={open}>Find metadata</Button>
+    {open ? <div className="flex w-full flex-col gap-3 rounded-lg border border-separator-border p-3">
+      <strong>Search StashDB</strong>
+      <Input label="Scene title (optional)" value={title} onChange={setTitle} placeholder="Leave blank to use video details" />
+      <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
+      {error ? <p role="alert">{error}</p> : null}
+      {result?.truncated ? <p>Some results were omitted. Refine your search.</p> : null}
+      {result && !result.candidates.length ? <p>No matches found. Try another title.</p> : null}
+      {result?.candidates.map(candidate => <div key={candidate.id} className="flex flex-col items-start gap-2 border-t border-separator-border pt-3">
+        <a href={candidate.url} target="_blank" rel="noreferrer" data-i18n-ignore="">{candidate.title} · {candidate.studio} · {candidate.date}</a>
+        {candidate.actors?.length ? <span data-i18n-ignore="">{candidate.actors.join(', ')}</span> : null}
+        <Button type="button" variant="secondary" disabled={busy} onClick={() => apply(candidate)}>Apply match</Button>
+      </div>)}
+    </div> : null}
+  </section>;
+}
+
 /* 标题默认折成两行，真溢出才给展开键：折叠态下 scrollHeight 比 clientHeight 高，就是有行被裁掉了。
    展开与收起换字形——往下多看一截是 chevron-down，收回去是 chevron-up。展开键排在那排键最前面，
    紧挨着它管的标题。标题文字本身也接这一下：人想看全文时手本来就落在字上。选中文字那一下不算，
@@ -435,8 +487,9 @@ function DetailTitle({ item, queue, helpers, actions, onStatus }: {
   item: DetailItem; queue: DetailQueue | null; helpers: ItemDetailHelpers; actions: ItemDetailActions;
   onStatus(text: string): void;
 }) {
-  const { text, expanded, foldable, toggle } = useFoldedTitle(String(item.title || item.name || ''));
-  const html = helpers.badgeHtml(item.location || '', item.cost || '', 'srcbig') + helpers.titleHtml(item) + partLabelHtml(item, queue);
+  const displayName = String(!item.is_jav && item.catalog_title ? item.catalog_title : item.name || '');
+  const { text, expanded, foldable, toggle } = useFoldedTitle(String(displayName || item.title || ''));
+  const html = helpers.badgeHtml(item.location || '', item.cost || '', 'srcbig') + helpers.titleHtml(item, displayName || undefined) + partLabelHtml(item, queue);
   return (
     <div data-item-title="">
       <div data-stage-title="" data-title-line="" data-reveal-line="">
@@ -444,6 +497,8 @@ function DetailTitle({ item, queue, helpers, actions, onStatus }: {
           data-foldable={foldable ? '' : undefined}
           onClick={() => { if (foldable && !String(getSelection() || '')) toggle() }}
           dangerouslySetInnerHTML={{ __html: html }} />
+        {item.location !== 'online' && item.name && item.name !== displayName ?
+          <span data-original-filename="" data-i18n-ignore="">{item.name}</span> : null}
         <span data-title-tools="">
           <button type="button" data-title-fold="" hidden={!foldable} aria-expanded={expanded}
             aria-label={expanded ? '收起标题' : '展开标题'} title={expanded ? '收起标题' : '展开完整标题'} onClick={toggle}>

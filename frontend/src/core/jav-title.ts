@@ -37,7 +37,7 @@ export const javPreferredTitle=(it:Item)=>{
 
 export function javTitleParts(it:Item,value=it?.name):{code:string;title:string;badges?:string[]}{
   const name=javFileDisplayName(it,value),code=String(it?.code||'').trim().toUpperCase();
-  if(!it?.is_jav||!code)return {code:'',title:name};
+  if(!it?.is_jav||!code)return {code:'',title:!it?.is_jav && value===it?.name ? String(it?.catalog_title||'').trim() || name : name};
   const displayCode=String(it?.display_code||code).trim().toUpperCase();
   const upper=name.toUpperCase(),hasPrefix=upper===code||upper===displayCode
     ||(upper.startsWith(code)&&/^[\s._\-[\]]/.test(name.slice(code.length)))

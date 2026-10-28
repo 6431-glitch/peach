@@ -2855,6 +2855,10 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                 config, database, candidate_root, cover_root, groups, remote, asset_ids=scope_ids,
                 active=active, update=update, issue=issue, watermark=entity_watermark, covered=covered,
                 people=_people_allowed(config))
+            # StashDB 查询沿用本轮范围与暂停状态；打分结果只进入复核队列。
+            from . import stashdb_preview
+            summary.update(stashdb_preview.scan_assets(config, judgement_database, rows,
+                           progress=update, issue=issue, active=active))
             finish_step('collect')
             _settle_collection_state(state, summary, rows, update)
         except Exception:

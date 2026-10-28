@@ -228,7 +228,7 @@ export interface ItemDetailHelpers {
   /** 来源角标（遗留层 `srcBadge`）；`cls` 是 `srcbig` 这类尺寸档。 */
   badgeHtml(location: string, cost: string, cls?: string): string;
   /** 番号 + 版次徽章 + 片名（遗留层 `javTitleHtml`）。 */
-  titleHtml(item: DetailItem): string;
+  titleHtml(item: DetailItem, value?: string): string;
   /** 同一标题的纯文本（遗留层 `javDisplayName`）。 */
   displayName(item: QueueItem): string;
   /** 「JAV 默认封面」设置，每次现读：队列一行的小图按它取封套或预览图。 */

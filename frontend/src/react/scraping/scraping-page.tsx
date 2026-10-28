@@ -34,6 +34,8 @@ import {
 } from '../settings/section';
 import { busyProps } from '../settings/use-action';
 import { CustomSources } from './custom-sources';
+import { StashDBSettings, type StashDBPolicy } from '../settings/stashdb-settings';
+import { apiGet } from '../../api';
 import {
   AMANE_BRIDGE_CHECK_URL, AMANE_BRIDGE_KEY, AMANE_BRIDGE_REBUILD_URL,
   checkText, COOKIE_TEXT_LIMIT, COVER_JOB_KEY, fetchAmaneBridge, fetchCoverJob,
@@ -347,6 +349,7 @@ function AmaneBridgeCard({ toast }: ScrapingProps) {
 
 export function ScrapingPage({ toast }: ScrapingProps) {
   const sources = useQuery({ queryKey: SCRAPING_KEY, queryFn: ({ signal }) => fetchSources(signal) });
+  const stashdb = useQuery({ queryKey: ['stashdb-settings'], queryFn: ({ signal }) => apiGet<StashDBPolicy>('/api/configuration/stashdb', signal) });
   const data = sources.data;
   if (!data) {
     return (
@@ -361,6 +364,8 @@ export function ScrapingPage({ toast }: ScrapingProps) {
     <Page>
       <p className="text-body-2-regular text-text-secondary">高清图片可能要经代理才能下载，先检查连接。</p>
       <CoverCard toast={toast} />
+      {stashdb.data ? <StashDBSettings initial={stashdb.data} receipt={toast} /> : null}
+      {stashdb.error ? <Note tone="error" title="StashDB settings unavailable">{errorMessage(stashdb.error)}</Note> : null}
       <CustomSources receipt={toast} />
       {(data.sources || []).map(
         (source) => <SourceCard key={source.source} source={source} toast={toast} />)}

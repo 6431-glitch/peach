@@ -189,7 +189,7 @@ mediaState.stageOpen = ()=>!!stageApi()?.isOpen();
 export function installMedia21() {
 mediaState.itemDetailHelpers = {
   badgeHtml:(location,cost,cls)=>preferencesState.srcBadge(location,cost,cls),
-  titleHtml:it=>javTitleHtml(it),
+  titleHtml:(it,value)=>javTitleHtml(it,value),
   displayName:it=>javDisplayName(it),
   javImage:()=>preferencesState.appSettings.javImage,
   tagLabel:tag=>tagLabel(tag),

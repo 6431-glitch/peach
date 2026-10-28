@@ -234,7 +234,7 @@ def _read_section(result: dict, key: str, title: str, reader) -> None:
 def snapshot(config) -> dict[str, Any]:
     """配置页首屏要的一切：当前值、修订号、可写与否，以及这台机器的运行信息。"""
     editable = managed_configuration()
-    from . import remote_reporting, library_sharing
+    from . import remote_reporting, library_sharing, stashdb_client
     media = config.mounts.get("local") or config.locations.get("local", ())
     result = {
         "editable": editable,
@@ -249,6 +249,7 @@ def snapshot(config) -> dict[str, Any]:
         "facts": [],
     }
     readers = (
+        ("stashdb", "StashDB", lambda: stashdb_client.settings(config)),
         ("remote_reporting", "错误诊断设置", lambda: remote_reporting.snapshot(config)),
         ("library_sharing", "馆藏上传设置", lambda: library_sharing.snapshot(config)),
         ("startup", "开机启动设置", lambda: desktop_startup.snapshot(config)),
@@ -267,6 +268,70 @@ def snapshot(config) -> dict[str, Any]:
     for key, title, reader in readers:
         _read_section(result, key, title, reader)
     return result
+
+
+@router.get('/api/configuration/stashdb')
+def stashdb_settings(request: Request, _args=Depends(require_auth)):
+    local_only(request)
+    from . import stashdb_client
+    return stashdb_client.settings(settings_file.load_config())
+
+
+@router.get('/api/configuration/stashdb/library')
+def stashdb_library(request: Request, query: str = '', _args=Depends(require_auth)):
+    """返回用于手动查询的本地视频，不发起外部请求。"""
+    local_only(request)
+    value = '%' + query[:120].replace('!', '!!').replace('%', '!%').replace('_', '!_') + '%'
+    with request.app.state.web_contract.database.read_connection() as connection:
+        rows = connection.execute(
+            "SELECT id,COALESCE(NULLIF(catalog_title,''),name) AS label FROM asset "
+            "WHERE medium='video' AND COALESCE(disposal,'') NOT IN ('trash','vanished') "
+            "AND (name LIKE ? ESCAPE '!' OR catalog_title LIKE ? ESCAPE '!') ORDER BY id DESC LIMIT 20",
+            (value, value),
+        )
+        return [dict(row) for row in rows]
+
+
+@router.get('/api/configuration/stashdb/review')
+def stashdb_review(request: Request, _args=Depends(require_auth)):
+    local_only(request)
+    from . import stashdb_preview
+    return stashdb_preview.review_queue(settings_file.load_config())
+
+
+@router.post('/api/configuration/stashdb/{action}')
+def configure_stashdb(request: Request, action: str, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
+    """管理凭据并只读预览候选，不自动修改账本。"""
+    local_only(request)
+    same_origin(request)
+    from . import stashdb_client, stashdb_preview
+    config = settings_file.load_config()
+    try:
+        if action == 'settings':
+            return stashdb_client.save_settings(config, body, database=request.app.state.web_contract.database)
+        if action == 'check':
+            client = stashdb_client.Client(config)
+            try:
+                account = client.check()
+                return {'ok': bool(account), 'account': account.get('name', '')}
+            finally:
+                client.close()
+        if action == 'preview':
+            asset_id = body.get('asset_id')
+            if type(asset_id) is not int or asset_id <= 0:
+                raise ValueError('Choose a video from your library.')
+            return stashdb_preview.manual_search(config, request.app.state.web_contract.database, asset_id,
+                                                search_title=body.get('search_title'))
+        if action == 'apply':
+            if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
+                raise HTTPException(403, 'This library is read-only.')
+            asset_id, candidate_id, revision = body.get('asset_id'), body.get('candidate_id'), body.get('revision')
+            if type(asset_id) is not int or asset_id <= 0 or not isinstance(candidate_id, str) or type(revision) is not int:
+                raise ValueError('Choose a saved candidate to apply.')
+            return stashdb_preview.apply_candidate(config, request.app.state.web_contract.database, asset_id, candidate_id, revision)
+        raise HTTPException(404, 'Unknown StashDB action.')
+    except (ValueError, OSError) as exc:
+        raise HTTPException(429 if isinstance(exc, stashdb_client.RateLimited) else 400, str(exc)) from exc
 
 
 def tunnel_payload(config, state: tunnel.TunnelSnapshot, enabled: bool) -> dict[str, Any]:

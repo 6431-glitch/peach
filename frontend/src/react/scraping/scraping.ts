@@ -94,6 +94,7 @@ export const fetchAmaneBridge = (signal?: AbortSignal) => apiGet<AmaneBridge>(AM
  * 放弃这一次。 */
 export async function prefetchScraping(signal: AbortSignal): Promise<void> {
   await Promise.all([
+    queryClient.fetchQuery({ queryKey: ['stashdb-settings'], queryFn: () => apiGet('/api/configuration/stashdb', signal) }),
     queryClient.fetchQuery({ queryKey: SCRAPING_KEY, queryFn: () => fetchSources(signal) }),
     queryClient.fetchQuery({ queryKey: COVER_JOB_KEY, queryFn: () => fetchCoverJob(signal) }),
     queryClient.fetchQuery({ queryKey: AMANE_BRIDGE_KEY, queryFn: () => fetchAmaneBridge(signal) }),
