@@ -135,6 +135,7 @@ export async function visit(browser: Browser, path: string, viewport: Viewport,
   });
   // 详情页默认自动播放；这台机器旁边有人，冒烟不出声。
   await context.addInitScript(() => {
+    localStorage.setItem('peach.language', 'zh-CN');
     localStorage.setItem('peach.settings.v1', JSON.stringify({ detailAutoplay: false }));
   });
   const page = await context.newPage();

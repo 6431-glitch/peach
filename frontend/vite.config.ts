@@ -13,6 +13,7 @@ const source = (name: string) => fileURLToPath(new URL(`./src/${name}`, import.m
 export default defineConfig({
   plugins: [tailwindcss(), ...browserSymbols('peach-app')],
   resolve: { alias: {
+    '@peach/i18n': source('i18n'),
     'next/link': source('react/components/board-navigation-link.tsx'),
     '@peach/legacy/core': source('core/index.ts'), '@peach/legacy/ui': source('ui-kit/index.ts'),
     '@peach/legacy/jav-title': source('core/jav-title.ts'), '@peach/legacy/tags': source('core/tags.ts'),

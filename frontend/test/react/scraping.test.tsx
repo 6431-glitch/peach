@@ -90,15 +90,16 @@ const BRIDGE: AmaneBridge = {
 
 /** 一份只有一个来源、后台没有任务、amane 桥已装好的首屏。 */
 const quiet = (overrides: Partial<Source> = {}) => ({
+  'GET /api/configuration/stashdb': () => ({ body: { api_key_set: false, enabled: false } }),
   'GET /api/scraping': () => ({ body: { sources: [source(overrides)] } }),
   'GET /api/scraping/cover': () => ({ body: { status: 'idle' } }),
   'GET /api/scraping/amane-bridge': () => ({ body: BRIDGE }),
   'GET /api/custom-metadata': () => ({ body: { items: [] } }),
 });
 /** 首屏来源与任务数据的请求顺序，和 `prefetchScraping` 一致。 */
-const FIRST_SCREEN = ['/api/scraping', '/api/scraping/cover', '/api/scraping/amane-bridge', '/api/custom-metadata'];
+const FIRST_SCREEN = ['/api/configuration/stashdb', '/api/scraping', '/api/scraping/cover', '/api/scraping/amane-bridge', '/api/custom-metadata'];
 
-const password = (root: ParentNode) => root.querySelector<HTMLInputElement>('input[type=password]');
+const password = (root: ParentNode) => root.querySelector<HTMLInputElement>('form[aria-label="JavBus"] input[type=password]');
 const radio = (value: string) => document.querySelector<HTMLInputElement>(`input[type=radio][value="${value}"]`);
 /** 轮询是组件里的定时器，推进时钟会引起重画，得在 act 里推。 */
 const tick = (ms: number) => act(async () => { await vi.advanceTimersByTimeAsync(ms) });

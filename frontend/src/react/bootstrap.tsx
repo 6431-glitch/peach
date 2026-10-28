@@ -1,4 +1,6 @@
 import './styles.css';
+import { installDomLocalization } from '../i18n/dom';
+installDomLocalization();
 import { installErrorReporting } from '../error-reporting';
 import { mountApplication } from './application';
 installErrorReporting();

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { translate } from '../../i18n';
 import { createPortal } from 'react-dom';
 import { RiArrowDownSLine, RiArrowRightLine } from '@remixicon/react';
 import { Dialog, Popover } from 'react-aria-components';
@@ -37,7 +38,7 @@ function ProcessingMenuOption({ option, metadataOnly, onRun }: {
     title={blocked ? '请先在媒体库设置中开启视频预览生成' : undefined}
     className={cx(MENU_ITEM, disabled ? 'cursor-not-allowed opacity-50' : MENU_ITEM_INTERACTIVE, 'text-body-2-medium')}
     onClick={() => onRun(option.command)}><span className="flex min-w-0 flex-col gap-1">
-      <span>{option.label}</span><span className="text-caption-1-regular text-text-secondary">{option.description}</span>
+      <span>{translate(option.label)}</span><span className="text-caption-1-regular text-text-secondary">{translate(option.description)}</span>
     </span></button>;
 }
 
@@ -153,7 +154,7 @@ export function ProcessingActions({ busy, scan = false, metadataOnly = false, sp
         promptView.dialog.close();
       }}>管理媒体库</LinkButton>, promptView.footer) : null}
     <span data-button-group data-split-button data-variant="primary">
-      <Button {...busyProps(busy)} onClick={() => run(primary.command)}>{primary.label}</Button>
+      <Button {...busyProps(busy)} onClick={() => run(primary.command)}>{translate(primary.label)}</Button>
       <Button ref={trigger} iconOnly leadingIcon={RiArrowDownSLine} aria-label="更多同步方式"
         aria-haspopup="dialog" aria-expanded={open} {...busyProps(busy)} onClick={() => { if (!busy) setOpen(!open) }} />
     </span>

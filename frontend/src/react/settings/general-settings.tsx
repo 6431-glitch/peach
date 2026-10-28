@@ -11,12 +11,14 @@ import { groupRoot } from './configuration-panel';
 import { AutomaticUpdates } from './maintenance-settings';
 import { ReleaseUpdates } from './release-updates';
 import { UpgradeRepairs } from './upgrade-repairs';
+import { LanguageSelect } from '../components/language-select';
 import { ErrorText, Footer, Help, Rows, Section, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
 export function GeneralSettings({ data, receipt, panel }: ConfigurationGroupProps) {
   return (
     <div {...groupRoot(panel)}>
+      <Section title="Language / 语言"><Rows><SettingsRow label="Interface language"><LanguageSelect /></SettingsRow></Rows></Section>
       {data.updates ? <ReleaseUpdates initial={data.updates} initialJob={data.update_job} /> : null}
       <UpgradeRepairs />
       {data.automatic_updates ? <AutomaticUpdates initial={data.automatic_updates} receipt={receipt} /> : null}

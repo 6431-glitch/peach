@@ -4,6 +4,7 @@
  * 轮询也由 Query 合成一份，进度、失败与完成状态由服务端统一提供。
  * 端点在 `frontend/src` 里只在这里声明一次（`tests/test_frontend_build.py` 盯着）。 */
 import { apiGet } from '../../api';
+import { formatTranslation, getLanguage, translate } from '../../i18n';
 import { elapsedText, progressText } from '../activity/tasks';
 import { queryClient } from '../query';
 
@@ -226,6 +227,11 @@ const NOTE_LABELS: Record<string, string> = {
 };
 
 export function notesLine(notes: Record<string, number>): string {
+  if (getLanguage() === 'en') {
+    const parts = Object.entries(notes).filter(([key, count]) => NOTE_LABELS[key] && count > 0)
+      .map(([key, count]) => `${count.toLocaleString()} ${count === 1 ? 'video' : 'videos'} without ${key === 'fetching_cover' ? 'a cover' : 'metadata'}`);
+    return parts.length ? `External sources found ${parts.join(' and ')}. They will not be queried again for 7 days.` : '';
+  }
   const parts = Object.entries(notes)
     .filter(([key, count]) => NOTE_LABELS[key] && count > 0)
     .map(([key, count]) => `${NOTE_LABELS[key]} ${count.toLocaleString()} 部`);
@@ -236,10 +242,10 @@ export function notesLine(notes: Record<string, number>): string {
 export function currentLine(state: LibraryProcessingData): string {
   if (state.status === 'paused') return '已暂停';
   if (state.status === 'pausing') return '正在暂停';
-  const action = ACTION_LABELS[state.current_action || ''] || state.stage || '正在处理';
-  const waited = state.waited_seconds ? ` · 已等待 ${elapsedText(state.waited_seconds)}` : '';
+  const action = translate(ACTION_LABELS[state.current_action || ''] || state.stage || '正在处理');
+  const waited = state.waited_seconds ? ` · ${formatTranslation('已等待 {0}', translate(elapsedText(state.waited_seconds)))}` : '';
   return state.current_asset_name
-    ? `当前：${state.current_asset_name} · ${action}${waited}`
+    ? `${translate('当前：')}${getLanguage() === 'zh-CN' ? '' : ' '}${state.current_asset_name} · ${action}${waited}`
     : action + waited;
 }
 

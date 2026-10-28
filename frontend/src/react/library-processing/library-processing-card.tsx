@@ -15,6 +15,7 @@ import { LinkButton } from '@/components/base/buttons/link-button';
 import { Chip } from '@/components/base/badges/chip';
 
 import { apiSend, errorMessage } from '../../api';
+import { formatTranslation, translate } from '../../i18n';
 import { SCAN_CARD_TEXT } from '../../management';
 import type { LibraryProcessingProps } from '../bundle';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
@@ -210,7 +211,7 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
       <Fieldset layout="stack" label="扫描与采集" footer={
         <>
           <LinkButton href="/sources" size="small" trailingIcon={RiArrowRightLine}>来源和凭证</LinkButton>
-          <LinkButton href="/settings/diagnostics" size="small" trailingIcon={RiArrowRightLine}>诊断与日志</LinkButton>
+          <LinkButton href="/settings/diagnostics" size="small" trailingIcon={RiArrowRightLine}>{translate('诊断与日志')}</LinkButton>
           {state.candidates
             ? <LinkButton href="/review" size="small" trailingIcon={RiArrowRightLine}>复核资料</LinkButton>
             : null}
@@ -224,15 +225,15 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
             <div className="flex flex-wrap items-center gap-2">
               <FieldsetTitle>扫描与采集</FieldsetTitle>
               {state.new_asset_count ? <Chip variant="caption" color="blue">
-                <span className="tabular-nums">{state.new_asset_count.toLocaleString()} 部待补全</span>
+                <span className="tabular-nums">{formatTranslation('{0} 部待补全', state.new_asset_count.toLocaleString())}</span>
               </Chip> : null}
             </div>
             {hidden && (processingActive(state) || state.status === 'failed' || job.isError)
               ? <Button variant="secondary" size="small" onClick={() => setProcessingNoticeVisible(noticeKey, true)}>
-                  显示进度浮窗
+                  {translate('显示进度浮窗')}
                 </Button> : null}
           </div>
-          <p className="text-body-2-regular text-text-secondary">{SCAN_CARD_TEXT}</p>
+          <p className="text-body-2-regular text-text-secondary">{translate(SCAN_CARD_TEXT)}</p>
           {state.status === 'paused' && !state.total
             ? <span className="self-start"><StatusLabel>已暂停</StatusLabel></span>
             : processingActive(state)

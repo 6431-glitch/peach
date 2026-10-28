@@ -269,6 +269,7 @@ export interface ConfigurationFact {
 }
 
 export interface ConfigurationData {
+  stashdb?: import('./settings/stashdb-settings').StashDBPolicy;
   section_errors?: Record<string, { title: string; message: string; error_id: string }>;
   remote_reporting?: import('./settings/remote-reporting-settings').RemoteReportingState;
   library_sharing?: import('./settings/library-sharing-settings').LibrarySharingState;

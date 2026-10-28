@@ -7,6 +7,8 @@
  *
  * 这个包不要会话就能取（ADR-0094）：不得 import 别的产物，不得内嵌数据库、配置或凭据派生的数据。 */
 import './pages.css';
+import { installDomLocalization } from '../../i18n/dom';
+installDomLocalization();
 import { installErrorReporting } from '../../error-reporting';
 
 import type { ComponentType } from 'react';

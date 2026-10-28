@@ -14,6 +14,7 @@ import { Input } from '@/components/base/input/input';
 import { Select, SelectItem } from '../components/select';
 
 import { errorMessage } from '../../api';
+import { translate } from '../../i18n';
 import { useBackgroundJob } from '../background-job';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
 import { Note } from '../components/note';
@@ -252,14 +253,14 @@ export function OrganizeCard(
           onFocus={() => { setTarget('dir'); focused.current = true }}
           onChange={(value) => changeTemplates({ dir: value })} />
         {data?.presets?.length
-          ? <div className="flex flex-col gap-2" role="group" aria-label="套用模板">
-              <p className="text-caption-1-medium text-text-secondary">套用模板</p>
+          ? <div className="flex flex-col gap-2" role="group" aria-label={translate('套用模板')}>
+              <p className="text-caption-1-medium text-text-secondary">{translate('套用模板')}</p>
               <div className="flex flex-wrap gap-2">
               {data.presets.map((preset) => (
                 <Button key={preset.label} variant="secondary" size="small" title={preset.example || preset.label}
                   className="max-w-full [&>span]:min-w-0 [&>span]:shrink"
                   onClick={() => { changeTemplates({ file: preset.file, dir: preset.dir }); focused.current = false }}>
-                  <span className="truncate">{preset.label}</span>
+                  <span className="truncate">{translate(preset.label)}</span>
                 </Button>
               ))}
               </div>
@@ -267,24 +268,24 @@ export function OrganizeCard(
           : null}
         <p aria-live="polite" aria-busy={example.isFetching} data-organize-example=""
           className="text-caption-1-regular text-text-secondary">
-          路径示例：<code className="wrap-anywhere">{example.data?.example || example.data?.error
+          {translate('路径示例：')} <code className="wrap-anywhere">{example.data?.example || example.data?.error
             || (example.isError ? errorMessage(example.error) : '正在预览…')}</code>
         </p>
-        {data?.placeholders?.length ? <div className="flex flex-col gap-2" role="group" aria-label="插入参数">
+        {data?.placeholders?.length ? <div className="flex flex-col gap-2" role="group" aria-label={translate('插入参数')}>
           <p className="text-caption-1-regular text-text-secondary" aria-live="polite">
-            <strong className="text-caption-1-semibold text-text-primary">插入参数</strong>（到{target === 'file' ? '文件名模板' : '目录模板'}）
+            <strong className="text-caption-1-semibold text-text-primary">{translate('插入参数')}</strong> ({translate(target === 'file' ? '文件名模板' : '目录模板')})
           </p>
           <div className="flex flex-wrap gap-1">
             {data.placeholders.map((item) => <Button key={item.key} variant="ghost" size="small"
-              aria-label={`${item.label} {${item.key}}`} onClick={() => insertParameter(item.key)}>
+              aria-label={`${translate(item.label)} {${item.key}}`} onClick={() => insertParameter(item.key)}>
               <span className="inline-flex flex-wrap items-center gap-x-1.5">
-                <code>{`{${item.key}}`}</code><span className="text-text-secondary">{item.label}</span>
+                <code>{`{${item.key}}`}</code><span className="text-text-secondary">{translate(item.label)}</span>
               </span>
             </Button>)}
           </div>
         </div> : null}
         <p className="text-caption-1-regular leading-4.5 text-text-secondary">
-          点击参数插入光标处，选中文字可替换。方括号里的内容在字段为空时整段省略。
+          {translate('点击参数插入光标处，选中文字可替换。方括号里的内容在字段为空时整段省略。')}
         </p>
       </div>
       <div aria-live="polite" className="mt-3 flex flex-col gap-2 empty:hidden">{state}</div>

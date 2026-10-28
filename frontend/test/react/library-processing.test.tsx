@@ -28,6 +28,7 @@ const buttonNamed = (name: string, root: ParentNode = document) =>
 afterEach(() => {
   queryClient.clear();
   localStorage.clear();
+  localStorage.setItem('peach.language', 'zh-CN');
   sessionStorage.clear();
 });
 

@@ -30,6 +30,7 @@ describe('首次运行页', { skip: origin && media && dataRoot ? false : '只�
   it('填错原位写回，改对后进入完成态', { timeout: 120_000 }, async () => {
     const viewport = VIEWPORTS.find((candidate) => candidate.name === 'desktop')!;
     const context = await browser.newContext({ viewport, reducedMotion: 'reduce' });
+    await context.addInitScript(() => localStorage.setItem('peach.language', 'zh-CN'));
     const problems: string[] = [];
     try {
       const page: Page = await context.newPage();
