@@ -525,8 +525,8 @@ function mountPlayerChromeLayout(player: VjsPlayer): void {
   const controls = [
     pip,
     controlBar.querySelector<HTMLElement>(':scope>.vjs-subtitles-control'),
-    controlBar.querySelector<HTMLElement>(':scope>.vjs-peach-settings'),
     controlBar.querySelector<HTMLElement>(':scope>.vjs-peach-theater'),
+    controlBar.querySelector<HTMLElement>(':scope>.vjs-peach-settings'),
     fullscreen,
   ].filter((control): control is HTMLElement => !!control);
   if (!controls.length) return;
