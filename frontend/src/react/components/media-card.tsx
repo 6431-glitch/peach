@@ -27,6 +27,8 @@ import {
 } from '@peach/card-art';
 import { esc, fmtDur, fmtSize } from '@peach/legacy/core';
 import { spinnerHtml } from '@peach/legacy/ui';
+import { entityDisplayName } from '../../core/entity-names';
+import { useEntityNames } from '../use-entity-names';
 
 import type { MediaCardActions, MediaCardHelpers, MediaCardLayout, MediaItem } from '../catalog-grid/types';
 import { ArtSlot } from './art-slot';
@@ -131,12 +133,12 @@ export function identityParts(item: MediaItem): { avatar: ReactNode; who: ReactN
   const who = coStarred
     ? (
       <>
-        <button type="button" data-media-who="" data-entity-kind="performer" data-entity-name={performer} title={performer}><Icon name="user-round" /><span>{performer}</span></button>
+        <button type="button" data-media-who="" data-entity-kind="performer" data-entity-name={performer} title={entityDisplayName('performer', performer)}><Icon name="user-round" /><span>{entityDisplayName('performer', performer)}</span></button>
         <span data-media-who-more="">{`等 ${total} 人`}</span>
       </>
     )
     : kind
-      ? <button type="button" data-media-who="" data-entity-kind={kind} data-entity-name={name} title={name}><Icon name="user-round" /><span>{name}</span></button>
+      ? <button type="button" data-media-who="" data-entity-kind={kind} data-entity-name={name} title={entityDisplayName(kind, name)}><Icon name="user-round" /><span>{entityDisplayName(kind, name)}</span></button>
       /* 没有署名人的那批是馆藏里的一类，点得开，和女优名、厂牌名一样。 */
       : <button type="button" data-media-who="" data-open-unowned=""><Icon name="user-round" /><span>{name}</span></button>;
   return { avatar, who };
@@ -201,6 +203,7 @@ function seekPreview(card: HTMLElement | null, delta: number) {
 }
 
 function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, helpers, actions, onOpen, grouped = true }: MediaCardProps) {
+  useEntityNames();
   const card = useRef<HTMLElement | null>(null);
   const [written, setWritten] = useState<{ id: number; on: boolean } | null>(null);
   const later = written?.id === item.id ? written.on : !!item.watch_later;
