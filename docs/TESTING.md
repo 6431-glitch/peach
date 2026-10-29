@@ -94,7 +94,7 @@ Python 静态检查使用开发依赖 Ruff，随每个正式测试域扫描全�
 | wheel | Windows 与 macOS 各一次 Python 3.14 独立最小安装 |
 | Release | 复用同 SHA 主线成功 CI；Windows 独立 EXE 与 Apple Silicon、Intel DMG 分别构建和验收 |
 
-Python 全量按文件稳定分片，Windows 四片、macOS 两片，每片使用独立 runner；汇总任务要求所有分片和计划选择的任务成功。分片子进程不签发记录。
+Python 全量按文件稳定分片，Windows 四片、macOS 两片。`auto` 按影响域选择文件；唯一选测文件达到 150 个时，Windows 复用四片分配，macOS 仍用单片；更小的 `auto` 两端均用单片。每片使用独立 runner，仍按同一基线和影响域运行，汇总任务要求所有分片和计划选择的任务成功。分片子进程不签发记录。
 
 Test 工作流的 `web-bundle` 在 Ubuntu 上统一执行 tsc、lint、Vitest、构建及产物差异检查；lint 同时检查无诊断且扫描文件数大于零。CI 的 Python 任务把这三个工具用例交给前端任务，把两个真实浏览器用例交给浏览器矩阵；同模块的契约测试仍执行。任务身份由固定工作流与 job 名识别，未知任务和本机保留完整测试。承担部分 CI 职责的运行不签发本机测试记录。
 
