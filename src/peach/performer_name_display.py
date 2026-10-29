@@ -55,47 +55,88 @@ def _stage_key(name: str, page: dict) -> str:
     return _key(name)
 
 
-def display(connection, entity_id: int, canonical: str, aliases: list[dict], grouped: dict | None) -> dict:
-    """名称菜单与别名行共享语言投影；原始别名和可选名称的值不改写。"""
-    profile = read_profile(connection, entity_id)
-    page = page_names(profile)
-    original_names = {page["name"], *(entry["name"] for entry in page["aliases"])} - {""}
-    readings = {page["reading"], *(entry.get("reading", "") for entry in page["aliases"])} - {""}
-    romanizations = {_key(entry.get("romaji", "")) for entry in page["aliases"]} - {""}
-    hidden_keys = {_key(row["alias"]) for row in aliases if row["source"] in HIDDEN_SOURCES}
-    registered = {canonical, *(row["alias"] for row in aliases)}
-    known_keys = {_key(name) for name in registered | original_names}
+class _NameEvidence:
+    """资料原文、读音和别名来源构成的艺名判别证据。"""
 
-    def keep(name: str) -> bool:
-        if name == canonical:
+    def __init__(self, canonical: str, aliases: list[dict], page: dict):
+        self.canonical = canonical
+        self.originals = {page["name"], *(entry["name"] for entry in page["aliases"])} - {""}
+        self.readings = {page["reading"], *(entry.get("reading", "") for entry in page["aliases"])} - {""}
+        self.romanizations = {_key(entry.get("romaji", "")) for entry in page["aliases"]} - {""}
+        self.hidden = {_key(row["alias"]) for row in aliases if row["source"] in HIDDEN_SOURCES}
+        self.registered = {canonical, *(row["alias"] for row in aliases)}
+        self.known = {_key(name) for name in self.registered | self.originals}
+
+    def keep(self, name: str) -> bool:
+        if name == self.canonical:
             return True
         if not name or _BRACKET.search(name):
             return False
         parts = split_names(name)
-        if len(parts) > 1 and all(_key(part) in known_keys for part in parts):
+        if len(parts) > 1 and all(_key(part) in self.known for part in parts):
             return False
         if name == "FC2" or _SENTENCE.search(name) or is_descriptive(name):
             return False
-        if name not in original_names and (name in readings or _key(name) in hidden_keys):
+        if name not in self.originals and (name in self.readings or _key(name) in self.hidden):
             return False
-        if _LATIN.search(name) and not _LATIN.search(canonical):
-            return name in original_names and _key(name) not in romanizations
+        if _LATIN.search(name) and not _LATIN.search(self.canonical):
+            return name in self.originals and _key(name) not in self.romanizations
         return not is_planning_alias(name)
 
+
+def _registered_stages(canonical: str, aliases: list[dict], page: dict, source_url: str) -> dict:
+    """按同一艺名归并写法，同时保留实际登记值。"""
+    evidence = _NameEvidence(canonical, aliases, page)
     stages: dict[str, dict] = {}
     ordered = [canonical, page["name"], *(entry["name"] for entry in page["aliases"]),
                *(row["alias"] for row in aliases)]
     for name in ordered:
-        if not keep(name):
+        if not evidence.keep(name):
             continue
         key = _stage_key(name, page)
-        row = stages.setdefault(key, {"value": None, "registered": [], **writing(name, page, (profile or {}).get("source_url", ""))})
-        if name in registered and name not in row["registered"]:
+        row = stages.setdefault(key, {"value": None, "registered": [], **writing(name, page, source_url)})
+        if name in evidence.registered and name not in row["registered"]:
             row["registered"].append(name)
-        if row["value"] is None and name in registered:
+        if row["value"] is None and name in evidence.registered:
             row["value"] = name
+    return stages
+
+
+def _language_groups(stages: dict, canonical: str, page: dict, grouped: dict | None, field: str) -> dict:
+    """保留来源分组，去除当前艺名的重复写法，按语言展示别名和读音。"""
     current_key = _stage_key(canonical, page)
-    current = stages[current_key]
+    taken = {current_key}
+    sections = []
+    for section in (grouped or {}).get("groups", []):
+        shown = []
+        for entry in section["names"]:
+            key = _stage_key(entry["name"], page)
+            row = stages.get(key)
+            if row and row[field] and key not in taken:
+                shown.append({"name": row[field]})
+                taken.add(key)
+        if shown:
+            sections.append({"label": section.get("label", ""), "names": shown})
+    everyone = [entry["name"] for section in sections for entry in section["names"]]
+    reading = ""
+    if field == "ja":
+        if _stage_key(page["name"], page) == current_key:
+            reading = page["reading"]
+        else:
+            reading = next((entry.get("reading", "") for entry in page["aliases"]
+                            if _stage_key(entry["name"], page) == current_key), "")
+        if reading == stages[current_key][field]:
+            reading = ""
+    return {"reading": reading, "shown": everyone[:SHOWN], "total": len(everyone), "groups": sections}
+
+
+def display(connection, entity_id: int, canonical: str, aliases: list[dict], grouped: dict | None) -> dict:
+    """名称菜单与别名行共享语言投影；原始别名和可选名称的值不改写。"""
+    profile = read_profile(connection, entity_id)
+    page = page_names(profile)
+    source_url = (profile or {}).get("source_url", "")
+    stages = _registered_stages(canonical, aliases, page, source_url)
+    current_key = _stage_key(canonical, page)
     choices, groups = {}, {}
     for language, field in (("zh-CN", "zh_cn"), ("ja", "ja")):
         choices[language] = [{"value": canonical if key == current_key else
@@ -103,30 +144,8 @@ def display(connection, entity_id: int, canonical: str, aliases: list[dict], gro
                               "label": row[field] or canonical}
                              for key, row in stages.items()
                              if row["value"] is not None and (row[field] or key == current_key)]
-        taken = {current_key}
-        sections = []
-        for section in (grouped or {}).get("groups", []):
-            shown = []
-            for entry in section["names"]:
-                key = _stage_key(entry["name"], page)
-                row = stages.get(key)
-                if row and row[field] and key not in taken:
-                    shown.append({"name": row[field]})
-                    taken.add(key)
-            if shown:
-                sections.append({"label": section.get("label", ""), "names": shown})
-        everyone = [entry["name"] for section in sections for entry in section["names"]]
-        reading = ""
-        if language == "ja":
-            if _stage_key(page["name"], page) == current_key:
-                reading = page["reading"]
-            else:
-                reading = next((entry.get("reading", "") for entry in page["aliases"]
-                                if _stage_key(entry["name"], page) == current_key), "")
-            if reading == current[field]:
-                reading = ""
-        groups[language] = {"reading": reading, "shown": everyone[:SHOWN], "total": len(everyone), "groups": sections}
-    return {"current": {"canonical_name": canonical, **writing(canonical, page, (profile or {}).get("source_url", ""))},
+        groups[language] = _language_groups(stages, canonical, page, grouped, field)
+    return {"current": {"canonical_name": canonical, **writing(canonical, page, source_url)},
             "choices": choices, "groups": groups}
 
 
