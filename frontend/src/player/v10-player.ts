@@ -38,12 +38,8 @@ export const createV10Player: VideojsFactory = (video, options) => {
       <div class="vjs-control-bar">
         <media-play-button class="vjs-play-control vjs-control vjs-button" label="播放"></media-play-button>
         <div class="vjs-volume-panel vjs-control vjs-volume-panel-horizontal">
-          <media-mute-button class="vjs-mute-control vjs-control vjs-button" label="静音"></media-mute-button>
-          <div class="vjs-volume-control vjs-volume-horizontal"><media-volume-slider class="vjs-volume-bar vjs-slider vjs-slider-horizontal" label="音量">
-            <media-slider-track><media-slider-fill class="vjs-volume-level"></media-slider-fill></media-slider-track>
-            <media-slider-thumb class="vjs-volume-thumb"></media-slider-thumb>
-            <media-slider-value class="vjs-volume-tooltip"></media-slider-value>
-          </media-volume-slider></div>
+          <button type="button" class="vjs-mute-control vjs-control vjs-button" aria-label="取消静音"></button>
+          <div class="vjs-volume-control vjs-volume-horizontal"><input class="vjs-volume-bar vjs-slider vjs-slider-horizontal" type="range" min="0" max="100" step="1" aria-label="Volume"><span class="vjs-volume-tooltip" aria-hidden="true"></span></div>
         </div>
         <div class="vjs-progress-control vjs-control"><media-time-slider class="vjs-progress-holder vjs-slider vjs-slider-horizontal" label="播放进度">
           <media-slider-track><media-slider-buffer class="vjs-load-progress"></media-slider-buffer><media-slider-fill class="vjs-play-progress"></media-slider-fill></media-slider-track>
@@ -57,6 +53,26 @@ export const createV10Player: VideojsFactory = (video, options) => {
   const events = new EventTarget();
   const cleanup = new AbortController();
   const signal = cleanup.signal;
+  const volumeSlider = root.querySelector<HTMLInputElement>('.vjs-volume-bar');
+  const volumeLabel = root.querySelector<HTMLElement>('.vjs-volume-tooltip');
+  let lastVolume = video.volume > 0 ? video.volume : 1;
+  const syncVolume = () => {
+    const percent = video.muted ? 0 : Math.round(video.volume * 100);
+    if (!video.muted && video.volume > 0) lastVolume = video.volume;
+    if (volumeSlider) { volumeSlider.value = String(percent); volumeSlider.setAttribute('aria-valuetext', `${percent}%`) }
+    if (volumeLabel) volumeLabel.textContent = `${percent}%`;
+  };
+  root.querySelector<HTMLElement>('.vjs-mute-control')?.addEventListener('click', () => {
+    if (video.muted || video.volume === 0) { if (video.volume === 0) video.volume = lastVolume; video.muted = false }
+    else video.muted = true;
+    syncVolume();
+  }, { signal });
+  volumeSlider?.addEventListener('input', () => {
+    const value = Number(volumeSlider.value) / 100;
+    video.volume = value; video.muted = value === 0; syncVolume();
+  }, { signal });
+  video.addEventListener('volumechange', syncVolume, { signal });
+  syncVolume();
   let disposed = false, sourceGeneration = 0, playGeneration = 0, expectedDuration = 0, source: PlayerSource = { src: '', type: '' }, failure: unknown = null;
   let idle: ReturnType<typeof setTimeout> | undefined;
   const active = () => {

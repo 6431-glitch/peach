@@ -150,13 +150,13 @@ video.video-js{vertical-align:top;font-size:10px;line-height:1;font-family:Arial
 [data-stage-media] .video-js .vjs-control-bar>.vjs-volume-panel:hover,
 [data-stage-media] .video-js .vjs-control-bar>.vjs-volume-panel:focus-within,
 [data-stage-media] .video-js .vjs-control-bar>.vjs-volume-panel.vjs-hover,
-[data-stage-media] .video-js .vjs-control-bar>.vjs-volume-panel.vjs-slider-active{flex-basis:111px;width:111px;grid-template-columns:40px 52px;column-gap:3px;padding-right:16px;background:rgba(0,0,0,.6)}
+[data-stage-media] .video-js .vjs-control-bar>.vjs-volume-panel.vjs-slider-active{flex-basis:150px;width:150px;grid-template-columns:40px 99px;column-gap:3px;padding-right:8px;background:rgba(0,0,0,.6)}
 [data-stage][data-theater] [data-stage-media] .video-js .vjs-control-bar>.vjs-volume-panel,
 .video-js.vjs-fullscreen .vjs-control-bar>.vjs-volume-panel{background:rgba(0,0,0,.6)!important;
   backdrop-filter:blur(16px);}
 [data-stage-media] .video-js .vjs-volume-panel>.vjs-mute-control{box-sizing:border-box;z-index:1;position:relative!important;left:0!important;top:0!important;align-self:center;flex:0 0 40px;width:40px!important;min-width:40px;height:40px!important;margin:0!important;padding:0!important;border:0;background:transparent;transform:none!important}
 [data-stage-media] .video-js .vjs-volume-panel>.vjs-mute-control>.vjs-peach-control-icon{width:18px;height:18px}
-[data-stage-media] .video-js .vjs-volume-panel>.vjs-volume-control.vjs-volume-horizontal{box-sizing:border-box;z-index:1;position:relative!important;left:0!important;top:0!important;display:block!important;align-self:center;flex:0 0 52px;width:52px!important;min-width:52px;height:40px!important;min-height:36px;margin:0!important;padding:0!important;overflow:visible;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s cubic-bezier(0,0,.2,1)}
+[data-stage-media] .video-js .vjs-volume-panel>.vjs-volume-control.vjs-volume-horizontal{box-sizing:border-box;z-index:1;position:relative!important;left:0!important;top:0!important;display:block!important;align-self:center;flex:0 0 99px;width:99px!important;min-width:99px;height:40px!important;min-height:36px;margin:0!important;padding:0!important;overflow:visible;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .1s cubic-bezier(0,0,.2,1)}
 [data-stage-media] .video-js .vjs-volume-panel:hover>.vjs-volume-control.vjs-volume-horizontal,
 [data-stage-media] .video-js .vjs-volume-panel:focus-within>.vjs-volume-control.vjs-volume-horizontal,
 [data-stage-media] .video-js .vjs-volume-panel.vjs-hover>.vjs-volume-control.vjs-volume-horizontal,
@@ -170,14 +170,16 @@ video.video-js{vertical-align:top;font-size:10px;line-height:1;font-family:Arial
    位置已经由上面那枚数字说了，线本身只去掉底色，数字照旧挂在它身上。 */
 [data-stage-media] .video-js .vjs-volume-panel .vjs-mouse-display{background:transparent}
 [data-stage-media] .video-js .vjs-volume-panel .vjs-volume-level:before{top:50%;right:-6px;width:12px;height:12px;margin:0;font-size:0;border-radius:50%;background:#fff;transform:translateY(-50%)}
-/* `right:auto` 必须带 !important：Video.js 的 VolumeLevelTooltip 每 30ms 往元素上写一句
-   行内 `style.right=-Npx`，行内声明压过样式表里同名的普通声明。`left:50%` 和那个 right
-   同时成立时，绝对定位的宽度就由两边反推，不再收缩到文字宽——底色会摊成一块比数字大得多
-   的方块，而且它下一次测量自己时又按新宽度算 N，尺寸每帧都在飘。 */
-[data-stage-media] .video-js .vjs-volume-panel .vjs-volume-tooltip{z-index:5!important;left:50%;right:auto!important;top:auto;bottom:calc(50% + 31px);
-  float:none;transform:translateX(-50%);padding:5px 9px;border-radius:var(--surface-radius);background:rgba(0,0,0,.6);
-  backdrop-filter:blur(16px);color:#fff;font-family:inherit;font-size:var(--fs-sm);font-weight:500;
+/* Keep the current volume alongside the slider instead of above it. */
+[data-stage-media] .video-js .vjs-volume-panel .vjs-volume-tooltip{position:absolute;z-index:5!important;left:60px;right:auto!important;top:50%;bottom:auto;
+  float:none;transform:translateY(-50%);padding:0;background:transparent;color:#fff;font-family:inherit;font-size:var(--fs-sm);font-weight:500;
   line-height:15px;text-shadow:0 0 2px #000;overflow:visible;white-space:nowrap}
+[data-stage-media] .video-js .vjs-volume-panel input.vjs-volume-bar{appearance:none;-webkit-appearance:none;cursor:pointer}
+[data-stage-media] .video-js .vjs-volume-panel input.vjs-volume-bar::-webkit-slider-runnable-track{height:2px;background:rgba(255,255,255,.4)}
+[data-stage-media] .video-js .vjs-volume-panel input.vjs-volume-bar::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;margin-top:-5px;border-radius:50%;background:#fff}
+[data-stage-media] .video-js .vjs-volume-panel input.vjs-volume-bar::-moz-range-track{height:2px;background:rgba(255,255,255,.4)}
+[data-stage-media] .video-js .vjs-volume-panel input.vjs-volume-bar::-moz-range-thumb{width:12px;height:12px;border:0;border-radius:50%;background:#fff}
+[data-stage-media] .video-js .vjs-volume-panel:hover .vjs-volume-tooltip,[data-stage-media] .video-js .vjs-volume-panel:focus-within .vjs-volume-tooltip{visibility:visible}
 .vjs-peach-right-controls{box-sizing:border-box;position:relative;align-self:flex-end;flex:0 0 auto;height:40px;margin:0 0 8px auto;
   padding:0 4px;display:flex;align-items:center;border:0;border-radius:var(--pill-radius);background:rgba(0,0,0,.6);box-shadow:none;
   overflow:visible;backdrop-filter:blur(16px);}

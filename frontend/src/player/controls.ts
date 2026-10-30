@@ -449,6 +449,7 @@ function mountPlayerChromeLayout(player: VjsPlayer): void {
   /* 外弧跟音量走：上游 `setVolume` 里超过 50 才给 1，否则 0，静音时两道弧一起收掉。 */
   const syncVolumeIcon = () => {
     const silent = player.muted() || player.volume() === 0;
+    if (volume) volume.dataset.silent = String(silent);
     if (muteIcon) { muteIcon.dataset.silent = String(silent); muteIcon.dataset.loud = String(!silent && player.volume() > .5) }
     syncMuteTooltip(silent ? '取消静音' : '静音');
   };
