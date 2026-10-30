@@ -73,6 +73,7 @@ def plan(event: str, paths: list[str], contents: dict | None = None) -> dict:
     from . import test_runner as runner
     scopes, _ = runner.scopes_for_changes(paths, contents=contents)
     wide = event == "workflow_dispatch" or "full" in scopes
+    runtime_tools = wide or scopes != ("checks",)
     rows = []
     for system in ("macos-latest", "windows-latest"):
         scope = "full" if wide else "auto"
@@ -80,6 +81,7 @@ def plan(event: str, paths: list[str], contents: dict | None = None) -> dict:
         shards = (4 if system == "windows-latest" else 2) if scope == "full" else 1
         for index in range(shards):
             rows.append({"os": system, "python": "3.14", "scope": scope,
+                         "runtime_tools": runtime_tools,
                          "shard_index": index, "shard_count": shards})
     wheels = [{"os": "windows-latest", "python": "3.14"},
               {"os": "macos-latest", "python": "3.14"}]
@@ -149,7 +151,9 @@ def main() -> None:
     if output := os.environ.get("GITHUB_OUTPUT"):
         with Path(output).open("a", encoding="utf-8") as stream:
             for key in result:
-                stream.write(f"{key}={json.dumps(result[key])}\n")
+                value = result[key]
+                encoded = value if isinstance(value, str) else json.dumps(value)
+                stream.write(f"{key}={encoded}\n")
 
 
 if __name__ == "__main__":

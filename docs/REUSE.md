@@ -1,5 +1,27 @@
 # 复用清单
 
+## 首页筛选聚合与缓存
+
+采用 bbingz 的 [PR #205](https://github.com/peach-mitao/peach/pull/205)，固定来源提交 `bbf5aac8e9562211c324c2019bff35888266df84`，许可证沿用本项目 AGPL-3.0-or-later。作品筛选集合先在独立子查询中求出，创作者、标签和演员按既有关系聚合，保留去重计数与标签可见性。没有选中标签时移除无效 `tag_match`，复用既有修订缓存、同键锁与跨连接写入失效机制，不在线改写 SQLite 统计或增加索引迁移。
+
+## 混合媒体根与模型读取
+
+馆藏采集复用 `platform.within_root` 的 SMB 根身份判断，本地路径保留字面归属比较，不逐影片访问挂载目录。STRM 是链接文件，其大小和推广名不作为远端影片的垃圾证据；垃圾队列读取时重新评分，既有人工决定与回收站记录保持原样。
+
+YuNet 与 SFace 沿用既有模型哈希校验，Python 读取模型字节后交给 OpenCV 的 ONNX buffer 入口，避免 Windows 原生文件读取对非 ASCII 路径的限制。没有新增模型副本、依赖或路径重试。隔离验证用同一哈希的模型分别从普通路径与中文路径加载，并用合成数组执行检测和特征计算。
+
+## 浏览器添加的本地人物资料
+
+`/api/jav-browser/people` 复用现有专用令牌与浏览器权限检查、规范实体关联和男优排除判据。人物名只读本地账本与发现资料快照；查询单个番号时还可带上详情页的出演者名字，按既有 `resolve_entity` 先规范名后唯一别名匹配，括号里的别名一并尝试，未匹配的只返回名字。头像通过既有 `PreviewService.entity_image` 查找已安装文件，按 `avatar_focus` 的人脸记录沿用 `frontend/src/card-art/face-frame.ts` 的放大与夹持判据取景；已有 Pillow 将其在内存缩为 64px JPEG，不落新头像、不抓外站。未初始化发现资料服务时直接读取快照，避免初始化恢复外站任务。缺头像省略图片字段，缺人物信息返回空数组，接口失败与正常缺失分别反馈。用户脚本显示灰底首字母，不显示作品封面，无新增依赖。
+
+## README Star 图
+
+`scripts/render_star_history.py` 自行生成，只用标准库与 GitHub CLI，不新增依赖。数据来自 GitHub 原生公开 Star 历史：每周一条记录，其中 `days` 是逐日新增。脚本按日累计，横轴从第一个 Star 当天开始，到生成时刻为止；建库到第一个 Star 之间的空白期不画。曲线用单调三次插值（与 d3 `curveMonotoneX` 相同），不画出回落，也不越过下一天的累计值。画面保留蜜桃色霓虹描边、渐变填充、线性绝对值坐标和浅深双主题。脚本不补造缺失记录，也不把历史累计增加数当作完整取消 Star 的净变化账本。
+
+此前复用 [Star Chart](https://github.com/leereilly/star-chart) v0.3（MIT，固定提交 `e7fa78bdf8f78da6c3feeb3a97b528fd97d62727`）。它只按周累计，不使用 `days` 字段，因此一周内的增速起落会被抹平：2026-10 的单周一万多个 Star 只能画成一级台阶或一段斜坡。调列数改变不了时间粒度，所以改为自行渲染。
+
+独立 `Star History` 工作流每日生成 SVG，只在 `star-history` 分支保存产物，不触发主线测试或阻塞发版。静态 SVG 发布思路参考 SakuraMedia；未复制其受 PolyForm Noncommercial 约束的生成脚本。
+
 ## 复核字段筛选与文本差异
 
 复核文本差异复用 [jsdiff](https://github.com/kpdecker/jsdiff) 的 `diffChars`，前端精确固定 `diff@9.0.0`（BSD-3-Clause，自带类型），按 Unicode 码点比较并仅展示当前文本中的差异片段。当前值和候选相互对照，尚无当前值时对照其他来源；来源依据只比较同名字段。Peach 保留参照选择、语义高亮与字段筛选，不自行实现通用差异算法；原始候选值、提交契约和 ledger 均不改变。
@@ -126,7 +148,7 @@ GitLab API、CI 认证和 Release 创建复用官方 [glab 1.124.0](https://gitl
 
 GitGud 双存储副本复用同一版 glab 的原生 `packages upload` 与官方 [Packages API](https://docs.gitlab.com/api/packages/)，不另写认证或上传协议。Peach 只核对版本、文件名、大小与 `file_sha256`，复用相同内容并拒绝覆盖冲突；登记未完成最多检查三次。R2 下载表与 GitGud 备用资产链接使用不同的 Release 路径。未新增运行时依赖，离线回归覆盖首次上传、重复执行、内容冲突、未登记终止与双来源链接。
 
-轻量安装器的 R2 优先与 GitHub 同版本回退复用 `standalone_update.download`、既有 HTTPX 和内置工具清单；每个来源分别验证大小与 SHA-256。发布后空缓存验收复用 `smoke_split_update.py` 与实际冻结程序的 `--installer-tools` 入口，不新增下载器或依赖。
+更新与轻量安装器共用 `standalone_update.download`、既有 HTTPX 和内置工具清单；GitHub 与 R2 可切换到同版本、同文件名，每个来源分别按同一份大小与 SHA-256 校验。新安装与同版本更新记录优先 GitHub，R2 保留灾备；工具下载不再另包一层来源重试。发布后空缓存验收复用 `smoke_split_update.py` 与实际冻结程序的 `--installer-tools` 入口，不新增下载器或依赖。
 
 `fetch_release_tools.py` 从固定版本官方发行站读取 SHA-256 清单，仅提取指定二进制。Python 标准库负责制品清单、版本与提交判据，不另实现 GitLab 认证、S3 签名或多段上传协议。Windows 与 macOS 的 CI 入口复用既有测试、构建和独立制品验收脚本。下载后端及费用边界见[运维说明](OPERATIONS.md#gitlab-发布与下载后端)。
 
@@ -275,7 +297,7 @@ Windows 复用 FFmpeg 的 D3D11VA 解码与 `h264_amf`、`h264_qsv` 编码，沿
 
 用户脚本由 [peach-mitao/peach-userscript](https://github.com/peach-mitao/peach-userscript)（AGPL-3.0-or-later）独立维护，使用 [Tampermonkey 官方 GM API](https://www.tampermonkey.net/documentation.php) 的本机存储、菜单与 `GM_xmlhttpRequest`；SPA 通知依据 `window.onurlchange` 契约。上游使用 Node.js 24 LTS 内置模块确定性构建，运行时零依赖。Peach 的 `web/integrations/` 消费同一发布的完整安装脚本与站点快照，固定版本、上游提交与 SHA256 见 `jav-userscript-release.json`。安装端点直接返回制品，后端独立校验已登记域名与作品参数；上游导出工具在隔离工作树同步这两份制品和来源记录。Sleazy 热门脚本只提供显式域名与镜像发现证据，不复制其实现或执行第三方代码。宿主扩展由用户安装，兼容性以实际浏览器及脚本管理器授权为准；模拟 GM API 的真实 Chromium 页面完成回归，DMM 与 MGS 实页通过隔离只读 GM 适配核验番号、页面浮层与设置窗口。真实扩展、Peach 与网盘联合下载验收未取得。
 
-Peach 保留页面粗提取与身份冲突提示，服务端复用 `catalog_rules` 的唯一番号规则、`feeds.scan_code`、`web_resource_search.q_resource_search` 的来源顺序与质量排序、`submit_offline_download` 的 infohash 幂等、现有云下载落地与后处理。浏览器添加在共享提交锁内按番号接管已有任务，覆盖其他入口同时提交不同磁力的情况。专用令牌经 `CredentialStore` 仅保存 SHA-256 摘要，不声明跨机同步字段。队列用已有 `atomic_write_text` 保存本机运行状态，关闭功能会撤销令牌并停止尚未提交的添加。
+Peach 保留页面粗提取与身份冲突提示，服务端复用 `catalog_rules` 的唯一番号规则、`feeds.scan_code`、`web_resource_search.q_resource_search` 的来源顺序与质量排序、`submit_offline_download` 的 infohash 幂等、现有云下载落地与后处理。浏览器添加在共享提交锁内按番号接管已有任务，覆盖其他入口同时提交不同磁力的情况。失败原因直接复用下载任务的 `FAILURE_KINDS` 分为磁力与网盘两类；换磁力把失败任务的 infohash 记入该番号的跳过名单，带名单的搜索不在 manko.fun 高清命中处短路，并在直连与索引器结果中一并排除；候选挑选沿用同一番号判据。专用令牌经 `CredentialStore` 仅保存 SHA-256 摘要，不声明跨机同步字段。队列用已有 `atomic_write_text` 保存本机运行状态，关闭功能会撤销令牌并停止尚未提交的添加。
 
 DMM / MGS 的只读商品号识别复用 `sources.dmm` 的 CID 结构与 `catalog_rules.release_code_from_product`。浏览器提交净化后的详情地址及可选厂家番号；DMM 的目录数字头按来源解释，MGS 保留三位发行前缀，尾字母和日期分隔符保留为身份。`release_code_from_text` 继续处理普通文件名的字幕与画质标记，不用文件名噪声规则改写明确商品身份。资源名称的完整商品号匹配复用同一编目模式，元数据身份校验与 DMM 搜索核对尾字母。运行时不新增 HTTP 请求或依赖；已有 DMM／OpenAver 取证与来源协议足以覆盖转换，不引入第二套外部番号库。完整脚本连接临时账本的真实识别接口，联合验证 DMM／MGS 桌面与手机场景；保留基于模拟响应的跨站交互回归。
 
@@ -533,6 +555,7 @@ OneJAV、Free JAV Torrent 只给种子链接。这类条目经索引器同源的
 - 搜索玻璃用 `glideEase()` 的采样弹簧，`frontend/src/application/search-morph.js` 只管视口边界与轮廓关键帧。
 - 横排滚到头的回弹是 `wireHorizontalScroller` 内的 `edgeBounce`，头像排、厂牌排、新作排、筛选条共用；transitions.dev 的 43 条配方里没有（2026-09-23 核对）。越界位移借 UIScrollView 的橡皮筋公式 `(1 - 1/(x·c/d + 1))·d`，c = 0.55，与 use-gesture（MIT）的 `rubberband` 同一条，回弹走 `--spring-pane`。只抄公式不引依赖：拖动与滚轮归属已由 `wireHorizontalScroller` 判定。新作排自动滚动是同文件的 `wireAutoScroll`。
 - React 横向导航通过 `useHorizontalScroller` 绑定上述共享行为，适用于页签、分段控件、筛选栏和首字跳转；`data-horizontal-scroll` 隐藏原生滚动条，左右渐隐由实际溢出方向决定。容器和子项尺寸、文本及增删变化都会重算，竖向分类列关闭绑定；表格和代码块继续使用覆盖式滑块，不新增依赖。
+- 详情影院模式通过 `data-theater` 改变已有容器的 overflow，共享滚动区观察器同步接管新滚动轴。`data-skeleton` 与 `data-skeleton-tier` 期间隐藏原生滚动条并移除旧轨道，内容恢复后由同一观察器重新接管；首页与资料页共用的新作占位在整条横向容器上标记 `data-skeleton="feed/new"`。保留原占位尺寸与排版，不为占位另建滚动组件。
 - 管理页头及 `manageHeaderSkeletonHtml` 共用一级导航、面包屑、页面标题的顺序，页内分类放在标题之后；管理条保持跨模块导航，面包屑保留上级链接与当前页语义。
 - 浮层筛选首页是页面内组件 `catalog-filter`，资料页是 `entity-filter`，共用 `FilterGlassRows` 两排、交集条与排序键，滑动玻璃走 `use-view-glide.ts`。外框管玻璃与吸顶，壳管查询状态和取数，岛只画、动作回壳，按下态在发请求前由壳经 `updateManagedRoute` 推到；身份与观看状态的组合沿用 `/api/items`。
 - `web/board.css` 共用正式页面结构。首启、登录与错误三页是独立页面包 `/dist/peach-pages.js` 里的 React 页，服务端只吐 `web_entry.page_shell()` 那一张薄壳，外框是 `frontend/src/react/pages/auth-card.tsx`，SPA 外壳之外的新页面挂进同一个包。

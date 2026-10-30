@@ -3876,7 +3876,8 @@ class OperationalScriptTests(unittest.TestCase):
 
     @staticmethod
     def _full_payload(code, source):
-        return {"source": source, "id": code, "title": "Catalog title",
+        return {**({'javdb_rule': 2, 'source_id': 'VerifiedWork'} if source == 'javdb' else {}),
+                "source": source, "id": code, "title": "Catalog title",
                 "actresses": [{"japanese_name": "木村さん"}], "maker": "Studio A",
                 "release_date": "2020-09-13T00:00:00Z"}
 
@@ -3984,7 +3985,9 @@ class OperationalScriptTests(unittest.TestCase):
             with output.open(encoding="utf-8-sig", newline="") as handle:
                 tags = next(row for row in csv.DictReader(handle) if row["field"] == "tags")
             self.assertEqual(tags["current_value"], "肛交")
-            self.assertEqual(json.loads(tags["candidates_json"])[0]["source"], "javdb")
+            candidate = json.loads(tags["candidates_json"])[0]
+            self.assertEqual(candidate["source"], "javdb")
+            self.assertEqual((candidate.get('javdb_rule'), candidate.get('source_id')), (2, 'VerifiedWork'))
             self.assertGreaterEqual(auto_apply_metadata(LedgerDatabase(db), candidate_root)["applied"], 1)
             with closing(sqlite3.connect(db)) as con:
                 self.assertEqual(set(con.execute("SELECT tag,source FROM asset_tag WHERE asset_id=1"
@@ -5691,6 +5694,12 @@ class PinnedReleaseTests(unittest.TestCase):
     def setUpClass(cls):
         cls.release = load_script("release_tag")
 
+    def setUp(self):
+        candidate = mock.patch.object(self.release.github_release_candidate, "select",
+                                      return_value={"run_id": 9})
+        self.candidate = candidate.start()
+        self.addCleanup(candidate.stop)
+
     def _shell(self, changes=None):
         answers = {
             ("git", "status", "--porcelain"): "",
@@ -5764,6 +5773,16 @@ class PinnedReleaseTests(unittest.TestCase):
                     redirect_stdout(io.StringIO()):
                 self.assertEqual(self.release.main(["--release-sha", self.SHA, "--apply"]), 1)
             self.assertEqual(ShipTests._writes(command), [])
+
+    def test_a_commit_without_a_promotable_rehearsal_gets_no_tag(self):
+        with self._shell(), self._api():
+            self.assertEqual(self.release.plan_commit("owner/repo", self.SHA)["rehearsal"],
+                             "https://github.com/owner/repo/actions/runs/9")
+        self.candidate.assert_called_with("owner/repo", self.SHA)
+        self.candidate.side_effect = ValueError("主线发布演练尚未成功")
+        with self._shell() as command, self._api(), redirect_stdout(io.StringIO()):
+            self.assertEqual(self.release.main(["--release-sha", self.SHA, "--apply"]), 1)
+        self.assertEqual(ShipTests._writes(command), [])
 
     def test_apply_rechecks_the_selected_commit_and_pushes_only_its_annotated_tag(self):
         with self._shell() as command, self._api(), \

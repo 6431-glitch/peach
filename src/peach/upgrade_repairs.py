@@ -35,6 +35,11 @@ def _read(path: Path) -> dict:
     return value
 
 
+def _title(row) -> str:
+    """任务中心里这一条写哪部片：有番号写番号，没有就写文件名。"""
+    return str(row['code'] or row['name'] or f'影片 {row["id"]}')
+
+
 def _counts(connection) -> dict:
     return {table: connection.execute(f'SELECT count(*) FROM {table}').fetchone()[0]
             for table in ('asset', 'entity', 'asset_tag')}
@@ -177,8 +182,10 @@ class UpgradeRepairs:
             with contract.database.read_connection() as connection:
                 applied = connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
                                               (REVISION,)).fetchone()
-                prior = connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
-                                            (CATALOG_REVISION,)).fetchone()
+                prior = connection.execute(
+                    'SELECT result_json,id FROM ledger_upgrade_repair WHERE id=? OR id GLOB ? '
+                    'ORDER BY CAST(applied_at AS REAL) DESC LIMIT 1',
+                    (CATALOG_REVISION, CATALOG_REVISION + ':text-*')).fetchone()
             if applied is not None:
                 self._restore_receipt(json.loads(applied[0]))
                 return
@@ -216,7 +223,7 @@ class UpgradeRepairs:
                            'deferred': list(previous.get('deferred', [])),
                            'dispatch_complete': bool(previous.get('dispatch_complete')) and not plan['text']['asset_ids'],
                            'text_only': prior is not None,
-                           'prior_revision': CATALOG_REVISION if prior else None}
+                           'prior_revision': prior[1] if prior else None}
                 connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
                                    (REVISION, str(time.time()), json.dumps(receipt, ensure_ascii=False)))
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
@@ -271,7 +278,7 @@ class UpgradeRepairs:
                     args.append(self.contract.avatar_root)
                 args.append(attempts)
                 planned.extend(planner.stock(*args, limit=min(16, remaining), skip=seen))
-            rows = connection.execute("SELECT id,path,location,snapshot_path FROM asset WHERE medium='video' "
+            rows = connection.execute("SELECT id,code,name,path,location,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
         from .followups import Followup
         selected = set(receipt.get('media_ids', []))
@@ -290,7 +297,7 @@ class UpgradeRepairs:
             if cost_for(row['location'], row['path'], config) != 'free':
                 deferred.append(row['id'])
                 continue
-            planned.append(Followup(key, MEDIA_TASK, '更新影片资料'))
+            planned.append(Followup(key, MEDIA_TASK, _title(row)))
             if len(planned) >= MAX_FOLLOWUPS:
                 break
         receipt['deferred'] = deferred
@@ -390,25 +397,32 @@ def _media_run(contract, key: str, handle) -> dict:
     config = getattr(contract, 'upgrade_config', None) or load_config()
     state_file = Path(contract.follow_state_root) / 'upgrade-repairs' / f'{asset_id}.json'
     previous = _read(state_file)
+    job_id = key.replace(':', '-')
+    if previous.get('job_id', job_id) != job_id:
+        previous = {}
     if previous:
         previous.update(issue_count=0, paused_count=0, issue_preview=[], retryable_asset_ids=[])
     service = getattr(contract, 'upgrade_repairs', None)
+    with contract.database.read_connection() as connection:
+        found = connection.execute('SELECT id,code,name FROM asset WHERE id=?', (asset_id,)).fetchone()
+    title = _title(found) if found else f'影片 {asset_id}'
     def active():
         return service is None or not service.stopping.is_set()
     try:
         result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
                              database=contract.database, asset_ids=[asset_id], stage='collect',
-                             recheck_existing=True, job_id=key.replace(':', '-'),
+                             recheck_existing=True, job_id=job_id,
                              state_file=state_file, resume_state=previous or None,
                              active=active,
-                             report=lambda state: handle.progress(label=state.get('stage', '更新影片资料')))
+                             report=lambda state: handle.progress(
+                                 label=f"{title} · {state.get('stage') or '更新影片资料'}"))
     except InterruptedError:
         if not active():
             raise JobPaused('服务重启后继续') from None
         raise
     if result.get('status') not in ('complete', 'succeeded') or result.get('issue_count'):
-        raise RuntimeError(result.get('error') or '影片升级补全未完成，请在活动页查看后重试')
-    return {'outcome': '影片升级补全完成', 'asset_id': asset_id}
+        raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
+    return {'outcome': '影片升级补全完成', 'name': title, 'asset_id': asset_id}
 
 
 TYPE = register(FollowupType(MEDIA_TASK, '更新影片资料', True, _media_run))

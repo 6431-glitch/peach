@@ -5,7 +5,10 @@ import sys
 import tempfile
 import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from pathlib import Path
+from threading import Event
 from unittest import mock
 
 from scripts import agent_worktree, release_tag
@@ -91,6 +94,94 @@ class _WorktreeCase(unittest.TestCase):
         self.tmp.cleanup()
 
 class AgentWorktreeTests(_WorktreeCase):
+    def test_document_integration_keeps_its_checks_without_waiting_for_full_suite(self):
+        result = create(self.repo, "Codex", "readme", self.root / "worktrees")
+        worker = Path(result["path"])
+        (worker / "README.md").write_text("# Example\n", encoding="utf-8")
+        _git(worker, "add", "README.md")
+        _git(worker, "commit", "-m", "docs: example")
+        folder = agent_worktree.test_evidence.evidence_dir(self.repo)
+        with agent_worktree.test_evidence.held(folder / "full-suite.lock", scope="full"):
+            report = integrate(self.repo, str(result["branch"]), lock_timeout=0)
+        self.assertEqual(report["files"], ["README.md"])
+        agent_worktree.require_verified.assert_called_once_with(worker, "master", {"README.md"})
+        self.assertEqual((self.repo / "README.md").read_text(encoding="utf-8"), "# Example\n")
+
+    def test_other_document_paths_use_the_same_checks_boundary(self):
+        for index, name in enumerate(("CONTRIBUTING.md", ".github/PULL_REQUEST_TEMPLATE.md")):
+            with self.subTest(path=name):
+                result = create(self.repo, "Codex", f"document-{index}", self.root / "worktrees")
+                worker = Path(result["path"])
+                (worker / name).parent.mkdir(parents=True, exist_ok=True)
+                (worker / name).write_text("# Example\n", encoding="utf-8")
+                _git(worker, "add", name)
+                _git(worker, "commit", "-m", "docs: example")
+                folder = agent_worktree.test_evidence.evidence_dir(self.repo)
+                with agent_worktree.test_evidence.held(folder / "full-suite.lock", scope="full"):
+                    report = integrate(self.repo, str(result["branch"]), lock_timeout=0)
+                self.assertEqual(report["files"], [name])
+
+    def test_runtime_markdown_still_waits_for_full_suite(self):
+        result = create(self.repo, "Codex", "runtime-document", self.root / "worktrees")
+        worker = Path(result["path"])
+        name = "frontend/src/react/boardui/ORIGIN.md"
+        (worker / name).parent.mkdir(parents=True)
+        (worker / name).write_text("# Origin\n", encoding="utf-8")
+        _git(worker, "add", name)
+        _git(worker, "commit", "-m", "docs: origin")
+        folder = agent_worktree.test_evidence.evidence_dir(self.repo)
+        with agent_worktree.test_evidence.held(folder / "full-suite.lock", scope="full"), \
+                self.assertRaisesRegex(WorkspaceError, "全量验证"):
+            integrate(self.repo, str(result["branch"]), lock_timeout=0)
+        self.assertFalse((self.repo / name).exists())
+
+    def test_waiting_code_integration_does_not_block_documents(self):
+        code = create(self.repo, "Codex", "queued-code", self.root / "worktrees")
+        worker = Path(code["path"])
+        (worker / "worker.txt").write_text("code\n", encoding="utf-8")
+        commit(worker, "worker change")
+        docs = create(self.repo, "Codex", "parallel-docs", self.root / "worktrees")
+        (Path(docs["path"]) / "README.md").write_text("# Example\n", encoding="utf-8")
+        _git(Path(docs["path"]), "add", "README.md")
+        _git(Path(docs["path"]), "commit", "-m", "docs: example")
+        folder = agent_worktree.test_evidence.evidence_dir(self.repo)
+        waiting = Event()
+        held = agent_worktree.test_evidence.held
+
+        @contextmanager
+        def observed(lock, **kwargs):
+            if kwargs.get("branch") == code["branch"] and lock.name == "full-suite.lock":
+                waiting.set()
+            with held(lock, **kwargs):
+                yield
+
+        with ThreadPoolExecutor() as executor, mock.patch.object(
+                agent_worktree.test_evidence, "held", observed):
+            with held(folder / "full-suite.lock", scope="full"):
+                future = executor.submit(integrate, self.repo, str(code["branch"]), lock_timeout=120)
+                self.assertTrue(waiting.wait(5), "代码集成尚未进入全量锁等待")
+                report = integrate(self.repo, str(docs["branch"]), lock_timeout=0)
+                self.assertEqual(report["files"], ["README.md"])
+                self.assertFalse(future.done())
+            self.assertEqual(future.result(timeout=60)["files"], ["worker.txt"])
+        self.assertEqual((self.repo / "worker.txt").read_text(encoding="utf-8"), "code\n")
+
+    def test_code_integration_waits_for_full_suite_without_changing_master(self):
+        result = create(self.repo, "Codex", "code", self.root / "worktrees")
+        worker = Path(result["path"])
+        (worker / "worker.txt").write_text("worker\n", encoding="utf-8")
+        (worker / "README.md").write_text("# Example\n", encoding="utf-8")
+        _git(worker, "add", "README.md")
+        commit(worker, "worker change")
+        before = _git(self.repo, "rev-parse", "HEAD").stdout.strip()
+        folder = agent_worktree.test_evidence.evidence_dir(self.repo)
+        with agent_worktree.test_evidence.held(folder / "full-suite.lock", scope="full"), \
+                self.assertRaisesRegex(WorkspaceError, "全量验证"):
+            integrate(self.repo, str(result["branch"]), lock_timeout=0)
+        self.assertEqual(_git(self.repo, "rev-parse", "HEAD").stdout.strip(), before)
+        self.assertEqual((self.repo / "worker.txt").read_text(encoding="utf-8"), "base\n")
+        self.assertFalse((self.repo / "README.md").exists())
+
     def test_create_ready_and_integrate_non_overlapping_branch(self):
         result = create(self.repo, "Claude", "metadata batch", self.root / "worktrees")
         worker = Path(result["path"])
@@ -690,7 +781,7 @@ class ReadmeImpactTests(unittest.TestCase):
             key.assert_not_called()
 
 
-from scripts import co_author
+from scripts import check_commit_message, co_author
 
 
 class CoAuthorTests(unittest.TestCase):
@@ -745,6 +836,39 @@ class CoAuthorTests(unittest.TestCase):
 
     def test_human_coauthor_requires_an_agent_signature(self):
         self.assertTrue(self.signed("Co-Authored-By: Contributor <contributor@example.invalid>"))
+
+    def contributed(self, *trailers):
+        """采纳的社区补丁：作者是贡献者本人，不是本机提交者。"""
+        git(self.repo, "commit", "--allow-empty", "-m", "测试", "-m", "\n".join(trailers) or "说明",
+            "--author", "Contributor <contributor@example.invalid>")
+        return co_author.check(self.repo, "master")
+
+    def test_a_contributor_commit_is_not_given_an_agent_signature_it_never_had(self):
+        """外部贡献者是否用了 AI 由本人说明；门槛不能逼维护者替他补一行 AI 署名。"""
+        self.assertEqual(self.contributed(), [])
+
+    def test_a_contributor_may_name_a_tool_the_maintainer_has_not_registered(self):
+        """工具名单约束的是本机智能体，贡献者用什么工具是他自己的事。"""
+        self.assertEqual(self.contributed("Co-Authored-By: Qoder (Qwen 3) <noreply@qoder.com>"), [])
+
+    def test_a_contributor_signature_still_has_to_be_well_formed(self):
+        self.assertTrue(self.contributed("Co-Authored-By: Codex (GPT-6) <noreply@anthropic.com>"))
+        self.assertTrue(co_author.problems("测试", ["Codex <someone@example.invalid>"], own=False))
+
+    def test_the_local_committer_signs_even_beside_an_adopted_commit(self):
+        self.contributed()
+        self.assertEqual(len(self.signed()), 1)
+
+    def test_an_unknown_local_identity_is_treated_as_the_local_committer(self):
+        """取不到本机邮箱时无法判断作者是谁，按本机提交从严检查。"""
+        self.assertTrue(co_author.is_own("contributor@example.invalid", ""))
+        self.assertFalse(co_author.is_own("contributor@example.invalid", "test@example.invalid"))
+        self.assertTrue(co_author.is_own("Test@Example.invalid", "test@example.invalid"))
+
+    def test_the_commit_hook_reads_the_author_actually_used(self):
+        self.assertEqual(check_commit_message.author_mail(self.repo), "test@example.invalid")
+        self.assertEqual(check_commit_message.check(self.repo, "测试\n", own=False), [])
+        self.assertTrue(check_commit_message.check(self.repo, "测试\n", own=True))
 
     def test_human_coauthor_requires_a_name_and_email(self):
         agent = "Co-Authored-By: Codex (GPT-6) <noreply@openai.com>"

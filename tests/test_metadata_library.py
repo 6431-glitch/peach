@@ -89,6 +89,116 @@ def _archive_pages(url):
 
 
 class LibraryNfoTests(unittest.TestCase):
+    def test_javdb_candidate_keeps_its_verified_rule_and_source_identity(self):
+        from peach.library_processing import _merge_candidates
+        from peach.javdb_identity import current_candidate
+        groups = {}
+        document = {'id': 'MIKR-023', 'title': '原题', 'javdb_rule': 2,
+                    'source_id': 'XeYkdb', 'source_url': 'https://javdb.com/v/XeYkdb'}
+        row = {'id': 1, 'name': 'MIKR-023.mp4', 'path': 'R:/Films/MIKR-023.mp4', 'size': 1}
+        _merge_candidates(groups, row, 'MIKR-023', 'javdb', document, self.root / 'raw.json', {})
+        candidate = json.loads(groups['asset:1:title']['candidates_json'])[0]
+        self.assertTrue(current_candidate(candidate))
+        self.assertEqual((candidate['source_id'], candidate['source_url']),
+                         ('XeYkdb', 'https://javdb.com/v/XeYkdb'))
+
+    @windows_ledger_roots
+    def test_targeted_recheck_asks_a_source_despite_old_miss_but_normal_collection_keeps_it(self):
+        from peach.library_processing import _MissCache, misses_path
+        for recheck in (False, True):
+            with self.subTest(recheck=recheck):
+                root = self.root / ('recheck' if recheck else 'normal')
+                media = root / 'media'
+                media.mkdir(parents=True)
+                video = media / 'DASS-468.mp4'
+                video.write_bytes(b'video')
+                db = fresh_ledger(root)
+                config = PeachConfig(root, root / 'config.toml', present=True,
+                                     locations={'local': (str(media),)})
+                with closing(sqlite3.connect(db)) as connection, connection:
+                    connection.execute('INSERT INTO asset(id,location,path,name,medium,code) VALUES(1,?,?,?,?,?)',
+                                       ('local', str(video), video.name, 'video', 'DASS-468'))
+                misses = _MissCache(misses_path(config))
+                misses.record('javdb', 'DASS-468')
+                misses.record('javdb', 'DASS-469')
+                document = {'id': 'DASS-468', 'title': '原题', 'maker': 'Das', 'release_date': '2024-09-10',
+                            'actresses': [{'japanese_name': '胡桃さくら'}]}
+                provider = stub_provider()
+                provider.query.side_effect = lambda code, source='r18dev', document=document, **kwargs: (
+                    {**document, 'genres': ['高跟鞋'], 'javdb_rule': 2} if source == 'javdb' else document)
+                provider.cover.return_value = False
+                process_library(config, db, root / 'generated', root / 'covers', asset_ids=[1],
+                                stage='metadata', recheck_existing=recheck, provider_factory=lambda provider=provider: provider)
+                javdb_calls = [call for call in provider.query.call_args_list if call.args[1] == 'javdb']
+                self.assertEqual(len(javdb_calls), 1 if recheck else 0)
+                self.assertTrue(_MissCache(misses_path(config)).fresh('javdb', 'DASS-469'))
+
+    def test_cover_failure_retains_redacted_exception_in_scraping_export_and_remains_retryable(self):
+        from peach.library_processing import _MissCache, _ProcessingIssues, _RemoteSession
+        from peach.scraping_diagnostics import _issues
+
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True)
+        path = issues_path(config, 'cover-job')
+        path.parent.mkdir(parents=True, exist_ok=True)
+        provider = stub_provider()
+        failure = RuntimeError('model unreadable token=hidden-secret C:\\private\\model.onnx')
+        provider.cover.side_effect = [failure, False]
+        remote = _RemoteSession(config, lambda: provider, _MissCache(self.root / 'misses.json'), retrying=False)
+        state = dict(job_id='cover-job', notes={}, issue_count=0, paused_count=0,
+                     issue_preview=[], retryable_asset_ids=[], issues_truncated=False)
+        issue = _ProcessingIssues(state, path, lambda: None, lambda values: None)
+        row = {'id': 1, 'name': 'ABC-199_AI.mp4', 'path': 'R:/Films/ABC-199_AI.mp4'}
+        remote._cover(row, 'ABC-199', self.root / 'covers', update=lambda **values: None, issue=issue)
+        remote._cover(dict(row, id=2), 'ABC-200', self.root / 'covers', update=lambda **values: None, issue=issue)
+        self.assertEqual(provider.cover.call_count, 2)
+        self.assertFalse(remote.misses.fresh('cover', 'ABC-199'))
+        recorded = json.loads(path.read_text(encoding='utf-8'))
+        self.assertEqual(recorded['diagnostics']['code'], 'ABC-199')
+        self.assertEqual(recorded['diagnostics']['stage'], 'fetching_cover')
+        self.assertEqual(recorded['diagnostics']['exception'][0]['type'], 'RuntimeError')
+        self.assertTrue(recorded['diagnostics']['frames'])
+        self.assertNotIn('hidden-secret', json.dumps(recorded))
+        self.assertNotIn('private', json.dumps(recorded))
+        self.assertEqual((state['issue_count'], state['retryable_asset_ids']), (1, [1]))
+        exported = {}
+        export = SimpleNamespace(add=lambda name, value: exported.update({name: value}),
+                                 unavailable=lambda *args: self.fail(str(args)))
+        _issues(config, {1}, export)
+        self.assertEqual(exported['issues.json']['records'][0]['diagnostics'], recorded['diagnostics'])
+        self.assertEqual(exported['issues.json']['records'][0]['job_id'], 'cover-job')
+
+    def test_collection_keeps_local_and_smb_resources_in_their_online_roots(self):
+        from peach.library_processing import _collection_rows, _online_source_root
+        from peach.smb_media import SmbResource
+
+        db = fresh_ledger(self.root)
+        remote = SmbResource('nas', 'R:/Films', 'smb://files.invalid/films', (), None)
+        outside = SmbResource('other', 'R:/Films', 'smb://other.invalid/films', (), None)
+        local = self.root / 'local'
+        names = ['ABC-101.mp4', 'ABC-102.mp4', 'ABC-103.mp4']
+        paths = ['R:/Films/' + names[0], str(local / names[1]), 'R:/Other/' + names[2]]
+        resources = [remote / names[0], local / names[1], outside / names[2]]
+        translated = dict(zip(paths, resources))
+        translated['R:/Films'] = remote
+        with closing(sqlite3.connect(db)) as connection, connection:
+            connection.executemany('INSERT INTO asset(location,path,name,medium) VALUES(?,?,?,?)',
+                                   [('local', path, name, 'video') for path, name in zip(paths, names)])
+        before = db.read_bytes()
+        with patch('peach.library_processing.translate_ledger_path', side_effect=translated.__getitem__), \
+                patch('peach.library_processing.root_online', return_value=True):
+            for roots in ([remote, local], [local, remote]):
+                rows, _ = _collection_rows(db, locations={'local': ('R:/Films', str(local))},
+                                            online_roots=roots, asset_ids=None)
+                self.assertEqual([row['name'] for row in rows], names[:2])
+            rows, _ = _collection_rows(db, locations={'local': ('R:/Films',)},
+                                        online_roots=[remote], asset_ids=[1, 3])
+            self.assertEqual([row['name'] for row in rows], names[:1])
+            self.assertIsNone(_online_source_root('local', 'R:/Films', {'local': [local / names[1]]},
+                                                 retrying=True, issue=Mock()))
+            self.assertEqual(_online_source_root('local', 'R:/Films', {'local': [remote / names[0]]},
+                                                retrying=True, issue=Mock()), remote)
+        self.assertEqual(db.read_bytes(), before)
+
     def test_collection_selects_main_video_and_preserves_registered_trailer(self):
         from peach.library_processing import _collection_rows
         db = fresh_ledger(self.root)
@@ -2041,7 +2151,7 @@ class LibraryNfoTests(unittest.TestCase):
         documents = {
             'r18dev': {'id': 'DASS-468', 'title': '甘やかされて', 'maker': 'Das',
                       'release_date': '2024-09-10', 'actresses': [{'japanese_name': '胡桃さくら'}]},
-            'javdb': {'id': 'DASS-468', 'genres': ['高跟鞋', 'Anal Play'],
+            'javdb': {'id': 'DASS-468', 'genres': ['高跟鞋', 'Anal Play'], 'javdb_rule': 2,
                       'source_url': 'https://javdb.com/v/example'},
         }
         for source, payload in documents.items():
@@ -2062,6 +2172,48 @@ class LibraryNfoTests(unittest.TestCase):
         self.assertEqual([(entry['source'], entry['value']) for entry in rows['tags']],
                          [('javdb', ['高跟', '屁眼'])])
         self.assertEqual(Path(rows['tags'][0]['raw_snapshot']), directory / 'DASS-468-javdb.json')
+
+    def test_javdb_snapshot_requires_current_identity_evidence_without_removing_raw_json(self):
+        from peach.library_processing import _MissCache, _RemoteSession, misses_path
+        from peach.javdb_identity import current_evidence
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True)
+        directory = config.directory('sources') / 'library-metadata'
+        directory.mkdir(parents=True)
+        for marker in (None, 1, True, '2', 2):
+            with self.subTest(marker=marker):
+                payload = {'id': 'DASS-468', 'title': '原题', 'javdb_rule': marker}
+                path = directory / 'DASS-468-javdb.json'
+                path.write_text(json.dumps(payload), encoding='utf8')
+                artifact_rules.remember(path, str(upgrade_rules.PROVIDER_EVIDENCE))
+                before = path.read_bytes()
+                session = _RemoteSession(config, None, _MissCache(misses_path(config)), retrying=False)
+                self.assertEqual(session._cached_evidence(['javdb'], 'DASS-468'),
+                                 [('javdb', payload, path)] if marker == 2 and type(marker) is int else [])
+                self.assertEqual(current_evidence(payload), marker == 2 and type(marker) is int)
+                self.assertEqual(path.read_bytes(), before)
+
+    def test_damaged_snapshot_is_not_reused_even_with_a_current_receipt(self):
+        from peach.library_processing import _MissCache, _RemoteSession, misses_path
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True)
+        path = config.directory('sources') / 'library-metadata' / 'DASS-468-makers.json'
+        path.parent.mkdir(parents=True)
+        for field, value in (('title', '坏\ufffd标题'),
+                             ('actresses', [{'japanese_name': '坏\ufffd姓名'}]),
+                             ('genres', ['坏\ufffd标签'])):
+            with self.subTest(field=field):
+                path.write_text(json.dumps({'id': 'DASS-468', field: value}), encoding='utf-8')
+                artifact_rules.remember(path, str(upgrade_rules.PROVIDER_EVIDENCE))
+                before = path.read_bytes()
+                session = _RemoteSession(config, None, _MissCache(misses_path(config)), retrying=False)
+                self.assertEqual(session._cached_evidence(['makers'], 'DASS-468'), [])
+                self.assertEqual(path.read_bytes(), before, '原始损坏证据保留供诊断')
+
+        payload = {'id': 'DASS-468', 'title': '完整标题',
+                   'collection_diagnostics': {'detail': '历史诊断\ufffd'}}
+        path.write_text(json.dumps(payload), encoding='utf-8')
+        artifact_rules.remember(path, str(upgrade_rules.PROVIDER_EVIDENCE))
+        session = _RemoteSession(config, None, _MissCache(misses_path(config)), retrying=False)
+        self.assertEqual(session._cached_evidence(['makers'], 'DASS-468'), [('makers', payload, path)])
 
     def test_expired_javdb_snapshot_is_requested_once_and_answered_sources_are_skipped(self):
         from peach.library_processing import _MissCache, _RemoteSession, misses_path

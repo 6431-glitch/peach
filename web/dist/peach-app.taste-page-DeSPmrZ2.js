@@ -1,19 +1,20 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f04411b1-c4b3-4d8d-8729-5d9d12f6b752", e._sentryDebugIdIdentifier = "sentry-dbid-f04411b1-c4b3-4d8d-8729-5d9d12f6b752");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "095721df-c1e5-4106-bf9a-ad3cb1beac74", e._sentryDebugIdIdentifier = "sentry-dbid-095721df-c1e5-4106-bf9a-ad3cb1beac74");
 	} catch {}
 })();
-import { ActivePoints as e, ActivityHeat as t, AnimatedItems as n, BAR_DOMAIN as r, CHART_CARD as i, CHART_COLORS as a, CartesianLabelListContextProvider as o, CategoryTick as s, ChartBackground as c, ChartContainer as l, ChartHead as u, ChartLegend as d, ChartLegendContent as f, ChartTip as p, ChartTooltip as m, ChartTooltipContent as h, DefaultZIndexes as g, Dots as _, EvilBarChart as v, ExpandableRanking as y, LabelListFromLabelProp as ee, Layer as b, LoadingIndicator as x, PolarAngleAxis as S, PolarChart as C, PolarLabelContextProvider as te, PolarLabelFromLabelProp as w, Polygon as T, RegisterGraphicalItemId as ne, SetPolarGraphicalItem as re, SetPolarLegendPayload as ie, SetTooltipEntrySettings as ae, Text as E, ZIndexLayer as oe, adaptEventsOfChild as se, addRadiusAxis as ce, arrayTooltipSearcher as le, barLabel as ue, categoryAxisWidth as de, cn as fe, createSelector as D, defaultPolarChartProps as pe, defaultPolarRadiusAxisProps as me, fitLabel as he, getAxisTypeBasedOnLayout as ge, getBandSizeOfAxis as _e, getClassNameFromUnknown as ve, getColorsCount as ye, getTooltipNameProp as be, getValueByDataKey as xe, identity as Se, interpolate as Ce, isArrayLike as we, isCategoricalAxis as Te, isNullish as Ee, iteratee as De, matchAnimationItems as Oe, matchByIndex as ke, noop as Ae, polarToCartesian as O, removeRadiusAxis as je, resolveDefaultProps as Me, selectAngleAxis as Ne, selectChartDataAndAlwaysIgnoreIndexes as Pe, selectChartLayout as Fe, selectPolarAxisScale as Ie, selectPolarAxisTicks as k, selectPolarViewBox as Le, selectRadiusAxis as Re, selectUnfilteredPolarItems as ze, svgPropertiesAndEvents as Be, svgPropertiesNoEvents as A, svgPropertiesNoEventsFromUnknown as Ve, tone as He, useAnimationCallbacks as Ue, useAnimationStartSnapshot as We, useAppDispatch as Ge, useAppSelector as j, useIsPanorama as Ke, usePolarChartLayout as qe } from "./peach-app.expandable-ranking-BzGIcyOL.js";
-import { $542a13ca2fa5b484$export$5b6b19405a83ff9d as Je, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as Ye, $b4f18e3395fe64d7$export$3e41faf802a29e71 as Xe, $b4f18e3395fe64d7$export$b2539bed5023c21c as Ze, Button as M, ButtonLink as Qe, Disclosure as $e, E3 as et, EmptyState as N, FLOW_LABEL_X as tt, FLOW_VIEWBOX as nt, Gg as rt, IDLE_POLL_MS as it, Input as at, M6 as ot, MENU_ITEM as st, MENU_ITEM_INTERACTIVE as ct, MENU_POPOVER_SURFACE as lt, MenuDialog as ut, Note as P, OV as dt, Progress as ft, Rf as pt, SEGMENT as mt, SEGMENTED_TRACK as ht, SegmentedTabList as gt, Select$1 as _t, SelectItem as vt, TASTE_REFRESH_KEY as yt, TASTE_WINDOWS as bt, TaskProgress as xt, Wt as St, Xt as Ct, _8 as wt, __toESM as Tt, aB as Et, avatarInner as Dt, busyProps as F, cB as Ot, cardClass as I, clsx as L, configureTasteBrowser as kt, confirmModal as At, cx as jt, errorMessage as R, f1 as Mt, fetchTaste as Nt, fetchTasteJob as Pt, firstGrapheme as Ft, flowGraph as It, flowLabel as Lt, fmtSize as Rt, g4 as zt, historySpan as Bt, importTasteExport as Vt, import_jsx_runtime as z, jsx as B, jsxs as V, keepPreviousData as Ht, mM as Ut, pv as H, queryClient as U, r2 as Wt, radarRows as Gt, rankDetail as Kt, rankShares as qt, removeTasteSource as Jt, require_react as Yt, siteMarkUrl as Xt, startTasteRefresh as Zt, tasteDate as Qt, tasteDimensions as $t, tasteHours as en, tasteKey as W, tasteRefetchInterval as tn, tasteTime as nn, topScores as rn, uo as an, useBackgroundJob as on, useMutation as sn, useQuery as cn } from "./peach-app.js";
-import { Page as ln } from "./peach-app.page-CW3QRN2N.js";
-import { STAT_STRIP as un, StatCard as dn, statCardClass as fn } from "./peach-app.stat-card-4sRHYGSD.js";
-import { LEGACY_AVATAR_IMG as pn } from "./peach-app.legacy-avatar-NSITxLRS.js";
-var mn = D([(e, t) => k(e, "angleAxis", t, !1)], (e) => {
+import { ActivePoints as e, AnimatedItems as t, CHART_CARD as n, CHART_COLORS as r, CartesianLabelListContextProvider as i, CategoryTick as a, ChartBackground as o, ChartContainer as s, ChartHead as c, ChartLegend as l, ChartLegendContent as u, ChartTip as d, ChartTooltip as f, ChartTooltipContent as p, DefaultZIndexes as m, Dots as h, EvilBarChart as g, LabelListFromLabelProp as _, Layer as v, LoadingIndicator as y, PolarChart as b, PolarLabelContextProvider as x, PolarLabelFromLabelProp as S, RegisterGraphicalItemId as C, SetPolarGraphicalItem as ee, SetPolarLegendPayload as w, SetTooltipEntrySettings as te, Text as T, ZIndexLayer as E, adaptEventsOfChild as ne, addRadiusAxis as re, arrayTooltipSearcher as ie, categoryAxisWidth as ae, cn as oe, createSelector as D, defaultPolarChartProps as se, defaultPolarRadiusAxisProps as ce, fitLabel as le, getAxisTypeBasedOnLayout as ue, getBandSizeOfAxis as de, getClassNameFromUnknown as fe, getColorsCount as pe, getTooltipNameProp as me, getValueByDataKey as he, identity as ge, interpolate as _e, isArrayLike as ve, isCategoricalAxis as ye, isNullish as be, iteratee as xe, matchAnimationItems as Se, matchByIndex as Ce, noop as we, polarToCartesian as O, removeRadiusAxis as Te, resolveDefaultProps as Ee, selectAngleAxis as De, selectChartDataAndAlwaysIgnoreIndexes as Oe, selectChartLayout as ke, selectPolarViewBox as Ae, selectRadiusAxis as je, selectUnfilteredPolarItems as Me, svgPropertiesAndEvents as Ne, svgPropertiesNoEvents as k, svgPropertiesNoEventsFromUnknown as Pe, tone as Fe, useAnimationCallbacks as Ie, useAnimationStartSnapshot as Le, useAppDispatch as Re, useAppSelector as A, useIsPanorama as ze, usePolarChartLayout as Be } from "./peach-app.chart-tip-BXb6sYP6.js";
+import { $542a13ca2fa5b484$export$5b6b19405a83ff9d as Ve, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as He, $b4f18e3395fe64d7$export$3e41faf802a29e71 as Ue, $b4f18e3395fe64d7$export$b2539bed5023c21c as We, Button as j, ButtonLink as Ge, Disclosure as Ke, E3 as qe, EmptyState as M, FLOW_LABEL_X as Je, FLOW_VIEWBOX as Ye, Gg as Xe, IDLE_POLL_MS as Ze, Input as Qe, M6 as $e, MENU_ITEM as et, MENU_ITEM_INTERACTIVE as tt, MENU_POPOVER_SURFACE as nt, MenuDialog as rt, Note as N, OV as it, Progress as at, Rf as ot, SEGMENT as st, SEGMENTED_TRACK as ct, SegmentedTabList as lt, Select$1 as ut, SelectItem as dt, TASTE_REFRESH_KEY as ft, TASTE_WINDOWS as pt, TaskProgress as mt, Wt as ht, Xt as gt, _8 as _t, __toESM as vt, aB as yt, avatarInner as bt, busyProps as P, cB as xt, cardClass as F, clsx as I, configureTasteBrowser as St, confirmModal as Ct, cx as wt, errorMessage as L, f1 as Tt, fetchTaste as Et, fetchTasteJob as Dt, firstGrapheme as Ot, flowGraph as kt, flowLabel as At, fmtSize as jt, g4 as Mt, historySpan as Nt, importTasteExport as Pt, import_jsx_runtime as R, jsx as z, jsxs as B, keepPreviousData as Ft, mM as It, pv as V, queryClient as H, r2 as Lt, radarRows as Rt, rankDetail as zt, rankShares as Bt, removeTasteSource as Vt, require_react as Ht, siteMarkUrl as Ut, startTasteRefresh as Wt, tasteDate as Gt, tasteDimensions as Kt, tasteHours as qt, tasteKey as U, tasteRefetchInterval as Jt, tasteTime as Yt, topScores as Xt, uo as Zt, useBackgroundJob as Qt, useMutation as $t, useQuery as en } from "./peach-app.js";
+import { Page as tn } from "./peach-app.page-CW3QRN2N.js";
+import { STAT_STRIP as nn, StatCard as rn, statCardClass as an } from "./peach-app.stat-card-4sRHYGSD.js";
+import { LEGACY_AVATAR_IMG as on } from "./peach-app.legacy-avatar-NSITxLRS.js";
+import { ActivityHeat as sn, BAR_DOMAIN as cn, ExpandableRanking as ln, PolarAngleAxis as un, Polygon as dn, barLabel as fn, selectPolarAxisScale as pn, selectPolarAxisTicks as W } from "./peach-app.expandable-ranking-DXJ_7Rga.js";
+var mn = D([(e, t) => W(e, "angleAxis", t, !1)], (e) => {
 	if (e) return e.map((e) => e.coordinate);
-}), hn = D([(e, t) => k(e, "radiusAxis", t, !1)], (e) => {
+}), hn = D([(e, t) => W(e, "radiusAxis", t, !1)], (e) => {
 	if (e) return e.map((e) => e.coordinate);
-}), G = /* @__PURE__ */ Tt(Yt()), gn = [
+}), G = /* @__PURE__ */ vt(Ht()), gn = [
 	"gridType",
 	"radialLines",
 	"angleAxisId",
@@ -105,7 +106,7 @@ var wn = (e, t, n, r) => {
 }, Tn = (e) => {
 	var t = e.cx, n = e.cy, r = e.innerRadius, i = e.outerRadius, a = e.polarAngles, o = e.radialLines;
 	if (!a || !a.length || !o) return null;
-	var s = bn({}, A(e));
+	var s = bn({}, k(e));
 	return /*#__PURE__*/ G.createElement("g", { className: "recharts-polar-grid-angle" }, a.map((e) => {
 		var a = O(t, n, r, e), o = O(t, n, i, e);
 		return /*#__PURE__*/ G.createElement("line", K({ key: `line-${e}` }, s, {
@@ -116,17 +117,17 @@ var wn = (e, t, n, r) => {
 		}));
 	}));
 }, En = (e) => {
-	var t = e.cx, n = e.cy, r = e.radius, i = bn({}, A(e));
+	var t = e.cx, n = e.cy, r = e.radius, i = bn({}, k(e));
 	return /*#__PURE__*/ G.createElement("circle", K({}, i, {
-		className: L("recharts-polar-grid-concentric-circle", e.className),
+		className: I("recharts-polar-grid-concentric-circle", e.className),
 		cx: t,
 		cy: n,
 		r
 	}));
 }, Dn = (e) => {
-	var t = e.radius, n = bn({}, A(e));
+	var t = e.radius, n = bn({}, k(e));
 	return /*#__PURE__*/ G.createElement("path", K({}, n, {
-		className: L("recharts-polar-grid-concentric-polygon", e.className),
+		className: I("recharts-polar-grid-concentric-polygon", e.className),
 		d: wn(t, e.cx, e.cy, e.polarAngles)
 	}));
 }, On = (e) => {
@@ -148,12 +149,12 @@ var wn = (e, t, n, r) => {
 	radiusAxisId: 0,
 	gridType: "polygon",
 	radialLines: !0,
-	zIndex: g.grid,
+	zIndex: m.grid,
 	stroke: "#ccc",
 	strokeWidth: 1,
 	fill: "none"
 }, An = (e) => {
-	var t = Me(e, kn), n = t.gridType, r = t.radialLines, i = t.angleAxisId, a = t.radiusAxisId, o = t.cx, s = t.cy, c = t.innerRadius, l = t.outerRadius, u = t.polarAngles, d = t.polarRadius, f = t.zIndex, p = _n(t, gn), m = j(Le), h = j((e) => mn(e, i)), g = j((e) => hn(e, a)), _ = Array.isArray(u) ? u : h, v = Array.isArray(d) ? d : g;
+	var t = Ee(e, kn), n = t.gridType, r = t.radialLines, i = t.angleAxisId, a = t.radiusAxisId, o = t.cx, s = t.cy, c = t.innerRadius, l = t.outerRadius, u = t.polarAngles, d = t.polarRadius, f = t.zIndex, p = _n(t, gn), m = A(Ae), h = A((e) => mn(e, i)), g = A((e) => hn(e, a)), _ = Array.isArray(u) ? u : h, v = Array.isArray(d) ? d : g;
 	if (_ == null || v == null) return null;
 	var y = bn({
 		cx: m?.cx ?? o ?? 0,
@@ -164,7 +165,7 @@ var wn = (e, t, n, r) => {
 		polarRadius: v,
 		zIndex: f
 	}, p);
-	return y.outerRadius <= 0 ? null : /*#__PURE__*/ G.createElement(oe, { zIndex: y.zIndex }, /*#__PURE__*/ G.createElement("g", { className: "recharts-polar-grid" }, /*#__PURE__*/ G.createElement(On, K({
+	return y.outerRadius <= 0 ? null : /*#__PURE__*/ G.createElement(E, { zIndex: y.zIndex }, /*#__PURE__*/ G.createElement("g", { className: "recharts-polar-grid" }, /*#__PURE__*/ G.createElement(On, K({
 		gridType: n,
 		radialLines: r
 	}, y, {
@@ -184,11 +185,11 @@ function jn(e) {
 	return Array.isArray(e) ? e : Array.from(e);
 }
 // node_modules/es-toolkit/dist/compat/math/maxBy.mjs
-function Mn(e, t = Se) {
+function Mn(e, t = ge) {
 	if (e == null) return;
 	let n = jn(e);
 	if (n.length === 0) return;
-	let r = De(t), i, a;
+	let r = xe(t), i, a;
 	for (let e = 0; e < n.length; e++) {
 		let t = n[e], o = r(t, e, n);
 		o == null || Number.isNaN(o) || typeof o == "symbol" || (a === void 0 || o > a) && (a = o, i = t);
@@ -196,11 +197,11 @@ function Mn(e, t = Se) {
 	return i;
 }
 // node_modules/es-toolkit/dist/compat/math/minBy.mjs
-function Nn(e, t = Se) {
+function Nn(e, t = ge) {
 	if (e == null) return;
 	let n = jn(e);
 	if (n.length === 0) return;
-	let r = De(t), i, a;
+	let r = xe(t), i, a;
 	for (let e = 0; e < n.length; e++) {
 		let t = n[e], o = r(t, e, n);
 		o == null || Number.isNaN(o) || typeof o == "symbol" || (a === void 0 || o < a) && (a = o, i = t);
@@ -291,12 +292,12 @@ function Hn(e, t) {
 }
 var Un = "radiusAxis";
 function Wn(e) {
-	var t = Ge(), n = qe(), r = (0, G.useMemo)(() => {
-		var t = e.type, r = Vn(e, Pn), i = ge(n, "radiusAxis", t);
+	var t = Re(), n = Be(), r = (0, G.useMemo)(() => {
+		var t = e.type, r = Vn(e, Pn), i = ue(n, "radiusAxis", t);
 		if (i != null) return J(J({}, r), {}, { type: i });
 	}, [e, n]);
-	return (0, G.useEffect)(() => r == null ? Ae : (t(ce(r)), () => {
-		t(je(r));
+	return (0, G.useEffect)(() => r == null ? we : (t(re(r)), () => {
+		t(Te(r));
 	}), [t, r]), null;
 }
 var Gn = (e, t, n, r) => {
@@ -326,15 +327,15 @@ var Gn = (e, t, n, r) => {
 		clockWise: !1
 	};
 }, Jn = (e, t) => {
-	var n = e.cx, r = e.cy, i = e.angle, a = e.axisLine, o = Vn(e, Fn), s = t.reduce((e, t) => [Math.min(e[0], t.coordinate), Math.max(e[1], t.coordinate)], [Infinity, -Infinity]), c = O(n, r, s[0], i), l = O(n, r, s[1], i), u = J(J(J({}, A(o)), {}, { fill: "none" }, A(a)), {}, {
+	var n = e.cx, r = e.cy, i = e.angle, a = e.axisLine, o = Vn(e, Fn), s = t.reduce((e, t) => [Math.min(e[0], t.coordinate), Math.max(e[1], t.coordinate)], [Infinity, -Infinity]), c = O(n, r, s[0], i), l = O(n, r, s[1], i), u = J(J(J({}, k(o)), {}, { fill: "none" }, k(a)), {}, {
 		x1: c.x,
 		y1: c.y,
 		x2: l.x,
 		y2: l.y
 	});
 	return /*#__PURE__*/ G.createElement("line", q({ className: "recharts-polar-radius-axis-line" }, u));
-}, Yn = (e, t, n) => /*#__PURE__*/ G.isValidElement(e) ? /*#__PURE__*/ G.cloneElement(e, t) : typeof e == "function" ? e(t) : /*#__PURE__*/ G.createElement(E, q({}, t, { className: "recharts-polar-radius-axis-tick-value" }), n), Xn = (e, t) => {
-	var n = e.angle, r = e.tickFormatter, i = e.stroke, a = e.tick, o = Vn(e, In), s = Kn(e.orientation), c = A(o), l = Ve(a), u = t.map((t, o) => {
+}, Yn = (e, t, n) => /*#__PURE__*/ G.isValidElement(e) ? /*#__PURE__*/ G.cloneElement(e, t) : typeof e == "function" ? e(t) : /*#__PURE__*/ G.createElement(T, q({}, t, { className: "recharts-polar-radius-axis-tick-value" }), n), Xn = (e, t) => {
+	var n = e.angle, r = e.tickFormatter, i = e.stroke, a = e.tick, o = Vn(e, In), s = Kn(e.orientation), c = k(o), l = Pe(a), u = t.map((t, o) => {
 		var u = Gn(t, e.angle, e.cx, e.cy), d = J(J(J(J({
 			textAnchor: s,
 			transform: `rotate(${90 - n}, ${u.x}, ${u.y})`
@@ -342,20 +343,20 @@ var Gn = (e, t, n, r) => {
 			stroke: "none",
 			fill: i
 		}, l), {}, { index: o }, u), {}, { payload: t });
-		return /*#__PURE__*/ G.createElement(b, q({
-			className: L("recharts-polar-radius-axis-tick", ve(a)),
+		return /*#__PURE__*/ G.createElement(v, q({
+			className: I("recharts-polar-radius-axis-tick", fe(a)),
 			key: `tick-${t.coordinate}`
-		}, se(e, t, o)), Yn(a, d, r ? r(t.value, o) : t.value));
+		}, ne(e, t, o)), Yn(a, d, r ? r(t.value, o) : t.value));
 	});
-	return /*#__PURE__*/ G.createElement(b, { className: "recharts-polar-radius-axis-ticks" }, u);
+	return /*#__PURE__*/ G.createElement(v, { className: "recharts-polar-radius-axis-ticks" }, u);
 }, Zn = (e) => {
-	var t = e.radiusAxisId, n = j(Le), r = j((e) => Ie(e, "radiusAxis", t)), i = j((e) => k(e, "radiusAxis", t, !1));
+	var t = e.radiusAxisId, n = A(Ae), r = A((e) => pn(e, "radiusAxis", t)), i = A((e) => W(e, "radiusAxis", t, !1));
 	if (n == null || !i || !i.length || r == null) return null;
 	var a = J(J({}, e), {}, { scale: r }, n), o = a.tick, s = a.axisLine;
-	return /*#__PURE__*/ G.createElement(oe, { zIndex: a.zIndex }, /*#__PURE__*/ G.createElement(b, { className: L("recharts-polar-radius-axis", Un, a.className) }, s && Jn(a, i), o && Xn(a, i), /*#__PURE__*/ G.createElement(te, qn(a.angle, a.cx, a.cy, i), /*#__PURE__*/ G.createElement(w, { label: a.label }), a.children)));
+	return /*#__PURE__*/ G.createElement(E, { zIndex: a.zIndex }, /*#__PURE__*/ G.createElement(v, { className: I("recharts-polar-radius-axis", Un, a.className) }, s && Jn(a, i), o && Xn(a, i), /*#__PURE__*/ G.createElement(x, qn(a.angle, a.cx, a.cy, i), /*#__PURE__*/ G.createElement(S, { label: a.label }), a.children)));
 };
 function Qn(e) {
-	var t = Me(e, me);
+	var t = Ee(e, ce);
 	return /*#__PURE__*/ G.createElement(G.Fragment, null, /*#__PURE__*/ G.createElement(Wn, {
 		domain: t.domain,
 		id: t.radiusAxisId,
@@ -382,7 +383,7 @@ function $n(e) {
 }
 // node_modules/es-toolkit/dist/compat/array/last.mjs
 function er(e) {
-	if (we(e) && e.length !== 0) return $n(jn(e));
+	if (ve(e) && e.length !== 0) return $n(jn(e));
 }
 // node_modules/recharts/es6/state/selectors/radarSelectors.js
 function tr(e, t) {
@@ -428,16 +429,16 @@ function ar(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-var or = (e, t) => Ie(e, "radiusAxis", t), sr = D([or], (e) => {
+var or = (e, t) => pn(e, "radiusAxis", t), sr = D([or], (e) => {
 	if (e != null) return { scale: e };
-}), cr = D([Re, or], (e, t) => {
+}), cr = D([je, or], (e, t) => {
 	if (e != null && t != null) return nr(nr({}, e), {}, { scale: t });
-}), lr = (e, t, n, r) => k(e, "radiusAxis", t, r), ur = (e, t, n) => Ne(e, n), dr = (e, t, n) => Ie(e, "angleAxis", n), fr = D([ur, dr], (e, t) => {
+}), lr = (e, t, n, r) => W(e, "radiusAxis", t, r), ur = (e, t, n) => De(e, n), dr = (e, t, n) => pn(e, "angleAxis", n), fr = D([ur, dr], (e, t) => {
 	if (e != null && t != null) return nr(nr({}, e), {}, { scale: t });
-}), pr = (e, t, n, r) => k(e, "angleAxis", n, r), mr = D([
+}), pr = (e, t, n, r) => W(e, "angleAxis", n, r), mr = D([
 	ur,
 	dr,
-	Le
+	Ae
 ], (e, t, n) => {
 	if (n != null && t != null) return {
 		scale: t,
@@ -447,17 +448,17 @@ var or = (e, t) => Ie(e, "radiusAxis", t), sr = D([or], (e) => {
 		cy: n.cy
 	};
 }), hr = (e, t, n, r, i) => i, gr = D([
-	Fe,
+	ke,
 	cr,
 	lr,
 	fr,
 	pr
-], (e, t, n, r, i) => Te(e, "radiusAxis") ? _e(t, n, !1) : _e(r, i, !1)), _r = D([ze, hr], (e, t) => {
+], (e, t, n, r, i) => ye(e, "radiusAxis") ? de(t, n, !1) : de(r, i, !1)), _r = D([Me, hr], (e, t) => {
 	if (e != null) return e.find((e) => e.type === "radar" && t === e.id)?.dataKey;
 }), vr = D([
 	sr,
 	mr,
-	Pe,
+	Oe,
 	_r,
 	gr
 ], (e, t, n, r, i) => {
@@ -550,20 +551,20 @@ var Dr = (e) => {
 		dataKey: t,
 		type: a,
 		color: Er(r, i),
-		value: be(n, t),
+		value: me(n, t),
 		payload: e
 	}];
 }, Or = /*#__PURE__*/ G.memo((e) => {
 	var t = e.dataKey, n = e.stroke, r = e.strokeWidth, i = e.fill, a = e.name, o = e.hide, s = e.tooltipType, c = e.id, l = {
 		dataDefinedOnItem: void 0,
-		getPosition: Ae,
+		getPosition: we,
 		settings: {
 			stroke: n,
 			strokeWidth: r,
 			fill: i,
 			nameKey: void 0,
 			dataKey: t,
-			name: be(a, t),
+			name: me(a, t),
 			hide: o,
 			type: s,
 			color: Er(n, i),
@@ -571,13 +572,13 @@ var Dr = (e) => {
 			graphicalItemId: c
 		}
 	};
-	return /*#__PURE__*/ G.createElement(ae, { tooltipEntrySettings: l });
+	return /*#__PURE__*/ G.createElement(te, { tooltipEntrySettings: l });
 });
 function kr(e) {
 	var t = e.points, n = e.props, r = n.dot, i = n.dataKey;
 	n.id;
-	var a = wr(n, yr), o = A(a);
-	return /*#__PURE__*/ G.createElement(_, {
+	var a = wr(n, yr), o = k(a);
+	return /*#__PURE__*/ G.createElement(h, {
 		points: t,
 		dot: r,
 		className: "recharts-radar-dots",
@@ -589,7 +590,7 @@ function kr(e) {
 function Ar(e) {
 	var t = e.radiusAxis, n = e.angleAxis, r = e.displayedData, i = e.dataKey, a = e.bandSize, o = n.cx, s = n.cy, c = !1, l = [], u = n.type === "number" ? 0 : a ?? 0;
 	r.forEach((e, r) => {
-		var a = xe(e, n.dataKey, r), d = xe(e, i), f = (n.scale.map(a) ?? 0) + u, p = Array.isArray(d) ? er(d) : d, m = Ee(p) ? 0 : t.scale.map(p) ?? 0;
+		var a = he(e, n.dataKey, r), d = he(e, i), f = (n.scale.map(a) ?? 0) + u, p = Array.isArray(d) ? er(d) : d, m = be(p) ? 0 : t.scale.map(p) ?? 0;
 		Array.isArray(d) && d.length >= 2 && (c = !0), l.push(X(X({}, O(o, s, m, f)), {}, {
 			name: a,
 			value: d,
@@ -603,7 +604,7 @@ function Ar(e) {
 	var d = [];
 	return c && l.forEach((e) => {
 		if (Array.isArray(e.value)) {
-			var n = e.value[0], r = Ee(n) ? 0 : t.scale.map(n) ?? 0;
+			var n = e.value[0], r = be(n) ? 0 : t.scale.map(n) ?? 0;
 			d.push(X(X({}, e), {}, { radius: r }, O(o, s, r, e.angle)));
 		} else d.push(e);
 	}), {
@@ -613,7 +614,7 @@ function Ar(e) {
 	};
 }
 function jr(e) {
-	var t = e.showLabels, n = e.points, r = e.children, i = n.map((e) => {
+	var t = e.showLabels, n = e.points, r = e.children, a = n.map((e) => {
 		var t = {
 			x: e.x,
 			y: e.y,
@@ -630,12 +631,12 @@ function jr(e) {
 			fill: void 0
 		});
 	});
-	return /*#__PURE__*/ G.createElement(o, { value: t ? i : void 0 }, r);
+	return /*#__PURE__*/ G.createElement(i, { value: t ? a : void 0 }, r);
 }
 function Mr(e) {
 	var t = e.points, n = e.baseLinePoints, r = e.props;
 	if (t == null) return null;
-	var i = r.shape, a = r.isRange, o = r.connectNulls, s = /*#__PURE__*/ G.isValidElement(i) ? /*#__PURE__*/ G.cloneElement(i, X(X({}, r), {}, { points: t })) : typeof i == "function" ? i(X(X({}, r), {}, { points: t })) : /*#__PURE__*/ G.createElement(T, Y({}, Be(r), {
+	var i = r.shape, a = r.isRange, o = r.connectNulls, s = /*#__PURE__*/ G.isValidElement(i) ? /*#__PURE__*/ G.cloneElement(i, X(X({}, r), {}, { points: t })) : typeof i == "function" ? i(X(X({}, r), {}, { points: t })) : /*#__PURE__*/ G.createElement(dn, Y({}, Ne(r), {
 		onMouseEnter: (e) => {
 			var t = r.onMouseEnter;
 			t && t(r, e);
@@ -648,25 +649,25 @@ function Mr(e) {
 		baseLinePoints: a ? n : void 0,
 		connectNulls: o
 	}));
-	return /*#__PURE__*/ G.createElement(b, { className: "recharts-radar-polygon" }, s, /*#__PURE__*/ G.createElement(kr, {
+	return /*#__PURE__*/ G.createElement(v, { className: "recharts-radar-polygon" }, s, /*#__PURE__*/ G.createElement(kr, {
 		props: r,
 		points: t
 	}));
 }
 var Nr = (e, t) => e == null ? [] : t === 1 ? e.flatMap((e) => e.status === "removed" ? [] : [e.next]) : e.flatMap((e) => e.status === "removed" ? [] : e.status === "matched" ? [X(X({}, e.next), {}, {
-	x: Ce(e.prev.x, e.next.x, t),
-	y: Ce(e.prev.y, e.next.y, t)
+	x: _e(e.prev.x, e.next.x, t),
+	y: _e(e.prev.y, e.next.y, t)
 })] : [X(X({}, e.next), {}, {
-	x: Ce(e.next.cx, e.next.x, t),
-	y: Ce(e.next.cy, e.next.y, t)
+	x: _e(e.next.cx, e.next.x, t),
+	y: _e(e.next.cy, e.next.y, t)
 })]);
 function Pr(e) {
-	var t = e.props, r = e.previousPointsRef, i = e.previousBaseLinePointsRef, a = t.points, o = t.baseLinePoints, s = t.isAnimationActive, c = t.animationBegin, l = t.animationDuration, u = t.animationEasing, d = t.animationMatchBy, f = t.animationInterpolateFn, p = t.onAnimationStart, m = t.onAnimationEnd, h = We(t, i), g = h.startValue, _ = Oe(g ?? null, o, d), v = Ue(p, m), y = v.isAnimating, b = v.handleAnimationStart, x = v.handleAnimationEnd, S = qe();
-	return S == null ? null : /*#__PURE__*/ G.createElement(jr, {
-		showLabels: !y,
+	var n = e.props, r = e.previousPointsRef, i = e.previousBaseLinePointsRef, a = n.points, o = n.baseLinePoints, s = n.isAnimationActive, c = n.animationBegin, l = n.animationDuration, u = n.animationEasing, d = n.animationMatchBy, f = n.animationInterpolateFn, p = n.onAnimationStart, m = n.onAnimationEnd, h = Le(n, i), g = h.startValue, v = Se(g ?? null, o, d), y = Ie(p, m), b = y.isAnimating, x = y.handleAnimationStart, S = y.handleAnimationEnd, C = Be();
+	return C == null ? null : /*#__PURE__*/ G.createElement(jr, {
+		showLabels: !b,
 		points: a
-	}, /*#__PURE__*/ G.createElement(n, {
-		animationInput: t,
+	}, /*#__PURE__*/ G.createElement(t, {
+		animationInput: n,
 		animationIdPrefix: "recharts-radar-",
 		items: a,
 		previousItemsRef: r,
@@ -674,19 +675,19 @@ function Pr(e) {
 		animationBegin: c,
 		animationDuration: l,
 		animationEasing: u,
-		onAnimationStart: b,
-		onAnimationEnd: x,
+		onAnimationStart: x,
+		onAnimationEnd: S,
 		animationInterpolateFn: f,
 		animationMatchBy: d,
-		layout: S
-	}, (e, n) => {
-		var r = n === 1 ? o : f(_, n, S);
-		return h.syncStepValue(r, n), /*#__PURE__*/ G.createElement(Mr, {
+		layout: C
+	}, (e, t) => {
+		var r = t === 1 ? o : f(v, t, C);
+		return h.syncStepValue(r, t), /*#__PURE__*/ G.createElement(Mr, {
 			points: e,
 			baseLinePoints: r,
-			props: t
+			props: n
 		});
-	}), /*#__PURE__*/ G.createElement(ee, { label: t.label }), t.children);
+	}), /*#__PURE__*/ G.createElement(_, { label: n.label }), n.children);
 }
 function Fr(e) {
 	var t = (0, G.useRef)(void 0), n = (0, G.useRef)(void 0);
@@ -702,7 +703,7 @@ var Ir = {
 	animationBegin: 0,
 	animationDuration: 1500,
 	animationEasing: "ease",
-	animationMatchBy: ke,
+	animationMatchBy: Ce,
 	animationInterpolateFn: Nr,
 	dot: !1,
 	hide: !1,
@@ -710,13 +711,13 @@ var Ir = {
 	label: !1,
 	legendType: "rect",
 	radiusAxisId: 0,
-	zIndex: g.area
+	zIndex: m.area
 };
 function Lr(t) {
 	var n = t.hide, r = t.className, i = t.points;
 	if (n) return null;
-	var a = L("recharts-radar", r);
-	return /*#__PURE__*/ G.createElement(oe, { zIndex: t.zIndex }, /*#__PURE__*/ G.createElement(b, { className: a }, /*#__PURE__*/ G.createElement(Fr, t)), /*#__PURE__*/ G.createElement(e, {
+	var a = I("recharts-radar", r);
+	return /*#__PURE__*/ G.createElement(E, { zIndex: t.zIndex }, /*#__PURE__*/ G.createElement(v, { className: a }, /*#__PURE__*/ G.createElement(Fr, t)), /*#__PURE__*/ G.createElement(e, {
 		points: i,
 		mainColor: Er(t.stroke, t.fill),
 		itemDataKey: t.dataKey,
@@ -724,7 +725,7 @@ function Lr(t) {
 	}));
 }
 function Rr(e) {
-	var t = Ke(), n = j((n) => vr(n, e.radiusAxisId, e.angleAxisId, t, e.id));
+	var t = ze(), n = A((n) => vr(n, e.radiusAxisId, e.angleAxisId, t, e.id));
 	return n?.points == null ? null : /*#__PURE__*/ G.createElement(Lr, Y({}, e, {
 		points: n?.points,
 		baseLinePoints: n?.baseLinePoints,
@@ -732,11 +733,11 @@ function Rr(e) {
 	}));
 }
 function zr(e) {
-	var t = Me(e, Ir);
-	return /*#__PURE__*/ G.createElement(ne, {
+	var t = Ee(e, Ir);
+	return /*#__PURE__*/ G.createElement(C, {
 		id: t.id,
 		type: "radar"
-	}, (e) => /*#__PURE__*/ G.createElement(G.Fragment, null, /*#__PURE__*/ G.createElement(re, {
+	}, (e) => /*#__PURE__*/ G.createElement(G.Fragment, null, /*#__PURE__*/ G.createElement(ee, {
 		type: "radar",
 		id: e,
 		data: void 0,
@@ -744,7 +745,7 @@ function zr(e) {
 		hide: t.hide,
 		angleAxisId: t.angleAxisId,
 		radiusAxisId: t.radiusAxisId
-	}), /*#__PURE__*/ G.createElement(ie, { legendPayload: Dr(t) }), /*#__PURE__*/ G.createElement(Or, {
+	}), /*#__PURE__*/ G.createElement(w, { legendPayload: Dr(t) }), /*#__PURE__*/ G.createElement(Or, {
 		dataKey: t.dataKey,
 		stroke: t.stroke,
 		strokeWidth: t.strokeWidth,
@@ -800,17 +801,17 @@ function Wr(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-var Gr = ["axis"], Kr = Vr(Vr({}, pe), {}, {
+var Gr = ["axis"], Kr = Vr(Vr({}, se), {}, {
 	layout: "centric",
 	startAngle: 90,
 	endAngle: -270
 }), qr = /*#__PURE__*/ (0, G.forwardRef)((e, t) => {
-	var n = Me(e, Kr);
-	return /*#__PURE__*/ G.createElement(C, {
+	var n = Ee(e, Kr);
+	return /*#__PURE__*/ G.createElement(b, {
 		chartName: "RadarChart",
 		defaultTooltipEventType: "axis",
 		validateTooltipEventTypes: Gr,
-		tooltipPayloadSearcher: le,
+		tooltipPayloadSearcher: ie,
 		categoricalChartProps: n,
 		ref: t
 	});
@@ -818,7 +819,7 @@ var Gr = ["axis"], Kr = Vr(Vr({}, pe), {}, {
 	let c = G.useId().replace(/:/g, ""), l = `url(#${r}-colors-${String(n)})`;
 	if (e === void 0 || t === void 0) return null;
 	switch (o) {
-		case "border": return /* @__PURE__ */ B(Xr, {
+		case "border": return /* @__PURE__ */ z(Xr, {
 			cx: e,
 			cy: t,
 			dotId: c,
@@ -827,7 +828,7 @@ var Gr = ["axis"], Kr = Vr(Vr({}, pe), {}, {
 			className: i,
 			maskId: s
 		});
-		case "colored-border": return /* @__PURE__ */ B(Zr, {
+		case "colored-border": return /* @__PURE__ */ z(Zr, {
 			cx: e,
 			cy: t,
 			dotId: c,
@@ -836,7 +837,7 @@ var Gr = ["axis"], Kr = Vr(Vr({}, pe), {}, {
 			className: i,
 			maskId: s
 		});
-		default: return /* @__PURE__ */ B(Yr, {
+		default: return /* @__PURE__ */ z(Yr, {
 			cx: e,
 			cy: t,
 			dotId: c,
@@ -846,17 +847,17 @@ var Gr = ["axis"], Kr = Vr(Vr({}, pe), {}, {
 			maskId: s
 		});
 	}
-}), Yr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, className: a, maskId: o }) => /* @__PURE__ */ V("g", {
+}), Yr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, className: a, maskId: o }) => /* @__PURE__ */ B("g", {
 	className: a,
 	mask: o ? `url(#${o})` : void 0,
-	children: [/* @__PURE__ */ B("defs", { children: /* @__PURE__ */ B("clipPath", {
+	children: [/* @__PURE__ */ z("defs", { children: /* @__PURE__ */ z("clipPath", {
 		id: `dot-clip-${n}`,
-		children: /* @__PURE__ */ B("circle", {
+		children: /* @__PURE__ */ z("circle", {
 			cx: e,
 			cy: t,
 			r: 3
 		})
-	}) }), /* @__PURE__ */ B("rect", {
+	}) }), /* @__PURE__ */ z("rect", {
 		x: "0",
 		y: t - 3,
 		width: "100%",
@@ -867,25 +868,25 @@ var Gr = ["axis"], Kr = Vr(Vr({}, pe), {}, {
 	})]
 }));
 Yr.displayName = "DefaultDot";
-var Xr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, className: a, maskId: o }) => /* @__PURE__ */ V("g", {
-	className: fe(a, "text-background"),
+var Xr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, className: a, maskId: o }) => /* @__PURE__ */ B("g", {
+	className: oe(a, "text-background"),
 	mask: o ? `url(#${o})` : void 0,
 	children: [
-		/* @__PURE__ */ B("defs", { children: /* @__PURE__ */ B("clipPath", {
+		/* @__PURE__ */ z("defs", { children: /* @__PURE__ */ z("clipPath", {
 			id: `dot-clip-${n}`,
-			children: /* @__PURE__ */ B("circle", {
+			children: /* @__PURE__ */ z("circle", {
 				cx: e,
 				cy: t,
 				r: 6
 			})
 		}) }),
-		/* @__PURE__ */ B("circle", {
+		/* @__PURE__ */ z("circle", {
 			cx: e,
 			cy: t,
 			r: 6,
 			fill: "currentColor"
 		}),
-		/* @__PURE__ */ B("rect", {
+		/* @__PURE__ */ z("rect", {
 			x: "0",
 			y: t - (6 - 5 / 2),
 			width: "100%",
@@ -894,9 +895,9 @@ var Xr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, class
 			fillOpacity: r,
 			clipPath: `url(#dot-clip-inner-${n})`
 		}),
-		/* @__PURE__ */ B("defs", { children: /* @__PURE__ */ B("clipPath", {
+		/* @__PURE__ */ z("defs", { children: /* @__PURE__ */ z("clipPath", {
 			id: `dot-clip-inner-${n}`,
-			children: /* @__PURE__ */ B("circle", {
+			children: /* @__PURE__ */ z("circle", {
 				cx: e,
 				cy: t,
 				r: 6 - 5 / 2
@@ -905,19 +906,19 @@ var Xr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, class
 	]
 }));
 Xr.displayName = "PrimaryBorderDot";
-var Zr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, className: a, maskId: o }) => /* @__PURE__ */ V("g", {
-	className: fe(a, "text-background"),
+var Zr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, className: a, maskId: o }) => /* @__PURE__ */ B("g", {
+	className: oe(a, "text-background"),
 	mask: o ? `url(#${o})` : void 0,
 	children: [
-		/* @__PURE__ */ B("defs", { children: /* @__PURE__ */ B("clipPath", {
+		/* @__PURE__ */ z("defs", { children: /* @__PURE__ */ z("clipPath", {
 			id: `dot-clip-${n}`,
-			children: /* @__PURE__ */ B("circle", {
+			children: /* @__PURE__ */ z("circle", {
 				cx: e,
 				cy: t,
 				r: 3.5
 			})
 		}) }),
-		/* @__PURE__ */ B("rect", {
+		/* @__PURE__ */ z("rect", {
 			x: "0",
 			y: t - 3 - 1 / 2,
 			width: "100%",
@@ -926,7 +927,7 @@ var Zr = G.memo(({ cx: e, cy: t, dotId: n, fillOpacity: r, gradientUrl: i, class
 			fillOpacity: r,
 			clipPath: `url(#dot-clip-${n})`
 		}),
-		/* @__PURE__ */ B("circle", {
+		/* @__PURE__ */ z("circle", {
 			cx: e,
 			cy: t,
 			r: 3 - 1 / 2,
@@ -942,10 +943,10 @@ function Z() {
 	if (!e) throw Error("Radar chart parts (<Radar />, <PolarAngleAxis />, …) must be used within <EvilRadarChart />");
 	return e;
 }
-function Q({ config: e, data: t, children: n, className: r, chartProps: i, backgroundVariant: a, defaultSelectedDataKey: o = null, onSelectionChange: s, isLoading: u = !1, loadingPoints: d }) {
-	let f = (0, G.useId)().replace(/:/g, ""), [p, m] = (0, G.useState)(o), h = yi(u, d), g = (0, G.useCallback)((e) => {
-		m(e), s?.(e);
-	}, [s]), _ = (0, G.useMemo)(() => ({
+function Q({ config: e, data: t, children: n, className: r, chartProps: i, backgroundVariant: a, defaultSelectedDataKey: c = null, onSelectionChange: l, isLoading: u = !1, loadingPoints: d }) {
+	let f = (0, G.useId)().replace(/:/g, ""), [p, m] = (0, G.useState)(c), h = yi(u, d), g = (0, G.useCallback)((e) => {
+		m(e), l?.(e);
+	}, [l]), _ = (0, G.useMemo)(() => ({
 		config: e,
 		isLoading: u,
 		selectedDataKey: p,
@@ -956,19 +957,19 @@ function Q({ config: e, data: t, children: n, className: r, chartProps: i, backg
 		p,
 		g
 	]);
-	return /* @__PURE__ */ B(ri, {
+	return /* @__PURE__ */ z(ri, {
 		value: _,
-		children: /* @__PURE__ */ V(l, {
+		children: /* @__PURE__ */ B(s, {
 			className: r,
 			config: e,
-			children: [/* @__PURE__ */ B(x, { isLoading: u }), /* @__PURE__ */ V(qr, {
+			children: [/* @__PURE__ */ z(y, { isLoading: u }), /* @__PURE__ */ B(qr, {
 				id: f,
 				data: u ? h : t,
 				...i,
 				children: [
-					a && /* @__PURE__ */ B(c, { variant: a }),
+					a && /* @__PURE__ */ z(o, { variant: a }),
 					n,
-					u && /* @__PURE__ */ B(bi, {})
+					u && /* @__PURE__ */ z(bi, {})
 				]
 			})]
 		})
@@ -982,7 +983,7 @@ function ii({ dataKey: e, variant: t = "filled", fillOpacity: n = $r, isGlowing:
 		fill: f ? .1 : 1,
 		dot: f ? .2 : 1
 	}, m = t === "filled", { dot: h, activeDot: g } = fi(a, d, e, p.dot);
-	return /* @__PURE__ */ V(z.Fragment, { children: [/* @__PURE__ */ B(zr, {
+	return /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ z(zr, {
 		dataKey: e,
 		stroke: `url(#${d}-radar-stroke-${e})`,
 		strokeOpacity: p.stroke,
@@ -998,23 +999,23 @@ function ii({ dataKey: e, variant: t = "filled", fillOpacity: n = $r, isGlowing:
 			i && u(l === e ? null : e);
 		},
 		...o
-	}), /* @__PURE__ */ V("defs", { children: [
-		/* @__PURE__ */ B(mi, {
+	}), /* @__PURE__ */ B("defs", { children: [
+		/* @__PURE__ */ z(mi, {
 			id: d,
 			dataKey: e,
 			config: s
 		}),
-		/* @__PURE__ */ B(hi, {
+		/* @__PURE__ */ z(hi, {
 			id: d,
 			dataKey: e,
 			config: s
 		}),
-		m && /* @__PURE__ */ B(gi, {
+		m && /* @__PURE__ */ z(gi, {
 			id: d,
 			dataKey: e,
 			config: s
 		}),
-		r && /* @__PURE__ */ B(_i, {
+		r && /* @__PURE__ */ z(_i, {
 			id: d,
 			dataKey: e
 		})
@@ -1022,7 +1023,7 @@ function ii({ dataKey: e, variant: t = "filled", fillOpacity: n = $r, isGlowing:
 }
 var ai = () => null, oi = () => null;
 function si({ gridType: e = "polygon", stroke: t = "currentColor", strokeOpacity: n = .2, strokeDasharray: r = "3 4", ...i }) {
-	return /* @__PURE__ */ B(An, {
+	return /* @__PURE__ */ z(An, {
 		gridType: e,
 		stroke: t,
 		strokeOpacity: n,
@@ -1035,7 +1036,7 @@ function ci({ tick: e = {
 	fontSize: 12
 }, tickLine: t = !1, ...n }) {
 	let { isLoading: r } = Z();
-	return r ? null : /* @__PURE__ */ B(S, {
+	return r ? null : /* @__PURE__ */ z(un, {
 		tick: e,
 		tickLine: t,
 		...n
@@ -1046,7 +1047,7 @@ function li({ tick: e = {
 	fontSize: 10
 }, tickLine: t = !1, axisLine: n = !1, ...r }) {
 	let { isLoading: i } = Z();
-	return i ? null : /* @__PURE__ */ B(Qn, {
+	return i ? null : /* @__PURE__ */ z(Qn, {
 		tick: e,
 		tickLine: t,
 		axisLine: n,
@@ -1055,10 +1056,10 @@ function li({ tick: e = {
 }
 function ui({ variant: e, roundness: t, defaultIndex: n }) {
 	let { isLoading: r, selectedDataKey: i } = Z();
-	return r ? null : /* @__PURE__ */ B(m, {
+	return r ? null : /* @__PURE__ */ z(f, {
 		defaultIndex: n,
 		cursor: !1,
-		content: /* @__PURE__ */ B(h, {
+		content: /* @__PURE__ */ z(p, {
 			selected: i,
 			roundness: t,
 			variant: e
@@ -1067,10 +1068,10 @@ function ui({ variant: e, roundness: t, defaultIndex: n }) {
 }
 function di({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
 	let { isLoading: i, selectedDataKey: a, selectDataKey: o } = Z();
-	return i ? null : /* @__PURE__ */ B(d, {
+	return i ? null : /* @__PURE__ */ z(l, {
 		verticalAlign: n,
 		align: t,
-		content: /* @__PURE__ */ B(f, {
+		content: /* @__PURE__ */ z(u, {
 			selected: a,
 			onSelectChange: o,
 			isClickable: r,
@@ -1084,7 +1085,7 @@ var fi = (e, t, n, r) => {
 		if ((0, G.isValidElement)(e)) {
 			if (e.type === ai) {
 				let { variant: a } = e.props;
-				i = /* @__PURE__ */ B(Jr, {
+				i = /* @__PURE__ */ z(Jr, {
 					type: a,
 					dataKey: n,
 					chartId: t,
@@ -1093,7 +1094,7 @@ var fi = (e, t, n, r) => {
 			}
 			if (e.type === oi) {
 				let { variant: i } = e.props;
-				a = /* @__PURE__ */ B(Jr, {
+				a = /* @__PURE__ */ z(Jr, {
 					type: i,
 					dataKey: n,
 					chartId: t,
@@ -1105,79 +1106,79 @@ var fi = (e, t, n, r) => {
 		dot: i,
 		activeDot: a
 	};
-}, pi = ({ dataKey: e, colorsCount: t, opacities: n }) => t === 1 ? /* @__PURE__ */ V(z.Fragment, { children: [/* @__PURE__ */ B("stop", {
+}, pi = ({ dataKey: e, colorsCount: t, opacities: n }) => t === 1 ? /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ z("stop", {
 	offset: "0%",
 	stopColor: `var(--color-${e}-0)`,
 	stopOpacity: n?.[0]
-}), /* @__PURE__ */ B("stop", {
+}), /* @__PURE__ */ z("stop", {
 	offset: "100%",
 	stopColor: `var(--color-${e}-0)`,
 	stopOpacity: n?.[n.length - 1]
-})] }) : /* @__PURE__ */ B(z.Fragment, { children: Array.from({ length: t }, (r, i) => {
+})] }) : /* @__PURE__ */ z(R.Fragment, { children: Array.from({ length: t }, (r, i) => {
 	let a = `${i / (t - 1) * 100}%`;
-	return /* @__PURE__ */ B("stop", {
+	return /* @__PURE__ */ z("stop", {
 		offset: a,
 		stopColor: `var(--color-${e}-${i}, var(--color-${e}-0))`,
 		stopOpacity: n?.[i]
 	}, a);
 }) }), mi = ({ id: e, dataKey: t, config: n }) => {
-	let r = ye(n[t] ?? {});
-	return /* @__PURE__ */ B("linearGradient", {
+	let r = pe(n[t] ?? {});
+	return /* @__PURE__ */ z("linearGradient", {
 		id: `${e}-colors-${t}`,
 		x1: "0",
 		y1: "0",
 		x2: "1",
 		y2: "0",
-		children: /* @__PURE__ */ B(pi, {
+		children: /* @__PURE__ */ z(pi, {
 			dataKey: t,
 			colorsCount: r
 		})
 	});
 }, hi = ({ id: e, dataKey: t, config: n }) => {
-	let r = ye(n[t] ?? {});
-	return /* @__PURE__ */ B("linearGradient", {
+	let r = pe(n[t] ?? {});
+	return /* @__PURE__ */ z("linearGradient", {
 		id: `${e}-radar-stroke-${t}`,
 		x1: "0",
 		y1: "0",
 		x2: "1",
 		y2: "1",
-		children: /* @__PURE__ */ B(pi, {
+		children: /* @__PURE__ */ z(pi, {
 			dataKey: t,
 			colorsCount: r
 		})
 	});
 }, gi = ({ id: e, dataKey: t, config: n }) => {
-	let r = ye(n[t] ?? {}), i = r === 1 ? [.8, .3] : Array.from({ length: r }, (e, t) => t === 0 ? .8 : .3);
-	return /* @__PURE__ */ B("radialGradient", {
+	let r = pe(n[t] ?? {}), i = r === 1 ? [.8, .3] : Array.from({ length: r }, (e, t) => t === 0 ? .8 : .3);
+	return /* @__PURE__ */ z("radialGradient", {
 		id: `${e}-radar-fill-${t}`,
 		cx: "50%",
 		cy: "50%",
 		r: "50%",
-		children: /* @__PURE__ */ B(pi, {
+		children: /* @__PURE__ */ z(pi, {
 			dataKey: t,
 			colorsCount: r,
 			opacities: i
 		})
 	});
-}, _i = ({ id: e, dataKey: t }) => /* @__PURE__ */ V("filter", {
+}, _i = ({ id: e, dataKey: t }) => /* @__PURE__ */ B("filter", {
 	id: `${e}-radar-glow-${t}`,
 	x: "-50%",
 	y: "-50%",
 	width: "200%",
 	height: "200%",
 	children: [
-		/* @__PURE__ */ B("feGaussianBlur", {
+		/* @__PURE__ */ z("feGaussianBlur", {
 			in: "SourceGraphic",
 			stdDeviation: "4",
 			result: "blur"
 		}),
-		/* @__PURE__ */ B("feColorMatrix", {
+		/* @__PURE__ */ z("feColorMatrix", {
 			in: "blur",
 			type: "matrix",
 			values: "1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.6 0",
 			result: "glow"
 		}),
-		/* @__PURE__ */ V("feMerge", { children: [/* @__PURE__ */ B("feMergeNode", { in: "glow" }), /* @__PURE__ */ B("feMergeNode", { in: "SourceGraphic" })] })
+		/* @__PURE__ */ B("feMerge", { children: [/* @__PURE__ */ z("feMergeNode", { in: "glow" }), /* @__PURE__ */ z("feMergeNode", { in: "SourceGraphic" })] })
 	]
 }), vi = (e) => [
 	"A",
@@ -1200,7 +1201,7 @@ function yi(e, t = ei) {
 		return () => clearInterval(t);
 	}, [e]), (0, G.useMemo)(() => vi(t), [t, n]);
 }
-var bi = () => /* @__PURE__ */ B(zr, {
+var bi = () => /* @__PURE__ */ z(zr, {
 	dataKey: ni,
 	stroke: "currentColor",
 	strokeOpacity: .3,
@@ -1216,13 +1217,13 @@ Q.Radar = ii, Q.Dot = ai, Q.ActiveDot = oi, Q.PolarGrid = si, Q.PolarAngleAxis =
 // src/react/taste/charts.tsx
 function xi(e) {
 	let { x: t = 0, cx: n, textAnchor: r, payload: i, ...a } = e, o = String(i?.value ?? ""), s = typeof n == "number" ? n * 2 : 0, c = s ? r === "start" ? s - t : r === "end" ? t : 2 * Math.min(t, s - t) : 56;
-	return /* @__PURE__ */ V("g", { children: [/* @__PURE__ */ B("title", { children: o }), /* @__PURE__ */ B(E, {
+	return /* @__PURE__ */ B("g", { children: [/* @__PURE__ */ z("title", { children: o }), /* @__PURE__ */ z(T, {
 		...a,
 		x: t,
 		textAnchor: r,
 		fill: "currentColor",
 		fontSize: 12,
-		children: he(o, c - 4)
+		children: le(o, c - 4)
 	})] });
 }
 var Si = [
@@ -1241,7 +1242,7 @@ var Si = [
 	"fill-chart-6"
 ], wi = { value: {
 	label: "标签出现次数",
-	colors: He(a[3])
+	colors: Fe(r[3])
 } }, Ti = [
 	"min-h-24",
 	"min-h-24",
@@ -1254,43 +1255,43 @@ var Si = [
 	"min-h-64"
 ], Ei = 26, Di = { radius: wi.value }, Oi = (e, t) => Math.sqrt(e / t);
 function ki({ rows: e, label: t }) {
-	let n = Gt(e);
+	let n = Rt(e);
 	if (!n.length) return null;
 	let r = n[0].value, i = n.map((e) => ({
 		...e,
 		radius: Oi(e.value, r)
 	}));
-	return /* @__PURE__ */ B("div", {
+	return /* @__PURE__ */ z("div", {
 		role: "img",
 		"aria-label": `${t}：${i.map((e) => e.name).join("，")}`,
-		children: /* @__PURE__ */ V(Q, {
+		children: /* @__PURE__ */ B(Q, {
 			data: i,
 			config: Di,
 			chartProps: { outerRadius: "58%" },
 			className: "aspect-auto h-70 text-text-secondary",
 			children: [
-				/* @__PURE__ */ B(Q.PolarGrid, {}),
-				/* @__PURE__ */ B(Q.PolarAngleAxis, {
+				/* @__PURE__ */ z(Q.PolarGrid, {}),
+				/* @__PURE__ */ z(Q.PolarAngleAxis, {
 					dataKey: "name",
-					tick: /* @__PURE__ */ B(xi, {})
+					tick: /* @__PURE__ */ z(xi, {})
 				}),
-				/* @__PURE__ */ B(Q.PolarRadiusAxis, {
+				/* @__PURE__ */ z(Q.PolarRadiusAxis, {
 					domain: [0, 1],
 					allowDecimals: !0,
 					tick: !1
 				}),
-				/* @__PURE__ */ B(Q.Radar, { dataKey: "radius" }),
-				/* @__PURE__ */ B(p, { valueKey: "value" })
+				/* @__PURE__ */ z(Q.Radar, { dataKey: "radius" }),
+				/* @__PURE__ */ z(d, { valueKey: "value" })
 			]
 		})
 	});
 }
 function Ai({ rows: e, label: t }) {
-	let n = rn(e, 8);
-	return n.length ? /* @__PURE__ */ B("section", {
+	let n = Xt(e, 8);
+	return n.length ? /* @__PURE__ */ z("section", {
 		"aria-label": t,
 		className: `flex grow flex-col ${Ti[n.length]}`,
-		children: /* @__PURE__ */ V(v, {
+		children: /* @__PURE__ */ B(g, {
 			data: n,
 			config: wi,
 			layout: "horizontal",
@@ -1306,65 +1307,65 @@ function Ai({ rows: e, label: t }) {
 			},
 			className: "aspect-auto text-text-secondary",
 			children: [
-				/* @__PURE__ */ B(v.YAxis, {
+				/* @__PURE__ */ z(g.YAxis, {
 					dataKey: "name",
 					interval: 0,
-					tick: /* @__PURE__ */ B(s, { along: "y" }),
-					width: de(n.map((e) => e.name))
+					tick: /* @__PURE__ */ z(a, { along: "y" }),
+					width: ae(n.map((e) => e.name))
 				}),
-				/* @__PURE__ */ B(v.XAxis, {
+				/* @__PURE__ */ z(g.XAxis, {
 					hide: !0,
-					domain: r
+					domain: cn
 				}),
-				/* @__PURE__ */ B(v.Bar, {
+				/* @__PURE__ */ z(g.Bar, {
 					dataKey: "value",
 					enableHoverHighlight: !0,
 					barProps: {
 						dataKey: "value",
-						label: ue("right")
+						label: fn("right")
 					}
 				}),
-				/* @__PURE__ */ B(p, {})
+				/* @__PURE__ */ z(d, {})
 			]
 		})
 	}) : null;
 }
 function ji({ flows: e }) {
-	let [t, n] = (0, G.useState)(null), r = It(e);
-	if (!r) return null;
+	let [t, r] = (0, G.useState)(null), i = kt(e);
+	if (!i) return null;
 	let a = t?.node ?? null, o = (e, n) => t ? a === null ? t.label === n : e.source === a || e.target === a : !0;
-	return /* @__PURE__ */ V("section", {
-		className: i,
+	return /* @__PURE__ */ B("section", {
+		className: n,
 		children: [
-			/* @__PURE__ */ B(u, {
+			/* @__PURE__ */ z(c, {
 				title: "创作者线索来源",
-				figure: (t ? t.value : r.total).toLocaleString(),
+				figure: (t ? t.value : i.total).toLocaleString(),
 				note: t ? t.label : "条线索"
 			}),
-			/* @__PURE__ */ B("ol", {
+			/* @__PURE__ */ z("ol", {
 				"aria-label": "来源网站与创作者线索",
 				className: "flex flex-col sm:hidden",
-				children: [...r.links].sort((e, t) => t.value - e.value).map((e) => /* @__PURE__ */ V("li", {
+				children: [...i.links].sort((e, t) => t.value - e.value).map((e) => /* @__PURE__ */ B("li", {
 					className: "flex items-baseline justify-between gap-3 border-b border-separator-border py-2 text-body-2-regular text-text-primary last:border-b-0",
-					children: [/* @__PURE__ */ B("span", {
+					children: [/* @__PURE__ */ z("span", {
 						className: "min-w-0 wrap-anywhere",
 						children: e.label
-					}), /* @__PURE__ */ B("b", {
+					}), /* @__PURE__ */ z("b", {
 						className: "shrink-0 tabular-nums",
 						children: e.value.toLocaleString()
 					})]
 				}, e.key))
 			}),
-			/* @__PURE__ */ B("div", {
+			/* @__PURE__ */ z("div", {
 				className: "min-w-0 max-sm:hidden",
-				children: /* @__PURE__ */ V("svg", {
-					viewBox: `0 0 ${nt.width} ${r.height}`,
+				children: /* @__PURE__ */ B("svg", {
+					viewBox: `0 0 ${Ye.width} ${i.height}`,
 					fill: "none",
 					role: "img",
 					"aria-label": "来源网站与创作者线索",
 					className: "block h-auto w-full",
-					onPointerLeave: () => n(null),
-					children: [/* @__PURE__ */ B("g", { children: r.links.map((e) => /* @__PURE__ */ B("path", {
+					onPointerLeave: () => r(null),
+					children: [/* @__PURE__ */ z("g", { children: i.links.map((e) => /* @__PURE__ */ z("path", {
 						d: e.d,
 						strokeWidth: e.width,
 						tabIndex: 0,
@@ -1373,48 +1374,48 @@ function ji({ flows: e }) {
 						fillOpacity: 0,
 						strokeOpacity: o(e, e.label) ? .55 : .08,
 						className: `outline-none transition-opacity ${Si[e.color]}`,
-						onPointerEnter: () => n({
+						onPointerEnter: () => r({
 							value: e.value,
 							label: e.label,
 							node: null
 						}),
-						onFocus: () => n({
+						onFocus: () => r({
 							value: e.value,
 							label: e.label,
 							node: null
 						}),
-						onBlur: () => n(null)
-					}, e.key)) }), /* @__PURE__ */ B("g", { children: r.nodes.map((e) => /* @__PURE__ */ V("g", {
+						onBlur: () => r(null)
+					}, e.key)) }), /* @__PURE__ */ z("g", { children: i.nodes.map((e) => /* @__PURE__ */ B("g", {
 						tabIndex: 0,
 						role: "img",
 						"aria-label": `${e.name}：${e.value} 条线索`,
 						className: "outline-none focus-visible:opacity-100",
-						onPointerEnter: () => n({
+						onPointerEnter: () => r({
 							value: e.value,
 							label: e.name,
 							node: e.index
 						}),
-						onFocus: () => n({
+						onFocus: () => r({
 							value: e.value,
 							label: e.name,
 							node: e.index
 						}),
-						onBlur: () => n(null),
-						children: [/* @__PURE__ */ B("rect", {
+						onBlur: () => r(null),
+						children: [/* @__PURE__ */ z("rect", {
 							x: e.x,
 							y: e.y,
 							width: 10,
 							height: e.height,
 							rx: 5,
 							className: e.side === "source" ? Ci[e.color] : "fill-text-secondary"
-						}), /* @__PURE__ */ V("text", {
-							x: tt[e.side],
+						}), /* @__PURE__ */ B("text", {
+							x: Je[e.side],
 							y: e.y + e.height / 2,
 							textAnchor: e.side === "source" ? "end" : "start",
 							dominantBaseline: "middle",
 							className: "fill-text-secondary text-caption-1-regular",
-							children: [Lt(e.name), /* @__PURE__ */ B("tspan", {
-								x: tt[e.side],
+							children: [At(e.name), /* @__PURE__ */ z("tspan", {
+								x: Je[e.side],
 								dy: 15,
 								children: e.side === "source" ? e.value.toLocaleString() : `${e.share.toFixed(1)}%`
 							})]
@@ -1422,9 +1423,9 @@ function ji({ flows: e }) {
 					}, e.id)) })]
 				})
 			}),
-			/* @__PURE__ */ V("footer", {
+			/* @__PURE__ */ B("footer", {
 				className: "flex justify-between gap-3 text-caption-1-regular text-text-secondary max-sm:hidden",
-				children: [/* @__PURE__ */ B("span", { children: "来源网站" }), /* @__PURE__ */ B("span", { children: "创作者 · 线索占比" })]
+				children: [/* @__PURE__ */ z("span", { children: "来源网站" }), /* @__PURE__ */ z("span", { children: "创作者 · 线索占比" })]
 			})
 		]
 	});
@@ -2244,7 +2245,7 @@ function Fi(e) {
 }
 function Ii({ name: e }) {
 	let [t, n] = (0, G.useState)(""), r = Fi(e);
-	return r && t !== r ? /* @__PURE__ */ B("img", {
+	return r && t !== r ? /* @__PURE__ */ z("img", {
 		src: `/browser-icon/${r}`,
 		width: 24,
 		height: 24,
@@ -2253,7 +2254,7 @@ function Ii({ name: e }) {
 		loading: "lazy",
 		className: "size-6 shrink-0 object-contain",
 		onError: () => n(r)
-	}) : /* @__PURE__ */ B(et, {
+	}) : /* @__PURE__ */ z(qe, {
 		"aria-hidden": !0,
 		className: "size-5 shrink-0 text-foreground-icon-secondary"
 	});
@@ -2261,33 +2262,33 @@ function Ii({ name: e }) {
 // src/react/taste/browser-sources.tsx
 var Li = "flex min-w-0 items-center gap-3 rounded-xl bg-background-primary-default p-3";
 function Ri({ browsers: e, sources: t, range: n, children: r }) {
-	let [i, a] = (0, G.useState)(!1), [o, s] = (0, G.useState)(""), [c, l] = (0, G.useState)(""), u = sn({
-		mutationFn: (e) => kt(e, n),
+	let [i, a] = (0, G.useState)(!1), [o, s] = (0, G.useState)(""), [c, l] = (0, G.useState)(""), u = $t({
+		mutationFn: (e) => St(e, n),
 		onSuccess: (e) => {
-			U.setQueryData(W(n), e.dashboard), a(!1), s(""), l("");
+			H.setQueryData(U(n), e.dashboard), a(!1), s(""), l("");
 		}
 	});
-	return /* @__PURE__ */ V("section", {
-		className: `${I()} flex flex-col gap-4`,
+	return /* @__PURE__ */ B("section", {
+		className: `${F()} flex flex-col gap-4`,
 		"aria-label": "数据源",
 		children: [
-			/* @__PURE__ */ V("div", {
+			/* @__PURE__ */ B("div", {
 				className: "flex flex-wrap items-center justify-between gap-3",
-				children: [/* @__PURE__ */ B("h3", {
+				children: [/* @__PURE__ */ z("h3", {
 					className: "text-title-2-medium text-text-primary",
 					children: "数据源"
-				}), /* @__PURE__ */ B(M, {
+				}), /* @__PURE__ */ z(j, {
 					variant: "secondary",
 					onClick: () => a(!0),
 					disabled: i,
 					children: "添加浏览器"
 				})]
 			}),
-			u.error ? /* @__PURE__ */ B(P, {
+			u.error ? /* @__PURE__ */ z(N, {
 				tone: "error",
-				children: R(u.error)
+				children: L(u.error)
 			}) : null,
-			i ? /* @__PURE__ */ V("form", {
+			i ? /* @__PURE__ */ B("form", {
 				className: "flex flex-col gap-3",
 				onSubmit: (e) => {
 					e.preventDefault(), u.isPending || u.mutate({
@@ -2297,7 +2298,7 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 					});
 				},
 				children: [
-					/* @__PURE__ */ B(at, {
+					/* @__PURE__ */ z(Qe, {
 						label: "浏览器名称",
 						value: o,
 						onChange: s,
@@ -2305,7 +2306,7 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 						isRequired: !0,
 						isDisabled: u.isPending
 					}),
-					/* @__PURE__ */ B(at, {
+					/* @__PURE__ */ z(Qe, {
 						label: "资料目录或历史文件",
 						value: c,
 						onChange: l,
@@ -2314,53 +2315,53 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 						isDisabled: u.isPending,
 						hint: "请选择运行 Peach 的电脑上的浏览器资料。"
 					}),
-					/* @__PURE__ */ V("div", {
+					/* @__PURE__ */ B("div", {
 						className: "flex gap-2",
-						children: [/* @__PURE__ */ B(M, {
+						children: [/* @__PURE__ */ z(j, {
 							variant: "ghost",
 							disabled: u.isPending,
 							onClick: () => {
 								a(!1), u.reset();
 							},
 							children: "取消"
-						}), /* @__PURE__ */ B(M, {
+						}), /* @__PURE__ */ z(j, {
 							type: "submit",
 							variant: "secondary",
 							disabled: !o.trim() || !c.trim(),
-							...F(u.isPending),
+							...P(u.isPending),
 							children: "添加"
 						})]
 					})
 				]
 			}) : null,
-			/* @__PURE__ */ V("div", {
+			/* @__PURE__ */ B("div", {
 				className: "inline-grid w-full min-w-0 gap-2 sm:grid-cols-2",
 				children: [r, e.map((e) => {
 					let n = t.filter((t) => e.source_keys?.includes(t.source_key)), r = n.reduce((e, t) => e + (t.visits || 0), 0), i = n.reduce((e, t) => e + (t.bookmarks || 0), 0);
-					return /* @__PURE__ */ V("div", {
+					return /* @__PURE__ */ B("div", {
 						"data-taste-source": "browser",
 						className: Li,
 						children: [
-							/* @__PURE__ */ B("span", {
+							/* @__PURE__ */ z("span", {
 								className: "inline-grid size-8 shrink-0 place-items-center rounded-lg text-text-secondary",
-								children: /* @__PURE__ */ B(Ii, { name: e.name })
+								children: /* @__PURE__ */ z(Ii, { name: e.name })
 							}),
-							/* @__PURE__ */ V("div", {
+							/* @__PURE__ */ B("div", {
 								className: "flex min-w-0 grow flex-col gap-0.5",
 								children: [
-									/* @__PURE__ */ B("b", {
+									/* @__PURE__ */ z("b", {
 										className: "text-body-2-medium break-words text-text-primary",
 										children: e.name
 									}),
-									/* @__PURE__ */ B("span", {
+									/* @__PURE__ */ z("span", {
 										className: "break-all text-caption-1-regular text-text-secondary",
 										children: e.path
 									}),
-									/* @__PURE__ */ B("span", {
+									/* @__PURE__ */ z("span", {
 										className: "text-caption-1-regular text-text-secondary",
 										children: e.enabled ? e.available ? `历史与书签 · ${e.profiles} 个资料` : "资料目录不可用" : "已停止读取"
 									}),
-									n.length ? /* @__PURE__ */ V("span", {
+									n.length ? /* @__PURE__ */ B("span", {
 										className: "text-caption-1-regular text-text-secondary",
 										children: [
 											r.toLocaleString(),
@@ -2371,17 +2372,17 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 									}) : null
 								]
 							}),
-							/* @__PURE__ */ V("span", {
+							/* @__PURE__ */ B("span", {
 								className: "flex shrink-0 gap-1",
-								children: [/* @__PURE__ */ B(M, {
+								children: [/* @__PURE__ */ z(j, {
 									variant: "secondary",
 									size: "small",
-									...F(u.isPending),
+									...P(u.isPending),
 									iconOnly: !0,
-									leadingIcon: e.enabled ? dt : rt,
+									leadingIcon: e.enabled ? it : Xe,
 									"aria-label": `${e.enabled ? "停止读取" : "启用"} ${e.name}`,
 									onClick: () => {
-										e.enabled ? At({
+										e.enabled ? Ct({
 											title: `停止读取 ${e.name}`,
 											body: "已导入的历史与书签仍用于口味分析。",
 											confirmLabel: "停止读取",
@@ -2394,15 +2395,15 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 											id: e.id
 										});
 									}
-								}), /* @__PURE__ */ B(M, {
+								}), /* @__PURE__ */ z(j, {
 									variant: "secondary",
 									size: "small",
 									iconOnly: !0,
-									leadingIcon: ot,
-									...F(u.isPending),
+									leadingIcon: $e,
+									...P(u.isPending),
 									"aria-label": `删除 ${e.name}`,
 									onClick: () => {
-										At({
+										Ct({
 											title: `删除 ${e.name}`,
 											body: "移除该浏览器的读取配置和已导入历史、书签，浏览器原文件保留。可以通过添加浏览器重新接入。",
 											confirmLabel: "删除浏览器来源",
@@ -2423,7 +2424,7 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 	});
 }
 // src/react/taste/taste-page.tsx
-var zi = 10, Bi = jt(st, ct, "text-body-2-medium"), Vi = `${I()} flex flex-col gap-4`, Hi = "rounded-xl bg-background-primary-default p-3", Ui = "读取运行 Peach 的这台电脑上的浏览历史与书签", Wi = "导入或读取浏览记录后，这里会列出记录来自哪些设备。", Gi = "馆藏中暂时没有与你浏览过的内容相符的标签。", Ki = "读取浏览记录后，这里会按类别汇总你浏览过的内容。", qi = "这些标签出现在浏览记录中，Peach 的观看或评价记录中尚未出现这些标签", Ji = "采集浏览记录后，这里会列出浏览过的标签。", Yi = "采集浏览记录后，这里会列出浏览过的创作者。", Xi = "采集浏览记录后，这里会列出常访问的网站。", Zi = "在 Peach 里播放或评价作品后，这里会列出对应的标签。", Qi = "在 Peach 里播放或评价作品后，这里会列出对应的创作者。", $i = "在 Peach 里播放或评价作品后，这里会列出对应的女优。", ea = "在运行 Peach 的电脑上使用浏览器：点上面的「读取浏览器记录」。", ta = "记录在其他设备上：导出文件后，选择「导入历史文件」或「导入书签文件」。书签支持浏览器导出的 HTML 文件和 Chromium Bookmarks JSON 文件。", na = "需要刷新时再次读取或导入；数据源可在页面底部移除。", ra = "删除这个来源的已导入记录，原始文件保留。若浏览器仍启用，下次读取会再次导入。", ia = "peach-taste-guide-dismissed", aa = (0, G.createContext)(/* @__PURE__ */ B(Qe, {
+var zi = 10, Bi = wt(et, tt, "text-body-2-medium"), Vi = `${F()} flex flex-col gap-4`, Hi = "rounded-xl bg-background-primary-default p-3", Ui = "读取运行 Peach 的这台电脑上的浏览历史与书签", Wi = "导入或读取浏览记录后，这里会列出记录来自哪些设备。", Gi = "馆藏中暂时没有与你浏览过的内容相符的标签。", Ki = "读取浏览记录后，这里会按类别汇总你浏览过的内容。", qi = "这些标签出现在浏览记录中，Peach 的观看或评价记录中尚未出现这些标签", Ji = "采集浏览记录后，这里会列出浏览过的标签。", Yi = "采集浏览记录后，这里会列出浏览过的创作者。", Xi = "采集浏览记录后，这里会列出常访问的网站。", Zi = "在 Peach 里播放或评价作品后，这里会列出对应的标签。", Qi = "在 Peach 里播放或评价作品后，这里会列出对应的创作者。", $i = "在 Peach 里播放或评价作品后，这里会列出对应的女优。", ea = "在运行 Peach 的电脑上使用浏览器：点上面的「读取浏览器记录」。", ta = "记录在其他设备上：导出文件后，选择「导入历史文件」或「导入书签文件」。书签支持浏览器导出的 HTML 文件和 Chromium Bookmarks JSON 文件。", na = "需要刷新时再次读取或导入；数据源可在页面底部移除。", ra = "删除这个来源的已导入记录，原始文件保留。若浏览器仍启用，下次读取会再次导入。", ia = "peach-taste-guide-dismissed", aa = (0, G.createContext)(/* @__PURE__ */ z(Ge, {
 	size: "small",
 	href: "/",
 	children: "浏览馆藏"
@@ -2432,14 +2433,14 @@ function oa() {
 	return (0, G.useContext)(aa);
 }
 function $({ icon: e, term: t, figure: n, detail: r, detailTitle: i, accent: a }) {
-	return /* @__PURE__ */ B("div", {
-		className: fn(),
-		children: /* @__PURE__ */ B(dn, {
+	return /* @__PURE__ */ z("div", {
+		className: an(),
+		children: /* @__PURE__ */ z(rn, {
 			label: t,
 			icon: e,
 			accent: a,
 			figure: n,
-			footer: /* @__PURE__ */ B("span", {
+			footer: /* @__PURE__ */ z("span", {
 				className: "block min-w-0 truncate",
 				title: i || r,
 				children: r ?? ""
@@ -2448,10 +2449,10 @@ function $({ icon: e, term: t, figure: n, detail: r, detailTitle: i, accent: a }
 	});
 }
 function sa({ name: e, domain: t }) {
-	return /* @__PURE__ */ V("span", {
+	return /* @__PURE__ */ B("span", {
 		className: "relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-background-tertiary-default text-caption-1-medium text-text-secondary",
-		children: [Ft(e).toUpperCase(), /* @__PURE__ */ B("img", {
-			src: Xt({ domain: t }),
+		children: [Ot(e).toUpperCase(), /* @__PURE__ */ z("img", {
+			src: Ut({ domain: t }),
 			alt: "",
 			loading: "lazy",
 			width: 20,
@@ -2462,78 +2463,78 @@ function sa({ name: e, domain: t }) {
 	});
 }
 function ca({ html: e }) {
-	return /* @__PURE__ */ B("span", {
-		className: `relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background-tertiary-default text-caption-1-medium text-text-secondary ${pn}`,
+	return /* @__PURE__ */ z("span", {
+		className: `relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background-tertiary-default text-caption-1-medium text-text-secondary ${on}`,
 		dangerouslySetInnerHTML: { __html: e }
 	});
 }
 function la({ rows: e, kind: t, visual: n, empty: r, onSignal: i }) {
-	if (!e.length) return /* @__PURE__ */ B(N, {
+	if (!e.length) return /* @__PURE__ */ z(M, {
 		size: "compact",
-		icon: H,
+		icon: V,
 		title: "记录还不够",
-		actions: /* @__PURE__ */ B(oa, {}),
+		actions: /* @__PURE__ */ z(oa, {}),
 		children: r
 	});
-	let a = qt(e);
-	return /* @__PURE__ */ B(y, {
+	let a = Bt(e);
+	return /* @__PURE__ */ z(ln, {
 		previewCount: zi,
 		className: "inline-grid w-full gap-x-7 gap-y-2 sm:grid-cols-2",
 		children: e.map((e, r) => {
-			let o = !!t && !!e.peach_items, s = String(e.source_domain || ""), c = /* @__PURE__ */ V(z.Fragment, { children: [
-				/* @__PURE__ */ B("svg", {
+			let o = !!t && !!e.peach_items, s = String(e.source_domain || ""), c = /* @__PURE__ */ B(R.Fragment, { children: [
+				/* @__PURE__ */ z("svg", {
 					viewBox: "0 0 100 1",
 					preserveAspectRatio: "none",
 					"aria-hidden": !0,
 					className: "absolute inset-0 -z-10 size-full overflow-hidden rounded-lg opacity-15",
-					children: /* @__PURE__ */ B("rect", {
+					children: /* @__PURE__ */ z("rect", {
 						width: a[r],
 						height: 1,
 						className: "fill-chart-4"
 					})
 				}),
-				/* @__PURE__ */ B("span", {
+				/* @__PURE__ */ z("span", {
 					className: "w-6 shrink-0 text-caption-1-regular tabular-nums text-text-secondary",
 					children: r + 1
 				}),
-				n === "domain" ? /* @__PURE__ */ B(sa, {
+				n === "domain" ? /* @__PURE__ */ z(sa, {
 					name: e.name,
 					domain: e.name
 				}) : null,
-				n === "creator" && !e.entity_id && !e.has_avatar && s ? /* @__PURE__ */ B(sa, {
+				n === "creator" && !e.entity_id && !e.has_avatar && s ? /* @__PURE__ */ z(sa, {
 					name: e.name,
 					domain: s
 				}) : null,
-				n !== "none" && n !== "domain" && (e.entity_id || e.has_avatar || !s) ? /* @__PURE__ */ B(ca, { html: Dt(e.name, e.entity_id ? {
+				n !== "none" && n !== "domain" && (e.entity_id || e.has_avatar || !s) ? /* @__PURE__ */ z(ca, { html: bt(e.name, e.entity_id ? {
 					id: e.entity_id,
 					has_image: !!e.has_image,
 					image_version: e.image_version,
 					avatar_focus: e.avatar_focus,
 					avatar_stand_in: e.avatar_stand_in
 				} : null, e.has_avatar ? e.representative_asset_id ?? null : null, n === "creator" ? "creator" : t || "performer") }) : null,
-				/* @__PURE__ */ V("span", {
+				/* @__PURE__ */ B("span", {
 					className: "flex min-w-0 grow flex-col gap-0.5",
-					children: [/* @__PURE__ */ B("b", {
+					children: [/* @__PURE__ */ z("b", {
 						className: "min-w-0 text-body-medium break-words text-text-primary",
 						children: e.name
-					}), /* @__PURE__ */ B("small", {
+					}), /* @__PURE__ */ z("small", {
 						className: "text-caption-1-regular text-text-secondary",
-						children: Kt(e)
+						children: zt(e)
 					})]
 				}),
-				o ? /* @__PURE__ */ B(Wt, {
+				o ? /* @__PURE__ */ z(Lt, {
 					"aria-hidden": !0,
 					className: "size-4 shrink-0 text-text-tertiary"
 				}) : null
 			] }), l = "relative isolate flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-lg px-3 py-2 text-left";
-			return /* @__PURE__ */ B("li", {
+			return /* @__PURE__ */ z("li", {
 				className: "min-w-0",
-				children: o ? /* @__PURE__ */ B("button", {
+				children: o ? /* @__PURE__ */ z("button", {
 					type: "button",
 					onClick: () => i(t, e.name),
 					className: `${l} cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring`,
 					children: c
-				}) : /* @__PURE__ */ B("div", {
+				}) : /* @__PURE__ */ z("div", {
 					className: l,
 					children: c
 				})
@@ -2542,23 +2543,23 @@ function la({ rows: e, kind: t, visual: n, empty: r, onSignal: i }) {
 	});
 }
 function ua({ label: e, panels: t, onSignal: n }) {
-	return /* @__PURE__ */ V(Ze, {
-		className: `${I({ padding: "none" })} flex flex-col`,
-		children: [/* @__PURE__ */ B("div", {
+	return /* @__PURE__ */ B(We, {
+		className: `${F({ padding: "none" })} flex flex-col`,
+		children: [/* @__PURE__ */ z("div", {
 			className: "px-4 pt-3",
-			children: /* @__PURE__ */ B(gt, {
+			children: /* @__PURE__ */ z(lt, {
 				"aria-label": e,
-				className: ht,
-				children: t.map((e) => /* @__PURE__ */ B(Xe, {
+				className: ct,
+				children: t.map((e) => /* @__PURE__ */ z(Ue, {
 					id: e.id,
-					className: mt,
+					className: st,
 					children: e.name
 				}, e.id))
 			})
-		}), t.map((e) => /* @__PURE__ */ B(Ye, {
+		}), t.map((e) => /* @__PURE__ */ z(He, {
 			id: e.id,
 			className: "px-4 pt-3.5 pb-4",
-			children: /* @__PURE__ */ B(la, {
+			children: /* @__PURE__ */ z(la, {
 				...e.props,
 				onSignal: n
 			})
@@ -2579,71 +2580,71 @@ function da({ data: e, onSignal: t, navigate: n }) {
 		detail: e.detail,
 		act: () => n(e.route)
 	}))];
-	return /* @__PURE__ */ V("section", {
+	return /* @__PURE__ */ B("section", {
 		className: Vi,
 		"aria-label": "口味总结",
 		children: [
-			/* @__PURE__ */ V("header", {
+			/* @__PURE__ */ B("header", {
 				className: "flex flex-col gap-2",
 				children: [
-					/* @__PURE__ */ B("h3", {
+					/* @__PURE__ */ z("h3", {
 						className: "text-title-2-medium text-text-primary",
 						children: "口味总结"
 					}),
-					/* @__PURE__ */ B("p", {
+					/* @__PURE__ */ z("p", {
 						className: "max-w-prose text-title-2-regular wrap-anywhere text-text-primary",
 						children: r.headline
 					}),
-					/* @__PURE__ */ V("p", {
+					/* @__PURE__ */ B("p", {
 						className: "flex flex-wrap items-center gap-2 text-body-2-regular text-text-secondary",
-						children: [/* @__PURE__ */ B("i", {
+						children: [/* @__PURE__ */ z("i", {
 							"aria-hidden": !0,
 							className: `size-2 shrink-0 rounded-full ${i.level === "high" ? "bg-status-lime-text" : i.level === "medium" ? "bg-status-yellow-text" : "bg-text-tertiary"}`
-						}), /* @__PURE__ */ B("span", {
+						}), /* @__PURE__ */ z("span", {
 							className: "min-w-0 wrap-anywhere",
 							children: i.label || "仍在学习"
 						})]
 					})
 				]
 			}),
-			r.points?.length ? /* @__PURE__ */ B("div", {
+			r.points?.length ? /* @__PURE__ */ z("div", {
 				className: "inline-grid w-full gap-3 sm:grid-cols-2",
-				children: r.points.map((e) => /* @__PURE__ */ V("div", {
+				children: r.points.map((e) => /* @__PURE__ */ B("div", {
 					className: `flex min-w-0 flex-col gap-1 ${Hi}`,
-					children: [/* @__PURE__ */ B("span", {
+					children: [/* @__PURE__ */ z("span", {
 						className: "text-caption-1-regular text-text-secondary",
 						children: e.label
-					}), /* @__PURE__ */ B("b", {
+					}), /* @__PURE__ */ z("b", {
 						className: "text-body-2-medium break-words text-text-primary",
 						children: e.text
 					})]
 				}, e.label))
 			}) : null,
-			a.length ? /* @__PURE__ */ B("div", {
+			a.length ? /* @__PURE__ */ z("div", {
 				className: "flex flex-col gap-2",
-				children: a.map((e) => /* @__PURE__ */ V("button", {
+				children: a.map((e) => /* @__PURE__ */ B("button", {
 					type: "button",
 					onClick: e.act,
 					className: `flex w-full min-w-0 cursor-pointer items-center gap-3 ${Hi} text-left outline-none hover:bg-background-primary-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring`,
-					children: [/* @__PURE__ */ V("span", {
+					children: [/* @__PURE__ */ B("span", {
 						className: "flex min-w-0 grow flex-col gap-1",
-						children: [/* @__PURE__ */ B("b", {
+						children: [/* @__PURE__ */ z("b", {
 							className: "text-body-2-medium wrap-anywhere text-text-primary",
 							children: e.title
-						}), /* @__PURE__ */ B("small", {
+						}), /* @__PURE__ */ z("small", {
 							className: "text-caption-1-regular wrap-anywhere text-text-secondary",
 							children: e.detail
 						})]
-					}), /* @__PURE__ */ B(Wt, {
+					}), /* @__PURE__ */ z(Lt, {
 						"aria-hidden": !0,
 						className: "size-4 shrink-0 text-text-tertiary"
 					})]
 				}, e.key))
-			}) : /* @__PURE__ */ B(N, {
+			}) : /* @__PURE__ */ z(M, {
 				size: "compact",
-				icon: H,
+				icon: V,
 				title: "还没有可探索的入口",
-				actions: /* @__PURE__ */ B(Qe, {
+				actions: /* @__PURE__ */ z(Ge, {
 					size: "small",
 					href: "/",
 					children: "浏览馆藏"
@@ -2661,47 +2662,47 @@ function fa({ onboarding: e, done: t }) {
 			return !1;
 		}
 	});
-	return t || n ? null : /* @__PURE__ */ B("div", {
-		className: I({
+	return t || n ? null : /* @__PURE__ */ z("div", {
+		className: F({
 			padding: "none",
 			className: "p-4"
 		}),
-		children: /* @__PURE__ */ V($e, {
+		children: /* @__PURE__ */ B(Ke, {
 			summary: "浏览器历史记录导入指南",
 			defaultOpen: e,
 			children: [
-				/* @__PURE__ */ B("p", {
+				/* @__PURE__ */ z("p", {
 					className: "text-body-2-regular text-text-secondary",
 					children: ea
 				}),
-				/* @__PURE__ */ B("p", {
+				/* @__PURE__ */ z("p", {
 					className: "text-body-2-regular text-text-secondary",
 					children: ta
 				}),
-				/* @__PURE__ */ V("ul", {
+				/* @__PURE__ */ B("ul", {
 					className: "flex list-disc flex-col gap-1 pl-5 text-body-2-regular text-text-secondary",
-					children: [/* @__PURE__ */ V("li", { children: [
+					children: [/* @__PURE__ */ B("li", { children: [
 						"Chrome：在 ",
-						/* @__PURE__ */ V("a", {
+						/* @__PURE__ */ B("a", {
 							href: "https://takeout.google.com/",
 							target: "_blank",
 							rel: "noopener noreferrer",
 							className: "text-text-primary underline-offset-4 hover:underline",
-							children: ["Google Takeout", /* @__PURE__ */ B(St, {
+							children: ["Google Takeout", /* @__PURE__ */ z(ht, {
 								"aria-hidden": !0,
 								className: "size-(--icon-inline) shrink-0"
 							})]
 						}),
 						" ",
 						"选择 Chrome 历史记录，下载 ZIP 后直接导入。"
-					] }), /* @__PURE__ */ V("li", { children: [
+					] }), /* @__PURE__ */ B("li", { children: [
 						"其他浏览器：用 ",
-						/* @__PURE__ */ V("a", {
+						/* @__PURE__ */ B("a", {
 							href: "https://github.com/purarue/browserexport",
 							target: "_blank",
 							rel: "noopener noreferrer",
 							className: "text-text-primary underline-offset-4 hover:underline",
-							children: ["browserexport", /* @__PURE__ */ B(St, {
+							children: ["browserexport", /* @__PURE__ */ z(ht, {
 								"aria-hidden": !0,
 								className: "size-(--icon-inline) shrink-0"
 							})]
@@ -2710,13 +2711,13 @@ function fa({ onboarding: e, done: t }) {
 						"导出历史记录，再导入导出文件。"
 					] })]
 				}),
-				/* @__PURE__ */ B("p", {
+				/* @__PURE__ */ z("p", {
 					className: "text-body-2-regular text-text-secondary",
 					children: na
 				}),
-				/* @__PURE__ */ B("span", {
+				/* @__PURE__ */ z("span", {
 					className: "self-start",
-					children: /* @__PURE__ */ B(M, {
+					children: /* @__PURE__ */ z(j, {
 						variant: "secondary",
 						size: "small",
 						onClick: () => {
@@ -2736,62 +2737,62 @@ function pa({ busy: e, onRefresh: t, onImport: n, onImportBookmarks: r }) {
 	let i = (0, G.useRef)(null), [a, o] = (0, G.useState)(!1), s = (e) => {
 		o(!1), e();
 	};
-	return /* @__PURE__ */ V(z.Fragment, { children: [/* @__PURE__ */ V("span", {
+	return /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ B("span", {
 		"data-button-group": !0,
 		"data-split-button": !0,
 		"data-variant": "primary",
-		children: [/* @__PURE__ */ B(M, {
-			leadingIcon: et,
+		children: [/* @__PURE__ */ z(j, {
+			leadingIcon: qe,
 			title: Ui,
 			onClick: t,
-			...F(e),
+			...P(e),
 			children: "读取浏览器记录"
-		}), /* @__PURE__ */ B(M, {
+		}), /* @__PURE__ */ z(j, {
 			ref: i,
 			iconOnly: !0,
-			leadingIcon: Mt,
+			leadingIcon: Tt,
 			"aria-label": "更多取得浏览记录的方式",
 			"aria-haspopup": "dialog",
 			"aria-expanded": a,
-			...F(e),
+			...P(e),
 			onClick: () => {
 				e || o(!0);
 			}
 		})]
-	}), /* @__PURE__ */ B(Je, {
+	}), /* @__PURE__ */ z(Ve, {
 		triggerRef: i,
 		isOpen: a,
 		onOpenChange: o,
 		placement: "bottom end",
 		offset: 4,
-		className: lt,
-		children: /* @__PURE__ */ V(ut, {
+		className: nt,
+		children: /* @__PURE__ */ B(rt, {
 			"aria-label": "更多取得浏览记录的方式",
 			className: "flex w-52 flex-col gap-1 outline-none",
 			children: [
-				/* @__PURE__ */ V("button", {
+				/* @__PURE__ */ B("button", {
 					type: "button",
 					className: Bi,
 					onClick: () => s(t),
-					children: [/* @__PURE__ */ B(et, {
+					children: [/* @__PURE__ */ z(qe, {
 						"aria-hidden": !0,
 						className: "size-4 shrink-0"
 					}), "读取浏览器记录"]
 				}),
-				/* @__PURE__ */ V("button", {
+				/* @__PURE__ */ B("button", {
 					type: "button",
 					className: Bi,
 					onClick: () => s(n),
-					children: [/* @__PURE__ */ B(pt, {
+					children: [/* @__PURE__ */ z(ot, {
 						"aria-hidden": !0,
 						className: "size-4 shrink-0"
 					}), "导入历史文件"]
 				}),
-				/* @__PURE__ */ V("button", {
+				/* @__PURE__ */ B("button", {
 					type: "button",
 					className: Bi,
 					onClick: () => s(r),
-					children: [/* @__PURE__ */ B(zt, {
+					children: [/* @__PURE__ */ z(Mt, {
 						"aria-hidden": !0,
 						className: "size-4 shrink-0"
 					}), "导入书签文件"]
@@ -2801,56 +2802,56 @@ function pa({ busy: e, onRefresh: t, onImport: n, onImportBookmarks: r }) {
 	})] });
 }
 function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
-	let a = sn({
-		mutationFn: (e) => Jt(e, n),
+	let a = $t({
+		mutationFn: (e) => Vt(e, n),
 		onSuccess: (e) => {
-			U.setQueryData(W(n), e.dashboard), r("已移除口味数据源");
+			H.setQueryData(U(n), e.dashboard), r("已移除口味数据源");
 		}
 	});
-	return /* @__PURE__ */ V(Ri, {
+	return /* @__PURE__ */ B(Ri, {
 		browsers: t,
 		sources: e,
 		range: n,
-		children: [a.error ? /* @__PURE__ */ B("div", {
+		children: [a.error ? /* @__PURE__ */ z("div", {
 			className: "sm:col-span-2",
-			children: /* @__PURE__ */ B(P, {
+			children: /* @__PURE__ */ z(N, {
 				tone: "error",
-				children: R(a.error)
+				children: L(a.error)
 			})
-		}) : null, e.length ? /* @__PURE__ */ B(z.Fragment, { children: e.filter((e) => !t.some((t) => t.source_keys?.includes(e.source_key))).map((e) => /* @__PURE__ */ V("div", {
+		}) : null, e.length ? /* @__PURE__ */ z(R.Fragment, { children: e.filter((e) => !t.some((t) => t.source_keys?.includes(e.source_key))).map((e) => /* @__PURE__ */ B("div", {
 			"data-taste-source": "import",
 			className: Li,
 			children: [
-				/* @__PURE__ */ B("span", {
+				/* @__PURE__ */ z("span", {
 					className: "inline-grid size-8 shrink-0 place-items-center rounded-lg text-text-secondary",
-					children: e.browser === "browserexport" ? /* @__PURE__ */ B(pt, {
+					children: e.browser === "browserexport" ? /* @__PURE__ */ z(ot, {
 						"aria-hidden": !0,
 						className: "size-4"
-					}) : /* @__PURE__ */ B(wt, {
+					}) : /* @__PURE__ */ z(_t, {
 						"aria-hidden": !0,
 						className: "size-4"
 					})
 				}),
-				/* @__PURE__ */ V("span", {
+				/* @__PURE__ */ B("span", {
 					className: "flex min-w-0 grow flex-col gap-0.5",
-					children: [/* @__PURE__ */ B("b", {
+					children: [/* @__PURE__ */ z("b", {
 						className: "min-w-0 text-body-2-medium break-words text-text-primary",
 						children: e.profile
-					}), /* @__PURE__ */ B("small", {
+					}), /* @__PURE__ */ z("small", {
 						className: "min-w-0 text-caption-1-regular break-words text-text-secondary",
 						children: `导入文件 · ${e.host} · ${Number(e.visits || e.bookmarks || 0).toLocaleString()} ${e.bookmarks ? "枚书签" : "条历史"}`
 					})]
 				}),
-				/* @__PURE__ */ B(M, {
+				/* @__PURE__ */ z(j, {
 					variant: "secondary",
 					size: "small",
 					"aria-label": `移除 ${e.profile}`,
 					className: "shrink-0",
 					iconOnly: !0,
-					leadingIcon: ot,
-					...F(a.isPending),
+					leadingIcon: $e,
+					...P(a.isPending),
 					onClick: () => {
-						a.isPending || At({
+						a.isPending || Ct({
 							title: "移除口味数据源",
 							body: ra,
 							confirmLabel: "移除口味数据源",
@@ -2859,9 +2860,9 @@ function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
 					}
 				})
 			]
-		}, e.source_key)) }) : t.length ? null : /* @__PURE__ */ B(N, {
+		}, e.source_key)) }) : t.length ? null : /* @__PURE__ */ z(M, {
 			size: "compact",
-			icon: wt,
+			icon: _t,
 			title: "还没有数据源",
 			actions: i,
 			children: Wi
@@ -2869,232 +2870,232 @@ function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
 	});
 }
 function ha(e) {
-	let { onSignal: n, navigate: r, toast: i, onboarding: a } = e, [o, s] = (0, G.useState)("all"), [c, l] = (0, G.useState)("browser"), u = (0, G.useRef)(null), d = (0, G.useRef)(null), f = cn({
-		queryKey: W(o),
-		queryFn: ({ signal: e }) => Nt(o, e),
-		placeholderData: Ht,
-		refetchInterval: (e) => tn(e.state.data)
-	}), { job: p, running: m, outcome: h, start: g } = on({
-		queryKey: yt,
-		queryFn: ({ signal: e }) => Pt(e),
-		start: () => Zt(o),
-		idlePollMs: it,
+	let { onSignal: t, navigate: n, toast: r, onboarding: i } = e, [a, o] = (0, G.useState)("all"), [s, c] = (0, G.useState)("browser"), l = (0, G.useRef)(null), u = (0, G.useRef)(null), d = en({
+		queryKey: U(a),
+		queryFn: ({ signal: e }) => Et(a, e),
+		placeholderData: Ft,
+		refetchInterval: (e) => Jt(e.state.data)
+	}), { job: f, running: p, outcome: m, start: h } = Qt({
+		queryKey: ft,
+		queryFn: ({ signal: e }) => Dt(e),
+		start: () => Wt(a),
+		idlePollMs: Ze,
 		onFinish: (e) => {
-			e.status !== "failed" && (U.invalidateQueries({ queryKey: ["taste"] }), i(e.warnings?.length ? "部分浏览记录未取得" : "已更新口味分析"));
+			e.status !== "failed" && (H.invalidateQueries({ queryKey: ["taste"] }), r(e.warnings?.length ? "部分浏览记录未取得" : "已更新口味分析"));
 		}
-	}), _ = sn({
-		mutationFn: (e) => Nt(e, void 0, !0),
+	}), g = $t({
+		mutationFn: (e) => Et(e, void 0, !0),
 		onSuccess: (e, t) => {
-			U.setQueryData(W(t), e);
+			H.setQueryData(U(t), e);
 		}
-	}), v = sn({
-		mutationFn: (e) => Vt(e),
+	}), _ = $t({
+		mutationFn: (e) => Pt(e),
 		onSuccess: (e) => {
-			U.setQueryData(W("all"), e.dashboard), s("all"), i("已导入口味数据");
+			H.setQueryData(U("all"), e.dashboard), o("all"), r("已导入口味数据");
 		}
-	}), y = (e) => {
+	}), v = (e) => {
 		let t = e.currentTarget.files?.[0];
-		e.currentTarget.value = "", t && !v.isPending && (v.reset(), v.mutate(t));
-	}, ee = () => {
-		m || g.isPending || (g.reset(), g.mutate());
-	}, b = f.data;
-	if (!b) return /* @__PURE__ */ B(ln, { children: /* @__PURE__ */ B(P, {
+		e.currentTarget.value = "", t && !_.isPending && (_.reset(), _.mutate(t));
+	}, y = () => {
+		p || h.isPending || (h.reset(), h.mutate());
+	}, b = d.data;
+	if (!b) return /* @__PURE__ */ z(tn, { children: /* @__PURE__ */ z(N, {
 		tone: "error",
 		title: "口味分析读取失败",
-		children: f.error ? R(f.error) : "读取口味分析失败"
+		children: d.error ? L(d.error) : "读取口味分析失败"
 	}) });
-	let x = b.summary || {}, S = b.coverage || {}, C = b.rankings || {}, te = b.storage || {}, w = $t(C.browser_categories || []), T = Gt(w).length > 0, ne = b.gaps || [], re = S.tagged || 0, ie = S.identified || 0, ae = g.error ? R(g.error) : v.error ? R(v.error) : _.error ? R(_.error) : h?.status === "failed" ? h.error || "读取未取得" : "", E = /* @__PURE__ */ V("div", {
+	let x = b.summary || {}, S = b.coverage || {}, C = b.rankings || {}, ee = b.storage || {}, w = Kt(C.browser_categories || []), te = Rt(w).length > 0, T = b.gaps || [], E = S.tagged || 0, ne = S.identified || 0, re = h.error ? L(h.error) : _.error ? L(_.error) : g.error ? L(g.error) : m?.status === "failed" ? m.error || "读取未取得" : "", ie = /* @__PURE__ */ B("div", {
 		className: "flex flex-wrap justify-center gap-2",
-		children: [/* @__PURE__ */ B(M, {
+		children: [/* @__PURE__ */ z(j, {
 			variant: "secondary",
-			...F(m || g.isPending || v.isPending),
-			onClick: ee,
+			...P(p || h.isPending || _.isPending),
+			onClick: y,
 			children: "读取浏览器记录"
-		}), /* @__PURE__ */ B(M, {
+		}), /* @__PURE__ */ z(j, {
 			variant: "secondary",
-			...F(v.isPending),
-			onClick: () => u.current?.click(),
+			...P(_.isPending),
+			onClick: () => l.current?.click(),
 			children: "导入历史文件"
 		})]
 	});
-	return /* @__PURE__ */ B(ln, { children: /* @__PURE__ */ V(aa, {
-		value: o === "all" ? c === "peach" ? /* @__PURE__ */ B(Qe, {
+	return /* @__PURE__ */ z(tn, { children: /* @__PURE__ */ B(aa, {
+		value: a === "all" ? s === "peach" ? /* @__PURE__ */ z(Ge, {
 			size: "small",
 			variant: "secondary",
 			href: "/",
 			children: "浏览馆藏"
-		}) : E : /* @__PURE__ */ B(M, {
+		}) : ie : /* @__PURE__ */ z(j, {
 			size: "small",
 			variant: "secondary",
-			onClick: () => s("all"),
+			onClick: () => o("all"),
 			children: "查看全部时间"
 		}),
 		children: [
-			/* @__PURE__ */ V(Ze, {
-				selectedKey: c,
-				onSelectionChange: (e) => l(String(e)),
+			/* @__PURE__ */ B(We, {
+				selectedKey: s,
+				onSelectionChange: (e) => c(String(e)),
 				className: "flex flex-col gap-5",
 				children: [
-					/* @__PURE__ */ V("div", {
+					/* @__PURE__ */ B("div", {
 						className: "flex flex-wrap items-center justify-between gap-3",
-						children: [/* @__PURE__ */ V(gt, {
+						children: [/* @__PURE__ */ B(lt, {
 							"aria-label": "口味分析的数据来源",
-							className: ht,
-							children: [/* @__PURE__ */ B(Xe, {
+							className: ct,
+							children: [/* @__PURE__ */ z(Ue, {
 								id: "browser",
-								className: mt,
+								className: st,
 								children: "浏览器记录"
-							}), /* @__PURE__ */ B(Xe, {
+							}), /* @__PURE__ */ z(Ue, {
 								id: "peach",
-								className: mt,
+								className: st,
 								children: "Peach 观看与评价"
 							})]
-						}), /* @__PURE__ */ V("div", {
+						}), /* @__PURE__ */ B("div", {
 							className: "flex flex-wrap items-center gap-2",
 							children: [
-								/* @__PURE__ */ B(_t, {
+								/* @__PURE__ */ z(ut, {
 									"aria-label": "分析范围",
-									selectedKey: o,
+									selectedKey: a,
 									onSelectionChange: (e) => {
-										e !== null && s(String(e));
+										e !== null && o(String(e));
 									},
-									children: bt.map(([e, t]) => /* @__PURE__ */ B(vt, {
+									children: pt.map(([e, t]) => /* @__PURE__ */ z(dt, {
 										id: e,
 										children: t
 									}, e))
 								}),
-								/* @__PURE__ */ B(pa, {
-									busy: m || g.isPending || v.isPending,
-									onRefresh: ee,
-									onImport: () => u.current?.click(),
-									onImportBookmarks: () => d.current?.click()
+								/* @__PURE__ */ z(pa, {
+									busy: p || h.isPending || _.isPending,
+									onRefresh: y,
+									onImport: () => l.current?.click(),
+									onImportBookmarks: () => u.current?.click()
 								}),
-								/* @__PURE__ */ B("input", {
+								/* @__PURE__ */ z("input", {
+									ref: l,
+									type: "file",
+									tabIndex: -1,
+									"aria-hidden": !0,
+									className: "hidden",
+									onChange: v
+								}),
+								/* @__PURE__ */ z("input", {
 									ref: u,
 									type: "file",
 									tabIndex: -1,
 									"aria-hidden": !0,
 									className: "hidden",
-									onChange: y
-								}),
-								/* @__PURE__ */ B("input", {
-									ref: d,
-									type: "file",
-									tabIndex: -1,
-									"aria-hidden": !0,
-									className: "hidden",
 									"data-bookmark-import": !0,
-									onChange: y
+									onChange: v
 								})
 							]
 						})]
 					}),
-					/* @__PURE__ */ B(fa, {
-						onboarding: a,
+					/* @__PURE__ */ z(fa, {
+						onboarding: i,
 						done: !!(x.history_sources || b.updated_at)
 					}),
-					/* @__PURE__ */ V("div", {
+					/* @__PURE__ */ B("div", {
 						"aria-live": "polite",
 						className: "flex flex-col gap-3 empty:hidden",
 						children: [
-							m ? /* @__PURE__ */ B(xt, {
-								label: p?.message || "正在读取浏览记录并更新口味分析",
-								value: p?.checked,
-								total: p?.total
+							p ? /* @__PURE__ */ z(mt, {
+								label: f?.message || "正在读取浏览记录并更新口味分析",
+								value: f?.checked,
+								total: f?.total
 							}) : null,
-							v.isPending ? /* @__PURE__ */ B(xt, { label: "正在导入口味数据" }) : null,
-							b.stale && b.error ? /* @__PURE__ */ B(P, {
+							_.isPending ? /* @__PURE__ */ z(mt, { label: "正在导入口味数据" }) : null,
+							b.stale && b.error ? /* @__PURE__ */ z(N, {
 								tone: "error",
-								action: /* @__PURE__ */ B(M, {
+								action: /* @__PURE__ */ z(j, {
 									variant: "secondary",
 									size: "small",
-									...F(_.isPending),
-									onClick: () => _.mutate(o),
+									...P(g.isPending),
+									onClick: () => g.mutate(a),
 									children: "立即重试"
 								}),
-								children: `口味分析更新失败，当前显示 ${nn(b.computed_at)} 的结果。${b.error}`
-							}) : b.stale ? /* @__PURE__ */ B(xt, { label: `正在更新口味分析，当前显示 ${nn(b.computed_at)} 的结果` }) : null,
-							ae ? /* @__PURE__ */ B(P, {
+								children: `口味分析更新失败，当前显示 ${Yt(b.computed_at)} 的结果。${b.error}`
+							}) : b.stale ? /* @__PURE__ */ z(mt, { label: `正在更新口味分析，当前显示 ${Yt(b.computed_at)} 的结果` }) : null,
+							re ? /* @__PURE__ */ z(N, {
 								tone: "error",
-								children: ae
+								children: re
 							}) : null,
-							h?.warnings?.length ? /* @__PURE__ */ B(P, {
+							m?.warnings?.length ? /* @__PURE__ */ z(N, {
 								tone: "warning",
-								children: h.warnings.join("；")
+								children: m.warnings.join("；")
 							}) : null
 						]
 					}),
-					/* @__PURE__ */ V(Ye, {
+					/* @__PURE__ */ B(He, {
 						id: "browser",
 						className: "flex flex-col gap-5",
 						children: [
-							/* @__PURE__ */ V("div", {
-								className: un,
+							/* @__PURE__ */ B("div", {
+								className: nn,
 								children: [
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 0,
-										icon: an,
+										icon: Zt,
 										term: "浏览记录",
 										figure: Number(x.history_visits || 0).toLocaleString(),
-										detail: Bt(x),
-										detailTitle: `${Qt(x.range_start)}—${Qt(x.range_end)}`
+										detail: Nt(x),
+										detailTitle: `${Gt(x.range_start)}—${Gt(x.range_end)}`
 									}),
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 1,
-										icon: Ut,
+										icon: It,
 										term: "口味维度",
 										figure: w.length.toLocaleString(),
 										detail: w[0]?.name || "尚无主维度"
 									}),
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 2,
-										icon: H,
+										icon: V,
 										term: "浏览线索",
-										figure: ne.length.toLocaleString()
+										figure: T.length.toLocaleString()
 									}),
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 3,
-										icon: zt,
+										icon: Mt,
 										term: "浏览器书签",
 										figure: Number(x.bookmarks || 0).toLocaleString(),
-										detail: `${Number(te.exports || 0).toLocaleString()} 份私有导出 · ${Rt(te.bytes || 0)}`
+										detail: `${Number(ee.exports || 0).toLocaleString()} 份私有导出 · ${jt(ee.bytes || 0)}`
 									})
 								]
 							}),
-							/* @__PURE__ */ V("section", {
-								className: T ? `${Vi} md:flex-row md:gap-6` : Vi,
+							/* @__PURE__ */ B("section", {
+								className: te ? `${Vi} md:flex-row md:gap-6` : Vi,
 								"aria-label": "浏览器画像",
-								children: [/* @__PURE__ */ V("div", {
-									className: T ? "flex shrink-0 flex-col gap-2 pb-5 md:w-80 md:pr-6 md:pb-0" : "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1",
+								children: [/* @__PURE__ */ B("div", {
+									className: te ? "flex shrink-0 flex-col gap-2 pb-5 md:w-80 md:pr-6 md:pb-0" : "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1",
 									children: [
-										/* @__PURE__ */ B("span", {
+										/* @__PURE__ */ z("span", {
 											className: "text-caption-1-regular text-text-secondary",
 											children: "浏览器画像"
 										}),
-										T ? /* @__PURE__ */ B(ki, {
+										te ? /* @__PURE__ */ z(ki, {
 											rows: w,
 											label: "主要口味维度"
 										}) : null,
-										/* @__PURE__ */ B("small", {
+										/* @__PURE__ */ z("small", {
 											className: "text-caption-1-regular text-text-secondary",
-											children: b.updated_at ? `更新于 ${Qt(b.updated_at)}` : "尚未采集浏览记录"
+											children: b.updated_at ? `更新于 ${Gt(b.updated_at)}` : "尚未采集浏览记录"
 										})
 									]
-								}), /* @__PURE__ */ B("div", {
+								}), /* @__PURE__ */ z("div", {
 									className: "flex min-w-0 grow flex-col",
-									children: w.length ? /* @__PURE__ */ B(Ai, {
+									children: w.length ? /* @__PURE__ */ z(Ai, {
 										rows: w,
 										label: "口味维度排名"
-									}) : /* @__PURE__ */ B(N, {
+									}) : /* @__PURE__ */ z(M, {
 										size: "compact",
-										icon: H,
+										icon: V,
 										title: "暂无口味维度",
-										actions: /* @__PURE__ */ B(oa, {}),
+										actions: /* @__PURE__ */ z(oa, {}),
 										children: Ki
 									})
 								})]
 							}),
-							/* @__PURE__ */ B(t, {
+							/* @__PURE__ */ z(sn, {
 								activity: b.activity,
 								title: "浏览活跃时间",
 								dailyTitle: "每日活跃",
@@ -3106,10 +3107,10 @@ function ha(e) {
 								tone: 4,
 								empty: "还没有可用于分析的口味网站访问记录。"
 							}),
-							/* @__PURE__ */ B(ji, { flows: b.creator_flows }),
-							/* @__PURE__ */ B(ua, {
+							/* @__PURE__ */ z(ji, { flows: b.creator_flows }),
+							/* @__PURE__ */ z(ua, {
 								label: "浏览器口味维度",
-								onSignal: n,
+								onSignal: t,
 								panels: [
 									{
 										id: "tags",
@@ -3155,7 +3156,7 @@ function ha(e) {
 										id: "gaps",
 										name: "浏览线索",
 										props: {
-											rows: ne,
+											rows: T,
 											kind: "",
 											visual: "none",
 											empty: qi
@@ -3165,75 +3166,75 @@ function ha(e) {
 							})
 						]
 					}),
-					/* @__PURE__ */ V(Ye, {
+					/* @__PURE__ */ B(He, {
 						id: "peach",
 						className: "flex flex-col gap-5",
 						children: [
-							/* @__PURE__ */ V("div", {
-								className: un,
+							/* @__PURE__ */ B("div", {
+								className: nn,
 								children: [
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 0,
-										icon: Ct,
+										icon: gt,
 										term: "Peach 看过",
 										figure: Number(x.peach_items || 0).toLocaleString(),
-										detail: en(x.peach_seconds || 0)
+										detail: qt(x.peach_seconds || 0)
 									}),
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 1,
-										icon: Et,
+										icon: yt,
 										term: "喜欢",
 										figure: Number(x.liked || 0).toLocaleString()
 									}),
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 2,
-										icon: Ot,
+										icon: xt,
 										term: "不合口味",
 										figure: Number(x.disliked || 0).toLocaleString()
 									}),
-									/* @__PURE__ */ B($, {
+									/* @__PURE__ */ z($, {
 										accent: 3,
-										icon: Ut,
+										icon: It,
 										term: "有标签",
-										figure: re.toLocaleString()
+										figure: E.toLocaleString()
 									})
 								]
 							}),
-							/* @__PURE__ */ V("section", {
+							/* @__PURE__ */ B("section", {
 								className: `${Vi} md:flex-row md:gap-6`,
 								"aria-label": "Peach 观看",
-								children: [/* @__PURE__ */ V("div", {
+								children: [/* @__PURE__ */ B("div", {
 									className: "flex shrink-0 flex-col gap-0.5 pb-5 md:w-72 md:pr-6 md:pb-0",
 									children: [
-										/* @__PURE__ */ B("span", {
+										/* @__PURE__ */ z("span", {
 											className: "text-caption-1-regular text-text-secondary",
 											children: "Peach 观看"
 										}),
-										/* @__PURE__ */ B("b", {
+										/* @__PURE__ */ z("b", {
 											className: "text-display-4-medium tabular-nums text-text-primary",
 											children: Number(x.peach_items || 0).toLocaleString()
 										}),
-										/* @__PURE__ */ B("span", {
+										/* @__PURE__ */ z("span", {
 											className: "text-body-2-regular text-text-secondary",
 											children: "部作品有观看或评价记录"
 										})
 									]
-								}), /* @__PURE__ */ V("div", {
+								}), /* @__PURE__ */ B("div", {
 									className: "flex min-w-0 grow flex-col",
-									children: [/* @__PURE__ */ B(ga, {
+									children: [/* @__PURE__ */ z(ga, {
 										term: "有标签",
-										value: re,
+										value: E,
 										rest: S.untagged || 0
-									}), /* @__PURE__ */ B(ga, {
+									}), /* @__PURE__ */ z(ga, {
 										term: "有身份",
-										value: ie,
+										value: ne,
 										rest: S.unidentified || 0
 									})]
 								})]
 							}),
-							/* @__PURE__ */ B(ua, {
+							/* @__PURE__ */ z(ua, {
 								label: "Peach 口味维度",
-								onSignal: n,
+								onSignal: t,
 								panels: [
 									{
 										id: "tags",
@@ -3271,35 +3272,35 @@ function ha(e) {
 					})
 				]
 			}),
-			/* @__PURE__ */ B(da, {
+			/* @__PURE__ */ z(da, {
 				data: b,
-				onSignal: n,
-				navigate: r
+				onSignal: t,
+				navigate: n
 			}),
-			/* @__PURE__ */ B(ma, {
+			/* @__PURE__ */ z(ma, {
 				sources: b.sources || [],
 				browsers: b.browsers || [],
-				window: o,
-				toast: i,
-				emptyActions: E
+				window: a,
+				toast: r,
+				emptyActions: ie
 			})
 		]
 	}) });
 }
 function ga({ term: e, value: t, rest: n }) {
 	let r = Math.max(t + n, 1);
-	return /* @__PURE__ */ V("div", {
+	return /* @__PURE__ */ B("div", {
 		className: "flex flex-col gap-1.5 border-b border-separator-border py-3 last:border-b-0",
-		children: [/* @__PURE__ */ V("p", {
+		children: [/* @__PURE__ */ B("p", {
 			className: "flex items-baseline justify-between gap-3 text-body-2-regular text-text-primary",
-			children: [/* @__PURE__ */ B("span", { children: e }), /* @__PURE__ */ V("b", {
+			children: [/* @__PURE__ */ z("span", { children: e }), /* @__PURE__ */ B("b", {
 				className: "tabular-nums",
-				children: [t.toLocaleString(), /* @__PURE__ */ B("span", {
+				children: [t.toLocaleString(), /* @__PURE__ */ z("span", {
 					className: "ml-1.5 text-caption-1-regular text-text-secondary",
 					children: `${n.toLocaleString()} 项待补`
 				})]
 			})]
-		}), /* @__PURE__ */ B(ft, {
+		}), /* @__PURE__ */ z(at, {
 			label: `${e}：${t.toLocaleString()} / ${r.toLocaleString()}`,
 			value: t,
 			max: r
@@ -3308,4 +3309,4 @@ function ga({ term: e, value: t, rest: n }) {
 }
 export { ia as TASTE_GUIDE_KEY, ha as TastePage };
 
-//# debugId=f04411b1-c4b3-4d8d-8729-5d9d12f6b752
+//# debugId=095721df-c1e5-4106-bf9a-ad3cb1beac74

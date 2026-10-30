@@ -31,7 +31,8 @@ from .sources.base import SourceFailure
 from .library_nfo import sidecars, SidecarIndex
 from .media_io import directory_files, read_nfo, local_art, root_online, directory_entries, file_stat
 from .genre_decisions import load_genre_decisions
-from .metadata import candidate_text_is_valid, extract_catalog_evidence, extract_peach_fields, validate_provider_code
+from .metadata import (candidate_text_is_valid, source_text_is_valid,
+                       extract_catalog_evidence, extract_peach_fields, validate_provider_code)
 from . import metadata_routes
 from . import media_identity
 from . import junk
@@ -242,6 +243,12 @@ def describe_failure(error):
     if isinstance(error, (Unavailable, SourceFailure, SourcePaused, PickerError, httpx.TransportError)) and text:
         return text
     return f'处理出错（{type(error).__name__}）'
+
+
+def _source_failure_details(error, code, action, *, source=None):
+    """采集问题保留脱敏异常链和阶段，页面摘要不暴露内部错误正文。"""
+    from .error_reporting import exception_facts, scrub
+    return scrub({'stage': action, 'code': code, 'source': source, **exception_facts(error)})
 #: 来源说「没有」不是待办：馆藏里本来就有大量独立资源和创作者作品，任何目录站都收不到
 #: 它们。逐条记在日志里备查，界面只按这两类各报一个数（`state['notes']`），不进问题清单。
 MISS_MESSAGES = {'querying_metadata': '外部来源没有这部片的资料，7 天内不再问',
@@ -1071,6 +1078,8 @@ def _merge_candidates(groups, row, code, source, document, evidence_path, genre_
                          provider_id=str(document.get('id') or ''), content_id=str(document.get('content_id') or ''),
                          source_kind='local' if local else spec.kind if spec else 'community', official=official,
                          catalog_evidence=extract_catalog_evidence(document))
+        if source == 'javdb':
+            candidate.update(javdb_rule=document.get('javdb_rule'), source_id=document.get('source_id'))
         if mode == 'review':
             candidate['requires_review'] = True
         # 只有 tags 字段有未收录原文；别的字段挂一个空列表只是让每条候选都胖一圈。
@@ -1360,15 +1369,15 @@ class _MetadataResults:
 class _RemoteSession:
     """一个任务共用的外部来源连接，加上来源说过「没有」的记忆。"""
 
-    def __init__(self, config, provider_factory, misses, *, retrying, routes=None):
+    def __init__(self, config, provider_factory, misses, *, retrying, recheck_existing=False, routes=None):
         self._config = config
         self._factory = provider_factory
         self._provider = None
         self.misses = misses
         #: 用户对每种内容类型的来源链覆盖，形状见 `metadata_routes.parse_route_overrides`。
         self._routes = routes or None
-        # 「重试未完成项」按上一任务的失败集合强制重试，不看记忆；答复仍照记。
-        self._consult = not retrying
+        # 定向重试或明确重采不看旧记忆；本次答复仍照记。
+        self._consult = not (retrying or recheck_existing)
         self._task_evidence = {}
         self._task_absent = set()
 
@@ -1492,7 +1501,14 @@ class _RemoteSession:
                     continue
                 if time.time() - path.stat().st_mtime > MISS_TTL_SECONDS:
                     continue
-                entry = (name, json.loads(path.read_text(encoding='utf-8')), path)
+                payload = json.loads(path.read_text(encoding='utf-8'))
+                if name == 'javdb':
+                    from .javdb_identity import current_evidence
+                    if not current_evidence(payload):
+                        continue
+                if not source_text_is_valid(payload):
+                    continue
+                entry = (name, payload, path)
                 self._task_evidence[name, code] = entry
                 found.append(entry)
             except (OSError, ValueError):
@@ -1585,6 +1601,7 @@ class _RemoteSession:
         wants_tags = 'tags' in missing
         results = _MetadataResults(self, code, received)
         problems, held, entries = [], [], results.entries
+        failures = []
         attempted = set(answered)
         stages = metadata_routes.stages_for_chain(chain)
         for source, then in zip(stages, (*stages[1:], '')):
@@ -1624,6 +1641,7 @@ class _RemoteSession:
                 problems.append(describe_failure(error)
                                 if source in ('community', 'amane', 'amane_official')
                                 else f'{SOURCE_LABELS.get(source, source)}：{describe_failure(error)}')
+                failures.append(_source_failure_details(error, code, action, source=source))
                 held.append(source_paused(error))
                 continue
             update(stage='保存待确认资料')
@@ -1640,7 +1658,8 @@ class _RemoteSession:
         paused = bool(held) and all(held)
         issue(row, ('外部资料本趟没轮到：' if paused else '外部资料未取得：') + '；'.join(problems)
               if problems else MISS_MESSAGES[action],
-              action=action, retryable=True, paused=paused)
+              action=action, retryable=True, paused=paused,
+              **({'diagnostics': {'failures': failures}} if failures else {}))
         return []
 
     def _preferred_tags(self, row, code, missing, chain, entries, answered, *, update, issue, deadline):
@@ -1664,7 +1683,8 @@ class _RemoteSession:
                 self._record_miss(source, code)
             else:
                 issue(row, 'JavDB 标签未取得：' + describe_failure(error),
-                      action='querying_metadata', retryable=True, paused=source_paused(error))
+                      action='querying_metadata', retryable=True, paused=source_paused(error),
+                      diagnostics=_source_failure_details(error, code, 'querying_metadata', source=source))
             return []
         update(stage='保存待确认资料')
         return [self._evidence(source, code, payload)]
@@ -1697,7 +1717,8 @@ class _RemoteSession:
             _raise_task_failure(error)
             paused = source_paused(error)
             issue(row, ('封面本趟没轮到：' if paused else '封面未取得：') + describe_failure(error),
-                  action=action, retryable=True, paused=paused)
+                  action=action, retryable=True, paused=paused,
+                  diagnostics=_source_failure_details(error, code, action))
         return 0
 
 
@@ -1854,10 +1875,19 @@ def _chosen_asset_paths(db_path, asset_ids):
     return {source: tuple(paths) for source, paths in chosen.items()}
 
 
+def _within_processing_root(path, root):
+    """按资源身份比较归属，不为逐影片筛选访问挂载目录。"""
+    from .platform import within_root
+    from .smb_media import SmbResource
+    if isinstance(path, SmbResource) or isinstance(root, SmbResource):
+        return within_root(path, root)
+    return path.is_relative_to(root)
+
+
 def _online_source_root(source, root, chosen_paths, *, retrying, issue):
     translated_root = translate_ledger_path(root)
     relevant = not retrying or any(
-        path.is_relative_to(translated_root)
+        _within_processing_root(path, translated_root)
         for path in chosen_paths.get(source, ()))
     if not relevant:
         return None
@@ -2059,7 +2089,7 @@ def _collection_rows(db_path, *, locations, online_roots, asset_ids):
                 if not is_local_extra(row['name'], row['path'],
                                       library_roots=library_roots)
                 and row['location'] in locations
-                and any(translate_ledger_path(row['path']).is_relative_to(root) for root in online_roots)]
+                and any(_within_processing_root(translate_ledger_path(row['path']), root) for root in online_roots)]
         genre_decisions = load_genre_decisions(connection)
     return rows, genre_decisions
 
@@ -2678,7 +2708,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
 
         update()
         remote = _RemoteSession(config, provider_factory, _MissCache(misses_path(config)),
-                                retrying=retrying, routes=routes)
+                                retrying=retrying, recheck_existing=recheck_existing, routes=routes)
         flush_candidates = lambda force=False: None
 
         try:
