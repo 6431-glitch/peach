@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "89d35a62-b551-41e9-8038-8dddd30df4bf", e._sentryDebugIdIdentifier = "sentry-dbid-89d35a62-b551-41e9-8038-8dddd30df4bf");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b039a90e-d6f5-4325-b267-057a19cb60f8", e._sentryDebugIdIdentifier = "sentry-dbid-b039a90e-d6f5-4325-b267-057a19cb60f8");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -15,6 +15,7 @@ var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescr
 	value: n,
 	enumerable: !0
 }) : o, n)), l = {
+	"等 {0} 人": "{0} performers",
 	仅番号: "Release code only",
 	番号和标题: "Release code and title",
 	番号和画质: "Release code and quality",
@@ -61110,4 +61111,4 @@ je();
 var Yv = document.getElementById("peach-page"), Xv = Yv ? Jv[Yv.dataset.page ?? ""] : void 0;
 Yv && Xv && (0, Be.createRoot)(Yv).render(/* @__PURE__ */ F(Xv, { data: { ...Yv.dataset } }));
 
-//# debugId=89d35a62-b551-41e9-8038-8dddd30df4bf
+//# debugId=b039a90e-d6f5-4325-b267-057a19cb60f8
