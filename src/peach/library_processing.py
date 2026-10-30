@@ -2374,9 +2374,12 @@ def _read_local_metadata(config, db_path, row, cover_root, listing, state, updat
     if nfo:
         try:
             payload, raw = read_nfo(nfo)
-            if payload['id'] and code and not same_release_code(code, payload['id']):
+            if payload is None:
+                nfo = None
+            elif payload['id'] and code and not same_release_code(code, payload['id']):
                 raise ValueError('文件名与 NFO 番号冲突，请复核')
-            code = code or _provider_code(payload['id'])
+            if payload:
+                code = code or _provider_code(payload['id'])
         except InterruptedError:
             raise
         except (OSError, ValueError, ET.ParseError) as error:

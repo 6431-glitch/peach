@@ -73,6 +73,32 @@ class MediaIoTests(unittest.TestCase):
         inside.mkdir()
         self.assertIsNone(media_io.local_art(inside / 'video.mp4', {'local_art': '../outside.jpg'}))
 
+    def test_plain_release_notes_are_not_treated_as_metadata(self):
+        nfo = self.root / 'release.nfo'
+        raw = b'\n    WE ARE BACK\n\n    proudly presents a release\n'
+        nfo.write_bytes(raw)
+        self.assertEqual(media_io.read_nfo(nfo), (None, raw))
+        self.assertEqual(nfo.read_bytes(), raw)
+        nfo.write_text('release notes\n<movie><title>broken', encoding='utf-8')
+        with self.assertRaises(ValueError):
+            media_io.read_nfo(nfo)
+
+    def test_processing_ignores_release_notes_without_changing_metadata_policy(self):
+        video = self.root / 'ABC-123.mp4'
+        video.write_bytes(b'video')
+        nfo = self.root / 'ABC-123.nfo'
+        nfo.write_text('Release notes\nVideo: 1080p', encoding='utf-8')
+        row = {'id': 1, 'path': str(video), 'name': video.name, 'code': 'ABC-123'}
+        issue = Mock()
+        state = {'identified': 0, 'covers': 0}
+        with patch.object(library_processing, '_queue_local_poster'):
+            result = library_processing._read_local_metadata(
+                self.config, self.root / 'unused.db', row, self.root / 'covers',
+                library_processing._DirectoryIndex(), state, lambda **_: None, issue, [])
+        self.assertEqual(result, ('ABC-123', False, None, []))
+        issue.assert_not_called()
+        self.assertEqual(nfo.read_text(encoding='utf-8'), 'Release notes\nVideo: 1080p')
+
     def test_failed_directory_is_attempted_once_in_a_task(self):
         listing = library_processing._DirectoryIndex()
         with patch.object(library_processing, 'directory_files', side_effect=TimeoutError('读取超时')) as read:

@@ -351,6 +351,8 @@ def bundle_to(config, destination, *, codes: str = '', include_all: bool = False
                         raise EvidenceTooLarge('本地 NFO 证据超过单文件上限')
                     from .library_nfo import read_nfo
                     payload, _raw = read_nfo(path)
+                    if payload is None:
+                        raise ValueError('NFO 不是影片或单集资料')
                     source = 'local_nfo'
                 else:
                     payload = _read_json(path, root)

@@ -91,7 +91,7 @@ def sidecars(video: Path, files: dict[str, Path] | None = None):
 
 
 def read_nfo(path: Path):
-    """保留完整原文；拒绝 DTD，并限制 XML 的输入体积。"""
+    """读取影片 XML；普通发行说明不视为影片资料。"""
     with path.open('rb') as handle:
         raw = handle.read(1024 * 1024 + 1)
     from .processing_traffic import record_media_read
@@ -100,6 +100,12 @@ def read_nfo(path: Path):
     declarations = raw.replace(b'\x00', b'').upper()
     if len(raw) > 1024 * 1024 or b'<!DOCTYPE' in declarations or b'<!ENTITY' in declarations:
         raise ValueError('NFO 文件过大或包含实体声明')
+    # Release groups also use .nfo for plain-text notes. Keep XML-like files on
+    # the strict parser path, including UTF-16/32 documents and broken XML.
+    probe = raw.replace(b'\x00', b'').lstrip(b'\xef\xbb\xbf\xff\xfe \t\r\n')
+    if probe and not probe.startswith(b'<') and not re.search(
+            rb'<\s*(?:\?xml|movie\b|episodedetails\b|musicvideo\b)', probe, re.I):
+        return None, raw
     root = ET.fromstring(raw)
     if root.tag not in {'movie', 'episodedetails', 'musicvideo'}:
         raise ValueError('NFO 不是影片或单集资料')
