@@ -581,7 +581,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         <Input label="Title" value={title} onChange={setTitle} />
         <RadioGroup aria-label="Category" orientation="horizontal" className="flex-row flex-wrap" value={category}
           onChange={value => { setCategory(value); setResult(null) }}>
-          <Radio value="dvd">DVD</Radio><Radio value="clips">Clips</Radio><Radio value="bluray">Blu-ray</Radio>
+          <Radio value="dvd">DVD</Radio><Radio value="clips">Clips</Radio><Radio value="bluray">Blu-ray</Radio><Radio value="vod">On Demand</Radio>
         </RadioGroup>
       </> : source === 'stashdb' ? <>
         <Input label="Title" value={title} onChange={setTitle} placeholder="Leave all fields blank to use video details" />

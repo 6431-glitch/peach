@@ -49,6 +49,11 @@ class AdultEmpireMatchTests(unittest.TestCase):
             row = connection.execute('SELECT catalog_title,release_date,studio FROM asset WHERE id=1').fetchone()
         self.assertEqual(tuple(row), ('Example', '2021-02-24', 'Studio'))
 
+    def test_on_demand_category_is_sent_to_lookup_service(self):
+        with patch.object(match, '_service', return_value={'candidates': [self.candidate], 'next_page': None}) as lookup:
+            match.search(self.config, self.db, 1, 'Example', 'vod', 1)
+        self.assertEqual(lookup.call_args.args[1]['category'], 'vod')
+
     def test_stale_revision_cannot_overwrite_changes(self):
         revision = self.prepare()
         with self.db.write_transaction() as connection:

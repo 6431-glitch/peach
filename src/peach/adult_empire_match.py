@@ -47,7 +47,7 @@ def _service(path, params):
 
 
 def search(config, database, asset_id, query, category, page):
-    if not isinstance(query, str) or not 2 <= len(query.strip()) <= 200 or category not in ('dvd', 'clips', 'bluray') or type(page) is not int or not 1 <= page <= 100:
+    if not isinstance(query, str) or not 2 <= len(query.strip()) <= 200 or category not in ('dvd', 'clips', 'bluray', 'vod') or type(page) is not int or not 1 <= page <= 100:
         raise ValueError('Enter a valid title and category.')
     with database.read_connection() as connection:
         row = connection.execute("SELECT mutation_revision FROM asset WHERE id=? AND medium='video' AND COALESCE(disposal,'') NOT IN ('trash','vanished')", (asset_id,)).fetchone()

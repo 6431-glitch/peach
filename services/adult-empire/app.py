@@ -16,7 +16,7 @@ app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 BASE = 'https://www.adultempire.com'
 HOST = 'www.adultempire.com'
 IMAGE_HOST = 'imgs4cdn.adultempire.com'
-SEARCH = {'dvd': '/dvd/search', 'clips': '/clips/search', 'bluray': '/blu-ray/search'}
+SEARCH = {'dvd': '/dvd/search', 'clips': '/clips/search', 'bluray': '/blu-ray/search', 'vod': '/vod/search'}
 DETAIL_PATH = re.compile(r'^/(?:clip/)?\d+/[a-z0-9-]+(?:-porn-videos|-porn-movies|-streaming-scene|\.html)?\.html$', re.I)
 PERFORMER_PATH = re.compile(r'^/(?:porn-videos/|dvd/|blu-ray/|clips/)?(\d+)/[^/]+-pornstars\.html$', re.I)
 MAX_PAGE = 2 * 1024 * 1024

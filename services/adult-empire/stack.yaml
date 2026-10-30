@@ -2,7 +2,7 @@ version: '3.8'
 # A separate stateless lookup replica on each explicitly selected node.
 # Create the external secret and distribute the exact image before deployment.
 x-lookup: &lookup
-  image: peach-adult-empire:dev-20261030
+  image: peach-adult-empire:vod-20261030
   environment:
     PEACH_EMPIRE_TOKEN_FILE: /run/secrets/peach_adult_empire_token
   secrets:

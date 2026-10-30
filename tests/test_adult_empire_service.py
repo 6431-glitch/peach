@@ -20,6 +20,11 @@ class AdultEmpireServiceTests(unittest.TestCase):
         self.assertEqual(result['candidates'][0]['title'], 'Example')
         self.assertEqual(result['next_page'], 2)
 
+    def test_on_demand_search_uses_vod_endpoint(self):
+        self.assertEqual(service.SEARCH['vod'], '/vod/search')
+        soup = BeautifulSoup('<div class="list-view-item"><a label="Title" href="/123/example-porn-videos.html">Example</a></div>', 'html.parser')
+        self.assertEqual(service.parse_search(soup, 'vod', 1)['candidates'][0]['title'], 'Example')
+
     def test_clip_results_use_clip_links(self):
         soup = BeautifulSoup('''<a class="text-display-primary" href="/clip/123/example-streaming-scene.html">Example</a>
           <a class="text-display-primary" href="https://elsewhere.test/clip/99/bad.html">Bad</a>''', 'html.parser')
