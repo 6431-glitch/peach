@@ -29,6 +29,10 @@ describe('我的收藏', () => {
     expect(link?.textContent).toContain('楓カレン');
     expect(link?.getAttribute('aria-label')).toBe('楓カレン');
     expect(link?.getAttribute('href')).toBe('/performers/3');
+    await type(document.querySelector('input[aria-label="搜索收藏"]'), '楓カレン');
+    expect(document.querySelectorAll('[data-shortcuts-row]')).toHaveLength(1);
+    await type(document.querySelector('input[aria-label="搜索收藏"]'), '枫花恋');
+    expect(document.querySelectorAll('[data-shortcuts-row]')).toHaveLength(1);
     await click(document.querySelector('[aria-label="取消收藏楓カレン"]')); await settle();
     expect(writes[0]).toMatchObject({ action: 'favorite', entity_id: 3, name: '枫花恋', on: false });
   });

@@ -454,8 +454,10 @@ def q_entity_shapes(contract, args) -> dict:
             if names is not None and alias["alias"] not in names:
                 names.append(alias["alias"])
         from .performer_name_display import variants
+        from .kanji import JP_KANJI_TO_SIMPLIFIED
         name_variants = variants(connection)
-    return {"ok": True, "home": home, "entities": list(entities.values()), "name_variants": name_variants}
+    return {"ok": True, "home": home, "entities": list(entities.values()), "name_variants": name_variants,
+            "name_glyphs": JP_KANJI_TO_SIMPLIFIED}
 
 # ────────────────────────────── 照片 ──────────────────────────────
 # 图集就是目录：账本没有图集实体，一个目录下的图片本来就是一份图集，

@@ -58,7 +58,8 @@ async function open(initial: EntityHeroProps) {
 describe('排版用的纯函数', () => {
   it('语言切换保留所选艺名，名称菜单使用原始值提交统一名称', async () => {
     registerNameWritings([{ id: 7792, kind: 'performer', canonical_name: '枫花恋', zh_cn: '枫花恋', ja: '楓カレン' }]);
-    const given = props({ name: '枫花恋', entity: performer({ canonical_name: '枫花恋', aliases: ['楓カレン', '田中柠檬'],
+    const given = props({ name: '枫花恋', helpers: helpers({ portraitImg: () => '<img src="/avatar" alt="枫花恋">' }),
+      entity: performer({ canonical_name: '枫花恋', aliases: ['楓カレン', '田中柠檬'],
       name_display: { choices: {
         'zh-CN': [{ value: '枫花恋', label: '枫花恋' }, { value: '田中柠檬', label: '田中柠檬' }],
         ja: [{ value: '枫花恋', label: '楓カレン' }, { value: '田中柠檬', label: '田中レモン' }],
@@ -68,6 +69,7 @@ describe('排版用的纯函数', () => {
     expect(host.querySelector('h2')?.textContent).toBe('枫花恋');
     await act(async () => setNameLanguage('ja'));
     expect(host.querySelector('h2')?.textContent).toBe('楓カレン');
+    expect(host.querySelector('[data-entity-portrait] img')?.getAttribute('alt')).toBe('楓カレン');
     expect(given.actions.chooseName).not.toHaveBeenCalled();
     await click(host.querySelector('[data-namepick-toggle]'));
     expect(document.querySelector('[data-namepick-name="枫花恋"]')?.textContent).toContain('楓カレン');

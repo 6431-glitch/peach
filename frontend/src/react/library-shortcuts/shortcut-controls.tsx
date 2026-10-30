@@ -118,8 +118,10 @@ function ShortcutContents({ currentHref, kind, close }: { currentHref?: () => st
     });
   };
   const data = query.data;
+  const searchName = search.trim().toLocaleLowerCase();
   const rows = (data?.favorites || []).filter((row) => (scope === 'all' || row.kind === scope)
-    && row.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()));
+    && (row.name.toLocaleLowerCase().includes(searchName)
+      || entityDisplayName(row.kind, row.name, row.entity_id).toLocaleLowerCase().includes(searchName)));
   return <div data-shortcuts-panel="">
     <div ref={head} data-shortcuts-head="">
       <h2 className="text-title-2-semibold text-text-primary">{label}</h2>

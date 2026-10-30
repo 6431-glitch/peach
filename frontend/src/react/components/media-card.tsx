@@ -115,7 +115,7 @@ export function identityParts(item: MediaItem): { avatar: ReactNode; who: ReactN
       <div data-media-avatars="" style={{ '--media-avatar-count': Math.min(5, performers.length) } as CSSProperties}>
         {performers.slice(0, 5).map((nm, index) => (
           <button key={`${nm}:${index}`} type="button" data-media-avatar="" data-entity-kind="performer"
-            data-entity-name={nm} title={`打开${label}页：${nm}`}
+            data-entity-name={nm} title={`打开${label}页：${entityDisplayName('performer', nm, refs[index]?.id)}`}
             style={{ '--media-avatar-index': index } as CSSProperties}
             dangerouslySetInnerHTML={{ __html: entityAvatar(nm, refs[index] ?? null, 'performer') }} />
         ))}

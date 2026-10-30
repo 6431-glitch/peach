@@ -2286,6 +2286,8 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         projection = (await self.client.get('/api/entity/shapes')).json()
         self.assertTrue(projection['ok'])
         self.assertEqual(projection['name_variants'], [])
+        self.assertEqual(projection['name_glyphs']['寧'], '宁')
+        self.assertEqual(projection['name_glyphs']['鈴'], '铃')
         shapes = projection['entities']
         by_id = {shape['id']: shape for shape in shapes}
         for entity_id in (901, 902):

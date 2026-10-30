@@ -91,11 +91,12 @@ export function PeopleGrid(
 export function OnlineAuthors(
   { items, layout, props }: { items: OnlineAuthor[]; layout: PeopleLayout; props: IndexProps },
 ) {
+  useEntityNames();
   const big = layout === 'big';
   return (
     <div data-index-grid="" data-layout={layout} data-cells="people" className="index-grid-person gap-3">
       {items.map((author) => (
-        <Cell key={author.key} data-follow-author={author.key} data-kind="performer" name={author.k}
+        <Cell key={author.key} data-follow-author={author.key} data-kind="performer" name={entityDisplayName('creator', author.k, author.entity_id)}
           readout={`${author.n.toLocaleString()} 项更新${author.held_by ? ' · 待确认' : ''}`} big={big}
           onPress={() => {
             if (author.entity_id) props.openEntity('creator', author.k);

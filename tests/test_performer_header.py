@@ -113,6 +113,17 @@ class Case(unittest.TestCase):
 
 
 class HeaderTests(Case):
+    def test_chinese_display_keeps_original_stage_names_and_only_changes_confirmed_glyphs(self):
+        for original, chinese in [('宮澤寧音', '宫泽宁音'), ('山田鈴奈', '山田铃奈'),
+                                  ('本郷愛', '本乡爱'), ('天使萌', '天使萌'),
+                                  ('篠田优', '篠田优'), ('槙泉奈', '槙泉奈')]:
+            with self.subTest(original=original):
+                page = {'name': original, 'aliases': []}
+                result = performer_name_display.writing(original, page, 'https://example.invalid/')
+                self.assertEqual(result['zh_cn'], chinese)
+                self.assertEqual(result['ja'], original)
+                self.assertEqual(page['name'], original)
+
     def test_display_writings_keep_stage_names_and_raw_aliases_separate(self):
         aliases = [('楓カレン', 'avdb'), ('田中柠檬', 'user:alias'),
                    ('田中レモン', 'avdb'), ('かえでかれん', 'r18:performer'),

@@ -98,7 +98,7 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions,
               <div ref={linkRow} data-entity-links="">{links.map((link, at) => <HeroLinkView key={at} link={link} />)}</div>
             ) : null}
             {marks.length || entity.feed ? <EntryMarks entity={entity} actions={actions} helpers={helpers} /> : null}
-            {entity.follow?.held.length ? <HeldAuthors follow={entity.follow} entity={entity} actions={actions} /> : null}
+            {entity.follow?.held.length ? <HeldAuthors follow={entity.follow} displayName={displayName} actions={actions} /> : null}
           </div>
           {facts.length ? (
             <dl data-entity-facts="">
@@ -148,6 +148,9 @@ function Portrait({ kind, name, helpers, people, company }: {
   useLayoutEffect(() => {
     const initial = portrait.current?.querySelector('[data-portrait-initial]');
     if (initial) initial.textContent = firstGrapheme(name);
+    for (const image of portrait.current?.querySelectorAll<HTMLImageElement>('img[alt]') || []) {
+      if (image.alt) image.alt = name;
+    }
   }, [name]);
   return (
     <div data-entity-portrait={people ? 'round' : 'square'} data-fit-native={company ? 'mark' : 'portrait'}
@@ -246,8 +249,8 @@ function FollowMeta({ follow, actions }: { follow: HeroFollow; actions: EntityHe
 
 /** 关注里有同名作者、还没认是不是同一个人：每组一条提示，认了才把那组来源绑到这位名下。
  *  名字相同不算证据（ADR-0095），所以这里只问，不替人绑。 */
-function HeldAuthors({ follow, entity, actions }: {
-  follow: HeroFollow; entity: EntityHeroData; actions: EntityHeroActions;
+function HeldAuthors({ follow, displayName, actions }: {
+  follow: HeroFollow; displayName: string; actions: EntityHeroActions;
 }) {
   const [busy, setBusy] = useState('');
   const confirm = async (key: string, name: string) => {
@@ -268,7 +271,7 @@ function HeldAuthors({ follow, entity, actions }: {
           action={<Button size="small" {...busyProps(busy === group.key)}
             onClick={() => { void confirm(group.key, group.name) }}>是同一个人</Button>}>
           {[group.providers.join(' · '), `${group.n.toLocaleString()} 项更新`].filter(Boolean).join(' · ')}
-          。和 {entity.canonical_name} 是同一个人吗？
+          。和 {displayName} 是同一个人吗？
         </Note>
       ))}
     </div>
