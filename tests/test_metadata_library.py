@@ -3610,6 +3610,41 @@ class ProcessingLockTests(unittest.TestCase):
                                    (aid, 'local', str(PureWindowsPath(prefix) / video.name), video.name,
                                     'video', code))
 
+    def test_a_user_can_cancel_while_waiting_for_the_processing_lock(self):
+        stopped = threading.Event()
+        errors = []
+        provider = stub_provider()
+        holder = FileLock(str(state_path(self.config)) + '.lock', timeout=0)
+        holder.acquire()
+
+        def user_run():
+            try:
+                process_library(self.config, self.db, self.root / 'generated', self.root / 'covers',
+                                provider_factory=lambda: provider, database=self.database,
+                                active=lambda: not stopped.is_set())
+            except Exception as error:
+                errors.append(error)
+
+        with patch('peach.library_processing.LOCK_RETRY_SECONDS', 0.01):
+            thread = threading.Thread(target=user_run)
+            thread.start()
+            try:
+                deadline = time.monotonic() + 10
+                while not library_processing._foreground_waiting() and time.monotonic() < deadline:
+                    time.sleep(0.01)
+                self.assertTrue(library_processing._foreground_waiting())
+                stopped.set()
+                thread.join(10)
+                self.assertFalse(thread.is_alive())
+            finally:
+                stopped.set()
+                holder.release()
+                thread.join(10)
+        self.assertEqual(len(errors), 1)
+        self.assertIsInstance(errors[0], InterruptedError)
+        self.assertFalse(library_processing._foreground_waiting())
+        provider.query.assert_not_called()
+
     def test_a_background_collection_steps_aside_while_the_processing_lock_is_held(self):
         config, db, database = self.config, self.db, self.database
         provider = stub_provider()
