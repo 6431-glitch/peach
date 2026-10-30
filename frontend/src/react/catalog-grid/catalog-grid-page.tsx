@@ -51,7 +51,13 @@ function MediaGrid({ children, selectMode }: { children: ReactNode; selectMode?:
     const node = grid.current;
     if (!node) return;
     const measure = () => setSingle(getComputedStyle(node).gridTemplateColumns.split(' ').filter(Boolean).length === 1);
-    const observer = new ResizeObserver(measure);
+    let width = node.getBoundingClientRect().width;
+    const observer = new ResizeObserver((entries) => {
+      const nextWidth = entries[0]?.contentRect.width;
+      if (nextWidth === undefined || nextWidth === width) return;
+      width = nextWidth;
+      measure();
+    });
     observer.observe(node);measure();
     return () => observer.disconnect();
   }, []);

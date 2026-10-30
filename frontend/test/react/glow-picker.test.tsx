@@ -64,7 +64,7 @@ beforeEach(() => {
 describe('常驻组件', () => {
   it('内容直接是 #boardGlowMenu 的子节点，不包 .peach-react；收起只卸内容，卡留在文档里', async () => {
     const { root } = await setup();
-    expect([...root.children].map((child) => child.tagName.toLowerCase())).toEqual(['header', 'div', 'p', 'div', 'footer']);
+    expect([...root.children].map((child) => child.tagName.toLowerCase())).toEqual(['div', 'header', 'div', 'p', 'div', 'footer']);
     expect(root.querySelector('.peach-react')).toBeNull();
     expect(r.managedEntry(root)?.path).toBe('glow-picker');
     act(() => { r.releaseManagedRoute(root) });
@@ -147,7 +147,7 @@ describe('与别处同步', () => {
   });
 
   it('配色钮上那枚点报第一枚光晕色，原色那一档挂标记，光晕关掉之后改报强调色', async () => {
-    const { store } = await setup({ preset: 'ash' });
+    const { store } = await setup({ preset: 'ash', on: true });
     const button = document.querySelector<HTMLElement>('#boardGlowBtn')!;
     wireGlowButton(button, store);
     const paint = () => [button.style.getPropertyValue('--glow-swatch'), button.hasAttribute('data-glow-native'), button.hasAttribute('data-glow-off')];

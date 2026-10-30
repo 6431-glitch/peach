@@ -13,7 +13,7 @@
  * 屏幕上没有任何反应，整组收起来，卡就只说当前还管用的那一件事。 */
 import { useSyncExternalStore } from 'react';
 
-import { ACCENT_CHOICES, chooseAccent, resetGlowColors } from '@peach/appearance';
+import { ACCENT_CHOICES, applyGlassFaces, applyHomeGlow, chooseAccent, resetGlowColors } from '@peach/appearance';
 
 import { GlowPresetGrid } from '../components/glow-preset-grid';
 import type { GlowPickerHost } from './glow-picker-api';
@@ -37,6 +37,15 @@ function GlowPicker({ host: at }: { host: GlowPickerHost }) {
   const { homeGlow: glow, accent } = store.value;
   return (
     <>
+      <div data-glow-options="">
+        <label><span>光晕</span><input type="checkbox" role="switch" checked={glow.on} onChange={(event) => {
+          glow.on = event.currentTarget.checked; store.save(); applyHomeGlow(store); applyGlassFaces(store);
+        }} /></label>
+        <label><span>模糊馆藏图片</span><input type="checkbox" role="switch" checked={store.value.blurLibraryImages === true} onChange={(event) => {
+          store.value.blurLibraryImages = event.currentTarget.checked;
+          document.documentElement.toggleAttribute('data-blur-library-images', store.value.blurLibraryImages); store.save();
+        }} /></label>
+      </div>
       <header data-glow-head="" data-glow-presets="" hidden={!glow.on}>
         <span>光晕</span>
         {/* 这里重置的是配色，不是整份光晕：强度和颗粒一起清掉会让人以为按错了键。整份恢复默认在详细设置那一屏。 */}

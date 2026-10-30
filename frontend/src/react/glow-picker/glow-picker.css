@@ -1,6 +1,8 @@
 /* 侧栏配色卡里的标题行（`glow-picker-island.tsx`）。卡的几何、玻璃材质和底部那枚全宽按钮归壳的
  * `#boardGlowMenu`（`web/board.css` 的 `.board-glow-menu`）；球和它们那一格在 `../components/glow-preset-grid.css`。 */
 [data-glow-head]{display:flex;align-items:center;justify-content:space-between;padding:0 4px 8px;color:var(--muted);font-size:12px}
+[data-glow-options]{display:flex;flex-direction:column;gap:8px;padding:0 4px 12px}
+[data-glow-options] label{display:flex;align-items:center;justify-content:space-between;gap:12px}
 /* 两组之间那条小标题：和头部同一档灰、同一个字号，只是不带右边的文字键。 */
 [data-glow-sub]{margin:12px 0 0}
 [data-glow-preset-reset]{padding:0;border:0;background:transparent;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}

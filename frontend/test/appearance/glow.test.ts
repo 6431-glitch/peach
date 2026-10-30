@@ -6,10 +6,15 @@ import { normalizeHomeGlow } from '../../src/appearance/home-glow';
 import { SETTINGS_KEY } from '../../src/appearance/settings';
 import { createSettingsStore } from '../../src/settings-store';
 
-const store = () => createSettingsStore<GlowSettings>(SETTINGS_KEY, { homeGlow: { ...normalizeHomeGlow(null), strength: 100 }, accent: 'blue' });
+const store = () => createSettingsStore<GlowSettings>(SETTINGS_KEY, { homeGlow: { ...normalizeHomeGlow(null), on: true, strength: 100 }, accent: 'blue' });
 const strength = () => document.querySelector<HTMLElement>('.glowlayer')!.style.getPropertyValue('--glow-strength');
 
 beforeEach(() => { document.body.innerHTML = '<div class="glowlayer"></div>' });
+
+it('光晕默认关闭并保留用户保存的开关和速度', () => {
+  expect(normalizeHomeGlow(null)).toMatchObject({ on: false, speed: 0 });
+  expect(normalizeHomeGlow({ on: true, speed: 100 })).toMatchObject({ on: true, speed: 100 });
+});
 
 it('启动那一次当场写进侧栏那一层，不等下一帧', () => {
   paintHomeGlowNow(store());

@@ -148,6 +148,7 @@ document.documentElement.style.setProperty('--hover-delay',`${preferencesState.a
 setUiSoundsEnabled(preferencesState.appSettings.uiSounds);
 wireUiSounds();
 applyTheme();
+document.documentElement.toggleAttribute('data-blur-library-images',preferencesState.appSettings.blurLibraryImages === true);
 watchSystemTheme();
 paintHomeGlowNow();
 applyGlassFaces();

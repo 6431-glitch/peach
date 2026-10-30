@@ -20,6 +20,12 @@
 }
 /* 同一网格行里的卡片共享完整高度。 */
 .peach-react [data-media-grid] > [data-media-card] { align-self: stretch; }
+html[data-blur-library-images] .peach-react [data-media-card] [data-media-pic] img[class~="poster"],
+html[data-blur-library-images] .peach-react [data-media-card] [data-media-pic] [data-media-art] img { filter: blur(18px); }
+@media (hover: hover) {
+  html[data-blur-library-images] .peach-react [data-media-card]:hover [data-media-pic] img[class~="poster"],
+  html[data-blur-library-images] .peach-react [data-media-card]:hover [data-media-pic] [data-media-art] img { filter: none; }
+}
 body[data-surface="/trash"] .peach-react [data-media-grid] > [data-media-card] { align-self: stretch; }
 /* 详情页接着看那一排：岛根挂在作品详情的横排 `[data-related-row]` 里，卡片在这一层横着排，卡距同那一排。 */
 .peach-react [data-media-next-row] { display: flex; gap: 16px; }
@@ -980,6 +986,9 @@ body .peach-react [data-media-grid][data-single-column] [data-media-card] [data-
   padding: 12px;
   color: var(--muted);
   text-align: center;
+}
+.peach-react [data-load-more]:not([aria-busy="true"]) .ui-geist-loading-dots > i {
+  animation-play-state: paused;
 }
 .peach-react [data-entity-more] {
   display: flex;

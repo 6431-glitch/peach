@@ -95,7 +95,7 @@ export function normalizeAppSettings(raw: unknown): { settings: AppSettings; mig
   settings.ambientMode = settings.ambientMode !== false;
   settings.theaterMode = settings.theaterMode === true;
   settings.groupCollapse = settings.groupCollapse !== false;
-  settings.detailAutoplay = settings.detailAutoplay !== false;
+  settings.detailAutoplay = settings.detailAutoplay === true;
   settings.miniplayer = settings.miniplayer !== false;
   settings.uiSounds = settings.uiSounds !== false;
   settings.feedAutoScroll = settings.feedAutoScroll !== false;

@@ -81,6 +81,7 @@ export async function mountDetailPlayer(
   if (existing && !existing.isDisposed()) return existing;
   const host = playerHost();
   const resume = options.resume ?? null;
+  video.muted = true;
   if (resume?.autoplay) autoplay = true;
   const source = () => (options.source ? Promise.resolve(options.source) : detailStreamSource(item));
   /* 拉不到就退回原生 video，和「页面里没有 videojs」是同一个兜底出口。 */

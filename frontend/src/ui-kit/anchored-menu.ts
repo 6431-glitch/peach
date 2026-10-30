@@ -111,15 +111,19 @@ export function wireAnchoredMenu(
   /* 开着没开着记在这里，不看 `hidden`：退场那 150ms 里面板还在、hidden 还是 false，
      按 hidden 判会把「正在收」当成「开着」，再点一下触发钮就关了个已经在关的。 */
   let open=false,disposed=false;
+  const menuSize=new ResizeObserver(()=>{if(open)position()});
+  const contentChange=new MutationObserver(()=>{if(open)position()});
   const setOpen=(next:boolean)=>{
     if(disposed)return;
     if(next){
       if(openedMenu&&openedMenu.mount!==mount)openedMenu.setOpen(false);
       open=true;presentMenu(menu);if(inTopLayer&&!menu.matches(':popover-open'))menu.showPopover();position();
+      menuSize.observe(menu);
+      contentChange.observe(menu,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden']});
       window.addEventListener('resize',position);
       window.addEventListener('scroll',closeFromViewport,{capture:true,passive:true});
     }else{
-      open=false;
+      open=false;menuSize.disconnect();contentChange.disconnect();
       window.removeEventListener('resize',position);
       window.removeEventListener('scroll',closeFromViewport,true);
       dismissMenu(menu,()=>{menu.style.left='';menu.style.top='';menu.style.maxHeight='';
@@ -134,7 +138,7 @@ export function wireAnchoredMenu(
   mount.addEventListener('keydown',keydown);
   const dispose=()=>{
     if(disposed)return;
-    disposed=true;open=false;
+    disposed=true;open=false;menuSize.disconnect();contentChange.disconnect();
     toggle.removeEventListener('click',click);
     mount.removeEventListener('keydown',keydown);
     window.removeEventListener('resize',position);

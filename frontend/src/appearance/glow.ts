@@ -19,7 +19,7 @@ import type { SettingsStore } from '../settings-store';
 import { appSettingsStore } from './settings';
 
 /** 这一层读写的那两项；store 上还有别的字段。 */
-export interface GlowSettings { homeGlow: HomeGlow; accent: string }
+export interface GlowSettings { homeGlow: HomeGlow; accent: string; blurLibraryImages?: boolean }
 type GlowStore = SettingsStore<GlowSettings>;
 
 /** 侧栏光晕那一层当场写一次。启动时第一帧之前走这一条。 */

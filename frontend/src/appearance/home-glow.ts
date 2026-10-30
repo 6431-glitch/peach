@@ -152,8 +152,8 @@ const glowRgba=(hex:string,alpha:number)=>`rgba(${[1,3,5].map(at=>parseInt(hex.s
    一次算完：存倍率的话，「默认」在数据里就是 1、在界面上却要显示成中间那一格，两边迟早
    会各按各的理解走。速度是个例外，它的中位是 100，上限 300——那一档拉满是三倍快，
    而 0 就是停住。 */
-const GLOW_RANGES:Record<GlowField,[min:number,max:number,fallback:number]>={strength:[0,100,100],noise:[0,100,0],speed:[0,300,100],soften:[0,100,50],size:[0,100,50]};
-const DEFAULT_HOME_GLOW:HomeGlow={on:true,preset:'ash',strength:100,noise:0,speed:100,soften:50,size:50,
+const GLOW_RANGES:Record<GlowField,[min:number,max:number,fallback:number]>={strength:[0,100,100],noise:[0,100,0],speed:[0,300,0],soften:[0,100,50],size:[0,100,50]};
+const DEFAULT_HOME_GLOW:HomeGlow={on:false,preset:'ash',strength:100,noise:0,speed:0,soften:50,size:50,
   ...glowPalette('ash')};
 /* 光晕参数整份来自 localStorage，形态和范围都不可信：颜色写成任意字符串会让那一层
    渐变整条失效，百分比越界会把光晕糊成一整片或者缩没。逐项夹回区间、认不出就退回
@@ -170,7 +170,7 @@ function normalizeHomeGlow(raw:unknown):HomeGlow{
   const known=HOME_GLOW_CHOICES.some(([key])=>key===stored.preset);
   const preset:string=known?stored.preset:'ash';
   const seed=glowPalette(preset==='custom'?'ash':preset);
-  const glow={on:stored.on!==false,preset} as HomeGlow;
+  const glow={on:typeof stored.on==='boolean'?stored.on:DEFAULT_HOME_GLOW.on,preset} as HomeGlow;
   for(const [field,[min,max,fallback]] of Object.entries(GLOW_RANGES) as [GlowField,[number,number,number]][])
     glow[field]=glowNumber(+stored[field],min,max,fallback);
   for(const key of HOME_GLOW_SPOTS){
@@ -212,7 +212,7 @@ function paintHomeGlow(el:HTMLElement|null,glow:HomeGlow):void{
   write('--glow-soften',(0.7+glow.soften/100*0.6).toFixed(3));
   write('--glow-size',(0.5+glow.size/100).toFixed(3));
   write('--glow-drift-scale',glow.speed?(100/glow.speed).toFixed(3):'1');
-  write('--glow-drift-play',glow.speed?'running':'paused');
+  write('--glow-drift-play',glow.on&&glow.speed?'running':'paused');
   HOME_GLOW_SPOTS.forEach((key,index)=>{
     const spot=glow[key];
     write(`--glow-spot-${index+1}-color`,glowRgba(spot.color,spot.alpha));
@@ -237,7 +237,7 @@ function paintGlassFaces(el:HTMLElement|null,glow:HomeGlow):void{
   const native=!glow.on||isNativeGlass(glow.preset);
   el.toggleAttribute('data-glow-native',native);
   el.style.setProperty('--glow-drift-scale',glow.speed?(100/glow.speed).toFixed(3):'1');
-  el.style.setProperty('--glow-drift-play',glow.speed?'running':'paused');
+  el.style.setProperty('--glow-drift-play',glow.on&&glow.speed?'running':'paused');
   if(native){el.style.removeProperty('--glass-tint-a');el.style.removeProperty('--glass-tint-b');return}
   el.style.setProperty('--glass-tint-a',glow.spot1.color);
   el.style.setProperty('--glass-tint-b',glow.spot2.color);

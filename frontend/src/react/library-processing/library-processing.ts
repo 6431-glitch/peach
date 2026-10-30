@@ -178,8 +178,9 @@ export function remainingTime(state: LibraryProcessingData): string {
   const start = Math.max(1 / precision, Math.floor(low / unit * precision) / precision);
   const end = Math.max(start, Math.ceil(high / unit * precision) / precision);
   const span = start === end ? `${end}` : `${start}–${end}`;
-  const rough = state.eta_initial || state.eta_kind !== 'measured' ? '（粗估）' : '';
-  return `预计剩余约 ${span} ${label}${rough}${state.eta_scope ? ` · ${state.eta_scope}` : ''}`;
+  const rough = state.eta_initial || state.eta_kind !== 'measured' ? translate('（粗估）') : '';
+  const scope = state.eta_scope ? ` · ${translate(state.eta_scope)}` : '';
+  return formatTranslation('预计剩余约 {0} {1}{2}{3}', span, translate(label), rough, scope);
 }
 
 export const fetchLibraryProcessing = (signal?: AbortSignal) =>

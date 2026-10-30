@@ -597,6 +597,13 @@ it('预估按粗估与实测速率显示区间，缺少有效范围时等待估�
   expect(remainingTime({ ...state, status: 'complete' })).toBe('');
 });
 
+it('英文预估完整翻译小时、粗估和任务范围', () => {
+  localStorage.setItem('peach.language', 'en');
+  const state: LibraryProcessingData = { status: 'running', eta_seconds_min: 2880, eta_seconds_max: 7560,
+    eta_kind: 'historical', eta_scope: '整趟任务' };
+  expect(remainingTime(state)).toBe('Estimated remaining: 0.8–2.1 hours (rough estimate) · Entire task');
+});
+
 it('处理较慢时各任务面显示等待进展，不沿用旧估时', async () => {
   await open({ status: 'running', job_id: 'slow', stalled: true,
     eta_seconds_min: 63, eta_seconds_max: 94, eta_kind: 'measured',

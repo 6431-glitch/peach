@@ -1,5 +1,6 @@
 import { fmtSize } from '@peach/legacy/core';
 import { useId, useState } from 'react';
+import { formatTranslation } from '../../i18n';
 import { RiArrowDownSLine, RiArrowUpSLine, RiGlobalLine, RiHardDrive3Line } from '@remixicon/react';
 import { Button } from '@/components/base/buttons/button';
 import type { ProcessingTraffic } from './library-processing';
@@ -17,7 +18,7 @@ const range = (low: number, high: number) => {
   return startUnit === endUnit ? `${start}-${end}${endUnit}` : `${size(low)}-${size(high)}`;
 };
 const forecast = (expected: number | undefined, low: number, high: number) => expected === undefined
-  ? range(low, high) : `${expected > 0 ? '约 ' : ''}${size(expected)}`;
+  ? range(low, high) : expected > 0 ? formatTranslation('约 {0}', size(expected)) : size(expected);
 
 /** 确认弹窗、任务卡和管理页共用逐目录分账。 */
 export function TrafficProgress({ traffic, initial = false, detailsOpen, onDetailsChange }: {
