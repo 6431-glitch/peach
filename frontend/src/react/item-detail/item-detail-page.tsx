@@ -457,6 +457,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   const [studio, setStudio] = useState('');
   const [date, setDate] = useState('');
   const [category, setCategory] = useState('dvd');
+  const [empireUrl, setEmpireUrl] = useState('');
   const [result, setResult] = useState<MetadataResults | null>(null);
   const [empireReview, setEmpireReview] = useState<EmpireReview | null>(null);
   const moreSentinel = useRef<HTMLDivElement>(null);
@@ -521,6 +522,18 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         actions.toast(outcome.image_errors.length ? 'Match applied, but some artwork could not be downloaded.' : 'Metadata match applied');
       },
     });
+  };
+  const reviewEmpireUrl = async () => {
+    setBusy(true); setError('');
+    try {
+      setEmpireReview(await apiSend<EmpireReview>('/api/configuration/adult-empire/preview-url', {
+        asset_id: item.id, url: empireUrl.trim(),
+      }, 'POST'));
+    } catch (cause) {
+      const detail = cause instanceof ApiError && cause.body && typeof cause.body === 'object'
+        ? (cause.body as { detail?: unknown }).detail : null;
+      setError(typeof detail === 'string' ? detail : errorMessage(cause));
+    } finally { setBusy(false) }
   };
   const applyJav = () => {
     if (!javResult) return;
@@ -596,6 +609,10 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
       </>
         : <Input label="Release code" value={javCode} onChange={setJavCode} placeholder="For example, ROE-064" />}
       <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
+      {source === 'adultempire' ? <>
+        <Input label="Adult Empire film URL" value={empireUrl} onChange={setEmpireUrl} placeholder="https://www.adultempire.com/..." />
+        <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void reviewEmpireUrl()}>Review link</Button>
+      </> : null}
       {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
       {javResult ? <div className="flex flex-col items-start gap-2 border-t border-separator-border pt-3">
         <a href={javResult.candidate.url} target="_blank" rel="noreferrer" data-i18n-ignore="">{javResult.candidate.code} · {javResult.candidate.title} · {javResult.candidate.studio} · {javResult.candidate.date}</a>

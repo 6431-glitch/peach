@@ -327,6 +327,8 @@ def adult_empire_match(request: Request, action: str, body: dict = Body(default_
     try:
         if action == 'search':
             return match.search(config, database, asset_id, body.get('query'), body.get('category'), body.get('page', 1))
+        if action == 'preview-url':
+            return match.preview_url(config, database, asset_id, body.get('url'))
         if action in ('detail', 'apply'):
             candidate_id, revision = body.get('candidate_id'), body.get('revision')
             if not isinstance(candidate_id, str) or type(revision) is not int:

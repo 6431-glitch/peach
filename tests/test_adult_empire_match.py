@@ -54,6 +54,23 @@ class AdultEmpireMatchTests(unittest.TestCase):
             match.search(self.config, self.db, 1, 'Example', 'vod', 1)
         self.assertEqual(lookup.call_args.args[1]['category'], 'vod')
 
+    def test_url_review_uses_detail_and_does_not_modify_asset(self):
+        with patch.object(match, '_service', return_value=self.movie) as lookup:
+            review = match.preview_url(self.config, self.db, 1, self.candidate['url'] + '?ref=example#details')
+        lookup.assert_called_once_with('/detail', {'path': self.candidate['id']})
+        self.assertEqual(review['candidate'], self.movie)
+        with self.db.read_connection() as connection:
+            self.assertEqual(connection.execute('SELECT catalog_title FROM asset WHERE id=1').fetchone()[0], 'Old title')
+
+    def test_url_review_rejects_untrusted_urls(self):
+        for url in ('http://www.adultempire.com/123/example.html',
+                    'https://adultempire.com.evil.test/123/example.html',
+                    'https://adultempire.com@evil.test/123/example.html',
+                    'https://www.adultempire.com:444/123/example.html',
+                    'https://www.adultempire.com/search?q=example'):
+            with self.subTest(url=url), self.assertRaisesRegex(ValueError, 'valid Adult Empire'):
+                match.preview_url(self.config, self.db, 1, url)
+
     def test_stale_revision_cannot_overwrite_changes(self):
         revision = self.prepare()
         with self.db.write_transaction() as connection:

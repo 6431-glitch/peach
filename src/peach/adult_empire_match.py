@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -72,6 +73,28 @@ def search(config, database, asset_id, query, category, page):
     path.parent.mkdir(parents=True, exist_ok=True)
     atomic_write_text(path, json.dumps(record, ensure_ascii=False))
     return {'candidates': candidates, 'revision': row['mutation_revision'], 'next_page': response.get('next_page')}
+
+
+def preview_url(config, database, asset_id, url):
+    if not isinstance(url, str) or len(url) > 2048:
+        raise ValueError('Enter a valid Adult Empire film URL.')
+    try:
+        parts = urlsplit(url.strip())
+        if (parts.scheme.lower() != 'https' or parts.hostname not in
+                ('adultempire.com', 'www.adultempire.com', 'adultdvdempire.com', 'www.adultdvdempire.com')
+                or parts.port not in (None, 443) or parts.username or parts.password
+                or not re.fullmatch(r'/(?:clip/)?\d+/[a-z0-9-]+\.html', parts.path, re.I)):
+            raise ValueError
+    except ValueError as exc:
+        raise ValueError('Enter a valid Adult Empire film URL.') from exc
+    with database.read_connection() as connection:
+        row = connection.execute("SELECT mutation_revision FROM asset WHERE id=? AND medium='video' AND COALESCE(disposal,'') NOT IN ('trash','vanished')", (asset_id,)).fetchone()
+        if row is None:
+            raise ValueError('Choose a video from your library.')
+    path = _record(config, asset_id)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    atomic_write_text(path, json.dumps({'revision': row['mutation_revision'], 'candidates': [{'id': parts.path}]}))
+    return detail(config, database, asset_id, parts.path, row['mutation_revision'])
 
 
 def detail(config, database, asset_id, candidate_id, revision):
