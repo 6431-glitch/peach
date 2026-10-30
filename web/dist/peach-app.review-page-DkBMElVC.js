@@ -1,193 +1,193 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "2f3d37b1-ec08-4078-97a5-2b9a18c59c92", e._sentryDebugIdIdentifier = "sentry-dbid-2f3d37b1-ec08-4078-97a5-2b9a18c59c92");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "bad4198e-1cdd-4835-8da4-504f016334c8", e._sentryDebugIdIdentifier = "sentry-dbid-bad4198e-1cdd-4835-8da4-504f016334c8");
 	} catch {}
 })();
-import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as e, $b4f18e3395fe64d7$export$3e41faf802a29e71 as t, $b4f18e3395fe64d7$export$b2539bed5023c21c as n, $ea3928288112382f$export$439d29a4e110a164 as r, $fe21c36db05242bb$export$a98f0dcb43a68a25 as i, $fe21c36db05242bb$export$d7b12c4107be0d61 as a, Button as o, ButtonLink as s, Checkbox as c, CheckboxGlyph as l, Chip as u, CollapseChevron as d, CollapseRegion as f, DEFAULT_CATEGORY as p, ENTITY_REVIEW_KINDS as m, Ea as h, EmptyState as ee, ExternalLink as g, FIELDSET_FOOT as _, FilterGlassRows as v, Gg as y, InputBase as b, LinkButton as x, Note as te, REVIEW_CATEGORIES as S, REVIEW_DECISION_LABELS as ne, REVIEW_KEY as C, REVIEW_LABELS as w, REVIEW_QUEUES as T, REVIEW_QUEUE_LABELS as E, Select as D, SelectItem as O, SelectionActions as k, SelectionDock as A, TextField as j, Wt as M, __toESM as N, avatarInner as P, busyProps as F, canApprove as re, cardClass as I, commonReviewSources as ie, currentReviewRow as ae, cx as L, decisionPayload as oe, decisionReceipt as se, defaultChoice as ce, errorMessage as le, fetchReview as ue, filterReviewRows as de, groupReviewRows as fe, import_jsx_runtime as R, isReviewCategory as pe, jsx as z, jsxs as B, l7 as V, m7 as me, mirrorText as he, paginationRange as ge, pendingGenres as _e, recordGenre as ve, reloadReview as ye, require_react as be, reviewGroupingOptions as xe, reviewQueueData as Se, reviewQueueOf as Ce, reviewWindow as we, rowEvidence as Te, rowFieldName as H, rowSubject as Ee, rowTags as De, rowTitle as Oe, selectReviewRange as ke, settleReviewRows as Ae, spinnerHtml as U, submitDecision as je, useMutation as Me, useOverlayScrollbar as W, useQuery as Ne, useViewGlide as Pe } from "./peach-app.js";
-import { Page as Fe } from "./peach-app.page-CW3QRN2N.js";
-import { LEGACY_AVATAR_IMG as Ie } from "./peach-app.legacy-avatar-NSITxLRS.js";
-import { PillAriaTabList as Le } from "./peach-app.pill-aria-tab-list-Byrq5vdA.js";
+import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as e, $b4f18e3395fe64d7$export$3e41faf802a29e71 as t, $b4f18e3395fe64d7$export$b2539bed5023c21c as n, $ea3928288112382f$export$439d29a4e110a164 as r, $fe21c36db05242bb$export$d7b12c4107be0d61 as i, Button as a, ButtonLink as o, Checkbox as s, CheckboxGlyph as c, Chip as l, CollapseChevron as u, CollapseRegion as d, DEFAULT_CATEGORY as f, ENTITY_REVIEW_KINDS as p, Ea as m, EmptyState as h, ExternalLink as ee, FIELDSET_FOOT as g, FilterGlassRows as _, Gg as v, InputBase as y, LinkButton as te, Note as b, REVIEW_CATEGORIES as x, REVIEW_DECISION_LABELS as ne, REVIEW_KEY as S, REVIEW_LABELS as C, REVIEW_QUEUES as re, REVIEW_QUEUE_LABELS as w, RadioDot as T, RadioGroup as E, Select as D, SelectItem as O, SelectionActions as k, SelectionDock as A, TextField as j, Wt as M, __toESM as N, avatarInner as ie, busyProps as P, canApprove as ae, cardClass as F, commonReviewSources as I, currentReviewRow as oe, cx as se, decisionPayload as ce, decisionReceipt as le, defaultChoice as ue, errorMessage as de, fetchReview as fe, filterReviewRows as pe, groupReviewRows as me, import_jsx_runtime as L, isReviewCategory as he, jsx as R, jsxs as z, l7 as ge, m7 as _e, mirrorText as ve, paginationRange as ye, pendingGenres as be, recordGenre as xe, reloadReview as Se, require_react as Ce, reviewGroupingOptions as we, reviewQueueData as Te, reviewQueueOf as Ee, reviewWindow as De, rowEvidence as B, rowFieldName as Oe, rowSubject as ke, rowTags as Ae, rowTitle as V, selectReviewRange as je, settleReviewRows as Me, spinnerHtml as H, submitDecision as Ne, useMutation as Pe, useOverlayScrollbar as Fe, useQuery as Ie, useViewGlide as Le } from "./peach-app.js";
+import { Page as Re } from "./peach-app.page-CW3QRN2N.js";
+import { LEGACY_AVATAR_IMG as ze } from "./peach-app.legacy-avatar-NSITxLRS.js";
+import { PillAriaTabList as Be } from "./peach-app.pill-aria-tab-list-Byrq5vdA.js";
 // src/react/review/bulk-toolbar.tsx
-var G = /* @__PURE__ */ N(be(), 1);
-function Re(e) {
-	let { groupOptions: t, groupBy: n, onGroupBy: r, groups: i, filter: a, onFilter: s, pageKeys: c, selected: l, onSelected: u, selectedRows: d, metadata: f, approvable: p, busy: m, feedback: h, onUnifySource: ee, onRun: g, queueView: _ = "pending", queueCounts: y, onQueueChange: b, locked: x, fields: te, fieldFilter: S, onFieldFilter: ne } = e, C = c.filter((e) => l.has(e)), w = C.length > 0 && C.length === c.length, k = ie(d), j = f && d.some((e) => (e.candidates?.length || 0) > 1), M = k.length ? "统一选择来源" : "所选项目无共同来源", N = (0, G.useRef)(null), P = (0, G.useRef)(null), F = (0, G.useRef)(null), [re, I] = (0, G.useState)(!1), ae = Pe(N, P, "[data-entity-state][aria-pressed=\"true\"]", _);
-	return (0, G.useLayoutEffect)(() => {
-		let e = P.current, t = F.current, n = e?.parentElement, r = e?.closest("[data-review-filter]");
+var U = /* @__PURE__ */ N(Ce(), 1);
+function Ve(e) {
+	let { groupOptions: t, groupBy: n, onGroupBy: r, groups: i, filter: o, onFilter: s, pageKeys: c, selected: l, onSelected: u, selectedRows: d, metadata: f, approvable: p, busy: m, feedback: h, onUnifySource: ee, onRun: g, queueView: v = "pending", queueCounts: y, onQueueChange: te, locked: b, fields: x, fieldFilter: ne, onFieldFilter: S } = e, C = c.filter((e) => l.has(e)), T = C.length > 0 && C.length === c.length, E = I(d), k = f && d.some((e) => (e.candidates?.length || 0) > 1), j = E.length ? "统一选择来源" : "所选项目无共同来源", M = (0, U.useRef)(null), N = (0, U.useRef)(null), ie = (0, U.useRef)(null), [P, ae] = (0, U.useState)(!1), F = Le(M, N, "[data-entity-state][aria-pressed=\"true\"]", v);
+	return (0, U.useLayoutEffect)(() => {
+		let e = N.current, t = ie.current, n = e?.parentElement, r = e?.closest("[data-review-filter]");
 		if (!e || !t || !n || !r) return;
-		let i = () => I(t.offsetHeight > 0 && Math.abs(n.getBoundingClientRect().top - t.getBoundingClientRect().top) < 1), a = new ResizeObserver(i);
+		let i = () => ae(t.offsetHeight > 0 && Math.abs(n.getBoundingClientRect().top - t.getBoundingClientRect().top) < 1), a = new ResizeObserver(i);
 		for (let n of [
 			r,
 			e,
 			t
 		]) a.observe(n);
 		return i(), () => a.disconnect();
-	}, []), /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ z(v, {
+	}, []), /* @__PURE__ */ z(L.Fragment, { children: [/* @__PURE__ */ R(_, {
 		label: "复核筛选",
 		topLabel: "处理状态",
 		attrs: { "data-review-filter": "" },
 		className: "mb-0 flex-row flex-wrap",
 		topClassName: "max-w-full flex-none",
 		bottomClassName: c.length ? "min-h-12 max-w-full flex-none flex-wrap" : "hidden",
-		bottomRef: F,
-		panes: /* @__PURE__ */ z("span", {
-			ref: N,
+		bottomRef: ie,
+		panes: /* @__PURE__ */ R("span", {
+			ref: M,
 			"data-view-glide": "",
 			"aria-hidden": "true"
 		}),
-		top: /* @__PURE__ */ B("div", {
-			ref: P,
+		top: /* @__PURE__ */ z("div", {
+			ref: N,
 			role: "group",
 			"aria-label": "复核状态",
 			"data-entity-states": "",
-			onPointerLeave: ae.leave,
-			children: [T.map((e) => /* @__PURE__ */ B("button", {
+			onPointerLeave: F.leave,
+			children: [re.map((e) => /* @__PURE__ */ z("button", {
 				type: "button",
 				"data-entity-state": e,
 				"data-entity-press": "",
 				disabled: m,
-				"aria-pressed": _ === e,
-				onPointerEnter: ae.hover,
+				"aria-pressed": v === e,
+				onPointerEnter: F.hover,
 				onClick: () => {
-					e !== _ && b(e);
+					e !== v && te(e);
 				},
 				children: [
-					/* @__PURE__ */ z("span", {
+					/* @__PURE__ */ R("span", {
 						"data-copy-key": `review.queue.${e}`,
-						children: E[e]
+						children: w[e]
 					}),
 					" ",
-					/* @__PURE__ */ z("span", {
+					/* @__PURE__ */ R("span", {
 						className: "ms-1.5 tabular-nums text-caption-1-medium text-text-secondary",
 						children: y ? y[e].toLocaleString() : "…"
 					})
 				]
-			}, e)), /* @__PURE__ */ z("span", {
+			}, e)), /* @__PURE__ */ R("span", {
 				"data-entity-sep": "",
 				"aria-hidden": "true",
-				className: re ? void 0 : "invisible"
+				className: P ? void 0 : "invisible"
 			})]
 		}),
-		bottom: c.length ? /* @__PURE__ */ B(R.Fragment, { children: [
-			f && te.length ? /* @__PURE__ */ B(D, {
+		bottom: c.length ? /* @__PURE__ */ z(L.Fragment, { children: [
+			f && x.length ? /* @__PURE__ */ z(D, {
 				"aria-label": "筛选资料字段",
 				size: "sm",
-				prefix: /* @__PURE__ */ z("span", {
+				prefix: /* @__PURE__ */ R("span", {
 					"data-copy-key": "review.filter.field",
 					className: "pointer-events-auto",
 					children: "字段"
 				}),
-				selectedKey: S || "*",
+				selectedKey: ne || "*",
 				isDisabled: m,
 				onSelectionChange: (e) => {
-					e !== null && ne(String(e) === "*" ? "" : String(e));
+					e !== null && S(String(e) === "*" ? "" : String(e));
 				},
-				children: [/* @__PURE__ */ z(O, {
+				children: [/* @__PURE__ */ R(O, {
 					id: "*",
 					children: "全部"
-				}), te.map((e) => /* @__PURE__ */ z(O, {
+				}), x.map((e) => /* @__PURE__ */ R(O, {
 					id: e.key,
 					children: `${e.title} · ${e.rows.length}`
 				}, e.key))]
 			}) : null,
-			/* @__PURE__ */ z(D, {
+			/* @__PURE__ */ R(D, {
 				"aria-label": "筛选分组方式",
 				size: "sm",
 				selectedKey: n,
 				onSelectionChange: (e) => {
 					e !== null && r(String(e));
 				},
-				children: t.map(([e, t]) => /* @__PURE__ */ z(O, {
+				children: t.map(([e, t]) => /* @__PURE__ */ R(O, {
 					id: e,
 					children: t
 				}, e))
 			}),
-			i.length > 1 ? /* @__PURE__ */ B(D, {
+			i.length > 1 ? /* @__PURE__ */ z(D, {
 				"aria-label": n === "field" ? "筛选字段分类" : "筛选当前分类",
 				size: "sm",
 				prefix: "分类",
-				selectedKey: a || "*",
+				selectedKey: o || "*",
 				onSelectionChange: (e) => {
 					e !== null && s(String(e) === "*" ? "" : String(e));
 				},
-				children: [/* @__PURE__ */ z(O, {
+				children: [/* @__PURE__ */ R(O, {
 					id: "*",
 					children: "全部"
-				}), i.map((e) => /* @__PURE__ */ z(O, {
+				}), i.map((e) => /* @__PURE__ */ R(O, {
 					id: e.key,
 					children: `${e.title} · ${e.rows.length}`
 				}, e.key))]
 			}) : null,
-			x ? null : /* @__PURE__ */ z(o, {
+			b ? null : /* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
-				leadingIcon: V,
-				"aria-pressed": w,
+				leadingIcon: ge,
+				"aria-pressed": T,
 				disabled: m,
 				onClick: () => {
 					let e = new Set(l);
-					for (let t of c) w ? e.delete(t) : e.add(t);
+					for (let t of c) T ? e.delete(t) : e.add(t);
 					u(e);
 				},
-				children: w ? "清空当前选择" : a ? "全选当前分类" : "全选本页"
+				children: T ? "清空当前选择" : o ? "全选当前分类" : "全选本页"
 			})
 		] }) : null
-	}), /* @__PURE__ */ B(A, {
+	}), /* @__PURE__ */ z(A, {
 		label: "复核所选项目",
-		visible: !x && l.size > 0,
+		visible: !b && l.size > 0,
 		count: `已选 ${l.size} 项`,
 		children: [
-			j && _ !== "ignored" ? /* @__PURE__ */ B(D, {
+			k && v !== "ignored" ? /* @__PURE__ */ z(D, {
 				"aria-label": "统一选择来源",
 				size: "sm",
 				selectedKey: "",
-				isDisabled: m || !k.length,
+				isDisabled: m || !E.length,
 				onSelectionChange: (e) => {
 					e !== null && e !== "" && ee(String(e));
 				},
-				children: [/* @__PURE__ */ z(O, {
+				children: [/* @__PURE__ */ R(O, {
 					id: "",
-					children: M
-				}), k.map((e) => /* @__PURE__ */ z(O, {
+					children: j
+				}), E.map((e) => /* @__PURE__ */ R(O, {
 					id: e,
 					children: e
 				}, e))]
 			}) : null,
-			_ === "ignored" ? null : /* @__PURE__ */ z(o, {
+			v === "ignored" ? null : /* @__PURE__ */ R(a, {
 				variant: "ghost",
 				size: "small",
 				disabled: m || !l.size,
 				onClick: () => g("rejected"),
 				children: "忽略所选"
 			}),
-			_ === "pending" ? /* @__PURE__ */ z(o, {
+			v === "pending" ? /* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
 				disabled: m || !l.size,
 				onClick: () => g("skipped"),
 				children: "稍后处理所选"
-			}) : /* @__PURE__ */ z(o, {
-				variant: _ === "ignored" ? "primary" : "secondary",
+			}) : /* @__PURE__ */ R(a, {
+				variant: v === "ignored" ? "primary" : "secondary",
 				size: "small",
 				disabled: m || !l.size,
 				onClick: () => g("restore"),
 				children: "恢复所选"
 			}),
-			_ === "ignored" ? null : /* @__PURE__ */ z(o, {
+			v === "ignored" ? null : /* @__PURE__ */ R(a, {
 				variant: "primary",
 				size: "small",
 				disabled: m || !l.size || !p,
 				onClick: () => g("approved"),
 				children: "通过所选"
 			}),
-			/* @__PURE__ */ z(o, {
+			/* @__PURE__ */ R(a, {
 				variant: "ghost",
 				size: "small",
 				disabled: m,
 				onClick: () => u(/* @__PURE__ */ new Set()),
 				children: "取消选择"
 			}),
-			h ? /* @__PURE__ */ z("p", {
+			h ? /* @__PURE__ */ R("p", {
 				role: "status",
 				className: "w-full text-body-2-regular text-text-secondary",
 				children: h
@@ -195,63 +195,24 @@ function Re(e) {
 		]
 	})] });
 }
-// src/react/boardui/components/base/radio/radio.tsx
-var ze = {
-	sm: {
-		dot: "size-3.5",
-		inner: "size-[5px]",
-		selected: "bg-gradient-to-b from-accent-500 to-accent-600 shadow-[inset_0px_0px_0px_0.875px_var(--color-accent-500),inset_0px_1.75px_0px_0px_rgba(255,255,255,0.25)]",
-		border: "border-[0.875px]",
-		gap: "gap-2",
-		label: "text-body-2-medium"
-	},
-	md: {
-		dot: "size-4",
-		inner: "size-1.5",
-		selected: "bg-gradient-to-b from-accent-500 to-accent-600 shadow-[inset_0px_0px_0px_1px_var(--color-accent-500),inset_0px_2px_0px_0px_rgba(255,255,255,0.25)]",
-		border: "border",
-		gap: "gap-2",
-		label: "text-body-medium"
-	}
-};
-function K({ selected: e = !1, size: t = "sm", focusVisible: n = !1, className: r }) {
-	let i = ze[t];
-	return /* @__PURE__ */ B("span", {
-		"aria-hidden": !0,
-		className: L("relative flex shrink-0 items-center justify-center rounded-full", i.dot, n && "ring-2 ring-border-focus-ring ring-offset-2", r),
-		children: [
-			/* @__PURE__ */ z("span", { className: L("absolute inset-0 rounded-full border-border-checkbox-default bg-background-primary-default shadow-xs", "transition-opacity duration-200 ease", i.border, e && "opacity-0") }),
-			/* @__PURE__ */ z("span", { className: L("absolute inset-0 rounded-full", "transition-opacity duration-200 ease", i.selected, !e && "opacity-0") }),
-			/* @__PURE__ */ z("span", { className: L("absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-control-indicator-background", "transition-[scale,opacity] duration-200 ease", i.inner, e ? "scale-100 opacity-100" : "scale-0 opacity-0") })
-		]
-	});
-}
-function Be({ className: e, children: t, ref: n, ...r }) {
-	return /* @__PURE__ */ z(i, {
-		ref: n,
-		...r,
-		className: (t) => L("flex flex-col gap-2", typeof e == "function" ? e(t) : e),
-		children: t
-	});
-}
 // src/react/boardui/components/base/radio/radio-card.tsx
-function q({ className: e, title: t, description: n, ref: r, ...i }) {
-	return /* @__PURE__ */ z(a, {
+function W({ className: e, title: t, description: n, ref: r, ...a }) {
+	return /* @__PURE__ */ R(i, {
 		ref: r,
-		...i,
-		className: (t) => L("group flex w-full items-center justify-between gap-3 rounded-2lg border border-border-button-default py-3 pe-5 ps-4 select-none", "transition-colors duration-150 ease", t.isHovered && !t.isDisabled ? "bg-background-primary-hover" : "bg-background-primary-default", t.isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer", typeof e == "function" ? e(t) : e),
-		children: (e) => /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ B("span", {
+		...a,
+		className: (t) => se("group flex w-full items-center justify-between gap-3 rounded-2lg border border-border-button-default py-3 pe-5 ps-4 select-none", "transition-colors duration-150 ease", t.isHovered && !t.isDisabled ? "bg-background-primary-hover" : "bg-background-primary-default", t.isDisabled ? "cursor-not-allowed opacity-50" : "cursor-pointer", typeof e == "function" ? e(t) : e),
+		children: (e) => /* @__PURE__ */ z(L.Fragment, { children: [/* @__PURE__ */ z("span", {
 			className: "flex min-w-0 flex-col gap-0.5",
-			children: [/* @__PURE__ */ z("span", {
+			children: [/* @__PURE__ */ R("span", {
 				className: "truncate text-body-medium text-text-primary",
 				children: t
-			}), n != null && /* @__PURE__ */ z("span", {
+			}), n != null && /* @__PURE__ */ R("span", {
 				className: "truncate text-body-regular text-text-secondary",
 				children: n
 			})]
-		}), /* @__PURE__ */ z("span", {
+		}), /* @__PURE__ */ R("span", {
 			className: "flex shrink-0 items-center py-1",
-			children: /* @__PURE__ */ z(K, {
+			children: /* @__PURE__ */ R(T, {
 				size: "md",
 				selected: e.isSelected,
 				focusVisible: e.isFocusVisible
@@ -260,7 +221,7 @@ function q({ className: e, title: t, description: n, ref: r, ...i }) {
 	});
 }
 // node_modules/diff/libesm/diff/base.js
-var J = class {
+var G = class {
 	diff(e, t, n = {}) {
 		let r;
 		typeof n == "function" ? (r = n, n = {}) : "callback" in n && (r = n.callback);
@@ -388,9 +349,9 @@ var J = class {
 		}
 		return r;
 	}
-}, Ve = new class extends J {}();
+}, K = new class extends G {}();
 function He(e, t, n) {
-	return Ve.diff(e, t, n);
+	return K.diff(e, t, n);
 }
 // node_modules/diff/libesm/util/string.js
 function Ue(e, t) {
@@ -398,31 +359,31 @@ function Ue(e, t) {
 	for (; n < e.length && n < t.length; n++) if (e[n] != t[n]) return e.slice(0, n);
 	return e.slice(0, n);
 }
-function We(e, t) {
+function q(e, t) {
 	let n;
 	if (!e || !t || e[e.length - 1] != t[t.length - 1]) return "";
 	for (n = 0; n < e.length && n < t.length; n++) if (e[e.length - (n + 1)] != t[t.length - (n + 1)]) return e.slice(-n);
 	return e.slice(-n);
 }
-function Ge(e, t, n) {
+function We(e, t, n) {
 	if (e.slice(0, t.length) != t) throw Error(`string ${JSON.stringify(e)} doesn't start with prefix ${JSON.stringify(t)}; this is a bug`);
 	return n + e.slice(t.length);
 }
-function Y(e, t, n) {
+function Ge(e, t, n) {
 	if (!t) return e + n;
 	if (e.slice(-t.length) != t) throw Error(`string ${JSON.stringify(e)} doesn't end with suffix ${JSON.stringify(t)}; this is a bug`);
 	return e.slice(0, -t.length) + n;
 }
-function X(e, t) {
+function J(e, t) {
+	return We(e, t, "");
+}
+function Y(e, t) {
 	return Ge(e, t, "");
 }
-function Z(e, t) {
-	return Y(e, t, "");
+function X(e, t) {
+	return t.slice(0, Ke(e, t));
 }
 function Ke(e, t) {
-	return t.slice(0, qe(e, t));
-}
-function qe(e, t) {
 	let n = 0;
 	e.length > t.length && (n = e.length - t.length);
 	let r = t.length;
@@ -440,7 +401,7 @@ function qe(e, t) {
 	}
 	return a;
 }
-function Je(e, t) {
+function qe(e, t) {
 	let n = [];
 	for (let r of Array.from(t.segment(e))) {
 		let e = r.segment;
@@ -448,26 +409,26 @@ function Je(e, t) {
 	}
 	return n;
 }
-function Ye(e, t) {
-	if (t) return $(e, t)[1];
+function Je(e, t) {
+	if (t) return Ye(e, t)[1];
 	let n;
 	for (n = e.length - 1; n >= 0 && e[n].match(/\s/); n--);
 	return e.substring(n + 1);
 }
-function Q(e, t) {
-	if (t) return $(e, t)[0];
+function Z(e, t) {
+	if (t) return Ye(e, t)[0];
 	let n = e.match(/^\s*/);
 	return n ? n[0] : "";
 }
-function $(e, t) {
-	if (!t) return [Q(e), Ye(e)];
+function Ye(e, t) {
+	if (!t) return [Z(e), Je(e)];
 	if (t.resolvedOptions().granularity != "word") throw Error("The segmenter passed must have a granularity of \"word\"");
-	let n = Je(e, t), r = n[0], i = n[n.length - 1];
+	let n = qe(e, t), r = n[0], i = n[n.length - 1];
 	return [/\s/.test(r) ? r : "", /\s/.test(i) ? i : ""];
 }
 // node_modules/diff/libesm/diff/word.js
-var Xe = "a-zA-Z0-9_\\u{AD}\\u{C0}-\\u{D6}\\u{D8}-\\u{F6}\\u{F8}-\\u{2C6}\\u{2C8}-\\u{2D7}\\u{2DE}-\\u{2FF}\\u{1E00}-\\u{1EFF}", Ze = RegExp(`[${Xe}]+|\\s+|[^${Xe}]`, "ug");
-new class extends J {
+var Q = "a-zA-Z0-9_\\u{AD}\\u{C0}-\\u{D6}\\u{D8}-\\u{F6}\\u{F8}-\\u{2C6}\\u{2C8}-\\u{2D7}\\u{2DE}-\\u{2FF}\\u{1E00}-\\u{1EFF}", $ = RegExp(`[${Q}]+|\\s+|[^${Q}]`, "ug");
+new class extends G {
 	equals(e, t, n) {
 		return n.ignoreCase && (e = e.toLowerCase(), t = t.toLowerCase()), e.trim() === t.trim();
 	}
@@ -476,8 +437,8 @@ new class extends J {
 		if (t.intlSegmenter) {
 			let r = t.intlSegmenter;
 			if (r.resolvedOptions().granularity != "word") throw Error("The segmenter passed must have a granularity of \"word\"");
-			n = Je(e, r);
-		} else n = e.match(Ze) || [];
+			n = qe(e, r);
+		} else n = e.match($) || [];
 		let r = [], i = null;
 		return n.forEach((e) => {
 			/\s/.test(e) ? i == null ? r.push(e) : r.push(r.pop() + e) : i != null && /\s/.test(i) ? r[r.length - 1] == i ? r.push(r.pop() + e) : r.push(i + e) : r.push(e), i = e;
@@ -490,57 +451,57 @@ new class extends J {
 		if (!e || t.oneChangePerToken) return e;
 		let n = null, r = null, i = null;
 		return e.forEach((e) => {
-			e.added ? r = e : e.removed ? i = e : ((r || i) && Qe(n, i, r, e, t.intlSegmenter), n = e, r = null, i = null);
-		}), (r || i) && Qe(n, i, r, null, t.intlSegmenter), e;
+			e.added ? r = e : e.removed ? i = e : ((r || i) && Xe(n, i, r, e, t.intlSegmenter), n = e, r = null, i = null);
+		}), (r || i) && Xe(n, i, r, null, t.intlSegmenter), e;
 	}
 }();
-function Qe(e, t, n, r, i) {
+function Xe(e, t, n, r, i) {
 	if (t && n) {
-		let [a, o] = $(t.value, i), [s, c] = $(n.value, i);
+		let [a, o] = Ye(t.value, i), [s, c] = Ye(n.value, i);
 		if (e) {
 			let r = Ue(a, s);
-			e.value = Y(e.value, s, r), t.value = X(t.value, r), n.value = X(n.value, r);
+			e.value = Ge(e.value, s, r), t.value = J(t.value, r), n.value = J(n.value, r);
 		}
 		if (r) {
-			let e = We(o, c);
-			r.value = Ge(r.value, c, e), t.value = Z(t.value, e), n.value = Z(n.value, e);
+			let e = q(o, c);
+			r.value = We(r.value, c, e), t.value = Y(t.value, e), n.value = Y(n.value, e);
 		}
 	} else if (n) {
 		if (e) {
-			let e = Q(n.value, i);
+			let e = Z(n.value, i);
 			n.value = n.value.substring(e.length);
 		}
 		if (r) {
-			let e = Q(r.value, i);
+			let e = Z(r.value, i);
 			r.value = r.value.substring(e.length);
 		}
 	} else if (e && r) {
-		let n = Q(r.value, i), [a, o] = $(t.value, i), s = Ue(n, a);
-		t.value = X(t.value, s);
-		let c = We(X(n, s), o);
-		t.value = Z(t.value, c), r.value = Ge(r.value, n, c), e.value = Y(e.value, n, n.slice(0, n.length - c.length));
+		let n = Z(r.value, i), [a, o] = Ye(t.value, i), s = Ue(n, a);
+		t.value = J(t.value, s);
+		let c = q(J(n, s), o);
+		t.value = Y(t.value, c), r.value = We(r.value, n, c), e.value = Ge(e.value, n, n.slice(0, n.length - c.length));
 	} else if (r) {
-		let e = Q(r.value, i), n = Ke(Ye(t.value, i), e);
-		t.value = Z(t.value, n);
+		let e = Z(r.value, i), n = X(Je(t.value, i), e);
+		t.value = Y(t.value, n);
 	} else if (e) {
-		let n = Ke(Ye(e.value, i), Q(t.value, i));
-		t.value = X(t.value, n);
+		let n = X(Je(e.value, i), Z(t.value, i));
+		t.value = J(t.value, n);
 	}
 }
-new class extends J {
+new class extends G {
 	tokenize(e) {
-		let t = RegExp(`(\\r?\\n)|[${Xe}]+|[^\\S\\n\\r]+|[^${Xe}]`, "ug");
+		let t = RegExp(`(\\r?\\n)|[${Q}]+|[^\\S\\n\\r]+|[^${Q}]`, "ug");
 		return e.match(t) || [];
 	}
-}(), new class extends J {
+}(), new class extends G {
 	constructor() {
-		super(...arguments), this.tokenize = $e;
+		super(...arguments), this.tokenize = Ze;
 	}
 	equals(e, t, n) {
 		return n.ignoreWhitespace ? (n.newlineIsToken && e.includes("\n") || (e = e.trim()), n.newlineIsToken && t.includes("\n") || (t = t.trim())) : n.ignoreNewlineAtEof && !n.newlineIsToken && (e.endsWith("\n") && (e = e.slice(0, -1)), t.endsWith("\n") && (t = t.slice(0, -1))), super.equals(e, t, n);
 	}
 }();
-function $e(e, t) {
+function Ze(e, t) {
 	t.stripTrailingCr && (e = e.replace(/\r\n/g, "\n"));
 	let n = [], r = e.split(/(\n|\r\n)/);
 	r[r.length - 1] || r.pop();
@@ -551,10 +512,10 @@ function $e(e, t) {
 	return n;
 }
 // node_modules/diff/libesm/diff/sentence.js
-function et(e) {
+function Qe(e) {
 	return e == "." || e == "!" || e == "?";
 }
-new class extends J {
+new class extends G {
 	tokenize(e) {
 		let t = [], n = 0;
 		for (let r = 0; r < e.length; r++) {
@@ -562,39 +523,39 @@ new class extends J {
 				t.push(e.slice(n));
 				break;
 			}
-			if (et(e[r]) && e[r + 1].match(/\s/)) {
+			if (Qe(e[r]) && e[r + 1].match(/\s/)) {
 				for (t.push(e.slice(n, r + 1)), r = n = r + 1; e[r + 1]?.match(/\s/);) r++;
 				t.push(e.slice(n, r + 1)), n = r + 1;
 			}
 		}
 		return t;
 	}
-}(), new class extends J {
+}(), new class extends G {
 	tokenize(e) {
 		return e.split(/([{}:;,]|\s+)/);
 	}
-}(), new class extends J {
+}(), new class extends G {
 	constructor() {
-		super(...arguments), this.tokenize = $e;
+		super(...arguments), this.tokenize = Ze;
 	}
 	get useLongestToken() {
 		return !0;
 	}
 	castInput(e, t) {
 		let { undefinedReplacement: n, stringifyReplacer: r = (e, t) => t === void 0 ? n : t } = t;
-		return typeof e == "string" ? e : JSON.stringify(tt(e, null, null, r), null, "  ");
+		return typeof e == "string" ? e : JSON.stringify($e(e, null, null, r), null, "  ");
 	}
 	equals(e, t, n) {
 		return super.equals(e.replace(/,([\r\n])/g, "$1"), t.replace(/,([\r\n])/g, "$1"), n);
 	}
 }();
-function tt(e, t, n, r, i) {
+function $e(e, t, n, r, i) {
 	t ||= [], n ||= [], r && (e = r(i === void 0 ? "" : i, e));
 	let a = 0;
 	for (; a < t.length; a += 1) if (t[a] === e) return n[a];
 	let o;
 	if (Object.prototype.toString.call(e) === "[object Array]") {
-		for (t.push(e), o = Array(e.length), n.push(o), a = 0; a < e.length; a += 1) o[a] = tt(e[a], t, n, r, String(a));
+		for (t.push(e), o = Array(e.length), n.push(o), a = 0; a < e.length; a += 1) o[a] = $e(e[a], t, n, r, String(a));
 		return t.pop(), n.pop(), o;
 	}
 	if (e && e.toJSON && (e = e.toJSON()), typeof e == "object" && e) {
@@ -603,12 +564,12 @@ function tt(e, t, n, r, i) {
 		for (s in e)
  /* istanbul ignore else */
 		Object.prototype.hasOwnProperty.call(e, s) && i.push(s);
-		for (i.sort(), a = 0; a < i.length; a += 1) s = i[a], o[s] = tt(e[s], t, n, r, s);
+		for (i.sort(), a = 0; a < i.length; a += 1) s = i[a], o[s] = $e(e[s], t, n, r, s);
 		t.pop(), n.pop();
 	} else o = e;
 	return o;
 }
-new class extends J {
+new class extends G {
 	tokenize(e) {
 		return e.slice();
 	}
@@ -620,19 +581,19 @@ new class extends J {
 	}
 }();
 // src/react/review/comparison-text.tsx
-function nt({ value: e, reference: t }) {
-	let n = (0, G.useMemo)(() => t ? He(t, e).filter((e) => !e.removed) : [{
+function et({ value: e, reference: t }) {
+	let n = (0, U.useMemo)(() => t ? He(t, e).filter((e) => !e.removed) : [{
 		value: e,
 		added: !1
 	}], [e, t]);
-	return /* @__PURE__ */ z(R.Fragment, { children: n.map((e, t) => e.added ? /* @__PURE__ */ z("mark", {
+	return /* @__PURE__ */ R(L.Fragment, { children: n.map((e, t) => e.added ? /* @__PURE__ */ R("mark", {
 		"data-review-difference": "",
 		className: "rounded-sm bg-status-yellow-background text-status-yellow-text",
 		children: e.value
-	}, t) : /* @__PURE__ */ z("span", { children: e.value }, t)) });
+	}, t) : /* @__PURE__ */ R("span", { children: e.value }, t)) });
 }
 // src/react/review/candidate-form.tsx
-var rt = {
+var tt = {
 	title: "标题",
 	original_title: "原标题",
 	runtime: "来源时长",
@@ -642,49 +603,49 @@ var rt = {
 	cover_url: "封面",
 	screenshot_urls: "截图",
 	trailer_url: "预告片"
-}, it = "reviewgenretags";
-function at({ tags: e }) {
-	return e.length ? /* @__PURE__ */ z("datalist", {
-		id: it,
-		children: e.map((e) => /* @__PURE__ */ z("option", { value: e }, e))
+}, nt = "reviewgenretags";
+function rt({ tags: e }) {
+	return e.length ? /* @__PURE__ */ R("datalist", {
+		id: nt,
+		children: e.map((e) => /* @__PURE__ */ R("option", { value: e }, e))
 	}) : null;
 }
-function ot({ candidate: e, row: t }) {
-	let [n, r] = (0, G.useState)(!1), i = (0, G.useId)(), a = Object.entries(e.catalog_evidence || {}).filter(([, e]) => e && e.display_value);
-	return a.length ? /* @__PURE__ */ B("div", {
+function it({ candidate: e, row: t }) {
+	let [n, r] = (0, U.useState)(!1), i = (0, U.useId)(), o = Object.entries(e.catalog_evidence || {}).filter(([, e]) => e && e.display_value);
+	return o.length ? /* @__PURE__ */ z("div", {
 		className: "min-w-0",
-		children: [/* @__PURE__ */ B(o, {
+		children: [/* @__PURE__ */ z(a, {
 			variant: "secondary",
 			size: "small",
-			leadingIcon: d,
+			leadingIcon: u,
 			"aria-expanded": n,
 			"aria-controls": i,
 			"aria-label": `${n ? "收起" : "展开"} ${e.source || "该来源"} 的来源依据`,
 			onClick: () => r(!n),
-			children: [/* @__PURE__ */ z("span", {
+			children: [/* @__PURE__ */ R("span", {
 				"data-copy-key": "review.card.source_evidence",
 				children: "来源依据"
-			}), ` · ${a.length}`]
-		}), /* @__PURE__ */ z(f, {
+			}), ` · ${o.length}`]
+		}), /* @__PURE__ */ R(d, {
 			id: i,
 			open: n,
-			children: /* @__PURE__ */ z("dl", {
+			children: /* @__PURE__ */ R("dl", {
 				className: "flex min-w-0 flex-col gap-2 px-3 pt-2 pb-1",
-				children: a.map(([n, r]) => /* @__PURE__ */ B("div", {
+				children: o.map(([n, r]) => /* @__PURE__ */ z("div", {
 					className: "flex min-w-0 flex-wrap gap-x-2",
 					children: [
-						/* @__PURE__ */ z("dt", {
+						/* @__PURE__ */ R("dt", {
 							className: "text-caption-1-regular text-text-tertiary",
-							children: rt[n] || n
+							children: tt[n] || n
 						}),
-						/* @__PURE__ */ z("dd", {
+						/* @__PURE__ */ R("dd", {
 							className: "min-w-0 text-body-2-regular break-words text-text-primary",
-							children: /* @__PURE__ */ z(nt, {
+							children: /* @__PURE__ */ R(et, {
 								value: r.display_value || "",
 								reference: n === t.field && t.current_value ? t.current_value : t.candidates?.find((t) => t.candidate_key !== e.candidate_key && t.catalog_evidence?.[n]?.display_value)?.catalog_evidence?.[n]?.display_value
 							})
 						}),
-						(r.warnings || []).map((e) => /* @__PURE__ */ z("small", {
+						(r.warnings || []).map((e) => /* @__PURE__ */ R("small", {
 							className: "w-full text-caption-1-regular text-status-yellow-text",
 							children: e
 						}, e))
@@ -694,63 +655,63 @@ function ot({ candidate: e, row: t }) {
 		})]
 	}) : null;
 }
-function st(e) {
+function at(e) {
 	let t = e.content_id || e.provider_id;
 	return `${e.source || "未标注来源"}${e.official ? " · 官方优先" : ""}${t ? ` · ID ${t}` : ""}`;
 }
-function ct({ candidate: e, reference: t }) {
-	return /* @__PURE__ */ B("span", {
+function ot({ candidate: e, reference: t }) {
+	return /* @__PURE__ */ z("span", {
 		className: "flex min-w-0 flex-col gap-2 whitespace-normal wrap-anywhere",
-		children: [/* @__PURE__ */ z("span", {
+		children: [/* @__PURE__ */ R("span", {
 			className: "text-body-regular text-text-primary",
-			children: /* @__PURE__ */ z(nt, {
+			children: /* @__PURE__ */ R(et, {
 				value: e.display_value || "",
 				reference: t
 			})
-		}), (e.warnings || []).map((e) => /* @__PURE__ */ z("span", {
+		}), (e.warnings || []).map((e) => /* @__PURE__ */ R("span", {
 			className: "text-body-2-regular text-status-yellow-text",
 			children: e
 		}, e))]
 	});
 }
-function lt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
+function st({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
 	let a = e.candidates || [];
-	return a.length ? a.length === 1 ? /* @__PURE__ */ B("div", {
+	return a.length ? a.length === 1 ? /* @__PURE__ */ z("div", {
 		className: "flex min-w-0 flex-col gap-2",
-		children: [/* @__PURE__ */ B("div", {
+		children: [/* @__PURE__ */ z("div", {
 			className: "flex min-w-0 flex-col gap-2 rounded-2lg bg-background-primary-default px-4 py-3",
-			children: [/* @__PURE__ */ z("p", {
+			children: [/* @__PURE__ */ R("p", {
 				className: "text-body-medium text-text-primary",
-				children: st(a[0])
-			}), /* @__PURE__ */ z(ct, {
+				children: at(a[0])
+			}), /* @__PURE__ */ R(ot, {
 				candidate: a[0],
 				reference: e.current_value || void 0
 			})]
-		}), /* @__PURE__ */ z(ot, {
+		}), /* @__PURE__ */ R(it, {
 			candidate: a[0],
 			row: e
 		})]
-	}) : /* @__PURE__ */ z(Be, {
+	}) : /* @__PURE__ */ R(E, {
 		"aria-label": `${t || "资料"}的来源`,
 		value: n,
 		isDisabled: i,
 		onChange: r,
-		children: /* @__PURE__ */ z("div", {
+		children: /* @__PURE__ */ R("div", {
 			className: "flex min-w-0 flex-col gap-3",
-			children: a.map((t) => /* @__PURE__ */ B("div", {
+			children: a.map((t) => /* @__PURE__ */ z("div", {
 				className: "flex min-w-0 flex-col gap-1",
-				children: [/* @__PURE__ */ z(q, {
+				children: [/* @__PURE__ */ R(W, {
 					value: t.candidate_key,
 					className: "relative items-start",
-					title: /* @__PURE__ */ z("span", {
-						title: st(t),
-						children: st(t)
+					title: /* @__PURE__ */ R("span", {
+						title: at(t),
+						children: at(t)
 					}),
-					description: /* @__PURE__ */ z(ct, {
+					description: /* @__PURE__ */ R(ot, {
 						candidate: t,
 						reference: e.current_value || a.find((e) => e.candidate_key !== t.candidate_key)?.display_value
 					})
-				}), /* @__PURE__ */ z(ot, {
+				}), /* @__PURE__ */ R(it, {
 					candidate: t,
 					row: e
 				})]
@@ -758,35 +719,35 @@ function lt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
 		})
 	}) : null;
 }
-function ut({ genre: e, tags: t, locked: n, toast: r }) {
-	let [i, a] = (0, G.useState)(""), [s, c] = (0, G.useState)(""), l = Me({
-		mutationFn: (t) => ve(e, t),
+function ct({ genre: e, tags: t, locked: n, toast: r }) {
+	let [i, o] = (0, U.useState)(""), [s, c] = (0, U.useState)(""), l = Pe({
+		mutationFn: (t) => xe(e, t),
 		onSuccess: async (t, n) => {
-			t.ok ? (r(n ? `已把「${e}」收录为标签「${n}」` : `已把「${e}」判为非内容标签`), await ye()) : c(t.error || "服务端拒绝了这次收录");
+			t.ok ? (r(n ? `已把「${e}」收录为标签「${n}」` : `已把「${e}」判为非内容标签`), await Se()) : c(t.error || "服务端拒绝了这次收录");
 		},
-		onError: (e) => c(le(e))
+		onError: (e) => c(de(e))
 	}), u = () => {
 		let e = i.trim();
 		e ? (c(""), l.mutate(e)) : c("先给它一个中文标签");
 	};
-	return /* @__PURE__ */ B("div", {
+	return /* @__PURE__ */ z("div", {
 		className: "flex flex-wrap items-center gap-2",
 		children: [
-			/* @__PURE__ */ z("b", {
+			/* @__PURE__ */ R("b", {
 				lang: "ja",
 				className: "text-body-medium text-text-primary",
 				children: e
 			}),
-			/* @__PURE__ */ z(j, {
+			/* @__PURE__ */ R(j, {
 				"aria-label": `「${e}」收录成的中文标签`,
 				value: i,
-				onChange: a,
+				onChange: o,
 				maxLength: 40,
 				isDisabled: n || l.isPending,
 				className: "min-w-40 flex-1",
-				children: /* @__PURE__ */ z(b, {
+				children: /* @__PURE__ */ R(y, {
 					size: "small",
-					list: t.length ? it : void 0,
+					list: t.length ? nt : void 0,
 					autoComplete: "off",
 					placeholder: "中文标签",
 					onKeyDown: (e) => {
@@ -794,14 +755,14 @@ function ut({ genre: e, tags: t, locked: n, toast: r }) {
 					}
 				})
 			}),
-			/* @__PURE__ */ z(o, {
+			/* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
 				disabled: n || l.isPending,
 				onClick: u,
 				children: "收录"
 			}),
-			/* @__PURE__ */ z(o, {
+			/* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
 				disabled: n || l.isPending,
@@ -810,7 +771,7 @@ function ut({ genre: e, tags: t, locked: n, toast: r }) {
 				},
 				children: "不是内容"
 			}),
-			s ? /* @__PURE__ */ z("p", {
+			s ? /* @__PURE__ */ R("p", {
 				role: "status",
 				className: "w-full text-body-2-regular text-text-error-primary",
 				children: s
@@ -818,22 +779,22 @@ function ut({ genre: e, tags: t, locked: n, toast: r }) {
 		]
 	});
 }
-function dt({ row: e, tags: t, locked: n, toast: r }) {
-	let i = _e(e);
-	return i.length ? /* @__PURE__ */ B("div", {
+function lt({ row: e, tags: t, locked: n, toast: r }) {
+	let i = be(e);
+	return i.length ? /* @__PURE__ */ z("div", {
 		role: "group",
 		"aria-label": "未收录 genre",
 		className: "flex flex-col gap-2 border-t border-separator-border pt-4",
-		children: [/* @__PURE__ */ z("h5", {
+		children: [/* @__PURE__ */ R("h5", {
 			className: "text-body-2-medium text-text-secondary",
 			children: `未收录 genre · ${i.length}`
-		}), /* @__PURE__ */ z("div", {
+		}), /* @__PURE__ */ R("div", {
 			role: "list",
 			className: "flex flex-col",
-			children: i.map((e, i) => /* @__PURE__ */ z("div", {
+			children: i.map((e, i) => /* @__PURE__ */ R("div", {
 				role: "listitem",
 				className: `py-3 first:pt-0 last:pb-0 ${i ? "border-t border-separator-border" : ""}`,
-				children: /* @__PURE__ */ z(ut, {
+				children: /* @__PURE__ */ R(ct, {
 					genre: e,
 					tags: t,
 					locked: n,
@@ -844,24 +805,24 @@ function dt({ row: e, tags: t, locked: n, toast: r }) {
 	}) : null;
 }
 // src/react/review/review-evidence.tsx
-var ft = (e = "") => /^https?:\/\//i.test(e) ? e : "", pt = (e = "") => ft(e) || (e.startsWith("/") && !e.startsWith("//") ? e : "");
-function mt({ url: e }) {
-	let t = pt(e || "");
-	return /* @__PURE__ */ z(ht, { source: t }, t);
+var ut = (e = "") => /^https?:\/\//i.test(e) ? e : "", dt = (e = "") => ut(e) || (e.startsWith("/") && !e.startsWith("//") ? e : "");
+function ft({ url: e }) {
+	let t = dt(e || "");
+	return /* @__PURE__ */ R(pt, { source: t }, t);
 }
-function ht({ source: e }) {
-	let [t, n] = (0, G.useState)("idle");
-	return (0, G.useEffect)(() => {
+function pt({ source: e }) {
+	let [t, n] = (0, U.useState)("idle");
+	return (0, U.useEffect)(() => {
 		if (t !== "loading") return;
 		let e = setTimeout(() => n("failed"), 3e4);
 		return () => clearTimeout(e);
-	}, [t]), /* @__PURE__ */ B("div", {
+	}, [t]), /* @__PURE__ */ z("div", {
 		className: "relative flex h-review-image items-center justify-center overflow-hidden rounded-surface bg-background-secondary-default",
-		children: [t === "loading" ? /* @__PURE__ */ B("span", {
+		children: [t === "loading" ? /* @__PURE__ */ z("span", {
 			role: "status",
 			className: "absolute flex items-center gap-2 text-body-2-regular text-text-secondary",
-			children: [/* @__PURE__ */ z("span", { dangerouslySetInnerHTML: { __html: U("正在加载图片") } }), "正在加载图片"]
-		}) : null, e && (t === "loading" || t === "ready") ? /* @__PURE__ */ z("img", {
+			children: [/* @__PURE__ */ R("span", { dangerouslySetInnerHTML: { __html: H("正在加载图片") } }), "正在加载图片"]
+		}) : null, e && (t === "loading" || t === "ready") ? /* @__PURE__ */ R("img", {
 			src: e,
 			alt: "来源提供的备选图片",
 			referrerPolicy: "no-referrer",
@@ -869,92 +830,92 @@ function ht({ source: e }) {
 			className: `size-full object-contain ${t === "loading" ? "invisible" : ""}`,
 			onLoad: () => n("ready"),
 			onError: () => n("failed")
-		}) : e ? /* @__PURE__ */ B("div", {
+		}) : e ? /* @__PURE__ */ z("div", {
 			className: "flex flex-col items-center gap-2",
-			children: [t === "failed" ? /* @__PURE__ */ z("span", {
+			children: [t === "failed" ? /* @__PURE__ */ R("span", {
 				className: "text-body-2-regular text-text-secondary",
 				children: "未取得来源图片"
-			}) : null, /* @__PURE__ */ z(o, {
+			}) : null, /* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
 				"aria-label": t === "failed" ? "立即重试加载来源图片" : void 0,
 				onClick: () => n("loading"),
 				children: t === "failed" ? "立即重试" : "查看来源图片"
 			})]
-		}) : /* @__PURE__ */ z("span", {
+		}) : /* @__PURE__ */ R("span", {
 			className: "text-body-2-regular text-text-secondary",
 			children: "未取得来源图片"
 		})]
 	});
 }
-function gt({ asset: e, openItem: t }) {
+function mt({ asset: e, openItem: t }) {
 	let n = e.name || "";
-	return /* @__PURE__ */ B("div", {
+	return /* @__PURE__ */ z("div", {
 		className: "flex min-w-0 items-center gap-3",
-		children: [/* @__PURE__ */ B("button", {
+		children: [/* @__PURE__ */ z("button", {
 			type: "button",
 			onClick: () => t(e.id),
 			className: "flex aspect-card-cover w-20 shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-2lg bg-background-tertiary-default outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring",
-			children: [e.preview_url ? /* @__PURE__ */ z("img", {
+			children: [e.preview_url ? /* @__PURE__ */ R("img", {
 				src: e.preview_url,
 				alt: "",
 				loading: "lazy",
 				className: "size-full object-cover"
-			}) : /* @__PURE__ */ z("span", {
+			}) : /* @__PURE__ */ R("span", {
 				className: "text-caption-1-regular text-text-secondary",
 				children: "无封面"
-			}), /* @__PURE__ */ z(r, { children: `打开原视频 ${n}` })]
-		}), /* @__PURE__ */ B("div", {
+			}), /* @__PURE__ */ R(r, { children: `打开原视频 ${n}` })]
+		}), /* @__PURE__ */ z("div", {
 			className: "flex min-w-0 flex-col items-start gap-1",
-			children: [/* @__PURE__ */ z("b", {
+			children: [/* @__PURE__ */ R("b", {
 				title: n,
 				className: "w-full truncate text-body-medium text-text-primary",
 				children: e.code || n || "原视频"
-			}), /* @__PURE__ */ z(o, {
+			}), /* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
-				leadingIcon: y,
+				leadingIcon: v,
 				onClick: () => t(e.id),
 				children: "打开原视频"
 			})]
 		})]
 	});
 }
-function _t({ kind: e, name: t, works: n, avatar: r, openEntity: i }) {
-	return /* @__PURE__ */ B("div", {
+function ht({ kind: e, name: t, works: n, avatar: r, openEntity: i }) {
+	return /* @__PURE__ */ z("div", {
 		className: "flex min-w-0 items-center gap-3",
-		children: [/* @__PURE__ */ z("button", {
+		children: [/* @__PURE__ */ R("button", {
 			type: "button",
 			"aria-label": `打开创作者页：${t}`,
 			onClick: () => i(e, t),
-			className: `relative inline-grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-background-secondary-default text-caption-1-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring ${Ie}`,
+			className: `relative inline-grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-background-secondary-default text-caption-1-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring ${ze}`,
 			dangerouslySetInnerHTML: { __html: r }
-		}), /* @__PURE__ */ B("div", {
+		}), /* @__PURE__ */ z("div", {
 			className: "flex min-w-0 flex-col items-start",
-			children: [/* @__PURE__ */ z("button", {
+			children: [/* @__PURE__ */ R("button", {
 				type: "button",
 				onClick: () => i(e, t),
 				className: "max-w-full cursor-pointer truncate text-body-medium text-text-primary underline-offset-2 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-border-focus-ring",
 				children: t
-			}), n ? /* @__PURE__ */ z("small", {
+			}), n ? /* @__PURE__ */ R("small", {
 				className: "tabular-nums text-body-2-regular text-text-secondary",
 				children: `${n.toLocaleString()} 部作品`
 			}) : null]
 		})]
 	});
 }
-function vt({ row: e, openItem: t, openEntity: n, onReveal: r, revealing: i, note: a }) {
-	let c = ft(e.profile_url || ""), l = (e.preview_assets || []).slice(0, 6), u = Math.max(0, Number(e.video_count || e.videos || 0));
-	return /* @__PURE__ */ B("section", {
+function gt({ row: e, openItem: t, openEntity: n, onReveal: r, revealing: i, note: s }) {
+	let c = ut(e.profile_url || ""), l = (e.preview_assets || []).slice(0, 6), u = Math.max(0, Number(e.video_count || e.videos || 0));
+	return /* @__PURE__ */ z("section", {
 		className: "flex flex-col gap-3",
 		children: [
-			/* @__PURE__ */ z("h5", {
+			/* @__PURE__ */ R("h5", {
 				className: "text-body-medium text-text-primary",
 				children: `待确认人物：${e.babepedia_name || "未标注"}`
 			}),
-			/* @__PURE__ */ B("div", {
+			/* @__PURE__ */ z("div", {
 				className: "flex flex-wrap items-center gap-2",
-				children: [c ? /* @__PURE__ */ z(s, {
+				children: [c ? /* @__PURE__ */ R(o, {
 					variant: "secondary",
 					size: "small",
 					trailingIcon: M,
@@ -962,58 +923,58 @@ function vt({ row: e, openItem: t, openEntity: n, onReveal: r, revealing: i, not
 					target: "_blank",
 					rel: "noopener noreferrer",
 					children: "来源资料"
-				}) : null, /* @__PURE__ */ z(o, {
+				}) : null, /* @__PURE__ */ R(a, {
 					variant: "secondary",
 					size: "small",
 					onClick: () => n("creator", e.creator || ""),
 					children: `查看全部 ${u.toLocaleString()} 部作品`
 				})]
 			}),
-			/* @__PURE__ */ z(mt, { url: e.preview_url }),
-			/* @__PURE__ */ z("p", {
+			/* @__PURE__ */ R(ft, { url: e.preview_url }),
+			/* @__PURE__ */ R("p", {
 				className: "text-body-2-regular text-text-secondary",
 				children: "通过后记录身份判断。"
 			}),
-			l.length ? /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ z("h5", {
+			l.length ? /* @__PURE__ */ z(L.Fragment, { children: [/* @__PURE__ */ R("h5", {
 				className: "text-body-medium text-text-primary",
 				children: "本地作品样本"
-			}), /* @__PURE__ */ z("ul", {
+			}), /* @__PURE__ */ R("ul", {
 				className: "flex flex-col gap-1",
-				children: l.map((e) => /* @__PURE__ */ B("li", {
+				children: l.map((e) => /* @__PURE__ */ z("li", {
 					className: "flex min-w-0 items-center gap-2",
-					children: [/* @__PURE__ */ z(o, {
+					children: [/* @__PURE__ */ R(a, {
 						variant: "ghost",
 						size: "small",
 						className: "min-w-0",
 						onClick: () => t(e.id),
-						children: /* @__PURE__ */ z("span", {
+						children: /* @__PURE__ */ R("span", {
 							title: e.name,
 							className: "block max-w-full truncate",
 							children: e.name
 						})
-					}), /* @__PURE__ */ z(o, {
+					}), /* @__PURE__ */ R(a, {
 						variant: "ghost",
 						size: "small",
 						"aria-label": `打开 ${e.name} 的文件位置`,
-						...F(i === e.id),
+						...P(i === e.id),
 						onClick: () => r(e.id),
 						children: "文件位置"
 					})]
 				}, e.id))
-			})] }) : /* @__PURE__ */ z("p", {
+			})] }) : /* @__PURE__ */ R("p", {
 				className: "text-body-2-regular text-text-secondary",
 				children: "暂无本地作品样本，打开全部作品核对。"
 			}),
-			a ? /* @__PURE__ */ z("p", {
+			s ? /* @__PURE__ */ R("p", {
 				role: "status",
 				className: "text-body-2-regular text-text-error-primary",
-				children: a
+				children: s
 			}) : null
 		]
 	});
 }
-function yt({ assets: e, picked: t, onPicked: n, locked: i }) {
-	let [a, o] = (0, G.useState)(null), s = new Set(t), c = (t, r) => {
+function _t({ assets: e, picked: t, onPicked: n, locked: i }) {
+	let [a, o] = (0, U.useState)(null), s = new Set(t), l = (t, r) => {
 		if (i) return;
 		let c = new Set(s);
 		if (r && a !== null) {
@@ -1025,10 +986,10 @@ function yt({ assets: e, picked: t, onPicked: n, locked: i }) {
 		}
 		o(t), n(e.filter((e) => c.has(e.id)).map((e) => e.id));
 	};
-	return /* @__PURE__ */ B("div", {
+	return /* @__PURE__ */ z("div", {
 		className: "flex flex-col gap-2",
-		children: [/* @__PURE__ */ z(k, {
-			prefix: /* @__PURE__ */ z("span", {
+		children: [/* @__PURE__ */ R(k, {
+			prefix: /* @__PURE__ */ R("span", {
 				className: "tabular-nums text-body-2-regular text-text-secondary",
 				children: `已选 ${s.size} / ${e.length}`
 			}),
@@ -1041,26 +1002,26 @@ function yt({ assets: e, picked: t, onPicked: n, locked: i }) {
 				disabled: i,
 				onPress: () => n([])
 			}]
-		}), /* @__PURE__ */ z("div", {
+		}), /* @__PURE__ */ R("div", {
 			className: "review-asset-grid gap-1.5",
 			children: e.map((e, t) => {
 				let n = s.has(e.id);
-				return /* @__PURE__ */ B("button", {
+				return /* @__PURE__ */ z("button", {
 					type: "button",
 					"aria-pressed": n,
 					title: e.name,
-					onClick: (e) => c(t, e.shiftKey),
+					onClick: (e) => l(t, e.shiftKey),
 					className: `relative aspect-card-cover cursor-pointer overflow-hidden rounded-surface bg-background-tertiary-default outline-none transition-opacity focus-visible:ring-2 focus-visible:ring-border-focus-ring ${n ? "opacity-100 ring-2 ring-border-button-active ring-inset" : "opacity-50"}`,
 					children: [
-						/* @__PURE__ */ z("img", {
+						/* @__PURE__ */ R("img", {
 							src: `/poster?id=${e.id}&c=4`,
 							alt: "",
 							loading: "lazy",
 							className: "size-full object-cover"
 						}),
-						/* @__PURE__ */ z("span", {
+						/* @__PURE__ */ R("span", {
 							className: "absolute top-1 right-1",
-							children: /* @__PURE__ */ z(l, {
+							children: /* @__PURE__ */ R(c, {
 								size: "sm",
 								state: {
 									isSelected: n,
@@ -1071,7 +1032,7 @@ function yt({ assets: e, picked: t, onPicked: n, locked: i }) {
 								}
 							})
 						}),
-						/* @__PURE__ */ z(r, { children: `${n ? "已选" : "未选"} ${e.name || e.id}` })
+						/* @__PURE__ */ R(r, { children: `${n ? "已选" : "未选"} ${e.name || e.id}` })
 					]
 				}, e.id);
 			})
@@ -1079,34 +1040,34 @@ function yt({ assets: e, picked: t, onPicked: n, locked: i }) {
 	});
 }
 // src/react/review/review-card.tsx
-var bt = I({
+var vt = F({
 	variant: "filled",
 	padding: "none",
 	bordered: "soft",
 	className: "flex flex-col overflow-hidden"
-}), xt = "flex min-h-6 min-w-0 items-center", St = 2, Ct = (e) => e === "western_identity" ? "h-review-card-tall" : "h-review-card";
-function wt(e) {
-	let { category: t, row: n, choice: r, onChoice: i, selected: a, onSelect: s, locked: l, busy: d, problem: f, genreTags: p, onDecide: g, handlers: v, queueView: y = "pending" } = e, b = (0, G.useRef)(!1), te = W(), S = t === "metadata_fields", C = m[t] || "", w = String(n.creator || "").trim(), T = !!C && !!w, E = Oe(t, n), D = H(t, n), O = Ee(t, n), k = Te(n), A = De(n), j = re(t, n), M = n.comparison_assets || [], N = n.preview_assets || [], I = ne[n.decision || ""], ie = M.length > 1 ? /* @__PURE__ */ B("div", {
+}), yt = "flex min-h-6 min-w-0 items-center", bt = 2, xt = (e) => e === "western_identity" ? "h-review-card-tall" : "h-review-card";
+function St(e) {
+	let { category: t, row: n, choice: r, onChoice: i, selected: o, onSelect: c, locked: u, busy: d, problem: f, genreTags: ee, onDecide: _, handlers: v, queueView: y = "pending" } = e, b = (0, U.useRef)(!1), x = Fe(), S = t === "metadata_fields", C = p[t] || "", re = String(n.creator || "").trim(), w = !!C && !!re, T = V(t, n), E = Oe(t, n), D = ke(t, n), O = B(n), k = Ae(n), A = ae(t, n), j = n.comparison_assets || [], M = n.preview_assets || [], N = ne[n.decision || ""], F = j.length > 1 ? /* @__PURE__ */ z("div", {
 		className: "flex flex-col gap-3",
-		children: [M.slice(0, St).map((e) => /* @__PURE__ */ z(gt, {
+		children: [j.slice(0, bt).map((e) => /* @__PURE__ */ R(mt, {
 			asset: e,
 			openItem: v.openItem
-		}, e.id)), M.length > St ? /* @__PURE__ */ z("p", {
+		}, e.id)), j.length > bt ? /* @__PURE__ */ R("p", {
 			className: "text-body-2-regular text-text-secondary",
-			children: `另有 ${(M.length - St).toLocaleString()} 部对照作品`
+			children: `另有 ${(j.length - bt).toLocaleString()} 部对照作品`
 		}) : null]
-	}) : T ? /* @__PURE__ */ z(_t, {
+	}) : w ? /* @__PURE__ */ R(ht, {
 		kind: C,
-		name: w,
+		name: re,
 		works: Number(n.video_count || n.videos || 0),
 		openEntity: v.openEntity,
-		avatar: P(w, n.entity_id ? {
+		avatar: ie(re, n.entity_id ? {
 			id: n.entity_id,
 			has_image: !!n.has_image,
 			image_version: n.image_version,
 			avatar_focus: n.avatar_focus
 		} : null, null, C)
-	}) : n.asset_id ? /* @__PURE__ */ z(gt, {
+	}) : n.asset_id ? /* @__PURE__ */ R(mt, {
 		openItem: v.openItem,
 		asset: {
 			id: n.asset_id,
@@ -1114,212 +1075,212 @@ function wt(e) {
 			code: n.code,
 			preview_url: n.asset_preview_url
 		}
-	}) : null, ae = S ? /* @__PURE__ */ z(lt, {
+	}) : null, I = S ? /* @__PURE__ */ R(st, {
 		row: n,
-		fieldName: D,
+		fieldName: E,
 		value: r.candidateKey,
 		onChange: (e) => i({
 			...r,
 			candidateKey: e
 		}),
-		locked: l
-	}) : t === "creator_tags" ? N.length ? /* @__PURE__ */ z(yt, {
-		assets: N,
+		locked: u
+	}) : t === "creator_tags" ? M.length ? /* @__PURE__ */ R(_t, {
+		assets: M,
 		picked: r.assets,
-		locked: l,
+		locked: u,
 		onPicked: (e) => i({
 			...r,
 			assets: e
 		})
-	}) : /* @__PURE__ */ z(ee, {
+	}) : /* @__PURE__ */ R(h, {
 		size: "compact",
-		icon: h,
+		icon: m,
 		title: "这批作品尚未抽帧",
 		children: `${n.video_count || ""} 条作品还没有可用预览；批准后仍会按所选资料写入标签。`
-	}) : t === "fc2_similarity" ? null : t === "western_identity" ? /* @__PURE__ */ z(vt, {
+	}) : t === "fc2_similarity" ? null : t === "western_identity" ? /* @__PURE__ */ R(gt, {
 		row: n,
 		openItem: v.openItem,
 		openEntity: v.openEntity,
 		onReveal: v.onReveal,
 		revealing: v.revealing,
 		note: v.revealNote
-	}) : /* @__PURE__ */ z(mt, { url: n.preview_url }), oe = T ? ie : D ? /* @__PURE__ */ B("h4", {
-		className: L(xt, "flex-wrap gap-2"),
-		children: [/* @__PURE__ */ z("span", {
-			title: D,
+	}) : /* @__PURE__ */ R(ft, { url: n.preview_url }), oe = w ? F : E ? /* @__PURE__ */ z("h4", {
+		className: se(yt, "flex-wrap gap-2"),
+		children: [/* @__PURE__ */ R("span", {
+			title: E,
 			className: "flex max-w-full min-w-0 overflow-hidden rounded-md",
-			children: /* @__PURE__ */ z(u, {
+			children: /* @__PURE__ */ R(l, {
 				variant: "caption",
 				color: "neutral",
-				children: D
+				children: E
 			})
-		}), /* @__PURE__ */ z("span", {
-			title: O,
+		}), /* @__PURE__ */ R("span", {
+			title: D,
 			className: "min-w-0 truncate text-body-medium text-text-primary",
-			children: O
+			children: D
 		})]
-	}) : /* @__PURE__ */ z("h4", {
-		className: xt,
-		children: /* @__PURE__ */ z("span", {
-			title: E,
+	}) : /* @__PURE__ */ R("h4", {
+		className: yt,
+		children: /* @__PURE__ */ R("span", {
+			title: T,
 			className: "min-w-0 truncate text-body-medium text-text-primary",
-			children: E
+			children: T
 		})
 	});
-	return /* @__PURE__ */ B("section", {
-		"aria-label": E,
+	return /* @__PURE__ */ z("section", {
+		"aria-label": T,
 		"data-review-key": n.item_key,
-		className: L(bt, Ct(t)),
+		className: se(vt, xt(t)),
 		children: [
-			/* @__PURE__ */ B("header", {
+			/* @__PURE__ */ z("header", {
 				className: "flex min-w-0 shrink-0 items-center gap-2 border-b border-separator-border px-5 py-4",
 				children: [
-					l ? null : /* @__PURE__ */ z("span", {
-						className: L(xt, "shrink-0"),
+					u ? null : /* @__PURE__ */ R("span", {
+						className: se(yt, "shrink-0"),
 						onPointerDownCapture: (e) => {
 							b.current = e.shiftKey;
 						},
 						onKeyDownCapture: (e) => {
 							b.current = e.shiftKey;
 						},
-						children: /* @__PURE__ */ z(c, {
-							isSelected: a,
-							"aria-label": `选择 ${E}`,
-							onChange: (e) => s(b.current, e)
+						children: /* @__PURE__ */ R(s, {
+							isSelected: o,
+							"aria-label": `选择 ${T}`,
+							onChange: (e) => c(b.current, e)
 						})
 					}),
-					/* @__PURE__ */ z("div", {
+					/* @__PURE__ */ R("div", {
 						className: "min-w-0 flex-1",
 						children: oe
 					}),
-					I ? /* @__PURE__ */ z(u, {
+					N ? /* @__PURE__ */ R(l, {
 						variant: "caption",
 						color: "neutral",
-						children: I
+						children: N
 					}) : null
 				]
 			}),
-			/* @__PURE__ */ z("div", {
+			/* @__PURE__ */ R("div", {
 				className: "relative mx-5 flex min-w-0 min-h-0 flex-1 flex-col",
-				children: /* @__PURE__ */ B("div", {
-					ref: te,
+				children: /* @__PURE__ */ z("div", {
+					ref: x,
 					className: "flex min-w-0 min-h-0 flex-1 flex-col gap-4 overflow-y-auto py-4",
 					children: [
-						n.source_name ? /* @__PURE__ */ z("p", {
+						n.source_name ? /* @__PURE__ */ R("p", {
 							className: "text-body-2-regular text-text-secondary",
 							children: `来源写法：${n.source_name}`
 						}) : null,
-						!T && (n.board || n.assets) ? /* @__PURE__ */ z("p", {
+						!w && (n.board || n.assets) ? /* @__PURE__ */ R("p", {
 							className: "text-body-2-regular text-text-secondary",
 							children: `对照文件：${Number(n.video_count || n.assets || 0).toLocaleString()}`
 						}) : null,
-						!T && ie ? ie : null,
-						S && (k || n.current_value !== void 0) ? /* @__PURE__ */ B("div", {
+						!w && F ? F : null,
+						S && (O || n.current_value !== void 0) ? /* @__PURE__ */ z("div", {
 							role: "region",
 							"aria-label": "当前信息",
 							className: "flex min-w-0 flex-col gap-1 border-b border-separator-border pb-4",
 							children: [
-								/* @__PURE__ */ B("div", {
+								/* @__PURE__ */ z("div", {
 									className: "flex flex-wrap items-center gap-2",
-									children: [/* @__PURE__ */ z("h5", {
+									children: [/* @__PURE__ */ R("h5", {
 										"data-copy-key": "review.card.current_value",
 										className: "text-caption-1-medium text-text-secondary",
 										children: "当前值"
-									}), n.current_owner?.startsWith("user:") || n.current_owner?.startsWith("review:") ? /* @__PURE__ */ z(u, {
+									}), n.current_owner?.startsWith("user:") || n.current_owner?.startsWith("review:") ? /* @__PURE__ */ R(l, {
 										variant: "caption",
 										color: "neutral",
 										children: "人工确认"
 									}) : null]
 								}),
-								/* @__PURE__ */ z("p", {
+								/* @__PURE__ */ R("p", {
 									className: "text-body-2-regular text-text-primary wrap-anywhere",
-									children: n.current_value === void 0 ? k : n.current_value ? /* @__PURE__ */ z(nt, {
+									children: n.current_value === void 0 ? O : n.current_value ? /* @__PURE__ */ R(et, {
 										value: n.current_value,
 										reference: (n.candidates?.find((e) => e.candidate_key === r.candidateKey) || n.candidates?.[0])?.display_value
 									}) : "尚无资料"
 								}),
-								n.videos === void 0 ? null : /* @__PURE__ */ z("p", {
+								n.videos === void 0 ? null : /* @__PURE__ */ R("p", {
 									className: "text-caption-1-regular text-text-secondary",
 									children: `${Number(n.videos).toLocaleString()} 个${n.asset_path ? "匹配文件" : "同番号文件"}`
 								})
 							]
 						}) : null,
-						A.length || t === "creator_tags" ? /* @__PURE__ */ z("div", {
+						k.length || t === "creator_tags" ? /* @__PURE__ */ R("div", {
 							className: "flex flex-wrap gap-1",
-							children: A.length ? A.map((e) => /* @__PURE__ */ z(u, {
+							children: k.length ? k.map((e) => /* @__PURE__ */ R(l, {
 								variant: "caption",
 								color: "soft",
 								children: e
-							}, e)) : /* @__PURE__ */ z("small", {
+							}, e)) : /* @__PURE__ */ R("small", {
 								className: "text-body-2-regular text-text-secondary",
 								children: "暂无待确认标签"
 							})
 						}) : null,
-						S ? /* @__PURE__ */ B("div", {
+						S ? /* @__PURE__ */ z("div", {
 							className: "flex flex-wrap items-center justify-between gap-2",
-							children: [/* @__PURE__ */ B("h5", {
+							children: [/* @__PURE__ */ z("h5", {
 								className: "text-caption-1-medium text-text-secondary",
-								children: [/* @__PURE__ */ z("span", {
+								children: [/* @__PURE__ */ R("span", {
 									"data-copy-key": "review.card.candidate_sources",
 									children: "候选来源"
 								}), ` · ${n.candidates?.length || 0}`]
-							}), n.current_value || (n.candidates?.length || 0) > 1 ? /* @__PURE__ */ z("span", {
+							}), n.current_value || (n.candidates?.length || 0) > 1 ? /* @__PURE__ */ R("span", {
 								"data-copy-key": n.current_value ? "review.card.compare_current" : "review.card.compare_sources",
 								className: "text-caption-1-regular text-text-tertiary",
 								children: n.current_value ? "与当前值比较" : "来源间差异"
 							}) : null]
 						}) : null,
-						ae,
-						/* @__PURE__ */ z(dt, {
+						I,
+						/* @__PURE__ */ R(lt, {
 							row: n,
-							tags: p,
-							locked: l,
+							tags: ee,
+							locked: u,
 							toast: v.toast
 						}),
-						!S && k ? /* @__PURE__ */ z("p", {
+						!S && O ? /* @__PURE__ */ R("p", {
 							className: "text-body-2-regular text-text-secondary wrap-anywhere",
-							children: k
+							children: O
 						}) : null
 					]
 				})
 			}),
-			/* @__PURE__ */ B("footer", {
-				className: L(_.stack, "shrink-0"),
+			/* @__PURE__ */ z("footer", {
+				className: se(g.stack, "shrink-0"),
 				children: [
-					y === "ignored" ? null : /* @__PURE__ */ z(x, {
+					y === "ignored" ? null : /* @__PURE__ */ R(te, {
 						variant: "secondary",
 						size: "small",
 						className: "me-auto",
-						disabled: l,
-						...F(d),
-						onClick: () => g("rejected"),
+						disabled: u,
+						...P(d),
+						onClick: () => _("rejected"),
 						children: "忽略"
 					}),
-					y === "pending" ? /* @__PURE__ */ z(o, {
+					y === "pending" ? /* @__PURE__ */ R(a, {
 						variant: "secondary",
 						size: "small",
-						disabled: l,
-						...F(d),
-						onClick: () => g("skipped"),
+						disabled: u,
+						...P(d),
+						onClick: () => _("skipped"),
 						children: "稍后处理"
-					}) : /* @__PURE__ */ z(o, {
+					}) : /* @__PURE__ */ R(a, {
 						variant: y === "ignored" ? "primary" : "secondary",
 						size: "small",
-						disabled: l,
-						...F(d),
-						onClick: () => g("restore"),
+						disabled: u,
+						...P(d),
+						onClick: () => _("restore"),
 						children: "恢复待处理"
 					}),
-					y === "ignored" ? null : /* @__PURE__ */ z(o, {
+					y === "ignored" ? null : /* @__PURE__ */ R(a, {
 						variant: "primary",
 						size: "small",
-						disabled: l || !j,
-						...F(d),
-						title: j ? void 0 : "没有可采用的资料，可先保留或忽略",
-						onClick: () => g("approved"),
-						children: j ? "通过" : "不可通过"
+						disabled: u || !A,
+						...P(d),
+						title: A ? void 0 : "没有可采用的资料，可先保留或忽略",
+						onClick: () => _("approved"),
+						children: A ? "通过" : "不可通过"
 					}),
-					f ? /* @__PURE__ */ z("p", {
+					f ? /* @__PURE__ */ R("p", {
 						role: "status",
 						className: "w-full text-body-2-regular text-text-error-primary",
 						children: f
@@ -1330,27 +1291,27 @@ function wt(e) {
 	});
 }
 // src/react/review/review-page.tsx
-var Tt = "flex cursor-pointer items-center justify-between gap-2";
-function Et({ page: e, pages: t, onPage: n }) {
-	return t <= 1 ? null : /* @__PURE__ */ B("nav", {
+var Ct = "flex cursor-pointer items-center justify-between gap-2";
+function wt({ page: e, pages: t, onPage: n }) {
+	return t <= 1 ? null : /* @__PURE__ */ z("nav", {
 		"aria-label": "复核分页",
 		"data-pagination-layout": "",
 		className: "inline-grid w-full min-w-0 items-center gap-2",
 		children: [
-			/* @__PURE__ */ z(o, {
+			/* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
 				disabled: e <= 1,
 				onClick: () => n(e - 1),
 				children: "上一页"
 			}),
-			/* @__PURE__ */ z("ul", {
+			/* @__PURE__ */ R("ul", {
 				className: "flex min-w-0 flex-wrap items-center justify-center gap-1",
-				children: ge(e, t).map((t, r) => /* @__PURE__ */ z("li", { children: t === "…" ? /* @__PURE__ */ z("span", {
+				children: ye(e, t).map((t, r) => /* @__PURE__ */ R("li", { children: t === "…" ? /* @__PURE__ */ R("span", {
 					"aria-hidden": !0,
 					className: "px-1 text-body-2-regular text-text-tertiary",
 					children: "…"
-				}) : /* @__PURE__ */ z(o, {
+				}) : /* @__PURE__ */ R(a, {
 					variant: t === e ? "secondary" : "ghost",
 					size: "small",
 					"aria-label": `第 ${t} 页`,
@@ -1359,7 +1320,7 @@ function Et({ page: e, pages: t, onPage: n }) {
 					children: t
 				}) }, t === "…" ? `dots-${r}` : t))
 			}),
-			/* @__PURE__ */ z(o, {
+			/* @__PURE__ */ R(a, {
 				variant: "secondary",
 				size: "small",
 				disabled: e >= t,
@@ -1369,20 +1330,20 @@ function Et({ page: e, pages: t, onPage: n }) {
 		]
 	});
 }
-function Dt(r) {
-	let [i, a] = (0, G.useState)(() => matchMedia("(max-width:900px)").matches);
-	(0, G.useEffect)(() => {
-		let e = matchMedia("(max-width:900px)"), t = () => a(e.matches);
+function Tt(r) {
+	let [i, o] = (0, U.useState)(() => matchMedia("(max-width:900px)").matches);
+	(0, U.useEffect)(() => {
+		let e = matchMedia("(max-width:900px)"), t = () => o(e.matches);
 		return e.addEventListener("change", t), () => e.removeEventListener("change", t);
 	}, []);
-	let { route: s, openItem: c, openEntity: l, revealSource: u, toast: d, readOnly: f, readOnlyMessage: m, writerUrl: h } = r, [_, v] = (0, G.useState)(pe(r.category) ? r.category : p), [y, b] = (0, G.useState)(() => Ce(r.queue)), [x, ne] = (0, G.useState)("candidates"), [D, O] = (0, G.useState)(""), [k, A] = (0, G.useState)(""), [j, M] = (0, G.useState)(1), [N, P] = (0, G.useState)(/* @__PURE__ */ new Set()), [F, I] = (0, G.useState)(/* @__PURE__ */ new Map()), [ie, L] = (0, G.useState)(/* @__PURE__ */ new Map()), [R, V] = (0, G.useState)(""), ge = (0, G.useRef)(null), [_e, ve] = (0, G.useState)(0), [ye, be] = (0, G.useState)(""), Te = (0, G.useRef)(!0);
-	(0, G.useEffect)(() => () => {
-		Te.current = !1;
+	let { route: s, openItem: c, openEntity: l, revealSource: u, toast: d, readOnly: p, readOnlyMessage: m, writerUrl: g } = r, [_, v] = (0, U.useState)(he(r.category) ? r.category : f), [y, te] = (0, U.useState)(() => Ee(r.queue)), [ne, T] = (0, U.useState)("candidates"), [E, D] = (0, U.useState)(""), [O, k] = (0, U.useState)(""), [A, j] = (0, U.useState)(1), [M, N] = (0, U.useState)(/* @__PURE__ */ new Set()), [ie, P] = (0, U.useState)(/* @__PURE__ */ new Map()), [F, I] = (0, U.useState)(/* @__PURE__ */ new Map()), [se, L] = (0, U.useState)(""), ge = (0, U.useRef)(null), [ye, be] = (0, U.useState)(0), [xe, Se] = (0, U.useState)(""), Ce = (0, U.useRef)(!0);
+	(0, U.useEffect)(() => () => {
+		Ce.current = !1;
 	}, []);
-	let H = Ne({
-		queryKey: C,
-		queryFn: ({ signal: e }) => ue(e)
-	}), Ee = H.data || {
+	let B = Ie({
+		queryKey: S,
+		queryFn: ({ signal: e }) => fe(e)
+	}), Oe = B.data || {
 		sections: {},
 		counts: {},
 		queues: {
@@ -1395,65 +1356,65 @@ function Dt(r) {
 				counts: {}
 			}
 		}
-	}, De = Se(Ee, y), Oe = H.data ? Object.fromEntries(T.map((e) => [e, S.reduce((t, n) => t + Number(Se(Ee, e).counts[n] || 0), 0)])) : void 0, U = De.sections[_] || [], W = _ === "metadata_fields", Pe = f;
-	(0, G.useEffect)(() => {
-		let e = new Set(U.map((e) => e.item_key));
-		P((t) => {
+	}, ke = Te(Oe, y), Ae = B.data ? Object.fromEntries(re.map((e) => [e, x.reduce((t, n) => t + Number(Te(Oe, e).counts[n] || 0), 0)])) : void 0, V = ke.sections[_] || [], H = _ === "metadata_fields", Fe = p;
+	(0, U.useEffect)(() => {
+		let e = new Set(V.map((e) => e.item_key));
+		N((t) => {
 			let n = [...t].filter((t) => e.has(t));
 			return n.length === t.size ? t : new Set(n);
+		}), P((t) => {
+			let n = [...t].filter(([t]) => e.has(t));
+			return n.length === t.size ? t : new Map(n);
 		}), I((t) => {
 			let n = [...t].filter(([t]) => e.has(t));
 			return n.length === t.size ? t : new Map(n);
-		}), L((t) => {
-			let n = [...t].filter(([t]) => e.has(t));
-			return n.length === t.size ? t : new Map(n);
 		});
-	}, [U]);
-	let Ie = (0, G.useMemo)(() => W ? fe(U, "field") : [], [U, W]), ze = Ie.some((e) => e.key === k) ? k : "", K = (0, G.useMemo)(() => W ? de(U, "field", ze) : U, [
-		U,
-		W,
+	}, [V]);
+	let Le = (0, U.useMemo)(() => H ? me(V, "field") : [], [V, H]), ze = Le.some((e) => e.key === O) ? O : "", W = (0, U.useMemo)(() => H ? pe(V, "field", ze) : V, [
+		V,
+		H,
 		ze
-	]), Be = (0, G.useMemo)(() => xe(K, W), [K, W]), q = Be.some(([e]) => e === x) ? x : "candidates", J = (0, G.useMemo)(() => fe(K, q), [K, q]), Ve = J.some((e) => e.key === D) ? D : "", He = (0, G.useMemo)(() => we(de(K, q, Ve), j), [
+	]), G = (0, U.useMemo)(() => we(W, H), [W, H]), K = G.some(([e]) => e === ne) ? ne : "candidates", He = (0, U.useMemo)(() => me(W, K), [W, K]), Ue = He.some((e) => e.key === E) ? E : "", q = (0, U.useMemo)(() => De(pe(W, K, Ue), A), [
+		W,
 		K,
-		q,
-		Ve,
-		j
-	]), Ue = He.rows.map((e) => e.item_key), We = new Set(Ue), Ge = J.map((e) => ({
+		Ue,
+		A
+	]), We = q.rows.map((e) => e.item_key), Ge = new Set(We), J = He.map((e) => ({
 		...e,
-		rows: e.rows.filter((e) => We.has(e.item_key))
-	})).filter((e) => e.rows.length), Y = (e) => F.get(e.item_key) || ce(e), X = (0, G.useMemo)(() => U.filter((e) => N.has(e.item_key)), [U, N]), Z = (e) => {
+		rows: e.rows.filter((e) => Ge.has(e.item_key))
+	})).filter((e) => e.rows.length), Y = (e) => ie.get(e.item_key) || ue(e), X = (0, U.useMemo)(() => V.filter((e) => M.has(e.item_key)), [V, M]), Ke = (e) => {
 		let t = new Set(e);
-		P((e) => new Set([...e].filter((e) => !t.has(e)))), I((e) => new Map([...e].filter(([e]) => !t.has(e)))), L((e) => new Map([...e].filter(([e]) => !t.has(e))));
-	}, Ke = (e, t) => L((n) => new Map(n).set(e, t)), qe = () => {
-		ne("candidates"), O(""), A(""), M(1), P(/* @__PURE__ */ new Set()), I(/* @__PURE__ */ new Map()), L(/* @__PURE__ */ new Map()), V(""), ge.current = null;
-	}, Je = (e) => {
-		v(e), qe(), s({
+		N((e) => new Set([...e].filter((e) => !t.has(e)))), P((e) => new Map([...e].filter(([e]) => !t.has(e)))), I((e) => new Map([...e].filter(([e]) => !t.has(e))));
+	}, qe = (e, t) => I((n) => new Map(n).set(e, t)), Je = () => {
+		T("candidates"), D(""), k(""), j(1), N(/* @__PURE__ */ new Set()), P(/* @__PURE__ */ new Map()), I(/* @__PURE__ */ new Map()), L(""), ge.current = null;
+	}, Z = (e) => {
+		v(e), Je(), s({
 			category: e === "metadata_fields" ? "" : e,
 			queue: y === "pending" ? "" : y
 		});
 	}, Ye = (e) => {
-		b(e), qe(), s({
+		te(e), Je(), s({
 			category: _ === "metadata_fields" ? "" : _,
 			queue: e === "pending" ? "" : e
 		});
-	}, Q = Me({
-		mutationFn: ({ row: e, status: t, category: n }) => je(oe(n, ae(n, e), t, Y(e))),
+	}, Q = Pe({
+		mutationFn: ({ row: e, status: t, category: n }) => Ne(ce(n, oe(n, e), t, Y(e))),
 		onSuccess: (e, { row: t, status: n, category: r }) => {
-			e.ok ? (Ae(r, [t.item_key], n), Z([t.item_key]), d(se(n))) : Ke(t.item_key, e.error || "服务端拒绝了这次判定");
+			e.ok ? (Me(r, [t.item_key], n), Ke([t.item_key]), d(le(n))) : qe(t.item_key, e.error || "服务端拒绝了这次判定");
 		},
-		onError: (e, { row: t }) => Ke(t.item_key, le(e))
-	}), $ = Me({
+		onError: (e, { row: t }) => qe(t.item_key, de(e))
+	}), $ = Pe({
 		mutationFn: async ({ status: e, category: t, rows: n }) => {
 			let r = [], i = [];
 			for (let [a, o] of n.entries()) {
-				if (!Te.current) break;
-				V(`正在处理 ${a} / ${n.length}`);
+				if (!Ce.current) break;
+				L(`正在处理 ${a} / ${n.length}`);
 				try {
-					let n = await je(oe(t, ae(t, o), e, Y(o)));
+					let n = await Ne(ce(t, oe(t, o), e, Y(o)));
 					if (!n.ok) throw Error(n.error || "服务端未采用该项");
 					r.push(o.item_key);
 				} catch (e) {
-					i.push([o.item_key, le(e)]);
+					i.push([o.item_key, de(e)]);
 				}
 			}
 			return {
@@ -1464,7 +1425,7 @@ function Dt(r) {
 			};
 		},
 		onSuccess: ({ status: e, category: t, done: n, failures: r }) => {
-			Ae(t, n, e), Z(n), r.forEach(([e, t]) => Ke(e, t)), V("");
+			Me(t, n, e), Ke(n), r.forEach(([e, t]) => qe(e, t)), L("");
 			let i = {
 				approved: "通过",
 				rejected: "忽略",
@@ -1474,16 +1435,16 @@ function Dt(r) {
 			d(`已${i} ${n.length} 项` + (r.length ? `，${r.length} 项未完成` : ""));
 		},
 		onError: (e) => {
-			V(le(e));
+			L(de(e));
 		}
 	}), Xe = (e) => {
-		!$.isPending && X.length && (e === "approved" && W && X.some((e) => !Y(e).candidateKey) ? V("请先为所选资料选择要采用的来源。") : (V(""), $.mutate({
+		!$.isPending && X.length && (e === "approved" && H && X.some((e) => !Y(e).candidateKey) ? L("请先为所选资料选择要采用的来源。") : (L(""), $.mutate({
 			status: e,
 			category: _,
 			rows: X
 		})));
 	}, Ze = (e) => {
-		I((t) => {
+		P((t) => {
 			let n = new Map(t);
 			for (let t of X) {
 				let r = t.candidates?.find((t) => t.source === e);
@@ -1493,141 +1454,141 @@ function Dt(r) {
 				});
 			}
 			return n;
-		}), V(`已选择 ${e}，点击通过所选采用。`);
+		}), L(`已选择 ${e}，点击通过所选采用。`);
 	}, Qe = async (e) => {
-		if (_e) return;
-		ve(e), be("");
+		if (ye) return;
+		be(e), Se("");
 		let t = await u(e);
-		Te.current && (ve(0), be(t));
-	}, $e = he(Ee.mirror, m), et = Ee.genre_tags || [], tt = {
+		Ce.current && (be(0), Se(t));
+	}, $e = ve(Oe.mirror, m), et = Oe.genre_tags || [], tt = {
 		openItem: c,
 		openEntity: l,
 		onReveal: Qe,
-		revealing: _e,
-		revealNote: ye,
+		revealing: ye,
+		revealNote: xe,
 		toast: d
 	};
-	return /* @__PURE__ */ z(Fe, { children: /* @__PURE__ */ B("div", {
+	return /* @__PURE__ */ R(Re, { children: /* @__PURE__ */ z("div", {
 		className: "flex flex-col gap-5 pb-10",
 		children: [
-			Pe ? /* @__PURE__ */ z(te, {
+			Fe ? /* @__PURE__ */ R(b, {
 				tone: "warning",
 				title: "本机只能浏览",
-				extra: h ? /* @__PURE__ */ z("p", {
+				extra: g ? /* @__PURE__ */ R("p", {
 					className: "text-body-2-regular",
-					children: /* @__PURE__ */ z(g, {
-						href: h,
+					children: /* @__PURE__ */ R(ee, {
+						href: g,
 						children: "前往写入端复核"
 					})
 				}) : void 0,
 				children: $e
 			}) : null,
-			/* @__PURE__ */ z(at, { tags: et }),
-			/* @__PURE__ */ B(n, {
+			/* @__PURE__ */ R(rt, { tags: et }),
+			/* @__PURE__ */ z(n, {
 				orientation: i ? "horizontal" : "vertical",
 				selectedKey: _,
 				onSelectionChange: (e) => {
 					let t = String(e);
-					pe(t) && Je(t);
+					he(t) && Z(t);
 				},
 				className: "flex flex-col gap-5 review-split:flex-row review-split:items-start review-split:gap-6",
-				children: [/* @__PURE__ */ B("div", {
+				children: [/* @__PURE__ */ z("div", {
 					"data-section-nav": !0,
 					className: "w-full min-w-0 review-split:sticky review-split:top-topbar review-split:w-review-tabs review-split:shrink-0",
-					children: [/* @__PURE__ */ z("h2", {
+					children: [/* @__PURE__ */ R("h2", {
 						id: "reviewcategories",
 						children: "复核分类"
-					}), /* @__PURE__ */ z(Le, {
+					}), /* @__PURE__ */ R(Be, {
 						scrollable: i,
 						"aria-labelledby": "reviewcategories",
 						"data-section-items": !0,
 						className: "flex review-split:flex-col review-split:items-stretch",
-						children: S.map((e) => {
-							let n = Number(De.counts[e] || 0);
-							return /* @__PURE__ */ B(t, {
+						children: x.map((e) => {
+							let n = Number(ke.counts[e] || 0);
+							return /* @__PURE__ */ z(t, {
 								id: e,
-								className: Tt,
+								className: Ct,
 								isDisabled: Q.isPending || $.isPending,
 								"data-pill-selected": _ === e ? "" : void 0,
 								"data-pill-variant": "gray",
-								children: [w[e], n ? /* @__PURE__ */ z("span", {
+								children: [C[e], n ? /* @__PURE__ */ R("span", {
 									className: "tabular-nums text-caption-1-medium text-text-secondary",
 									children: n.toLocaleString()
 								}) : null]
 							}, e);
 						})
 					})]
-				}), /* @__PURE__ */ B(e, {
+				}), /* @__PURE__ */ z(e, {
 					id: _,
 					className: "flex min-w-0 flex-1 flex-col gap-5",
 					children: [
-						/* @__PURE__ */ z(Re, {
+						/* @__PURE__ */ R(Ve, {
 							queueView: y,
-							queueCounts: Oe,
+							queueCounts: Ae,
 							onQueueChange: Ye,
-							locked: Pe,
-							fields: Ie,
+							locked: Fe,
+							fields: Le,
 							fieldFilter: ze,
 							onFieldFilter: (e) => {
-								A(e), O(""), M(1);
+								k(e), D(""), j(1);
 							},
-							groupOptions: Be,
-							groupBy: q,
+							groupOptions: G,
+							groupBy: K,
 							onGroupBy: (e) => {
-								ne(e), O(""), M(1);
+								T(e), D(""), j(1);
 							},
-							groups: J,
-							filter: Ve,
+							groups: He,
+							filter: Ue,
 							onFilter: (e) => {
-								O(e), M(1);
+								D(e), j(1);
 							},
-							pageKeys: Ue,
-							selected: N,
-							onSelected: P,
+							pageKeys: We,
+							selected: M,
+							onSelected: N,
 							selectedRows: X,
-							metadata: W,
-							approvable: X.every((e) => re(_, e)),
+							metadata: H,
+							approvable: X.every((e) => ae(_, e)),
 							busy: $.isPending || Q.isPending,
-							feedback: R,
+							feedback: se,
 							onUnifySource: Ze,
 							onRun: Xe
 						}),
-						He.rows.length ? Ge.map((e) => /* @__PURE__ */ B("section", {
+						q.rows.length ? J.map((e) => /* @__PURE__ */ z("section", {
 							className: "flex flex-col gap-3",
-							children: [Ge.length > 1 || q !== "candidates" ? /* @__PURE__ */ B("div", {
+							children: [J.length > 1 || K !== "candidates" ? /* @__PURE__ */ z("div", {
 								className: "flex flex-wrap items-center gap-2",
-								children: [/* @__PURE__ */ z("h3", {
+								children: [/* @__PURE__ */ R("h3", {
 									className: "text-body-medium text-text-primary",
 									children: `${e.title} · ${e.rows.length}`
-								}), Pe ? null : /* @__PURE__ */ z(o, {
+								}), Fe ? null : /* @__PURE__ */ R(a, {
 									variant: "ghost",
 									size: "small",
 									onClick: () => {
-										let t = e.rows.map((e) => e.item_key), n = t.every((e) => N.has(e)), r = new Set(N);
+										let t = e.rows.map((e) => e.item_key), n = t.every((e) => M.has(e)), r = new Set(M);
 										for (let e of t) n ? r.delete(e) : r.add(e);
-										P(r);
+										N(r);
 									},
-									children: e.rows.every((e) => N.has(e.item_key)) ? "清空本组" : "全选本组"
+									children: e.rows.every((e) => M.has(e.item_key)) ? "清空本组" : "全选本组"
 								})]
-							}) : null, /* @__PURE__ */ z("div", {
+							}) : null, /* @__PURE__ */ R("div", {
 								className: "review-grid gap-5",
-								children: e.rows.map((e) => /* @__PURE__ */ z(wt, {
+								children: e.rows.map((e) => /* @__PURE__ */ R(St, {
 									category: _,
 									row: e,
 									queueView: y,
 									choice: Y(e),
-									onChoice: (t) => I((n) => new Map(n).set(e.item_key, t)),
-									selected: N.has(e.item_key),
-									onSelect: (t, n) => P((r) => {
+									onChoice: (t) => P((n) => new Map(n).set(e.item_key, t)),
+									selected: M.has(e.item_key),
+									onSelect: (t, n) => N((r) => {
 										let i = new Set(r);
-										return ge.current = ke(i, Ue, ge.current, e.item_key, t, n), i;
+										return ge.current = je(i, We, ge.current, e.item_key, t, n), i;
 									}),
-									locked: Pe,
+									locked: Fe,
 									busy: $.isPending || Q.isPending && Q.variables?.row.item_key === e.item_key,
-									problem: ie.get(e.item_key) || "",
+									problem: F.get(e.item_key) || "",
 									genreTags: et,
 									onDecide: (t) => {
-										Q.isPending || $.isPending || (L((t) => new Map([...t].filter(([t]) => t !== e.item_key))), Q.mutate({
+										Q.isPending || $.isPending || (I((t) => new Map([...t].filter(([t]) => t !== e.item_key))), Q.mutate({
 											row: e,
 											status: t,
 											category: _
@@ -1636,34 +1597,34 @@ function Dt(r) {
 									handlers: tt
 								}, e.item_key))
 							})]
-						}, e.key)) : H.isError && !H.data ? /* @__PURE__ */ z(te, {
+						}, e.key)) : B.isError && !B.data ? /* @__PURE__ */ R(b, {
 							tone: "error",
 							title: "复核队列读取失败",
-							action: /* @__PURE__ */ z(o, {
+							action: /* @__PURE__ */ R(a, {
 								variant: "secondary",
 								size: "small",
-								disabled: H.isFetching,
-								onClick: () => void H.refetch(),
+								disabled: B.isFetching,
+								onClick: () => void B.refetch(),
 								children: "立即重试"
 							}),
-							children: le(H.error)
-						}) : /* @__PURE__ */ z(ee, {
-							icon: me,
-							title: `此分类没有${E[y]}项目`,
-							actions: S.some((e) => e !== _ && Number(De.counts[e] || 0) > 0) ? /* @__PURE__ */ z(o, {
+							children: de(B.error)
+						}) : /* @__PURE__ */ R(h, {
+							icon: _e,
+							title: `此分类没有${w[y]}项目`,
+							actions: x.some((e) => e !== _ && Number(ke.counts[e] || 0) > 0) ? /* @__PURE__ */ R(a, {
 								size: "small",
 								onClick: () => {
-									let e = S.find((e) => e !== _ && Number(De.counts[e] || 0) > 0);
-									e && Je(e);
+									let e = x.find((e) => e !== _ && Number(ke.counts[e] || 0) > 0);
+									e && Z(e);
 								},
 								children: "查看其他分类"
 							}) : void 0,
-							children: y === "pending" ? "可切换分类查看其他待确认资料。" : `${E[y]}的资料会保留在这里，可恢复到待处理。`
+							children: y === "pending" ? "可切换分类查看其他待确认资料。" : `${w[y]}的资料会保留在这里，可恢复到待处理。`
 						}),
-						/* @__PURE__ */ z(Et, {
-							page: He.page,
-							pages: He.pages,
-							onPage: M
+						/* @__PURE__ */ R(wt, {
+							page: q.page,
+							pages: q.pages,
+							onPage: j
 						})
 					]
 				})]
@@ -1671,6 +1632,6 @@ function Dt(r) {
 		]
 	}) });
 }
-export { Dt as ReviewPage };
+export { Tt as ReviewPage };
 
-//# debugId=2f3d37b1-ec08-4078-97a5-2b9a18c59c92
+//# debugId=bad4198e-1cdd-4835-8da4-504f016334c8

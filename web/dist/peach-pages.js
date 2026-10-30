@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "4d5ad153-5b01-4753-96b8-3f47ebd443e5", e._sentryDebugIdIdentifier = "sentry-dbid-4d5ad153-5b01-4753-96b8-3f47ebd443e5");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "ab3b9132-8892-4ad8-a73f-42c2b348a601", e._sentryDebugIdIdentifier = "sentry-dbid-ab3b9132-8892-4ad8-a73f-42c2b348a601");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -634,7 +634,8 @@ var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescr
 	内容显示: "Content display",
 	增加对比度: "Increase contrast",
 	界面音效: "Interface sounds",
-	侧栏光晕: "Sidebar glow",
+	侧栏光晕: "Glow",
+	模糊馆藏图片: "Blur library images",
 	配色: "Color palette",
 	当前配色: "Current palette",
 	琉璃霞: "Iridescent sunset",
@@ -858,6 +859,7 @@ var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescr
 	"部分目录无法读取，数量和预估不完整": "Some folders could not be read; counts and estimates are incomplete",
 	流量预估: "Traffic estimate",
 	已识别流量: "Identified traffic",
+	"约 {0}": "About {0}",
 	预计流量: "Estimated traffic",
 	已确认代理: "Confirmed proxy",
 	代理: "Proxy",
@@ -61128,4 +61130,4 @@ je();
 var Lv = document.getElementById("peach-page"), Rv = Lv ? Iv[Lv.dataset.page ?? ""] : void 0;
 Lv && Rv && (0, Be.createRoot)(Lv).render(/* @__PURE__ */ F(Rv, { data: { ...Lv.dataset } }));
 
-//# debugId=4d5ad153-5b01-4753-96b8-3f47ebd443e5
+//# debugId=ab3b9132-8892-4ad8-a73f-42c2b348a601
