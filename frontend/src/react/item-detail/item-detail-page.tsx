@@ -18,6 +18,7 @@ import { confirmModal, spinnerHtml } from '@peach/legacy/ui';
 import { apiGet, apiSend, errorMessage } from '../../api';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
+import { Radio, RadioGroup } from '@/components/base/radio/radio';
 import { RiArrowDownSLine } from '@remixicon/react';
 import { CatalogGridPage } from '../catalog-grid/catalog-grid-page';
 import { patchCatalogItems, replaceCatalogItem } from '../catalog-grid/catalog-grid';
@@ -372,10 +373,15 @@ function Side({ item, queue, write, helpers, actions }: {
   const online = item.location === 'online';
   const busy = write.busyAttrs;
   const [reasonOpen, setReasonOpen] = useState(false);
+  const [metadataOpen, setMetadataOpen] = useState(false);
+  useEffect(() => { setMetadataOpen(false) }, [item.id]);
   return (
     <div data-stage-side="" data-item-side="">
       <div data-stage-side-content="">
-        <DetailTitle item={item} queue={queue} helpers={helpers} actions={actions} onStatus={write.setSourceState} />
+        <DetailTitle item={item} queue={queue} helpers={helpers} actions={actions} onStatus={write.setSourceState}
+          metadataOpen={metadataOpen} onToggleMetadata={() => setMetadataOpen(value => !value)} />
+        {(item.medium || 'video') === 'video' && !online && metadataOpen
+          ? <MetadataSearch key={item.id} item={item} actions={actions} onClose={() => setMetadataOpen(false)} /> : null}
         {online ? null : <span data-title-state="" aria-live="polite">{write.sourceState}</span>}
         <Rating item={item} write={write} />
         <div className="mono" data-stage-meta="" data-reveal-line="">
@@ -394,7 +400,6 @@ function Side({ item, queue, write, helpers, actions }: {
         </div>
         {(item.medium || 'video') === 'video' && !online && !String(item.name || '').toLowerCase().endsWith('.iso')
           ? <ExternalPlayback key={item.id} id={item.id} onOpened={() => actions.toast('已请求打开本地播放器')} /> : null}
-        {(item.medium || 'video') === 'video' && !online ? <MetadataSearch item={item} actions={actions} /> : null}
         <Identity item={item} helpers={helpers} actions={actions} />
         <Tags item={item} write={write} helpers={helpers} actions={actions} />
         <LibraryCompletionPrompt assetIds={missingPreviewIds([item], helpers.javImage())}
@@ -431,18 +436,35 @@ function Side({ item, queue, write, helpers, actions }: {
 
 type MetadataCandidate = { id: string; title: string; date: string; studio: string; url: string; actors: string[] };
 type MetadataResults = { candidates: MetadataCandidate[]; truncated: boolean; revision: number };
+type JavMatch = { revision: number; candidate: MetadataCandidate & { code: string } };
 
-function MetadataSearch({ item, actions }: { item: DetailItem; actions: ItemDetailActions }) {
-  const [open, setOpen] = useState(false);
+function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions: ItemDetailActions; onClose(): void }) {
+  const [source, setSource] = useState('stashdb');
+  const [javCode, setJavCode] = useState(String(item.code || ''));
+  const [javResult, setJavResult] = useState<JavMatch | null>(null);
   const [title, setTitle] = useState('');
+  const [actor, setActor] = useState('');
+  const [studio, setStudio] = useState('');
+  const [date, setDate] = useState('');
   const [result, setResult] = useState<MetadataResults | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  useEffect(() => {
+    setJavCode(String(item.code || ''));
+    setResult(null); setJavResult(null); setError('');
+  }, [item.id, item.code]);
   const search = async () => {
-    setBusy(true); setError(''); setResult(null);
+    setBusy(true); setError(''); setResult(null); setJavResult(null);
     try {
+      if (source === 'jav') {
+        if (!javCode.trim()) throw new Error('Enter a release code.');
+        setJavResult(await apiSend<JavMatch>('/api/configuration/jav-match/preview', {
+          asset_id: item.id, code: javCode.trim(),
+        }, 'POST'));
+        return;
+      }
       setResult(await apiSend<MetadataResults>('/api/configuration/stashdb/preview', {
-        asset_id: item.id, ...(title.trim() ? { search_title: title.trim() } : {}),
+        asset_id: item.id, search_fields: { title: title.trim(), actor: actor.trim(), studio: studio.trim(), date: date.trim() },
       }, 'POST'));
     } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
   };
@@ -454,20 +476,51 @@ function MetadataSearch({ item, actions }: { item: DetailItem; actions: ItemDeta
         const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/stashdb/apply', {
           asset_id: item.id, candidate_id: candidate.id, revision: result.revision,
         });
-        setResult(null); setOpen(false);
+        setResult(null); onClose();
         await queryClient.invalidateQueries({ queryKey: itemKey(item.id) });
         await queryClient.invalidateQueries();
         actions.toast(outcome.image_errors.length ? 'Match applied, but some artwork could not be downloaded.' : 'Metadata match applied');
       },
     });
   };
+  const applyJav = () => {
+    if (!javResult) return;
+    const { candidate, revision } = javResult;
+    void confirmModal({ title: 'Apply metadata match', confirmLabel: 'Apply match',
+      body: `Apply “${candidate.title}” from JavDB? Available code, title, date, studio, and cast will replace this video's existing values. Peach will also try to update the cover.`,
+      onConfirm: async () => {
+        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/jav-match/apply', {
+          asset_id: item.id, candidate_id: candidate.id, revision,
+        }, 'POST');
+        setJavResult(null); onClose();
+        await queryClient.invalidateQueries({ queryKey: itemKey(item.id) });
+        await queryClient.invalidateQueries();
+        actions.toast(outcome.image_errors.length ? 'Match applied, but the cover could not be downloaded.' : 'Metadata match applied');
+      },
+    });
+  };
   return <section className="flex flex-col items-start gap-2 mb-4" aria-label="Find metadata">
-    <Button type="button" variant="secondary" onClick={() => setOpen(value => !value)} aria-expanded={open}>Find metadata</Button>
-    {open ? <div className="flex w-full flex-col gap-3 rounded-lg border border-separator-border p-3">
-      <strong>Search StashDB</strong>
-      <Input label="Scene title (optional)" value={title} onChange={setTitle} placeholder="Leave blank to use video details" />
+    <div className="flex w-full flex-col gap-3 rounded-lg border border-separator-border p-3">
+      <RadioGroup aria-label="Metadata source" orientation="horizontal" className="flex-row flex-wrap" value={source} isDisabled={busy} onChange={value => {
+        setSource(value); setResult(null); setJavResult(null); setError('');
+      }}>
+        <Radio value="stashdb">StashDB</Radio>
+        <Radio value="jav">JAV</Radio>
+      </RadioGroup>
+      {source === 'stashdb' ? <>
+        <Input label="Title" value={title} onChange={setTitle} placeholder="Leave all fields blank to use video details" />
+        <Input label="Actor (optional)" value={actor} onChange={setActor} />
+        <Input label="Producer / studio" value={studio} onChange={setStudio} />
+        <Input label="Release date" value={date} onChange={setDate} placeholder="YYYY, YYYY/MM, or YYYY/MM/DD" />
+      </>
+        : <Input label="Release code" value={javCode} onChange={setJavCode} placeholder="For example, ROE-064" />}
       <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
       {error ? <p role="alert">{error}</p> : null}
+      {javResult ? <div className="flex flex-col items-start gap-2 border-t border-separator-border pt-3">
+        <a href={javResult.candidate.url} target="_blank" rel="noreferrer" data-i18n-ignore="">{javResult.candidate.code} · {javResult.candidate.title} · {javResult.candidate.studio} · {javResult.candidate.date}</a>
+        {javResult.candidate.actors.length ? <span data-i18n-ignore="">{javResult.candidate.actors.join(', ')}</span> : null}
+        <Button type="button" variant="secondary" disabled={busy} onClick={applyJav}>Apply match</Button>
+      </div> : null}
       {result?.truncated ? <p>Some results were omitted. Refine your search.</p> : null}
       {result && !result.candidates.length ? <p>No matches found. Try another title.</p> : null}
       {result?.candidates.map(candidate => <div key={candidate.id} className="flex flex-col items-start gap-2 border-t border-separator-border pt-3">
@@ -475,7 +528,7 @@ function MetadataSearch({ item, actions }: { item: DetailItem; actions: ItemDeta
         {candidate.actors?.length ? <span data-i18n-ignore="">{candidate.actors.join(', ')}</span> : null}
         <Button type="button" variant="secondary" disabled={busy} onClick={() => apply(candidate)}>Apply match</Button>
       </div>)}
-    </div> : null}
+    </div>
   </section>;
 }
 
@@ -483,9 +536,9 @@ function MetadataSearch({ item, actions }: { item: DetailItem; actions: ItemDeta
    展开与收起换字形——往下多看一截是 chevron-down，收回去是 chevron-up。展开键排在那排键最前面，
    紧挨着它管的标题。标题文字本身也接这一下：人想看全文时手本来就落在字上。选中文字那一下不算，
    那是在复制标题。溢出不只在打开那一刻判：影院模式和普通视图之间切换时标题栏宽度差一大截。 */
-function DetailTitle({ item, queue, helpers, actions, onStatus }: {
+function DetailTitle({ item, queue, helpers, actions, onStatus, metadataOpen, onToggleMetadata }: {
   item: DetailItem; queue: DetailQueue | null; helpers: ItemDetailHelpers; actions: ItemDetailActions;
-  onStatus(text: string): void;
+  onStatus(text: string): void; metadataOpen: boolean; onToggleMetadata(): void;
 }) {
   const displayName = String(!item.is_jav && item.catalog_title ? item.catalog_title : item.name || '');
   const { text, expanded, foldable, toggle } = useFoldedTitle(String(displayName || item.title || ''));
@@ -516,6 +569,9 @@ function DetailTitle({ item, queue, helpers, actions, onStatus }: {
             </span>
           ) : null}
           {item.location === 'online' ? null : <SourceTools id={item.id} actions={actions} onStatus={onStatus} />}
+          {(item.medium || 'video') === 'video' && item.location !== 'online' ?
+            <button type="button" aria-label="Find metadata" title="Find metadata" aria-expanded={metadataOpen}
+              onClick={onToggleMetadata}><Glyph name="search" /></button> : null}
         </span>
       </div>
     </div>

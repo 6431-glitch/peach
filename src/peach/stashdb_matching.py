@@ -24,6 +24,23 @@ def words(value):
     return re.sub(r'[._]+', ' ', str(value or '')).strip()
 
 
+def manual_date(value):
+    """Validate a year, month or full date and return its ISO prefix."""
+    if not isinstance(value, str):
+        raise ValueError('Enter a date as YYYY, YYYY/MM, or YYYY/MM/DD.')
+    value = value.strip().replace('/', '-')
+    if not value:
+        return ''
+    if not re.fullmatch(r'\d{4}(?:-\d{2}(?:-\d{2})?)?', value):
+        raise ValueError('Enter a date as YYYY, YYYY/MM, or YYYY/MM/DD.')
+    parts = [int(part) for part in value.split('-')]
+    try:
+        date(parts[0], parts[1] if len(parts) > 1 else 1, parts[2] if len(parts) > 2 else 1)
+    except ValueError as exc:
+        raise ValueError('Enter a valid date.') from exc
+    return value
+
+
 def hints(row, actors=(), *, ignore_terms=''):
     stem = PureWindowsPath(row['name']).stem
     for term in sorted(filter(None, ignore_terms.splitlines()), key=len, reverse=True):
@@ -74,7 +91,8 @@ def rank_scene(scene, evidence):
     studios = {key(studio.get('name')), key((studio.get('parent') or {}).get('name'))} - {''}
     studio_match = bool(evidence['studio'] and key(evidence['studio']) in studios)
     released = scene.get('release_date') or scene.get('date') or ''
-    date_match = bool(evidence['date'] and evidence['date'] == released)
+    date_match = bool(evidence['date'] and (released == evidence['date'] or
+                      (len(evidence['date']) < 10 and released.startswith(evidence['date'] + '-'))))
     date_conflict = bool(evidence['date'] and released and not date_match)
     studio_conflict = bool(evidence['studio'] and studios and not studio_match)
     title_score = SequenceMatcher(None, key(evidence['title']), key(scene.get('title'))).ratio() if evidence['title'] else 0
@@ -119,28 +137,39 @@ def _performer_ids(client, actors, known=None):
     return list(dict.fromkeys(performer_ids))
 
 
-def search_scenes(client, evidence, *, known_actors=None):
+def search_scenes(client, evidence, *, known_actors=None, manual=False):
     client.incomplete = False
     found, filters, truncated = {}, [], False
     studio_ids = _studio_ids(client, evidence['studio'])
     performer_ids = _performer_ids(client, evidence['actors'], known_actors)
-    date_filter = {'date': {'value': evidence['date'], 'modifier': 'EQUALS'}} if evidence['date'] else {}
+    date_filter = {'date': {'value': evidence['date'], 'modifier': 'EQUALS'}} if len(evidence['date']) == 10 else {}
     studio_filter = {'studios': {'value': list(dict.fromkeys(studio_ids)), 'modifier': 'INCLUDES'}} if studio_ids else {}
     actor_filter = {'performers': {'value': list(dict.fromkeys(performer_ids)), 'modifier': 'INCLUDES'}} if performer_ids else {}
-    if date_filter and studio_filter:
+    if manual:
+        if evidence['studio'] and not studio_ids or evidence['actors'] and not performer_ids:
+            return {'hints': evidence, 'candidates': [], 'truncated': bool(client.incomplete), 'review_required': False}
+        query = {**date_filter, **studio_filter, **actor_filter}
+        if evidence['title']:
+            query['title'] = evidence['title'][:120]
+        if not query:
+            raise ValueError('For a year or month, also enter a title, actor, or studio.')
+        filters.append(query)
+    elif date_filter and studio_filter:
         filters.append({**date_filter, **studio_filter})
-    if actor_filter and date_filter:
+    if not manual and actor_filter and date_filter:
         filters.append({**actor_filter, **date_filter})
-    if actor_filter and studio_filter:
+    if not manual and actor_filter and studio_filter:
         filters.append({**actor_filter, **studio_filter})
-    if evidence['title']:
+    if not manual and evidence['title']:
         filters.append({'title': evidence['title'][:120], **studio_filter})
-    if not filters and date_filter:
+    if not manual and not filters and date_filter:
         filters.append(date_filter)
     for query in filters[:4]:
         scenes, overflow = client.scenes(query)
         truncated |= overflow
         for scene in scenes:
+            if manual and evidence['date'] and not str(scene.get('release_date') or scene.get('date') or '').startswith(evidence['date']):
+                continue
             found[scene['id']] = scene
     truncated |= bool(getattr(client, 'incomplete', False))
     ranked = sorted(filter(None, (rank_scene(scene, evidence) for scene in found.values())), key=lambda row: (-row['score'], row['id']))

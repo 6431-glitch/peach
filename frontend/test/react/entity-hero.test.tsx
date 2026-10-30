@@ -12,7 +12,8 @@ import {
   type EntityHeroActions, type EntityHeroData, type EntityHeroHelpers, type EntityHeroProps,
 } from '../../src/react/entity-hero/entity-hero';
 import { queryClient } from '../../src/react/query';
-import { click, mount, settle } from './render';
+import * as api from '../../src/api';
+import { buttonNamed, click, mount, settle } from './render';
 
 afterEach(() => { queryClient.clear() });
 notifyManager.setScheduler((notify) => notify());
@@ -52,6 +53,19 @@ async function open(initial: EntityHeroProps) {
   await settle();
   return host;
 }
+
+it('shows the reviewed performer candidate before offering apply', async () => {
+  const send = vi.spyOn(api, 'apiSend').mockResolvedValue({ token: 'candidate', name: '葵つかさ', source: 'boobpedia',
+    candidate: { matched_name: '葵つかさ', profile_url: 'https://www.boobpedia.com/boobs/example',
+      portrait_url: '', profile: { birth_date: '2000-01-01' } } });
+  const host = await open(props());
+  await click(host.querySelector('button[aria-label="Find performer profile"]'));
+  await click(buttonNamed('Search'));
+  await settle();
+  expect(send).toHaveBeenCalledWith('/api/configuration/performer-source/preview', { entity_id: 7792, source: 'boobpedia' });
+  expect(document.body.textContent).toContain('2000-01-01');
+  expect(buttonNamed('Apply profile')).not.toBeNull();
+});
 
 describe('排版用的纯函数', () => {
   it('厂牌与事务所显示独立的公司资料，不显示来源悬浮说明', async () => {

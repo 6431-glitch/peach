@@ -292,6 +292,52 @@ def stashdb_library(request: Request, query: str = '', _args=Depends(require_aut
         return [dict(row) for row in rows]
 
 
+@router.post('/api/configuration/performer-source/{action}')
+def performer_source(request: Request, action: str, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
+    local_only(request)
+    same_origin(request)
+    from . import performer_source_review
+    entity_id = body.get('entity_id')
+    if type(entity_id) is not int or entity_id <= 0:
+        raise HTTPException(400, 'Choose a performer from your library.')
+    config = settings_file.load_config()
+    database = request.app.state.web_contract.database
+    try:
+        if action == 'preview':
+            return performer_source_review.preview(config, database, entity_id, body.get('source'))
+        if action == 'apply':
+            if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
+                raise HTTPException(403, 'This library is read-only.')
+            return performer_source_review.apply(config, database, entity_id, body.get('token'))
+        raise HTTPException(404, 'Unknown performer source action.')
+    except (ValueError, OSError, httpx.HTTPError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@router.post('/api/configuration/jav-match/{action}')
+def jav_manual_match(request: Request, action: str, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
+    local_only(request)
+    same_origin(request)
+    from . import jav_manual_match as match
+    config = settings_file.load_config()
+    asset_id = body.get('asset_id')
+    if type(asset_id) is not int or asset_id <= 0:
+        raise HTTPException(400, 'Choose a video from your library.')
+    try:
+        if action == 'preview':
+            return match.search(config, request.app.state.web_contract.database, asset_id, body.get('code'))
+        if action == 'apply':
+            if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
+                raise HTTPException(403, 'This library is read-only.')
+            candidate_id, revision = body.get('candidate_id'), body.get('revision')
+            if not isinstance(candidate_id, str) or type(revision) is not int:
+                raise ValueError('Choose a saved candidate to apply.')
+            return match.apply(config, request.app.state.web_contract.database, asset_id, candidate_id, revision)
+        raise HTTPException(404, 'Unknown JAV matching action.')
+    except (ValueError, OSError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
 @router.get('/api/configuration/stashdb/review')
 def stashdb_review(request: Request, _args=Depends(require_auth)):
     local_only(request)
@@ -321,7 +367,7 @@ def configure_stashdb(request: Request, action: str, body: dict = Body(default_f
             if type(asset_id) is not int or asset_id <= 0:
                 raise ValueError('Choose a video from your library.')
             return stashdb_preview.manual_search(config, request.app.state.web_contract.database, asset_id,
-                                                search_title=body.get('search_title'))
+                                                search_title=body.get('search_title'), search_fields=body.get('search_fields'))
         if action == 'apply':
             if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
                 raise HTTPException(403, 'This library is read-only.')

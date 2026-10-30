@@ -84,6 +84,30 @@ async function show(shown: DetailItem, patch: Partial<ItemDetailProps> = {}) {
   return { host, props: given, actions: given.actions as ActionMocks };
 }
 
+describe('metadata search', () => {
+  it('sends the selected source and search fields', async () => {
+    const fetcher = serve(() => ({ candidates: [], revision: 1, truncated: false }));
+    const { host } = await show(item(1, { code: 'ROE-064' }));
+    const trigger = host.querySelector('button[aria-label="Find metadata"]')!;
+    expect(trigger.previousElementSibling?.hasAttribute('data-sync')).toBe(true);
+    await click(trigger);
+    const panel = host.querySelector('section[aria-label="Find metadata"]')!;
+    const fields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
+    expect(fields).toHaveLength(4);
+    await type(fields[0], 'Example title');
+    await type(fields[1], 'Example actor');
+    await type(fields[2], 'Example studio');
+    await type(fields[3], '2021/05');
+    await click([...panel.querySelectorAll('button')].find(button => button.textContent === 'Search')!);
+    await settle();
+    expect(posts(fetcher)).toContainEqual(['/api/configuration/stashdb/preview', {
+      asset_id: 1, search_fields: { title: 'Example title', actor: 'Example actor', studio: 'Example studio', date: '2021/05' },
+    }]);
+    await click(panel.querySelector('input[value="jav"]'));
+    expect(panel.querySelectorAll('input:not([type="radio"])')).toHaveLength(1);
+  });
+});
+
 describe('标签身份', () => {
   it('详情显示完整制服名与角色名', async () => {
     serve();

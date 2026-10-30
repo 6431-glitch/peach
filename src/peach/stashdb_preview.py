@@ -54,7 +54,7 @@ def _install_images(config, client, asset_id, code, scene, performers, policy, *
     return errors
 
 
-def preview_scene(config, database, asset_id, *, client=None, search_title=None):
+def preview_scene(config, database, asset_id, *, client=None, search_title=None, search_fields=None):
     """只读取账本与来源；不更改媒体、身份或账本字段。"""
     with database.read_connection() as connection:
         row = connection.execute(
@@ -74,10 +74,25 @@ def preview_scene(config, database, asset_id, *, client=None, search_title=None)
             if not isinstance(search_title, str) or not search_title.strip() or len(search_title) > 200:
                 raise ValueError('Enter a search title of up to 200 characters.')
             evidence.update(title=search_title.strip(), studio='', date='', actors=[])
+        if search_fields is not None:
+            if not isinstance(search_fields, dict) or set(search_fields) - {'title', 'actor', 'studio', 'date'}:
+                raise ValueError('Enter valid StashDB search fields.')
+            values = {}
+            for name in ('title', 'actor', 'studio', 'date'):
+                value = search_fields.get(name, '')
+                if not isinstance(value, str) or len(value) > 200 or any(ord(c) < 32 for c in value):
+                    raise ValueError('Search fields must be text of up to 200 characters.')
+                values[name] = value.strip()
+            if any(values.values()):
+                evidence.update(title=values['title'], studio=values['studio'],
+                                date=stashdb_matching.manual_date(values['date']),
+                                actors=[values['actor']] if values['actor'] else [])
+            else:
+                search_fields = None
     owned = client is None
     client = client or stashdb_client.Client(config)
     try:
-        result = stashdb_matching.search_scenes(client, evidence)
+        result = stashdb_matching.search_scenes(client, evidence, manual=search_fields is not None)
         result['revision'] = row['mutation_revision']
         return result
     finally:
@@ -85,9 +100,9 @@ def preview_scene(config, database, asset_id, *, client=None, search_title=None)
             client.close()
 
 
-def manual_search(config, database, asset_id, search_title=None):
+def manual_search(config, database, asset_id, search_title=None, search_fields=None):
     """Save manually searched candidates for the same revision-checked review flow."""
-    result = preview_scene(config, database, asset_id, search_title=search_title)
+    result = preview_scene(config, database, asset_id, search_title=search_title, search_fields=search_fields)
     with database.read_connection() as connection:
         row = connection.execute('SELECT name FROM asset WHERE id=?', (asset_id,)).fetchone()
     root = config.directory('state') / 'stashdb-review'

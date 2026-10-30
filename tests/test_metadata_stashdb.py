@@ -52,6 +52,35 @@ class StashDBCandidateTests(unittest.TestCase):
         (root / '1.json').write_text(json.dumps(record), encoding='utf-8')
         return revision
 
+    def test_manual_search_combines_fields_and_filters_partial_date(self):
+        class Client:
+            incomplete = False
+            def studios(self, name):
+                return [{'id': 'studio', 'name': 'Example Studio'}]
+            def performers(self, name):
+                return [{'id': 'actor', 'name': 'Example Actor', 'aliases': []}]
+            def scenes(self, filters):
+                self.filters = filters
+                return ([{'id': 'one', 'title': 'Example', 'release_date': '2021-05-19',
+                          'studio': {'name': 'Example Studio'}, 'performers': []},
+                         {'id': 'two', 'title': 'Example', 'release_date': '2021-06-01',
+                          'studio': {'name': 'Example Studio'}, 'performers': []}], False)
+        client = Client()
+        result = stashdb_preview.preview_scene(self.config, self.db, 1, client=client,
+            search_fields={'title': 'Example', 'actor': 'Example Actor', 'studio': 'Example Studio', 'date': '2021/05'})
+        self.assertEqual([row['id'] for row in result['candidates']], ['one'])
+        self.assertEqual(client.filters['title'], 'Example')
+        self.assertEqual(client.filters['studios']['value'], ['studio'])
+        self.assertEqual(client.filters['performers']['value'], ['actor'])
+        self.assertNotIn('date', client.filters)
+
+    def test_manual_date_validation(self):
+        self.assertEqual(stashdb_matching.manual_date('2020/02/29'), '2020-02-29')
+        self.assertEqual(stashdb_matching.manual_date('2021/05'), '2021-05')
+        self.assertEqual(stashdb_matching.manual_date('2021'), '2021')
+        with self.assertRaises(ValueError):
+            stashdb_matching.manual_date('2021/02/29')
+
     def test_explicit_selection_replaces_manual_title(self):
         revision = self.save_candidate()
         client = unittest.mock.Mock()

@@ -15,6 +15,13 @@ import { entityPath, esc, firstGrapheme, icon } from '@peach/legacy/core';
 import { textLang } from '../../core/text-lang';
 
 import { Button } from '@/components/base/buttons/button';
+import { IconButton } from '@/components/base/buttons/icon-button';
+import { MENU_POPOVER_SURFACE } from '@/components/base/dropdown/menu-styles';
+import { Radio, RadioGroup } from '@/components/base/radio/radio';
+import { Dialog, Popover } from 'react-aria-components';
+import { RiSearchLine } from '@remixicon/react';
+import { apiSend, errorMessage } from '../../api';
+import { confirmModal } from '@peach/legacy/ui';
 
 import { AvatarPicker } from '../avatar-picker/avatar-picker-page';
 import { Note } from '../components/note';
@@ -71,6 +78,7 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions,
               {kind !== 'tag' ? <NamePicker current={entity.canonical_name} choices={nameChoices(entity)}
                 onChoose={actions.chooseName} onAddAlias={actions.addAlias} /> : null}
               {entity.id ? <FavoriteButton item={{ entity_id: Number(entity.id), kind, name: entity.canonical_name || name, favorite: entity.favorite }} /> : null}
+              {kind === 'performer' && entity.id ? <PerformerSource entityId={Number(entity.id)} onApplied={actions.avatarPicked} /> : null}
             </div>
             <AliasLine kind={kind} entity={entity} actions={actions} />
             {entity.related_identities?.length ? (
@@ -129,6 +137,59 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions,
         act={(feedId, action) => actions.feedAction(feedId, action)} />, feedHost) : null}
     </>
   );
+}
+
+type PerformerCandidate = { token: string; name: string; source: string; candidate: {
+  matched_name: string; profile_url: string; portrait_url: string; profile: { birth_date?: string; height_cm?: number; debut_year?: number };
+} };
+
+function PerformerSource({ entityId, onApplied }: { entityId: number; onApplied(): void }) {
+  const trigger = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  const [source, setSource] = useState('boobpedia');
+  const [result, setResult] = useState<PerformerCandidate | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const search = async () => {
+    setBusy(true); setError(''); setResult(null);
+    try {
+      setResult(await apiSend<PerformerCandidate>('/api/configuration/performer-source/preview', { entity_id: entityId, source }));
+    } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
+  };
+  const apply = () => {
+    if (!result) return;
+    void confirmModal({ title: 'Apply performer profile', confirmLabel: 'Apply',
+      body: `Use the selected ${result.source} profile for ${result.name}? Existing profiles and portraits are preserved.`,
+      onConfirm: async () => {
+        const response = await apiSend<{ image_error: string }>('/api/configuration/performer-source/apply',
+          { entity_id: entityId, token: result.token });
+        setResult(null);
+        if (response.image_error) setError(`Profile processed, but the portrait could not be saved: ${response.image_error}`);
+        onApplied();
+      },
+    });
+  };
+  return <>
+    <IconButton ref={trigger} icon={RiSearchLine} size="small" aria-label="Find performer profile"
+      title="Find performer profile" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(value => !value)} />
+    <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen} placement="bottom start" offset={8}
+      containerPadding={8} className={MENU_POPOVER_SURFACE}>
+    <Dialog aria-label="Find performer profile" className="flex w-64 max-w-full flex-col gap-3 p-2 text-text-primary outline-none">
+      <strong>Find performer profile</strong>
+      <RadioGroup aria-label="Performer source" value={source} isDisabled={busy} onChange={value => { setSource(value); setResult(null); setError('') }}>
+        <Radio value="boobpedia">Boobpedia</Radio><Radio value="adultfilmdatabase">Adult Film Database</Radio><Radio value="iafd">IAFD</Radio>
+      </RadioGroup>
+      <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
+      {error ? <p role="alert">{error}</p> : null}
+      {result ? <div className="flex flex-col items-start gap-2">
+        <a href={result.candidate.profile_url} target="_blank" rel="noreferrer">{result.candidate.matched_name}</a>
+        <span>{[result.candidate.profile.birth_date, result.candidate.profile.height_cm ? `${result.candidate.profile.height_cm} cm` : '', result.candidate.profile.debut_year].filter(Boolean).join(' · ')}</span>
+        {result.candidate.portrait_url ? <a href={result.candidate.portrait_url} target="_blank" rel="noreferrer">View source portrait</a> : null}
+        <Button type="button" variant="secondary" onClick={apply}>Apply profile</Button>
+      </div> : null}
+    </Dialog>
+    </Popover>
+  </>;
 }
 
 /** 大位：公司取自己的标识（方框），人取实体图或代表作头像（圆框）；一环都取不到就只剩首字母。 */

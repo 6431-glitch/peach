@@ -23,6 +23,9 @@ export function StashDBSettings({ initial, receipt }: { initial: StashDBPolicy; 
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [selected, setSelected] = useState<LibraryItem | null>(null);
   const [searchTitle, setSearchTitle] = useState('');
+  const [searchActor, setSearchActor] = useState('');
+  const [searchStudio, setSearchStudio] = useState('');
+  const [searchDate, setSearchDate] = useState('');
   const [preview, setPreview] = useState<Preview | null>(null);
   const [queue, setQueue] = useState<ReviewItem[]>([]);
   const action = useAction();
@@ -88,21 +91,24 @@ export function StashDBSettings({ initial, receipt }: { initial: StashDBPolicy; 
         </div>)}
       </article>)}
       <h3 className="text-body-medium text-text-primary">Manual match</h3>
-      <Help>Find a library video, then search StashDB by title and choose a match.</Help>
+      <Help>Find a library video, then search StashDB and choose a match.</Help>
       <Input label="Find a library video" value={query} onChange={setQuery} />
       <Button type="button" variant="secondary" {...busyProps(action.busy === 'library')}
         onClick={() => void action.run('library', signal => apiGet<LibraryItem[]>(`/api/configuration/stashdb/library?query=${encodeURIComponent(query)}`, signal), setItems)}>Find videos</Button>
       {items.map(item => <div key={item.id} className="flex flex-wrap items-center gap-2">
         <span data-i18n-ignore="">{item.label}</span>
         <Button type="button" variant="secondary" disabled={!policy.api_key_set || Boolean(action.busy)}
-          onClick={() => { setSelected(item); setSearchTitle(''); setPreview(null) }}>Manual match</Button>
+          onClick={() => { setSelected(item); setSearchTitle(''); setSearchActor(''); setSearchStudio(''); setSearchDate(''); setPreview(null) }}>Manual match</Button>
       </div>)}
       {selected ? <div className="flex flex-col gap-2 rounded-lg border border-separator-border p-3">
         <strong data-i18n-ignore="">{selected.label}</strong>
-        <Input label="StashDB scene title (optional)" value={searchTitle} onChange={setSearchTitle} placeholder="Leave blank to use library details" />
+        <Input label="Title" value={searchTitle} onChange={setSearchTitle} placeholder="Leave all fields blank to use video details" />
+        <Input label="Actor (optional)" value={searchActor} onChange={setSearchActor} />
+        <Input label="Producer / studio" value={searchStudio} onChange={setSearchStudio} />
+        <Input label="Release date" value={searchDate} onChange={setSearchDate} placeholder="YYYY, YYYY/MM, or YYYY/MM/DD" />
         <Button type="button" variant="secondary" {...busyProps(action.busy === 'preview')}
           onClick={() => void action.run('preview', signal => apiSend<Preview>('/api/configuration/stashdb/preview', {
-            asset_id: selected.id, ...(searchTitle.trim() ? { search_title: searchTitle.trim() } : {}),
+            asset_id: selected.id, search_fields: { title: searchTitle.trim(), actor: searchActor.trim(), studio: searchStudio.trim(), date: searchDate.trim() },
           }, 'POST', signal), result => { setPreview(result); setQueue(current => current.filter(item => item.id !== selected.id)) })}>Search StashDB</Button>
         {preview ? <div className="flex flex-col gap-2"><Help>{preview.truncated ? 'Some results were omitted. Refine the search before deciding.' : 'Review the source before using a match.'}</Help>
           {preview.candidates.length ? preview.candidates.map(candidate => <div key={candidate.id} className="flex flex-wrap items-center gap-2">
