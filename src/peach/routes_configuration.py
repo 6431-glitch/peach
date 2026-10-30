@@ -314,6 +314,34 @@ def performer_source(request: Request, action: str, body: dict = Body(default_fa
         raise HTTPException(400, str(exc)) from exc
 
 
+@router.post('/api/configuration/adult-empire/{action}')
+def adult_empire_match(request: Request, action: str, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
+    local_only(request)
+    same_origin(request)
+    from . import adult_empire_match as match
+    asset_id = body.get('asset_id')
+    if type(asset_id) is not int or asset_id <= 0:
+        raise HTTPException(400, 'Choose a video from your library.')
+    config = settings_file.load_config()
+    database = request.app.state.web_contract.database
+    try:
+        if action == 'search':
+            return match.search(config, database, asset_id, body.get('query'), body.get('category'), body.get('page', 1))
+        if action in ('detail', 'apply'):
+            candidate_id, revision = body.get('candidate_id'), body.get('revision')
+            if not isinstance(candidate_id, str) or type(revision) is not int:
+                raise ValueError('Choose a saved candidate.')
+            if action == 'detail':
+                return match.detail(config, database, asset_id, candidate_id, revision)
+            if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
+                raise HTTPException(403, 'This library is read-only.')
+            return match.apply(config, database, asset_id, candidate_id, revision,
+                               confirm_identity_links=body.get('confirm_identity_links') is True)
+        raise HTTPException(404, 'Unknown Adult Empire action.')
+    except (ValueError, OSError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
 @router.post('/api/configuration/jav-match/{action}')
 def jav_manual_match(request: Request, action: str, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
     local_only(request)

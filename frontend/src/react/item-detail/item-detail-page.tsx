@@ -15,7 +15,7 @@ import {
 } from '@peach/card-art';
 import { confirmModal, spinnerHtml } from '@peach/legacy/ui';
 
-import { apiGet, apiSend, errorMessage } from '../../api';
+import { ApiError, apiGet, apiSend, errorMessage } from '../../api';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { Radio, RadioGroup } from '@/components/base/radio/radio';
@@ -40,6 +40,7 @@ import { ExternalPlayback } from './external-playback';
 import { CoverCrop } from '../cover-crop/cover-crop-page';
 import { queryClient } from '../query';
 import { LibraryCompletionPrompt, missingPreviewIds } from '../library-processing/library-completion';
+import { ModalFrame } from '../components/modal-frame';
 import {
   CAST_SHOWN, EDITION_TONE, FEEDBACK_URL, ITEM_TAG_URL, PLAYLIST_URL, PREFERENCE_URL, QUALITY_GOAL_URL,
   RELATED_URL, WATCH_LATER_URL, chooseItem, clampRating, detailTags, feedbackReceipt, fetchItem, fetchQueue,
@@ -380,7 +381,9 @@ function Side({ item, queue, write, helpers, actions }: {
         <DetailTitle item={item} queue={queue} helpers={helpers} actions={actions} onStatus={write.setSourceState}
           metadataOpen={metadataOpen} onToggleMetadata={() => setMetadataOpen(value => !value)} />
         {(item.medium || 'video') === 'video' && !online && metadataOpen
-          ? <MetadataSearch key={item.id} item={item} actions={actions} onClose={() => setMetadataOpen(false)} /> : null}
+          ? <ModalFrame isOpen onOpenChange={open => { if (!open) setMetadataOpen(false) }} width="form" label="Find metadata">
+              <MetadataSearch key={item.id} item={item} actions={actions} onClose={() => setMetadataOpen(false)} />
+            </ModalFrame> : null}
         {online ? null : <span data-title-state="" aria-live="polite">{write.sourceState}</span>}
         <Rating item={item} write={write} />
         <div className="mono" data-stage-meta="" data-reveal-line="">
@@ -434,8 +437,11 @@ function Side({ item, queue, write, helpers, actions }: {
 }
 
 type MetadataCandidate = { id: string; title: string; date: string; studio: string; url: string; actors: string[] };
-type MetadataResults = { candidates: MetadataCandidate[]; truncated: boolean; revision: number };
+type MetadataResults = { candidates: MetadataCandidate[]; truncated: boolean; revision: number; next_page?: number | null };
 type JavMatch = { revision: number; candidate: MetadataCandidate & { code: string } };
+type EmpireReview = { candidate: { id: string; title: string; studio: string; date: string; cover: string;
+  performers: { id: string; name: string; image: string; url: string }[] };
+  identity_links: { name: string; existing: string }[]; identity_conflicts: string[]; revision: number };
 
 function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions: ItemDetailActions; onClose(): void }) {
   const [source, setSource] = useState('stashdb');
@@ -445,15 +451,18 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   const [actor, setActor] = useState('');
   const [studio, setStudio] = useState('');
   const [date, setDate] = useState('');
+  const [category, setCategory] = useState('dvd');
   const [result, setResult] = useState<MetadataResults | null>(null);
+  const [empireReview, setEmpireReview] = useState<EmpireReview | null>(null);
+  const moreSentinel = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   useEffect(() => {
     setJavCode(String(item.code || ''));
     setResult(null); setJavResult(null); setError('');
   }, [item.id, item.code]);
-  const search = async () => {
-    setBusy(true); setError(''); setResult(null); setJavResult(null);
+  const search = async (page = 1) => {
+    setBusy(true); setError(''); if (page === 1) setResult(null); setJavResult(null);
     try {
       if (source === 'jav') {
         if (!javCode.trim()) throw new Error('Enter a release code.');
@@ -462,13 +471,39 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         }, 'POST'));
         return;
       }
+      if (source === 'adultempire') {
+        setResult(await apiSend<MetadataResults>('/api/configuration/adult-empire/search', {
+          asset_id: item.id, query: title.trim(), category, page,
+        }, 'POST'));
+        return;
+      }
       setResult(await apiSend<MetadataResults>('/api/configuration/stashdb/preview', {
         asset_id: item.id, search_fields: { title: title.trim(), actor: actor.trim(), studio: studio.trim(), date: date.trim() },
       }, 'POST'));
-    } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
+    } catch (cause) {
+      const detail = cause instanceof ApiError && cause.body && typeof cause.body === 'object'
+        ? (cause.body as { detail?: unknown }).detail : null;
+      setError(source === 'adultempire' && typeof detail === 'string' && detail.startsWith('Adult Empire') ? detail : errorMessage(cause));
+    } finally { setBusy(false) }
   };
+  useEffect(() => {
+    const next = result?.next_page;
+    if (!next || busy || !moreSentinel.current || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(entry => entry.isIntersecting)) { observer.disconnect(); void search(next) }
+    }, { rootMargin: '100px' });
+    observer.observe(moreSentinel.current);
+    return () => observer.disconnect();
+  }, [result?.next_page, busy, source]);
   const apply = (candidate: MetadataCandidate) => {
     if (!result) return;
+    if (source === 'adultempire') {
+      setBusy(true); setError('');
+      void apiSend<EmpireReview>('/api/configuration/adult-empire/detail', {
+        asset_id: item.id, candidate_id: candidate.id, revision: result.revision,
+      }, 'POST').then(setEmpireReview).catch(cause => setError(errorMessage(cause))).finally(() => setBusy(false));
+      return;
+    }
     void confirmModal({ title: 'Apply metadata match', confirmLabel: 'Apply match',
       body: `Apply “${candidate.title}” from StashDB? Available title, date, studio, cast, and cover will replace this video's existing values.`,
       onConfirm: async () => {
@@ -498,6 +533,41 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
       },
     });
   };
+  if (empireReview) {
+    const movie = empireReview.candidate;
+    const applyReviewed = async () => {
+      setBusy(true); setError('');
+      try {
+        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/adult-empire/apply', {
+          asset_id: item.id, candidate_id: movie.id, revision: empireReview.revision, confirm_identity_links: true,
+        }, 'POST');
+        setEmpireReview(null); setResult(null); onClose();
+        await queryClient.invalidateQueries();
+        actions.toast(outcome.image_errors.length ? outcome.image_errors.join(' · ') : 'Metadata match applied');
+      } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
+    };
+    return <section className="flex w-full flex-col gap-3 p-4" aria-label="Review Adult Empire match">
+      <strong>Review metadata and performers</strong>
+      <p data-i18n-ignore="">{movie.title}{movie.studio ? ` · ${movie.studio}` : ''}{movie.date ? ` · ${movie.date}` : ''}</p>
+      {movie.cover ? <img src={movie.cover} alt="Source cover" className="max-h-40 w-auto self-start rounded-lg" /> : null}
+      <p>Available title, studio, date, cast and cover will replace this video's existing values.</p>
+      {movie.performers.length ? <div className="flex flex-col gap-2">
+        <strong>Performers</strong>
+        {movie.performers.map(person => {
+          const existing = empireReview.identity_links.find(link => link.name === person.name);
+          return <div key={person.id} className="flex items-center gap-3">
+            {person.image ? <img src={person.image} alt="" className="size-12 rounded-full object-cover" /> : null}
+            <span data-i18n-ignore="">{person.name}{existing ? ` → ${existing.existing}` : ''}</span>
+            {existing ? <span className="text-text-secondary">Existing performer</span> : null}
+          </div>;
+        })}
+      </div> : <p>No performers provided by this source.</p>}
+      {empireReview.identity_conflicts.length ? <p role="alert" className="text-text-error-primary">Some performer identities are ambiguous: {empireReview.identity_conflicts.join(', ')}. Existing cast will be preserved.</p> : null}
+      {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
+      <Button type="button" variant="primary" {...busyProps(busy)} onClick={() => void applyReviewed()}>{empireReview.identity_conflicts.length ? 'Apply metadata and keep current performers' : 'Apply metadata and performers'}</Button>
+      <Button type="button" variant="secondary" disabled={busy} onClick={() => setEmpireReview(null)}>Back to results</Button>
+    </section>;
+  }
   return <section className="flex flex-col items-start gap-2 mb-4" aria-label="Find metadata">
     <div className="flex w-full flex-col gap-3 rounded-lg border border-separator-border p-3">
       <RadioGroup aria-label="Metadata source" orientation="horizontal" className="flex-row flex-wrap" value={source} isDisabled={busy} onChange={value => {
@@ -505,8 +575,15 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
       }}>
         <Radio value="stashdb">StashDB</Radio>
         <Radio value="jav">JAV</Radio>
+        <Radio value="adultempire">Adult Empire</Radio>
       </RadioGroup>
-      {source === 'stashdb' ? <>
+      {source === 'adultempire' ? <>
+        <Input label="Title" value={title} onChange={setTitle} />
+        <RadioGroup aria-label="Category" orientation="horizontal" className="flex-row flex-wrap" value={category}
+          onChange={value => { setCategory(value); setResult(null) }}>
+          <Radio value="dvd">DVD</Radio><Radio value="clips">Clips</Radio><Radio value="bluray">Blu-ray</Radio>
+        </RadioGroup>
+      </> : source === 'stashdb' ? <>
         <Input label="Title" value={title} onChange={setTitle} placeholder="Leave all fields blank to use video details" />
         <Input label="Actor (optional)" value={actor} onChange={setActor} />
         <Input label="Producer / studio" value={studio} onChange={setStudio} />
@@ -514,7 +591,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
       </>
         : <Input label="Release code" value={javCode} onChange={setJavCode} placeholder="For example, ROE-064" />}
       <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
       {javResult ? <div className="flex flex-col items-start gap-2 border-t border-separator-border pt-3">
         <a href={javResult.candidate.url} target="_blank" rel="noreferrer" data-i18n-ignore="">{javResult.candidate.code} · {javResult.candidate.title} · {javResult.candidate.studio} · {javResult.candidate.date}</a>
         {javResult.candidate.actors.length ? <span data-i18n-ignore="">{javResult.candidate.actors.join(', ')}</span> : null}
@@ -527,6 +604,8 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         {candidate.actors?.length ? <span data-i18n-ignore="">{candidate.actors.join(', ')}</span> : null}
         <Button type="button" variant="secondary" disabled={busy} onClick={() => apply(candidate)}>Apply match</Button>
       </div>)}
+      {result?.next_page ? <div ref={moreSentinel}><Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search(result.next_page || 1)}>Load more</Button></div> : null}
+      <Button type="button" variant="secondary" onClick={onClose}>Close</Button>
     </div>
   </section>;
 }

@@ -45,6 +45,18 @@ class PerformerSourceReviewTests(unittest.TestCase):
             self.assertEqual(connection.execute('SELECT birth_date,source FROM performer_profile WHERE entity_id=1').fetchone()[:],
                              ('2000-01-01', 'review:boobpedia'))
 
+    def test_adult_empire_preview_and_apply_uses_selected_source(self):
+        provider = performer_source_review.adult_empire_performers
+        self.candidate['profile_url'] = 'https://www.adultempire.com/123/sample-person-pornstars.html'
+        with patch.object(provider, 'search', return_value=[{'profile_url': self.candidate['profile_url']}]), \
+             patch.object(provider, 'profile', return_value=self.candidate):
+            candidate = performer_source_review.preview(self.config, self.db, 1, 'adultempire', transport=Mock())
+        result = performer_source_review.apply(self.config, self.db, 1, candidate['token'], transport=Mock())
+        self.assertTrue(result['profile_written'])
+        with self.db.read_connection() as connection:
+            self.assertEqual(connection.execute('SELECT source FROM performer_profile WHERE entity_id=1').fetchone()[0],
+                             'review:adultempire')
+
     def test_rejects_different_token(self):
         with patch.object(performer_source_review.boobpedia, 'profile', return_value=self.candidate):
             performer_source_review.preview(self.config, self.db, 1, 'boobpedia', transport=Mock())

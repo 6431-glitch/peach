@@ -43,6 +43,7 @@ export interface HeroCostar {
 
 /** 女优页头右侧的资料表（ADR-0069）。服务端只下发有值的项。 */
 export interface HeroProfile {
+  adult_empire?: Record<string, string>;
   birth_date?: string;
   age?: number;
   height?: number;
@@ -277,6 +278,9 @@ export function factRows(p: HeroProfile | null | undefined): FactRow[] {
   if (active.from) rows.push({ glyph: 'calendar-range', label: '生涯', parts: [{
     text: `${active.from}${active.ongoing ? ' – 至今' : active.to ? ` – ${active.to}` : ''}`, tone: 'num' }] });
   if ((p.tags || []).length) rows.push({ glyph: 'tags', label: '标签', parts: [], tags: p.tags });
+  for (const [label, value] of Object.entries(p.adult_empire || {})) {
+    if (value) rows.push({ glyph: 'person', label, parts: [{ text: value, tone: 'plain' }] });
+  }
   return rows;
 }
 

@@ -6,14 +6,15 @@ import secrets
 from urllib.parse import urlsplit
 import httpx
 
-from . import adultfilmdatabase, avatar_picker, boobpedia, iafd_profiles
+from . import adult_empire_performers, adultfilmdatabase, avatar_picker, boobpedia, iafd_profiles
 from .fsutil import atomic_write_text
 from .http import HttpRequest, HttpxTransport, resolves_publicly
 from .performer_profiles import read_profile, write_profile
 from .previews import entity_image_key
 from .user_agent import USER_AGENT
 
-SOURCES = {'boobpedia': boobpedia, 'adultfilmdatabase': adultfilmdatabase, 'iafd': iafd_profiles}
+SOURCES = {'boobpedia': boobpedia, 'adultfilmdatabase': adultfilmdatabase, 'iafd': iafd_profiles,
+           'adultempire': adult_empire_performers}
 
 
 def _path(config, entity_id):
@@ -38,10 +39,11 @@ def preview(config, database, entity_id, source, *, transport=None):
         elif source == 'boobpedia':
             candidate = boobpedia.profile(http, name, aliases)
         else:
-            matches = adultfilmdatabase.search(http, name)
+            provider = SOURCES[source]
+            matches = provider.search(http, name)
             if len(matches) != 1:
                 raise ValueError('No unique performer found; verify the source manually.')
-            candidate = adultfilmdatabase.profile(http, name, matches[0]['profile_url'])
+            candidate = provider.profile(http, name, matches[0]['profile_url'])
     finally:
         if own:
             http.close()
@@ -70,6 +72,12 @@ def apply(config, database, entity_id, token, *, transport=None):
         if record['existing_profile'] is None and candidate['profile'].get('raw'):
             written = write_profile(connection, entity_id, candidate['profile'],
                                     source='review:' + source, source_url=candidate['profile_url'])
+        elif source == 'adultempire' and record['existing_profile'] is not None and candidate['profile'].get('raw'):
+            raw = dict(record['existing_profile'].get('raw') or {})
+            raw['Adult Empire'] = {'fields': candidate['profile']['raw'], 'url': candidate['profile_url']}
+            connection.execute('UPDATE performer_profile SET raw_json=? WHERE entity_id=?',
+                               (json.dumps(raw, ensure_ascii=False), entity_id))
+            written = True
     image_error = ''
     image = candidate.get('portrait_url') or ''
     target = config.directory('generated') / 'avatars' / (entity_image_key('performer', entity_id) + '.img')

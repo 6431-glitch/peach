@@ -8,7 +8,7 @@
  * 取图失败时兜底链（`card-art/image-fallback.ts`）会把 `<img>`
  * 从 DOM 里摘掉、人脸放大（`avatarFrame`）往图上写内联尺寸、等待微光挂在图的父元素上，这几样
  * 都直接改节点，所以那几格用 `dangerouslySetInnerHTML`，React 不拥有里面的节点。 */
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { entityFaceImg, facePos } from '@peach/card-art';
 import { entityPath, esc, firstGrapheme, icon } from '@peach/legacy/core';
@@ -106,7 +106,7 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions,
             <dl data-entity-facts="">
               {facts.map((row) => (
                 <FactRowView key={row.label} glyph={row.glyph} label={row.label} clip={row.clip}>
-                  {row.tags ? <FactTags tags={row.tags} />
+                  {row.label === 'Biography' ? <Biography text={row.parts[0]?.text || ''} /> : row.tags ? <FactTags tags={row.tags} />
                     : row.parts.map((part, at) => (
                       <span key={at} data-fact-tone={part.tone === 'plain' ? undefined : part.tone}>
                         {at ? ' ' : ''}{part.text}
@@ -140,7 +140,7 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions,
 }
 
 type PerformerCandidate = { token: string; name: string; source: string; candidate: {
-  matched_name: string; profile_url: string; portrait_url: string; profile: { birth_date?: string; height_cm?: number; debut_year?: number };
+  matched_name: string; profile_url: string; portrait_url: string; profile: { birth_date?: string; height_cm?: number; debut_year?: number; raw?: Record<string, string> };
 } };
 
 function PerformerSource({ entityId, onApplied }: { entityId: number; onApplied(): void }) {
@@ -177,10 +177,10 @@ function PerformerSource({ entityId, onApplied }: { entityId: number; onApplied(
     <Dialog aria-label="Find performer profile" className="flex w-64 max-w-full flex-col gap-3 p-2 text-text-primary outline-none">
       <strong>Find performer profile</strong>
       <RadioGroup aria-label="Performer source" value={source} isDisabled={busy} onChange={value => { setSource(value); setResult(null); setError('') }}>
-        <Radio value="boobpedia">Boobpedia</Radio><Radio value="adultfilmdatabase">Adult Film Database</Radio><Radio value="iafd">IAFD</Radio>
+        <Radio value="boobpedia">Boobpedia</Radio><Radio value="adultfilmdatabase">Adult Film Database</Radio><Radio value="iafd">IAFD</Radio><Radio value="adultempire">Adult Empire</Radio>
       </RadioGroup>
       <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
-      {error ? <p role="alert">{error}</p> : null}
+      {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
       {result ? <div className="flex flex-col items-start gap-2">
         <a href={result.candidate.profile_url} target="_blank" rel="noreferrer">{result.candidate.matched_name}</a>
         <span>{[result.candidate.profile.birth_date, result.candidate.profile.height_cm ? `${result.candidate.profile.height_cm} cm` : '', result.candidate.profile.debut_year].filter(Boolean).join(' · ')}</span>
@@ -356,6 +356,25 @@ function FactRowView({ glyph, label, clip, children }: { glyph: string; label: s
         title={clip}>{children}</dd>
     </>
   );
+}
+
+function Biography({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflow, setOverflow] = useState(false);
+  useLayoutEffect(() => {
+    const element = ref.current;
+    if (!element || expanded) return;
+    const measure = () => setOverflow(element.scrollHeight > element.clientHeight + 1);
+    measure();
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+    observer?.observe(element);
+    return () => observer?.disconnect();
+  }, [text, expanded]);
+  return <>
+    <span ref={ref} style={expanded ? undefined : { display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: 3, overflow: 'hidden' }}>{text}</span>
+    {overflow || expanded ? <button type="button" className="text-accent-500" onClick={() => setExpanded(!expanded)} aria-expanded={expanded}>{expanded ? 'Less' : 'More'}</button> : null}
+  </>;
 }
 
 /** 站上的标签只是读数，不是这一页的筛选，所以是标签的脸、不接点击。 */

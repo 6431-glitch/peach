@@ -105,7 +105,7 @@ export interface MediaCardProps {
 
 /** 署名：头像和名字落到同一个身份上（`cardIdentity`）。共演只写第一位再给总人数。 */
 export function identityParts(item: MediaItem): { avatar: ReactNode; who: ReactNode } {
-  const { kind, name, coStarred, performers, refs, total } = cardIdentity(item);
+  const { kind, name, coStarred, performers, refs } = cardIdentity(item);
   const performer = performers[0] || '';
   const label = performerLabel(item);
   const avatar = coStarred
@@ -132,7 +132,6 @@ export function identityParts(item: MediaItem): { avatar: ReactNode; who: ReactN
     ? (
       <>
         <button type="button" data-media-who="" data-entity-kind="performer" data-entity-name={performer} title={performer}><Icon name="user-round" /><span>{performer}</span></button>
-        <span data-media-who-more="">{`等 ${total} 人`}</span>
       </>
     )
     : kind

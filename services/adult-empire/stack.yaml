@@ -1,0 +1,61 @@
+version: '3.8'
+# A separate stateless lookup replica on each explicitly selected node.
+# Create the external secret and distribute the exact image before deployment.
+x-lookup: &lookup
+  image: peach-adult-empire:dev-20261030
+  environment:
+    PEACH_EMPIRE_TOKEN_FILE: /run/secrets/peach_adult_empire_token
+  secrets:
+    - source: peach_adult_empire_token
+      target: peach_adult_empire_token
+      uid: '65534'
+      gid: '65534'
+      mode: 0440
+    - source: peach_adult_empire_cert
+      target: peach_adult_empire_cert
+      uid: '65534'
+      gid: '65534'
+      mode: 0444
+    - source: peach_adult_empire_key
+      target: peach_adult_empire_key
+      uid: '65534'
+      gid: '65534'
+      mode: 0440
+  ports:
+    - target: 8080
+      published: 18089
+      protocol: tcp
+      mode: host
+  healthcheck:
+    test: ["CMD", "python", "-c", "import ssl,urllib.request; c=ssl.create_default_context(cafile='/run/secrets/peach_adult_empire_cert'); urllib.request.urlopen('https://localhost:8080/healthz', context=c, timeout=3).read()"]
+    interval: 30s
+    timeout: 5s
+    retries: 3
+
+services:
+  n0:
+    <<: *lookup
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.hostname == n0-4g]
+  n1:
+    <<: *lookup
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.hostname == n1-8g]
+  n2:
+    <<: *lookup
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.hostname == n2-8g]
+
+secrets:
+  peach_adult_empire_token:
+    external: true
+  peach_adult_empire_cert:
+    external: true
+  peach_adult_empire_key:
+    external: true

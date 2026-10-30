@@ -66,6 +66,13 @@ def facts(row: dict | None, today: date, decisions: dict[str, str | None] | None
     if age is not None:
         found.update(birth_date=birth, age=age)
     found.update({key: row[column] for column, key in _BODY if row.get(column)})
+    raw = row.get('raw') or {}
+    empire = raw.get('Adult Empire') if isinstance(raw, dict) else None
+    if not empire and str(row.get('source') or '') == 'review:adultempire':
+        empire = {'fields': raw, 'url': row.get('source_url')}
+    if isinstance(empire, dict) and isinstance(empire.get('fields'), dict):
+        allowed = ('Height', 'Weight', 'Measurements', 'Eyes', 'From', 'Born', 'Zodiac Sign', 'Hair', 'Biography')
+        found['adult_empire'] = {key: str(empire['fields'][key]) for key in allowed if empire['fields'].get(key)}
     for key in ("debut_date", "debut_title"):
         if row.get(key):
             found[key] = row[key]
