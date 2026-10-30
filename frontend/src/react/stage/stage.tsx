@@ -192,9 +192,13 @@ function contentFor(request: StageRequest): Content {
         toggleStageModes(settings().ambientMode, settings().theaterMode);
         queueMicrotask(() => { if (live()) base.present(item, queue) });
       },
-      mountPlayer: (frame, item, _media, options) => player.attachStagePlayer(frame, {
-        kind: 'item', item, autoplay: options?.autoplay, resume: takeResume(item.id), id: 'vid',
-      }),
+      mountPlayer: (frame, item, _media, options) => {
+        const resume = takeResume(item.id);
+        return player.attachStagePlayer(frame, {
+          kind: 'item', item, autoplay: options?.autoplay,
+          resume: resume && !options?.autoplay ? { ...resume, autoplay: false } : resume, id: 'vid',
+        });
+      },
     };
     return { kind: 'item', props: { ...props, actions } };
   }

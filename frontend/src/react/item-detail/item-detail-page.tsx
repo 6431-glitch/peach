@@ -117,8 +117,7 @@ function Detail(props: ItemDetailProps & { item: DetailItem; queue: DetailQueue 
   return (
     <>
       <div data-stage-grid="" data-with-queue={queue ? '' : undefined} data-item-detail="">
-        <MediaFrame item={item} gate={gate} helpers={helpers} actions={actions}
-          autoplay={props.queue?.autoplay} onEnded={continuePart} />
+        <MediaFrame item={item} gate={gate} helpers={helpers} actions={actions} onEnded={continuePart} />
         <Side item={item} queue={queue} write={write} helpers={helpers} actions={actions} />
       </div>
       <DetailContinuation queueCards={queue?.kind === 'parts' || queue?.kind === 'editions' ? queue.items.length : undefined}
@@ -132,9 +131,9 @@ function Detail(props: ItemDetailProps & { item: DetailItem; queue: DetailQueue 
 
 /* ── 播放区 ── */
 
-function MediaFrame({ item, gate, helpers, actions, autoplay, onEnded }: {
+function MediaFrame({ item, gate, helpers, actions, onEnded }: {
   item: DetailItem; gate: MediaGate; helpers: ItemDetailHelpers; actions: ItemDetailActions;
-  autoplay?: boolean; onEnded(): void;
+  onEnded(): void;
 }) {
   /* 计费来源先挡一层说明，点了才拉流；没挂载与在线拦截的那两种不挂播放器。 */
   const [started, setStarted] = useState<'auto' | 'clicked' | ''>(gate ? '' : 'auto');
@@ -169,7 +168,7 @@ function MediaFrame({ item, gate, helpers, actions, autoplay, onEnded }: {
     const complete = () => ended.current();
     node.addEventListener('ended', complete, true);
     const unmount = actions.mountPlayer(node, mounting.current, null,
-      started === 'clicked' || autoplay ? { autoplay: true } : undefined);
+      { autoplay: started === 'clicked' });
     return () => { node.removeEventListener('ended', complete, true); unmount() };
   }, [actions, started]);
   const badge = helpers.badgeHtml(item.location || '', item.cost || '', 'srcbig');

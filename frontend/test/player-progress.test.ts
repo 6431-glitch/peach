@@ -17,6 +17,36 @@ beforeEach(() => { localStorage.clear(); video = document.createElement('video')
 afterEach(() => { stopPlaybackPosition(video); stopTelemetry(video); vi.useRealTimers(); vi.unstubAllGlobals() });
 
 describe('视频续播位置', () => {
+  it('keeps the cover until play before restoring a saved position', async () => {
+    configurePlayer({ settings: () => ({ ambientMode: false, theaterMode: false, seekSeconds: 10,
+      miniplayer: true, detailAutoplay: false, javImage: 'cover' }), saveSettings: () => {}, toast: () => {},
+      loadSourceStatus: async () => ({}), offlineReason: () => '', stage: () => null });
+    setDetailPlayer(null);
+    const root = document.createElement('div'); root.append(video);
+    Object.defineProperty(video, 'duration', { value: 108 });
+    let time = 0, disposed = false;
+    const listeners = new Map<string, (() => void)[]>();
+    const player = {
+      el: () => root, isDisposed: () => disposed, ready: () => {}, off: () => {},
+      on: (events: string | string[], callback: () => void) => {
+        for (const event of [events].flat()) listeners.set(event, [...listeners.get(event) || [], callback]);
+      },
+      one: (event: string, callback: () => void) => listeners.set(event, [...listeners.get(event) || [], callback]),
+      duration: () => 108,
+      currentTime: (seconds?: number) => { if (seconds !== undefined) time = seconds; return time },
+      src: () => listeners.get('loadedmetadata')?.forEach(callback => callback()),
+    } as unknown as VjsPlayer;
+    vi.spyOn(videojsLoader, 'ensureVideojs').mockResolvedValue(() => player);
+    try {
+      await mountDetailPlayer({ id: 12, duration: 108 }, video, false,
+        { source: { src: '/test.mp4', type: 'video/mp4' }, resume: { time: 97, autoplay: false }, deferResumeUntilPlay: true });
+      await Promise.resolve();
+      expect(time).toBe(0);
+      listeners.get('play')?.forEach(callback => callback());
+      expect(time).toBe(97);
+    } finally { disposed = true; setDetailPlayer(null) }
+  });
+
   it('关注片段的实际时长独立于帖子时长，恢复到该片段的保存位置', async () => {
     configurePlayer({ settings: () => ({ ambientMode: false, theaterMode: false, seekSeconds: 10,
       miniplayer: true, detailAutoplay: false, javImage: 'cover' }), saveSettings: () => {}, toast: () => {},

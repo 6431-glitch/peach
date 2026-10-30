@@ -43,6 +43,7 @@ export interface DetailPlayerOptions {
   /** 清晰度表与字节数，跟默认片源并行解析，回来得比挂载晚。 */
   mediaPromise?: Promise<MediaFacts | null>;
   resume?: PlayerResume | null;
+  deferResumeUntilPlay?: boolean;
 }
 
 /** 媒体框里那三块读数：统计键、统计面板与加载速度角标（`playerStatsOverlayHtml`）。 */
@@ -89,7 +90,7 @@ export async function mountDetailPlayer(
   try { videojs = await ensureVideojs() } catch {
     video.controls = true;
     source().then((next) => {
-      video.addEventListener('loadedmetadata', () => {
+      video.addEventListener(options.deferResumeUntilPlay && !autoplay ? 'play' : 'loadedmetadata', () => {
         if (resume && resume.time > 0) video.currentTime = Math.min(resume.time, realDuration(video.duration) || resume.time);
       }, { once: true });
       video.src = next.src; if (autoplay) video.play().catch(() => {});
@@ -242,7 +243,7 @@ export async function mountDetailPlayer(
   source().then((next) => {
     if (!live()) return;
     segmentedSource = String(next.type || '').includes('mpegurl');
-    if (resume && resume.time > 0) player.one('loadedmetadata', () => {
+    if (resume && resume.time > 0) player.one(options.deferResumeUntilPlay && !autoplay ? 'play' : 'loadedmetadata', () => {
       if (player.isDisposed()) return;
       const duration = realDuration(player.el().querySelector('video')?.duration) || realDuration(player.duration());
       player.currentTime(Math.min(resume.time, duration || resume.time));
@@ -352,6 +353,7 @@ export function mountPlayer(video: HTMLVideoElement, options: MountPlayerOptions
       mediaPromise: (api(`/follow-qualities?id=${encodeURIComponent(item.id)}`) as Promise<MediaFacts | null>).catch(() => null),
     };
   } else {
+    detail.deferResumeUntilPlay = !options.autoplay;
     const poster = detailPosterUrl(item, host.settings().javImage);
     if (poster) video.poster = poster;
   }

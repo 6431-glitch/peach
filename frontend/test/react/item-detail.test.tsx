@@ -325,12 +325,12 @@ describe('首屏取数', () => {
 });
 
 describe('交给壳的', () => {
-  it('画出来报一次 present；播放区的媒体框交给 mountPlayer，不自动播就不带 autoplay', async () => {
+  it('画出来报一次 present；播放区明确关闭自动播放', async () => {
     serve();
     const { host, actions: done } = await show(item(1));
     expect(done.present).toHaveBeenCalledTimes(1);
     const frame = host.querySelector('[data-item-media="video"]');
-    expect(done.mountPlayer).toHaveBeenCalledWith(frame, expect.objectContaining({ id: 1 }), null, undefined);
+    expect(done.mountPlayer).toHaveBeenCalledWith(frame, expect.objectContaining({ id: 1 }), null, { autoplay: false });
     expect(host.querySelector('video')).toBeNull();
   });
 
