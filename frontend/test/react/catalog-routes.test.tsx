@@ -79,6 +79,9 @@ function catalogFetch({ deferred = false } = {}) {
   const pending: Array<() => void> = [];
   const fetched = vi.fn((input: string, init?: RequestInit) => {
     const url = new URL(String(input), 'http://peach.test');
+    if (url.pathname === '/api/items' && url.searchParams.get('summary_only') === '1') {
+      return Promise.resolve(reply({ total: 3, bytes: 0, work_total: 3 }));
+    }
     const body = url.pathname === '/api/playlists' ? playlistPage
       : url.pathname === '/api/ads' ? junkPage(url.searchParams.get('kind') || '')
         : catalogPage(url.searchParams.get('sort') || '');
@@ -91,7 +94,9 @@ function catalogFetch({ deferred = false } = {}) {
   vi.stubGlobal('fetch', fetched);
   const calls = (path: string) => fetched.mock.calls
     .map(([input]) => new URL(String(input), 'http://peach.test')).filter((url) => url.pathname === path);
-  return { fetched, calls, resolve: () => { for (const settle of pending.splice(0)) settle() } };
+  const itemCalls = () => calls('/api/items').filter((url) => url.searchParams.get('summary_only') !== '1');
+  const summaryCalls = () => calls('/api/items').filter((url) => url.searchParams.get('summary_only') === '1');
+  return { fetched, calls, itemCalls, summaryCalls, resolve: () => { for (const settle of pending.splice(0)) settle() } };
 }
 
 const helpers: MediaCardHelpers = {
@@ -189,12 +194,14 @@ it('冷启动深链首页由页面立即显示骨架，首屏取齐后交叉呈�
   unmounts.push(() => observer.disconnect());
   fetch.resolve();
   await act(async () => { expect(await opened).toBe(true) });
+
   await until(() => cards(grid).length === 3, '首屏内容就绪');
   expect(batches.length).toBeGreaterThan(0);
   expect(batches.every((batch) => batch.pending || batch.painted), '每一批变化都有占位或内容').toBe(true);
   expect(grid.querySelector('[data-content-transition]')?.getAttribute('aria-busy')).toBe('false');
   expect(grid.querySelector('[data-content-skeleton]')?.getAttribute('aria-hidden')).toBe('true');
-  expect(fetch.calls('/api/items'), '首屏只取一次').toHaveLength(1);
+  expect(fetch.itemCalls(), '首屏卡片只取一次').toHaveLength(1);
+  expect(fetch.summaryCalls(), '统计独立取一次').toHaveLength(1);
   expect(open.settled).toHaveBeenCalledWith(0);
   expect(r.managedEntry(grid)).toMatchObject({ path: '/', props: { filters: { sort: 'seed' } } });
   // jsdom 不发 transitionend，淡出层靠 `revealSkeleton` 的兜底定时器收掉。
@@ -221,7 +228,8 @@ it('`#grid` 上画着网格时，收 `#stats` 与 `#index` 不动它；点名 `#
   expect(painted(grid), '收别的容器不许卸网格').toBe(page);
   expect(r.managedEntry(grid)?.revision).toBe(revision);
   expect(cards(grid)).toHaveLength(3);
-  expect(fetch.calls('/api/items'), '网格不重取').toHaveLength(1);
+  expect(fetch.itemCalls(), '网格不重取').toHaveLength(1);
+  expect(fetch.summaryCalls(), '统计不重取').toHaveLength(1);
   act(() => { r.releaseManagedRoute(grid) });
   expect([grid.querySelector('.peach-react'), r.managedEntries().length]).toEqual([null, 0]);
 });
@@ -243,7 +251,8 @@ it('就地推选择态与版式：代次不变、不重挂、不重取', async (
   });
   expect(painted(grid), '推选择态与版式不许重挂').toBe(page);
   expect(r.managedEntry(grid)?.revision).toBe(revision);
-  expect(fetch.calls('/api/items'), '不重取').toHaveLength(1);
+  expect(fetch.itemCalls(), '卡片不重取').toHaveLength(1);
+  expect(fetch.summaryCalls(), '统计不重取').toHaveLength(1);
   expect(r.managedEntry(grid)?.props).toMatchObject({ selectMode: true, seekSeconds: 30, layout: { size: 'big' } });
   expect((r.managedEntry(grid)!.props as CatalogGridProps).actions, '壳那一份动作原样留着').toBe(open.actions);
 });
@@ -260,7 +269,8 @@ it('就地推筛选与刷新代次：宿主与代次不变，只按新键重取�
   const revision = r.managedEntry(grid)?.revision;
   await act(async () => { r.updateManagedRoute(grid, { filters: { sort: 'new' }, revision: 1 }) });
   await until(() => Boolean(grid.textContent?.includes('作品 1 new')), '按新键重取回来的那一份画上');
-  expect(fetch.calls('/api/items').map((url) => url.searchParams.get('sort')), '只按新键重取一次').toEqual(['seed', 'new']);
+  expect(fetch.itemCalls().map((url) => url.searchParams.get('sort')), '卡片只按新键重取一次').toEqual(['seed', 'new']);
+  expect(fetch.summaryCalls().map((url) => url.searchParams.get('sort')), '统计只按新键重取一次').toEqual(['seed', 'new']);
   expect(grid.querySelectorAll(':scope > .peach-react'), '宿主只有一个').toHaveLength(1);
   expect(r.managedEntry(grid)?.host).toBe(host);
   expect(r.managedEntry(grid)?.revision).toBe(revision);
