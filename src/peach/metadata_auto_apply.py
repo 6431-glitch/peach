@@ -770,14 +770,15 @@ def _fc2_seller_as_label(field: str, code: str, candidate: dict) -> dict:
     return {**platform, "label": str(candidate.get("label") or "").strip() or seller}
 
 
-def _row_candidates(row: dict, decided) -> list[dict]:
+def _row_candidates(row: dict, decided, *, identifies=None) -> list[dict]:
     """把一行的 `candidates_json` 解析成候选列表：折叠 genre 决定、FC2 卖家改记 label、
     剔掉番号对不上的。"""
     field = str(row.get("field") or "").strip()
     code = str(row.get("code") or "").strip()
+    identifies = identifies or _candidate_identifies_code
     return [_fc2_seller_as_label(field, code, _fold_genre_decisions(field, candidate, decided))
             for candidate in _parsed_candidates(row)
-            if _candidate_identifies_code(code, candidate) and candidate_text_is_valid(candidate)]
+            if identifies(code, candidate) and candidate_text_is_valid(candidate)]
 
 
 def _auto_apply_rule(candidate: dict, agreed: int) -> str:

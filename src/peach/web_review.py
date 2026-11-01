@@ -37,6 +37,7 @@ from .metadata_auto_apply import (
     REVIEW_APPLY_LIMIT,
     _apply_metadata_candidate,
     _codes_matching,
+    _candidate_identifies_code,
     _entity_identity_key,
     _fold_genre_decisions,
     _landing_scope,
@@ -325,8 +326,15 @@ def _metadata_queue_rows(connection, rows: list[dict],
     每一道都在回答同一个问题：这一行还有没有人能判、值得判的东西。
     """
     genre_decisions = load_genre_decisions(connection)
+    @cache
+    def identifies(code, source, provider_id, content_id, source_url):
+        return _candidate_identifies_code(code, dict(source=source, provider_id=provider_id,
+                                                    content_id=content_id, source_url=source_url))
+    def identifies_candidate(code, candidate):
+        return identifies(code, *(str(candidate.get(key) or '') for key in
+                                  ('source', 'provider_id', 'content_id', 'source_url')))
     for row in rows:
-        row["candidates"] = _row_candidates(row, genre_decisions)
+        row["candidates"] = _row_candidates(row, genre_decisions, identifies=identifies_candidate)
     # 候选全是错配时整行消失：剔完一条不剩，就没有可判的东西了。本来就没有候选
     # 的行照旧留着，它讲的是另一件事（这个番号问过、谁都没给值）。
     rows = [row for row in rows if row["candidates"] or not _parsed_candidates(row)]
