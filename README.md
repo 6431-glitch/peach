@@ -44,6 +44,7 @@ Movie demo data; see [asset credits and licenses](https://peach.video/en/credits
 
 - **Metadata scraping**: recognize video codes, read NFO files and fill titles, performers, studios and covers from multiple sources while keeping your edits.
 - **Local and cloud libraries**: browse local drives, SMB, mounted cloud storage and PikPak libraries together.
+- **Responsive browsing**: show the first visible cards before loading the rest of the page and its totals. Slow or failed artwork requests do not block titles or card actions.
 - **Playback and history**: web and external players, subtitles, playback speed, rotation, resume and timeline previews.
 - **Follows and discovery**: track performer and creator updates, discover titles and manage a want list.
 - **Cloud download**: search by video code or submit a magnet link, then organize completed downloads into your library.
