@@ -186,6 +186,9 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     "scripts/fetch_cloudflared_macos.py": ("tooling", "packaging"),
     "scripts/fetch_face_models.py": ("tooling", "packaging"),
     "scripts/cloudflared-macos.json": ("tooling", "packaging"),
+    "scripts/fetch_sparkle_macos.py": ("tooling", "packaging"),
+    "scripts/sparkle-macos.json": ("tooling", "packaging"),
+    "scripts/sparkle_appcast.py": ("tooling", "packaging"),
     "scripts/fetch_ffmpeg_sources.py": ("tooling", "packaging"),
     "scripts/ffmpeg-sources.json": ("tooling", "packaging"),
     "scripts/build_ffmpeg_windows.sh": ("tooling", "packaging"),
@@ -204,6 +207,8 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     # 托盘既是 sync 域的服务编排，也被版本与桌面设置那些 tooling 测试读源码。
     "src/peach/tray.py": ("sync", "tooling"),
     "src/peach/menubar.py": ("sync", "tooling"),
+    # Sparkle 更新器由菜单栏持有，打包与发布门槛的测试也直接导入它。
+    "src/peach/sparkle_update.py": ("sync", "tooling", "packaging"),
     # 托盘子服务与隧道的 cloudflared 共用这份 Job Object；两边的测试都要跑到。
     "src/peach/process_job.py": ("tooling", "sync"),
     'src/peach/task_control.py': ('catalog', 'media', 'metadata', 'follow', 'sync', 'tooling', 'web'),

@@ -24,7 +24,8 @@ import httpx
 import pystray
 from PIL import Image
 
-from . import desktop_startup, error_reporting, ledger_backups, log_retention, onboarding, runtime_prepare, settings_file
+from . import (desktop_startup, error_reporting, ledger_backups, log_retention, onboarding, runtime_prepare,
+               settings_file, sparkle_update)
 from .appid import MACOS_LAUNCH_AGENT_LABEL
 from .certs import ensure_certificate
 from .distribution import standalone
@@ -1612,6 +1613,38 @@ def export_macos_diagnostics(notify: Callable[[str, str], None]) -> None:
     threading.Thread(target=work, name="PeachDiagnostics", daemon=True).start()
 
 
+class MacUpdateEntry:
+    """macOS 菜单栏的「检查更新」：启用 Sparkle 时由它检查、下载并在退出时替换，否则做版本检查。
+
+    版本检查和「同步开发进度」「同步 Ledger」共用菜单栏那把动作锁；Sparkle 自己串行，不占锁。
+    """
+
+    def __init__(self, sparkle, versions: VersionManager, state: dict, lock: threading.Lock,
+                 notify: Callable[[str, str], None]):
+        self.sparkle, self.versions, self.state, self.lock, self.notify = sparkle, versions, state, lock, notify
+
+    def check(self) -> None:
+        # 菜单项在主线程上回调，Sparkle 可以直接调用。
+        if self.sparkle is not None:
+            self.sparkle.check()
+        elif self.lock.acquire(blocking=False):
+            threading.Thread(target=self._check_versions, name="PeachUpdate", daemon=True).start()
+
+    def _check_versions(self) -> None:
+        try:
+            self.notify("正在检查更新…", "Peach")
+            result = self.versions.check()
+            self.state["snapshot"] = result.snapshot
+            self.notify(result.message, "Peach 版本与更新")
+        finally:
+            self.lock.release()
+
+    def follow(self, state_dir: Path) -> None:
+        """设置页的自动更新偏好同步给 Sparkle；没有 Sparkle 时服务进程自己定时检查。"""
+        if self.sparkle is not None:
+            self.sparkle.follow(state_dir)
+
+
 def run_macos_menu_bar(manager: "ServiceManager", gate: "SetupGate | None" = None, *, silent: bool = False, show_browser: bool = False) -> None:
     """macOS 走原生菜单栏项。
 
@@ -1712,20 +1745,8 @@ def run_macos_menu_bar(manager: "ServiceManager", gate: "SetupGate | None" = Non
     def open_configuration() -> None:
         webbrowser.open(gate.open_url() + "configuration")
 
-    def check_updates() -> None:
-        if not action_lock.acquire(blocking=False):
-            return
-
-        def work() -> None:
-            try:
-                notify("正在检查更新…", "Peach")
-                result = versions.check()
-                state["snapshot"] = result.snapshot
-                notify(result.message, "Peach 版本与更新")
-            finally:
-                action_lock.release()
-
-        threading.Thread(target=work, name="PeachUpdate", daemon=True).start()
+    # Sparkle 要在 NSApplication 建好之后创建，先放空，菜单建好再补上。
+    updates = MacUpdateEntry(None, versions, state, action_lock, notify)
 
     menu = MenuBarApp(
         create_icon(template=True),
@@ -1749,13 +1770,15 @@ def run_macos_menu_bar(manager: "ServiceManager", gate: "SetupGate | None" = Non
                 (menu_text(state['snapshot'].build_label), None),
                 (menu_text(state['snapshot'].channel_label), None),
                 (None, None),
-                ("检查更新", check_updates),
+                ("检查更新", updates.check),
             ])),
             (None, None),
             ("退出 Peach", quit_now),
         ],
     )
     app["app"] = menu
+    updates.sparkle = sparkle_update.start(config=lambda: gate.config, stop_services=manager.stop_owned,
+                                           notify=notify)
     gate.notify = lambda message, title: notify(message, title)
     if (gate.waiting and not silent) or show_browser:
         gate.open()
@@ -1768,6 +1791,7 @@ def run_macos_menu_bar(manager: "ServiceManager", gate: "SetupGate | None" = Non
             gate.poll()
             for spec in manager.specs:
                 manager.healthy(spec)
+            updates.follow(gate.config.directory("state"))
 
     def refresh_certificate() -> bool:
         """本机地址变了就补签证书并重启 HTTPS。成功返回 True。
