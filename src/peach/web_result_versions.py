@@ -12,7 +12,7 @@ RESULT_TABLES = {
                 'asset_tag_preference', 'entity', 'entity_alias', 'entity_redirect',
                 'entity_classification', 'entity_identity_link', 'entity_link', 'entity_external_ref',
                 'entity_membership', 'label_maker', 'performer_profile', 'asset_quality_goal',
-                'playlist', 'playlist_item'),
+                'playlist', 'playlist_item', 'watch_queue'),
     'follow': ('follow_item', 'follow_source', 'follow_author_alias', 'entity', 'profile'),
     'discoveries': ('feed_source', 'feed_item', 'feed_discovery', 'feed_discovery_entity', 'watch_queue'),
     'review': ('review_decision', 'genre_decision'),

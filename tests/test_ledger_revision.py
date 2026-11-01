@@ -19,7 +19,7 @@ from peach.follow_sources import FollowCandidate, SourceFetch
 from peach.follow_store import FollowStore
 from peach.previews import entity_image_key, logo_key
 from peach.repository import LedgerDatabase
-from peach.web_catalog import FACETS_TABLES, GROUP_TABLES, TOPS_TABLES
+from peach.web_catalog import CATALOG_TOTAL_TABLES, FACETS_TABLES, GROUP_TABLES, TOPS_TABLES
 from peach.web_contract import dispatch_api_get
 from peach.web_entity import INDEX_TABLES, SHAPE_TABLES
 from peach.web_state import WebContract
@@ -136,6 +136,44 @@ class LedgerRevisionTests(unittest.TestCase):
             insert_asset(self.db_path, 1)
             self.assertEqual(dispatch_api_get(self.contract, "/api/entity/shapes", {}),
                              {"ok": True, "generation": 2})
+
+    def test_catalog_totals_are_shared_across_sort_seeds_and_refresh_after_writes(self):
+        from peach import web_catalog
+        insert_asset(self.db_path, 1)
+        insert_asset(self.db_path, 2)
+        with mock.patch.object(web_catalog, "video_work_key", wraps=web_catalog.video_work_key) as work_key:
+            first = dispatch_api_get(self.contract, "/api/items", {"sort": "seed", "seed": "1", "limit": "1"})
+            second = dispatch_api_get(self.contract, "/api/items", {"sort": "seed", "seed": "2", "limit": "1"})
+            self.assertEqual((first["total"], second["total"]), (2, 2))
+            self.assertEqual(work_key.call_count, 1, "换排序种子不重算同一集合的统计")
+            insert_asset(self.db_path, 3)
+            refreshed = dispatch_api_get(self.contract, "/api/items", {"sort": "seed", "seed": "2", "limit": "1"})
+            self.assertEqual(refreshed["total"], 3)
+            self.assertEqual(work_key.call_count, 2)
+            trash = dispatch_api_get(self.contract, "/api/items", {"state": "trash", "limit": "1"})
+            self.assertEqual(trash["total"], 0)
+            self.assertEqual(work_key.call_count, 3, "不同集合必须分别统计")
+
+    def test_sql_file_classification_reuses_inputs_across_connections_and_respects_roots(self):
+        from peach import repository
+        with mock.patch.object(repository, "is_local_extra", wraps=repository.is_local_extra) as classify:
+            database = LedgerDatabase(self.db_path, media_roots=("R:/Movies/Shorts",))
+            for _ in range(3):
+                with database.read_connection() as connection:
+                    self.assertEqual(connection.execute(
+                        "SELECT peach_is_local_extra(?,?)", ("Film.mp4", "R:/Movies/Shorts/Film.mp4")
+                    ).fetchone()[0], 0)
+            self.assertEqual(classify.call_count, 1, "不同查询共用未变化文件的分类结果")
+            with database.read_connection() as connection:
+                self.assertEqual(connection.execute(
+                    "SELECT peach_is_local_extra(?,?)", ("Trailer.mp4", "R:/Movies/Shorts/Trailer.mp4")
+                ).fetchone()[0], 1)
+            self.assertEqual(classify.call_count, 2, "改名后用新输入重新分类")
+            other = LedgerDatabase(self.db_path, media_roots=("R:/Movies",))
+            with other.read_connection() as connection:
+                self.assertEqual(connection.execute(
+                    "SELECT peach_is_local_extra(?,?)", ("Film.mp4", "R:/Movies/Shorts/Film.mp4")
+                ).fetchone()[0], 1)
 
     def test_a_changed_file_input_recomputes(self):
         self.contract.cached_until_changed("review", self.compute, "csv-1")
@@ -423,6 +461,7 @@ class DeclaredTablesTests(unittest.TestCase):
         declarations = {
             "GROUP_TABLES": GROUP_TABLES, "TOPS_TABLES": TOPS_TABLES,
             "FACETS_TABLES": FACETS_TABLES, "INDEX_TABLES": INDEX_TABLES,
+            "CATALOG_TOTAL_TABLES": CATALOG_TOTAL_TABLES,
             "SHAPE_TABLES": SHAPE_TABLES,
             "STATS_TABLES": web_stats.STATS_TABLES,
             "FOLLOW_GROUP_TABLES": web_follow.FOLLOW_GROUP_TABLES,
@@ -580,6 +619,7 @@ class ResultVersionTablesTests(unittest.TestCase):
     #: `frontend/test/react/result-updates.test.tsx` 核对。
     REFRESHED_BY = {
         "catalog-grid": ("catalog",),
+        "catalog-totals": ("catalog", "follow"),
         "index": ("catalog", "follow", "discoveries"),
         "entity-shapes": ("catalog", "follow", "discoveries"),
         "stats": ("catalog", "follow"),
@@ -594,6 +634,7 @@ class ResultVersionTablesTests(unittest.TestCase):
         from peach.web_result_versions import RESULT_TABLES
         declared = {
             "catalog-grid": GROUP_TABLES, "index": INDEX_TABLES, "entity-shapes": SHAPE_TABLES,
+            "catalog-totals": CATALOG_TOTAL_TABLES,
             "stats": web_stats.STATS_TABLES,
             "taste": web_stats.TASTE_TABLES, "follow-feed": web_follow.FOLLOW_GROUP_TABLES,
         }
