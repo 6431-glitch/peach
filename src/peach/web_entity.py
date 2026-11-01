@@ -402,21 +402,25 @@ def _entity_shape_parts(contract, connection, entity_id: int | None = None) -> d
     scope = (entity_id,) if entity_id is not None else ()
     parts = {key: ["feed"] for key in web_feeds.feed_row_entity_ids(contract, connection)
              if entity_id is None or key == entity_id}
+    # 全库按资产展开关联；深链沿实体索引只读当前人物的作品。
+    relations = (
+        "asset a CROSS JOIN asset_entity scope ON scope.asset_id=a.id"
+        " CROSS JOIN entity e ON e.id=scope.entity_id" if entity_id is None else
+        "asset_entity scope JOIN asset a ON a.id=scope.asset_id"
+        " JOIN entity e ON e.id=scope.entity_id")
     for row in connection.execute(
-            "SELECT DISTINCT scope.entity_id FROM asset_entity scope"
-            " JOIN entity e ON e.id=scope.entity_id AND e.kind<>'agency'"
-            " JOIN asset a ON a.id=scope.asset_id AND " + COUNTED_VIDEO +
-            " JOIN asset_entity co ON co.asset_id=scope.asset_id AND co.entity_id<>scope.entity_id"
-            " JOIN entity person ON person.id=co.entity_id AND person.kind='performer'"
-            + (" WHERE scope.entity_id=?" if scope else ""), scope):
+            "SELECT DISTINCT scope.entity_id FROM " + relations +
+            " WHERE " + COUNTED_VIDEO + " AND e.kind<>'agency'"
+            " AND EXISTS(SELECT 1 FROM asset_entity co JOIN entity person ON person.id=co.entity_id"
+            " AND person.kind='performer' WHERE co.asset_id=scope.asset_id AND co.entity_id<>scope.entity_id)"
+            + (" AND scope.entity_id=?" if scope else ""), scope):
         parts.setdefault(int(row[0]), []).append("costars")
     for key in performer_header.profiled(connection):
         if entity_id is None or key == entity_id:
             parts.setdefault(key, []).append("facts")
     for row in connection.execute(
-            "SELECT DISTINCT scope.entity_id FROM asset_entity scope"
-            " JOIN entity e ON e.id=scope.entity_id AND e.kind IN ('performer','studio')"
-            " JOIN asset a ON a.id=scope.asset_id WHERE " + COUNTED_VIDEO + " AND " + JAV_ASSET_PREDICATE
+            "SELECT DISTINCT scope.entity_id FROM " + relations +
+            " WHERE e.kind IN ('performer','studio') AND " + COUNTED_VIDEO + " AND " + JAV_ASSET_PREDICATE
             + (" AND scope.entity_id=?" if scope else ""), scope):
         parts.setdefault(int(row[0]), []).append("jav")
     return parts

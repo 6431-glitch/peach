@@ -97,19 +97,25 @@ class LedgerRevisionTests(unittest.TestCase):
     def test_concurrent_catalog_requests_share_one_computation(self):
         from concurrent.futures import ThreadPoolExecutor
         from threading import Event
-        entered, release = Event(), Event()
-        def derive():
-            self.calls += 1
-            entered.set()
-            release.wait(5)
-            return self.calls
-        with ThreadPoolExecutor(max_workers=2) as pool:
-            first = pool.submit(self.contract.cached_until_changed, 'catalog', derive, tables=('asset',))
-            self.assertTrue(entered.wait(5))
-            second = pool.submit(self.contract.cached_until_changed, 'catalog', derive, tables=('asset',))
-            release.set()
-            self.assertEqual((first.result(), second.result()), (1, 1))
-        self.assertEqual(self.calls, 1)
+        def check(tables):
+            self.calls = 0
+            entered, release = Event(), Event()
+            def derive():
+                self.calls += 1
+                entered.set()
+                release.wait(5)
+                return self.calls
+            key = repr(('catalog', tables))
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                first = pool.submit(self.contract.cached_until_changed, key, derive, tables=tables)
+                self.assertTrue(entered.wait(5))
+                second = pool.submit(self.contract.cached_until_changed, key, derive, tables=tables)
+                release.set()
+                self.assertEqual((first.result(), second.result()), (1, 1))
+            self.assertEqual(self.calls, 1)
+        for tables in ((), ('asset',)):
+            with self.subTest(tables=tables):
+                check(tables)
 
     def test_a_changed_file_input_recomputes(self):
         self.contract.cached_until_changed("review", self.compute, "csv-1")
@@ -153,8 +159,12 @@ class LedgerRevisionTests(unittest.TestCase):
             self.calls += 1
             self.contract.cache_bust()
             return self.calls
-        self.assertEqual(self.contract.cached_until_changed("catalog", derive, tables=("asset",)), 1)
-        self.assertEqual(self.contract.cached_until_changed("catalog", derive, tables=("asset",)), 1)
+        for tables in ((), ('asset',)):
+            with self.subTest(tables=tables):
+                self.calls = 0
+                key = repr(('catalog', tables))
+                self.assertEqual(self.contract.cached_until_changed(key, derive, tables=tables), 1)
+                self.assertEqual(self.contract.cached_until_changed(key, derive, tables=tables), 1)
 
 
 class _TableReads:
