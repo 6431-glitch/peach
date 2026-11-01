@@ -146,6 +146,24 @@ class ReviewQueueTests(unittest.TestCase):
                                "VALUES(900,'Example Alias','example alias','manual',1)")
         self.assertEqual(self.queue_keys('metadata_fields'), [])
 
+    def test_candidate_code_checks_share_only_matching_provider_evidence_within_request(self):
+        rows = []
+        for index, provider_id in enumerate(('EXM-001', 'EXM-001', 'EXM-002')):
+            candidate = {'candidate_key': 'javdb:title', 'source': 'javdb',
+                         'provider_id': provider_id, 'value': f'Title {index}'}
+            rows.append({'item_key': f'EXM-001:title:{index}', 'status': 'candidate',
+                         'code': 'EXM-001', 'field': 'title', 'current_value': '',
+                         'candidates_json': json.dumps([candidate])})
+        self.write_metadata_candidates(rows)
+        with mock.patch.object(rm_review, '_candidate_identifies_code',
+                               wraps=rm_review._candidate_identifies_code) as identifies:
+            first, _, _ = rm_review._review_rows(self.contract, 'metadata_fields')
+            self.assertEqual({row['item_key'] for row in first},
+                             {'EXM-001:title:0', 'EXM-001:title:1'})
+            self.assertEqual(identifies.call_count, 2)
+            rm_review._review_rows(self.contract, 'metadata_fields')
+            self.assertEqual(identifies.call_count, 4)
+
     def test_settled_creator_rows_do_not_load_asset_previews(self):
         self.write_candidates('creator-tags-candidate-20260818.csv', [
             {'board': str(index), 'creator': 'ukiru', 'tags': 'x', 'status': 'candidate'}
