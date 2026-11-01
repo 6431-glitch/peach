@@ -112,6 +112,28 @@ class IndexTests(unittest.TestCase):
             self.assertEqual(gfriends.load_index(Path(folder)), {})
             self.assertIsNone(gfriends.index_age(Path(folder)))
 
+    def test_repeated_reads_reuse_parsing_and_atomic_replacement_refreshes_the_index(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            path = root / gfriends.INDEX_NAME
+            first = json.dumps({'Content': {'0-Source': {'Alice.jpg': 'Alice.jpg'}}}).encode()
+            second = json.dumps({'Content': {'0-Source': {'Clara.jpg': 'Clara.jpg'}}}).encode()
+            self.assertEqual(len(first), len(second))
+            path.write_bytes(first)
+            with mock.patch.object(gfriends, 'parse_filetree', wraps=gfriends.parse_filetree) as parse:
+                for _ in range(5):
+                    self.assertEqual(gfriends.load_index(root), {'alice': [('0-Source', 'Alice.jpg')]})
+                self.assertEqual(parse.call_count, 1)
+                previous = path.stat()
+                replacement = root / 'replacement.json'
+                replacement.write_bytes(second)
+                os.utime(replacement, ns=(previous.st_atime_ns, previous.st_mtime_ns))
+                replacement.replace(path)
+                self.assertEqual(gfriends.load_index(root), {'clara': [('0-Source', 'Clara.jpg')]})
+                self.assertEqual(parse.call_count, 2)
+                path.unlink()
+                self.assertEqual(gfriends.load_index(root), {})
+
     def test_every_name_on_the_chain_brings_its_own_pictures(self):
         """并起来，不是停在第一个命中的名字上。
         """
