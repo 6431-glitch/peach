@@ -137,6 +137,20 @@ class LedgerRevisionTests(unittest.TestCase):
             self.assertEqual(dispatch_api_get(self.contract, "/api/entity/shapes", {}),
                              {"ok": True, "generation": 2})
 
+    def test_first_page_does_not_wait_for_summary_and_summary_does_not_build_cards(self):
+        from peach import web_catalog
+        insert_asset(self.db_path, 1)
+        insert_asset(self.db_path, 2)
+        with mock.patch.object(web_catalog, '_catalog_totals', side_effect=AssertionError('summary blocked')):
+            page = dispatch_api_get(self.contract, '/api/items', {'limit': '1', 'count': '0'})
+            self.assertEqual(len(page['items']), 1)
+            self.assertIsNone(page['total'])
+            self.assertTrue(page['has_more'])
+        with mock.patch.object(web_catalog, 'attach_artwork_fields', side_effect=AssertionError('card hydration')):
+            summary = dispatch_api_get(self.contract, '/api/items', {'summary_only': '1'})
+            self.assertEqual(summary['total'], 2)
+            self.assertNotIn('items', summary)
+
     def test_catalog_totals_are_shared_across_sort_seeds_and_refresh_after_writes(self):
         from peach import web_catalog
         insert_asset(self.db_path, 1)

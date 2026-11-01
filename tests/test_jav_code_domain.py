@@ -78,6 +78,27 @@ CREATE TABLE asset_entity(
 """
 
 
+class EditionEvidenceCostTests(unittest.TestCase):
+    def test_unmarked_library_does_not_compile_one_expression_per_code(self):
+        from unittest.mock import patch
+        from peach import catalog_rules as rules
+        rules._edition_badges_cached.cache_clear()
+        with patch.object(rules, '_jav_code_pattern', side_effect=AssertionError('unmarked filename')):
+            for number in range(1000, 2000):
+                self.assertEqual(rules.jav_edition_badges(f'ABC-{number} title.mp4', f'ABC-{number}'), [])
+
+    def test_glued_and_separated_markers_and_changed_tags_keep_their_meaning(self):
+        from peach.catalog_rules import jav_edition_badges
+        for name in ('ABC-123CH.mp4', 'ABC-123-C.mp4', 'ABC-123_SUB.mp4'):
+            self.assertEqual(jav_edition_badges(name, 'ABC-123'), ['中字'])
+        self.assertEqual(jav_edition_badges('ABC-123-U.mp4', 'ABC-123'), ['无码'])
+        self.assertEqual(jav_edition_badges('ABC-123.mp4', 'ABC-123', ['中文字幕']), ['中字'])
+        self.assertEqual(jav_edition_badges('ABC-123.mp4', 'ABC-123'), [])
+        badges = jav_edition_badges('ABC-123-C.mp4', 'ABC-123')
+        badges.clear()
+        self.assertEqual(jav_edition_badges('ABC-123-C.mp4', 'ABC-123'), ['中字'])
+
+
 class RepostLabelTests(unittest.TestCase):
     def test_bare_label_and_full_domain_are_both_recognised(self):
         self.assertTrue(is_repost_site_label("HHD800"))

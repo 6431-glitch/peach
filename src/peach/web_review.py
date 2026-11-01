@@ -52,7 +52,7 @@ from .metadata_auto_apply import (
 )
 from .metadata_policy import FALLBACK_SOURCES, SOURCE_SPECS, preferred_tag_source
 from .previews import logo_key
-from .review_csv import CANDIDATE_PREFIX, read_candidates
+from .review_csv import CANDIDATE_PREFIX, candidate_root_version, read_candidates
 
 
 class ReviewContract(Protocol):
@@ -63,6 +63,7 @@ class ReviewContract(Protocol):
     avatar_root: Path
 
     def cache_bust(self) -> None: ...
+    def cached_by_inputs(self, key: str, fn, *inputs): ...
     def read_connection(self): ...
     def cover_path(self, code: str) -> Path | None: ...
     def has_entity_image(self, kind: str, entity_id) -> bool: ...
@@ -305,8 +306,12 @@ def _queue_rows(contract: ReviewContract, category: str,
     live = LIVE_CATEGORY_ROWS.get(category)
     if live:
         return live(connection), "ledger", 0
-    rows, source, skipped = read_candidates(category, contract.candidate_root)
-    return [row for row in rows if _needs_review(category, row)], source, skipped
+    rows, source, skipped = contract.cached_by_inputs(
+        'review-candidate-input:' + category,
+        lambda: read_candidates(category, contract.candidate_root),
+        str(contract.candidate_root), candidate_root_version(contract.candidate_root))
+    # 后续投影会改候选与现值；缓存只保留 CSV 字符串字段，每次投影独立复制行。
+    return [dict(row) for row in rows if _needs_review(category, row)], source, skipped
 
 
 def _metadata_queue_rows(connection, rows: list[dict],

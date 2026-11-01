@@ -8,7 +8,7 @@ import { MediaCard, cardRatio, type MediaCardVariant } from '../../src/react/com
 import { CatalogGridPage, LoadMore } from '../../src/react/catalog-grid/catalog-grid-page';
 import type { CatalogGridProps } from '../../src/react/catalog-grid/types';
 import {
-  MIX_SLOT, SHORTS_BATCH, arrangeTiles, catalogParams, collapseGroups, fetchCatalogPage, latestCatalogPages, mixSeed, nextOffset,
+  MIX_SLOT, SHORTS_BATCH, arrangeTiles, catalogParams, collapseGroups, fetchCatalogPage, latestCatalogPages, mixSeed, nextOffset, visibleCatalogBatch,
   shortsBoundaries, shortsParams, replaceCatalogItem, type GridPage,
 } from '../../src/react/catalog-grid/catalog-grid';
 import type { MediaCardActions, MediaCardHelpers, MediaCardLayout, MediaItem } from '../../src/react/catalog-grid/types';
@@ -75,6 +75,14 @@ describe('目录取数', () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
+  it('首批只覆盖视口，续页从实际取过的数量接上，不等待总数', () => {
+    expect(visibleCatalogBatch(6, 800, 260, 24, 60)).toBe(18);
+    expect(visibleCatalogBatch(2, 600, 420, 24, 60)).toBe(4);
+    expect(visibleCatalogBatch(6, 800, 260, 24, 10)).toBe(10);
+    expect(nextOffset(60)(page([item(1)], 0, { has_more: true, batch: 18 }))).toBe(18);
+    expect(nextOffset(60)(page([item(1)], 18, { has_more: true, batch: 60 }))).toBe(78);
+  });
+
   it('下一页从哪儿取：第一页看总数，往后看 has_more', () => {
     const next = nextOffset(60);
     expect(next(page([item(1)], 0, { total: 100 }))).toBe(60);
@@ -117,6 +125,7 @@ describe('续页', () => {
     let hold = false;
     const fetcher = vi.fn((input: string, init?: RequestInit) => {
       const url = new URL(String(input), 'http://peach.test');
+      if (url.searchParams.has('summary_only')) return Promise.resolve(reply({ total: 9 }));
       const offset = Number(url.searchParams.get('offset') || 0);
       const body = { items: [1, 2, 3].map((n) => item(offset + n)), total: 9, has_more: offset + 3 < 9 };
       if (!hold || offset !== 0) return Promise.resolve(reply(body));
@@ -126,7 +135,7 @@ describe('续页', () => {
       });
     });
     vi.stubGlobal('fetch', fetcher);
-    const offsets = () => fetcher.mock.calls.map(([input]) => new URL(String(input), 'http://peach.test').searchParams.get('offset'));
+    const offsets = () => fetcher.mock.calls.map(([input]) => new URL(String(input), 'http://peach.test').searchParams.get('offset')).filter(value => value !== null);
     return { offsets, holdFirstPage: () => { hold = true }, release: () => { for (const settle of held.splice(0)) settle() } };
   }
 
@@ -151,6 +160,30 @@ describe('续页', () => {
     }
     throw new Error(`一直没等到：${what}`);
   }
+
+  it('统计未回来也能看到片名并打开作品，统计到齐再更新读数', async () => {
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    let release!: () => void;
+    const waiting = new Promise<Reply>(resolve => { release = () => resolve(reply({ total: 9 })) });
+    const fetcher = vi.fn((input: string) => {
+      const url = new URL(String(input), 'http://peach.test');
+      if (url.searchParams.has('summary_only')) return waiting;
+      expect(url.searchParams.get('count')).toBe('0');
+      return Promise.resolve(reply({ items: [item(1)], has_more: true }));
+    });
+    vi.stubGlobal('fetch', fetcher);
+    const options = props({ q: 'summary-independent' });
+    const host = await mount(<QueryClientProvider client={queryClient}><CatalogGridPage {...options} /></QueryClientProvider>);
+    await until(() => cards(host) === 1, '统计仍等待时首屏落地');
+    await click(host.querySelector('[data-media-title]')!);
+    expect(options.actions.open).toHaveBeenCalledTimes(1);
+    expect(options.onCount).not.toHaveBeenCalled();
+    await act(async () => { release(); await waiting });
+    await until(() => (options.onCount as ReturnType<typeof vi.fn>).mock.calls.length > 0, '统计异步更新');
+    expect(options.onCount).toHaveBeenLastCalledWith(9, 1);
+    queryClient.removeQueries({ queryKey: ['catalog-grid'] });
+    queryClient.removeQueries({ queryKey: ['catalog-summary'] });
+  });
 
   it('结果版本变化引起的整列重读还在路上时滚到底：续页先停掉重读、当场取下一页', async () => {
     vi.stubGlobal('IntersectionObserver', FakeObserver);

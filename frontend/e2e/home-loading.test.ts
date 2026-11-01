@@ -92,8 +92,8 @@ describe('首页加载结构',()=>{
    }finally{release();await context.close()}
   });
  }
- for(const viewport of VIEWPORTS){
-  it(`${viewport.name} 图片一直等待或失败时作品文字与操作仍可用`,{timeout:60000},async()=>{
+ for(const path of ['/', '/?jav=1']) for(const viewport of VIEWPORTS){
+  it(`${viewport.name} ${path} 图片一直等待或失败时作品文字与操作仍可用`,{timeout:60000},async()=>{
    const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height}});
    let release:()=>void=()=>{};
    const held=new Promise<void>(resolve=>{release=resolve});
@@ -104,24 +104,48 @@ describe('首页加载结构',()=>{
     });
     const page=await context.newPage();
     const failures:string[]=[];
+    const firstPages:URLSearchParams[]=[];
+    let shapeRequests=0;
     page.on('pageerror',error=>failures.push(error.message));
+    await page.route('**/api/entity/shapes',async route=>{
+     shapeRequests++;
+     await held;
+     await route.continue();
+    });
+    await page.route(/\/api\/items\?/,async route=>{
+     const url=new URL(route.request().url());
+     if(!url.searchParams.has('summary_only')&&!url.searchParams.has('orient')&&url.searchParams.get('offset')==='0')firstPages.push(url.searchParams);
+     // 演示库是风景作品；JAV 布局复用同一批合成媒体，不依赖正式馆藏。
+     if(url.searchParams.get('jav')==='1'){
+      url.searchParams.delete('jav');
+      const response=await route.fetch({url:url.href});
+      const data=await response.json();
+      await route.fulfill({json:{...data,items:data.items?.map((item:{id:number})=>({...item,is_jav:true,code:`ABC-${String(item.id).padStart(3,'0')}`}))}});
+     }else await route.continue();
+    });
     await page.route(/\/(poster|thumb|cover|entity-image|avatar)(\?|$)/,async route=>{
      imageRequests++;
      await held;
      await route.abort('failed');
     });
-    await page.goto(requiredEnv('PEACH_E2E_ORIGIN')+'/',{waitUntil:'domcontentloaded'});
+    await page.goto(requiredEnv('PEACH_E2E_ORIGIN')+path,{waitUntil:'domcontentloaded'});
     const card=page.locator('#grid [data-media-card]').first();
     const title=card.locator('[data-media-title]');
     await title.waitFor({state:'visible'});
     await card.scrollIntoViewIfNeeded();
     assert.ok((await title.innerText()).trim(),'图片未取得也应显示片名');
+    assert.ok(firstPages.length>0&&firstPages.every(params=>params.get('count')==='0'),'首屏不等待整库统计');
+    assert.ok(shapeRequests>0,'实体索引仍在等待时首屏已可用');
     assert.ok(imageRequests>0,'确实拦住了卡片图片请求');
     const open=card.locator('[data-media-open]');
     assert.equal(await open.isEnabled(),true);
     const picture=card.locator('[data-media-pic]');
     const before=await picture.evaluate(node=>({width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height}));
     assert.ok(before.width>0&&before.height>0,'图片等待时保留画面位置');
+    await title.click();
+    await page.locator('#stage[open] [data-item-side]').waitFor({state:'visible'});
+    assert.ok(imageRequests>0,'封面请求仍被拦住时详情已能打开');
+    await page.locator('#closeStage').click();
     const imageFailed=page.waitForEvent('requestfailed',{predicate:request=>request.resourceType()==='image'});
     release();
     await imageFailed;

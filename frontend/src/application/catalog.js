@@ -405,8 +405,6 @@ export async function loadCatalog(){
   showHomeSurfaces();
   const painting=paintCatalogGrid(surface);
   if(isFeedNewPath(location.pathname)&&state.browse!=='folders'){
-    await loadingState.entityShapesReady;
-    if(!navigationState.surfaceCurrent(surface))return;
     renderHomeFeed();
   }else clearHomeFeed();
   renderCombo();

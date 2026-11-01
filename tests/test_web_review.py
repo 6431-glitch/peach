@@ -36,6 +36,21 @@ from support.ledger import fresh_ledger
 
 
 class ReviewQueueTests(unittest.TestCase):
+    def test_candidate_csv_reuses_file_inputs_but_projection_and_new_files_are_fresh(self):
+        raw = {'item_key': 'ABC-123:performers', 'status': 'candidate', 'candidates_json': '[]'}
+        with mock.patch.object(rm_review, 'read_candidates', return_value=([raw], 'fixture', 0)) as read:
+            first = rm_review._queue_rows(self.contract, 'metadata_fields', None)[0]
+            first[0]['current_value'] = 'projection only'
+            first[0].pop('candidates_json')
+            self.contract.cache_bust()
+            second = rm_review._queue_rows(self.contract, 'metadata_fields', None)[0]
+            self.assertEqual(read.call_count, 1)
+            self.assertNotIn('current_value', second[0])
+            self.assertEqual(second[0]['candidates_json'], '[]')
+            (self.candidates / 'new-input.csv').write_text('field\nperformers\n', encoding='utf-8')
+            rm_review._queue_rows(self.contract, 'metadata_fields', None)
+            self.assertEqual(read.call_count, 2)
+
     """复核队列：候选来源、稳定主键、批准的权威值与写入边界。"""
 
     def test_bulk_code_matching_normalizes_each_asset_once(self):

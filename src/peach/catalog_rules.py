@@ -1086,12 +1086,24 @@ def is_uncensored_release(name: str | None, code: str | None) -> bool:
     return is_uncensored_code(code) or bool(_UNCENSORED_SITE.search(str(name or "")))
 
 
+_EDITION_EVIDENCE = re.compile(
+    r"(?:^|[^A-Z0-9]|(?<=\d))(?:CH|C|SUB|UC|UN|U|UNCEN(?:SORED)?|"
+    r"UNCENSORED|无码|無碼|中字|中文字幕)(?=$|[^A-Z0-9])", re.I)
+
+
 def jav_edition_badges(name: str | None, code: str | None,
                        tags: tuple[str, ...] | list[str] = ()) -> list[str]:
     """Project filename/tag evidence into compact edition badges beside the code."""
+    return list(_edition_badges_cached(str(name or ''), str(code or ''),
+                                      tuple(sorted({str(tag).strip().casefold() for tag in tags}))))
+
+
+@lru_cache(maxsize=32768)
+def _edition_badges_cached(name: str, code: str, tags: tuple[str, ...]) -> tuple[str, ...]:
+    """Cache pure edition evidence across refreshed catalog snapshots."""
     text = _MEDIA_EXTENSION.sub("", str(name or ""))
     tag_set = {str(tag).strip().casefold() for tag in tags if str(tag).strip()}
-    code_pattern = _jav_code_pattern(code)
+    code_pattern = _jav_code_pattern(code) if _EDITION_EVIDENCE.search(text) else ''
     after_code = (
         re.search(
             rf"(?:^|[^A-Z0-9]){code_pattern}((?:{_GLUED_EDITION})?(?:[^A-Z0-9].*)?)$",
@@ -1129,7 +1141,7 @@ def jav_edition_badges(name: str | None, code: str | None,
         badges.append("无码破解")
     elif uncensored:
         badges.append("无码")
-    return badges
+    return tuple(badges)
 
 
 #: 头尾的裸域名不允许标签里带连字符：`ABP-762-fuckbe.com` 整串都符合「标签+.com」，

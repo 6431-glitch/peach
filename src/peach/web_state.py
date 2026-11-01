@@ -321,6 +321,15 @@ class WebContract:
             return None
         return int(row[0])
 
+    def cached_by_inputs(self, key: str, fn, *inputs):
+        """只依赖显式输入版本的只读结果，不因无关账本提交失效。"""
+        with self.cache_lock:
+            lock = self.aggregate_locks.setdefault(key, threading.RLock())
+        with lock:
+            with self.cache_lock:
+                self.revision_cache_keys.add(key)
+            return self.cached(key, fn, ttl=math.inf, version=('inputs', *inputs))
+
     def cached_until_changed(self, key: str, fn, *inputs, tables=()):
         """只读账本聚合的缓存：账本版本号与 `inputs` 都没变就一直命中，不按时间过期。
 

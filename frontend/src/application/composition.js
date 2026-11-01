@@ -199,7 +199,7 @@ loadRouter(compositionState.shellActions).catch(error=>console.error('客户端�
 mountManageHeader();
 mountBatchDock();
 buildManageBar();
-Promise.all([loadSourceStatus(),loadSyncedSettings(),loadingState.entityShapesReady])
+Promise.all([loadSourceStatus(),loadSyncedSettings()])
   .then(()=>{
     if(!effects.isActive)return;
     /* 顶部两排与筛选栏的两个聚合自带骨架、取回后自己落位，页面打开不等它们：作品列表与它们同时去取。 */

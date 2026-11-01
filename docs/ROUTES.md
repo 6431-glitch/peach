@@ -1,5 +1,7 @@
 # 页面路由
 
+`GET /api/items?summary_only=1` 按同一组筛选返回 `total`、`bytes`、`work_total`，不装配作品卡片；`count=0` 的分页只回条目与 `has_more`。馆藏网格先取当前视口所需条目，统计与后续页在首批落地后分别取得。
+
 馆藏处理的 `POST /api/library-processing` 支持按 `job_id` 暂停、继续、取消及归档结束提示；`stopping` 仍占用当前范围，`cancelled` 不自动恢复。`scope=new` 在启动时解析成固定资产集合，不与 `asset_ids` 或失败重试混用。状态只返回新入库数量，不下发内部处理路径。
 
 `GET /api/library-processing/issues` 返回任务号、内容摘要 `revision`、总数、偏移和记录。导出后续页传入首份摘要；同任务追加、恢复或记录替换时拒绝混合读取。旧完整问题数组可分页读取，原始记录缺失或损坏作为失败返回。

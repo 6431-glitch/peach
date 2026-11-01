@@ -400,7 +400,7 @@ def _catalog_totals(contract: WebContract, where, parameters, args):
                 + " AND ".join(where), parameters).fetchone())
     # 搜索、人物及任意标签组合保留实时查询；常见馆藏筛选复用既有表版本与同键锁。
     common = {'sort', 'seed', 'dir', 'limit', 'offset', 'count', 'state', 'jav',
-              'loc', 'len', 'orient', 'region', 'exclude_vertical', 'thumb', 'library', 'year'}
+              'loc', 'len', 'orient', 'region', 'exclude_vertical', 'thumb', 'library', 'year', 'summary_only'}
     if any(value and key not in common for key, value in args.items()):
         return read()
     return contract.cached_until_changed(
@@ -410,6 +410,9 @@ def _catalog_totals(contract: WebContract, where, parameters, args):
 
 def q_items(contract: WebContract, args):
     where, par = catalog_filter(contract, args)
+    if args.get('summary_only') == '1':
+        count, size, works = _catalog_totals(contract, where, par, args)
+        return {'total': count, 'bytes': size, 'work_total': works}
     sort_key = str(args.get("sort") or "")
     direction = "ASC" if str(args.get("dir") or "").lower() == "asc" else "DESC"
     column = SORT_COLUMNS.get(sort_key)
@@ -446,49 +449,7 @@ def q_items(contract: WebContract, args):
         cnt, total_bytes, work_total = (
             _catalog_totals(contract, where, par, args) if include_total else (None, None, None))
     # 卡片要显示出镜者和高权重标签，不能只有番号 —— 一次批量取，别 N+1
-    if rows:
-        ids = [r["id"] for r in rows]
-        qm = ",".join("?" * len(ids))
-        tmap: dict[int, list[str]] = {}
-        for aid, tag in con_tags(contract, ids, qm):
-            tmap.setdefault(aid, []).append(tag)
-        emap: dict[int, dict[str, list[str]]] = {}
-        performer_refs: dict[int, list[dict[str, object]]] = {}
-        creator_refs: dict[int, dict[str, object]] = {}
-        for aid, entity_id, kind, name in con_entities(contract, ids, qm):
-            emap.setdefault(aid, {}).setdefault(kind, []).append(name)
-            if kind == "performer":
-                performer_refs.setdefault(aid, []).append(
-                    entity_ref(contract, "performer", entity_id, name))
-            elif kind == "creator" and aid not in creator_refs:
-                creator_refs[aid] = entity_ref(contract, kind, entity_id, name)
-        attach_creator_reference_details(contract, creator_refs.values())
-        for r in rows:
-            ts = tmap.get(r["id"], [])
-            canonical = emap.get(r["id"], {})
-            canonical_tags = canonical.get("tag", [])
-            canonical_performers = canonical.get("performer", [])
-            all_performers = canonical_performers or [
-                tag[3:] for tag in ts if tag.startswith("演员:")
-            ]
-            performers = all_performers[:CARD_PERFORMERS]
-            performer_names = {normalize_entity_name(name) for name in all_performers}
-            visible_tags = canonical_tags or [t for t in ts if not t.startswith("演员:")]
-            r["tags"] = [
-                tag for tag in visible_tags
-                if tag_cat(tag) in (
-                    "general", "relationship", "role", "appearance", "scene", "story", "position",
-                )
-                and normalize_entity_name(tag) not in performer_names
-            ][:4]
-            r["performers"] = performers
-            refs = performer_refs.get(r["id"], [])
-            r["performer_entities"] = refs[:CARD_PERFORMERS]
-            r["creator_entity"] = creator_refs.get(r["id"])
-            if r["creator_entity"]:
-                r["creator"] = r["creator_entity"]["name"]
-            r["performer_total"] = len(refs) or len(all_performers)
-            r["_entity_kinds"] = tuple(canonical)
+    _attach_catalog_identity_fields(contract, rows)
     for r in rows:
         r["cost"] = cost_for(r['location'], r.get('path'))
         r["has_thumb"] = contract.has_snapshot(r["snapshot_path"])
@@ -503,6 +464,54 @@ def q_items(contract: WebContract, args):
     attach_multipart_groups(contract, rows, shown)
     attach_edition_groups(contract, rows, shown)
     return {"total": cnt, "work_total": work_total, "bytes": total_bytes, "items": rows, "has_more": has_more}
+
+def _attach_catalog_identity_fields(contract: WebContract, rows: list[dict]) -> None:
+    """Batch the visible cards’ identity references and display tags."""
+    if not rows:
+        return
+    ids = [r["id"] for r in rows]
+    qm = ",".join("?" * len(ids))
+    tmap: dict[int, list[str]] = {}
+    for aid, tag in con_tags(contract, ids, qm):
+        tmap.setdefault(aid, []).append(tag)
+    emap: dict[int, dict[str, list[str]]] = {}
+    performer_refs: dict[int, list[dict[str, object]]] = {}
+    creator_refs: dict[int, dict[str, object]] = {}
+    for aid, entity_id, kind, name in con_entities(contract, ids, qm):
+        emap.setdefault(aid, {}).setdefault(kind, []).append(name)
+        if kind == "performer":
+            performer_refs.setdefault(aid, []).append(
+                entity_ref(contract, "performer", entity_id, name))
+        elif kind == "creator" and aid not in creator_refs:
+            creator_refs[aid] = entity_ref(contract, kind, entity_id, name)
+    attach_creator_reference_details(contract, creator_refs.values())
+    for r in rows:
+        ts = tmap.get(r["id"], [])
+        canonical = emap.get(r["id"], {})
+        canonical_tags = canonical.get("tag", [])
+        canonical_performers = canonical.get("performer", [])
+        all_performers = canonical_performers or [
+            tag[3:] for tag in ts if tag.startswith("演员:")
+        ]
+        performers = all_performers[:CARD_PERFORMERS]
+        performer_names = {normalize_entity_name(name) for name in all_performers}
+        visible_tags = canonical_tags or [t for t in ts if not t.startswith("演员:")]
+        r["tags"] = [
+            tag for tag in visible_tags
+            if tag_cat(tag) in (
+                "general", "relationship", "role", "appearance", "scene", "story", "position",
+            )
+            and normalize_entity_name(tag) not in performer_names
+        ][:4]
+        r["performers"] = performers
+        refs = performer_refs.get(r["id"], [])
+        r["performer_entities"] = refs[:CARD_PERFORMERS]
+        r["creator_entity"] = creator_refs.get(r["id"])
+        if r["creator_entity"]:
+            r["creator"] = r["creator_entity"]["name"]
+        r["performer_total"] = len(refs) or len(all_performers)
+        r["_entity_kinds"] = tuple(canonical)
+
 
 def con_tags(contract: WebContract, ids, qm):
     with contract.read_connection() as c:

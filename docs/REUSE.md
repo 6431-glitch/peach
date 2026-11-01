@@ -1,5 +1,11 @@
 # 复用清单
 
+馆藏首屏复用 `catalog-grid` 的视口几何与无限分页，先取得可见作品，再独立补统计和后续页。`catalog_rules.jav_edition_badges` 缓存纯文件名、番号与标签证据，并先用固定标记判据排除无需编译逐番号表达式的文件；缓存结果不暴露可变列表。
+
+应用启动只等待来源状态与同步设置；实体索引、新作区域、统计与作品列表分别加载，索引未取得不阻挡馆藏首屏。
+
+复核原始候选复用 `WebContract.cached_by_inputs`，以候选目录和 CSV 文件版本为输入，账本现值与复核决定仍逐次投影。每次投影复制字符串行，批准操作继续从当前候选文件核验。
+
 ## 跨平台任务资源计量
 
 继续使用 psutil 7.2.2 读取进程 CPU 时间和身份。该版本的 macOS 线程列表使用序号，不能与 Python 原生线程 ID 对应；因此使用系统 `libproc` 的 `PROC_PIDTHREADID64INFO` 取得指定线程的纳秒时间，接口与单位见 [XNU 实现](https://github.com/apple-oss-distributions/xnu/blob/main/osfmk/kern/bsd_kern.c)。Linux 的可用 CPU 容量复用亲和性、控制组成员和挂载信息，按可见 cgroup v1/v2 配额归一化。
