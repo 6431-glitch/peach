@@ -265,10 +265,13 @@ it('就地推筛选与刷新代次：宿主与代次不变，只按新键重取�
   const fetch = catalogFetch();
   const open = catalogOpen();
   await act(async () => { await r.openManagedRoute('/', open, { container: grid, isCurrent: () => true }) });
+  await until(() => Boolean(grid.textContent?.includes('作品 1 seed')), '初始卡片先落地');
+  await until(() => fetch.summaryCalls().length === 1, '初始统计请求已发出后再切换筛选');
   const host = r.managedEntry(grid)?.host;
   const revision = r.managedEntry(grid)?.revision;
   await act(async () => { r.updateManagedRoute(grid, { filters: { sort: 'new' }, revision: 1 }) });
   await until(() => Boolean(grid.textContent?.includes('作品 1 new')), '按新键重取回来的那一份画上');
+  await until(() => fetch.summaryCalls().length === 2, '新筛选的后台统计请求已发出');
   expect(fetch.itemCalls().map((url) => url.searchParams.get('sort')), '卡片只按新键重取一次').toEqual(['seed', 'new']);
   expect(fetch.summaryCalls().map((url) => url.searchParams.get('sort')), '统计只按新键重取一次').toEqual(['seed', 'new']);
   expect(grid.querySelectorAll(':scope > .peach-react'), '宿主只有一个').toHaveLength(1);
