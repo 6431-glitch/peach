@@ -70,7 +70,7 @@ REVIEW_APPLY_LIMIT = 500
 #: 多值字段在账本里是实体关系，不是 `asset` 上的列。
 _MULTI_VALUE_ROLES = {"performers": "performer", "tags": "tag"}
 
-#: `_codes_matching` 一条查询里最多带几个宽查键；SQLite 表达式树深度上限是 1000。
+#: 少量番号在 SQL 中收小范围；达到此规模时一次读出可用资产，按归一化键集中比对。
 _LIKE_CHUNK = 200
 
 
@@ -88,29 +88,28 @@ def _codes_matching(connection, codes: list[str], columns: str) -> list:
     异写：`n0780` 与 `TOKYO-HOT-N0780` 是同一部作品的两个文件，前者叫 `Tokyo-Hot.mp4`
     读不出番号，后者叫 `n0780.mkv`，只拿前者判「文件名认不认得出这个番号」，整组就停在
     人工队列（2026-09-27 实测 10 行）。精确查本来就是全表扫描，单条候选并进同一条查询
-    不多花；整队列刷新现值时一次几百个番号，宽查按 `_LIKE_CHUNK` 个键一段，一长串 OR
-    会撞上 SQLite 的表达式深度上限。
+    不多花；整队列刷新现值达到 `_LIKE_CHUNK` 个番号时，只读取一次可用资产并按键比对，
+    避免每一段都反复执行整组精确匹配与一长串 LIKE。
     """
     wanted = [code for code in dict.fromkeys(code.strip() for code in codes) if code]
     if not wanted:
         return []
     exact = {code.upper() for code in wanted}
-    keys = sorted({normalise_code_key(code) for code in wanted} - {""})
-    marks = ",".join(["upper(?)"] * len(wanted))
+    keys = {normalise_code_key(code) for code in wanted} - {""}
+    sql = f"SELECT {columns} FROM asset WHERE medium='video' AND disposal IS NULL "
+    parameters = []
+    if len(wanted) >= _LIKE_CHUNK:
+        sql += "AND code IS NOT NULL AND trim(code)<>'' "
+    else:
+        marks = ",".join(["upper(?)"] * len(wanted))
+        likes = "".join(" OR upper(code) LIKE '%'||upper(?)||'%'" for _key in sorted(keys))
+        sql += f"AND (upper(trim(code)) IN ({marks}){likes}) "
+        parameters = [*wanted, *sorted(keys)]
     found = []
-    # 每一行只在它的归一化键所在那一段收下，精确写法每段都查，也不会重复收。
-    for start in range(0, max(len(keys), 1), _LIKE_CHUNK):
-        chunk = set(keys[start:start + _LIKE_CHUNK])
-        likes = "".join(" OR upper(code) LIKE '%'||upper(?)||'%'" for _key in sorted(chunk))
-        for row in connection.execute(
-                f"SELECT {columns} FROM asset WHERE medium='video' "
-                f"AND disposal IS NULL "
-                f"AND (upper(trim(code)) IN ({marks}){likes}) ORDER BY id",
-                [*wanted, *sorted(chunk)]):
-            key = normalise_code_key(str(row["code"] or ""))
-            if key in chunk or (not start and not key
-                                and str(row["code"] or "").strip().upper() in exact):
-                found.append(row)
+    for row in connection.execute(sql + "ORDER BY id", parameters):
+        key = normalise_code_key(str(row["code"] or ""))
+        if key in keys or (not key and str(row["code"] or "").strip().upper() in exact):
+            found.append(row)
     return found
 
 

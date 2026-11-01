@@ -38,6 +38,29 @@ from support.ledger import fresh_ledger
 class ReviewQueueTests(unittest.TestCase):
     """复核队列：候选来源、稳定主键、批准的权威值与写入边界。"""
 
+    def test_bulk_code_matching_normalizes_each_asset_once(self):
+        from peach import metadata_auto_apply
+        codes = [f'FC2-PPV-{1000000 + index}' for index in range(401)] + ['n0780']
+        assets = [(1000 + index, code) for index, code in enumerate(codes[:-1])]
+        assets += [(2000, 'fc2_ppv_1000001'), (2001, 'n0780'),
+                   (2002, 'TOKYO-HOT-N0780'), (2003, 'AN0780X'),
+                   (2004, 'FC2-PPV-1000000'), (2005, 'FC2-PPV-1000000')]
+        with contextlib.closing(sqlite3.connect(self.db_path)) as connection, connection:
+            connection.executemany(
+                "INSERT INTO asset(id,location,path,name,medium,code) "
+                "VALUES(?,'local',?,'Sample.mp4','video',?)",
+                [(asset_id, f'R:/Media/{asset_id}.mp4', code) for asset_id, code in assets])
+            connection.execute("UPDATE asset SET disposal='trash' WHERE id=2004")
+            connection.execute("UPDATE asset SET medium='image' WHERE id=2005")
+            connection.row_factory = sqlite3.Row
+            with mock.patch.object(metadata_auto_apply, 'normalise_code_key',
+                                   wraps=metadata_auto_apply.normalise_code_key) as normalize:
+                rows = metadata_auto_apply._codes_matching(connection, codes, 'id,code')
+            self.assertEqual({row['id'] for row in rows},
+                             set(range(1000, 1401)) | {2000, 2001, 2002})
+            self.assertLessEqual(normalize.call_count, len(codes) + len(assets) + 5,
+                                 '批量候选不按每段重新归一化同一批资产')
+
     def test_old_damaged_official_candidate_cannot_win_over_readable_evidence(self):
         self._asset(400, 'EXM-001', 'EXM-001.mp4')
         self.write_metadata_rows([{'item_key':'EXM-001:title', 'code':'EXM-001',
