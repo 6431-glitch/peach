@@ -320,6 +320,21 @@ describe('一屏卡片的排法', () => {
     expect(arrangeTiles([page(first)], { collapse: true, mix: false, javImage: 'cover' }).tiles.some((tile) => tile.kind === 'mix')).toBe(false);
   });
 
+  it('首屏与续页各不足八张时累计展示 Mix，后续加载保持首枚位置', () => {
+    const named = (id: number) => item(id, { creator: `作者 ${id}` });
+    const initial = page([1, 2, 3, 4].map(named));
+    const next = page([5, 6, 7, 8, 9, 10].map(named), 4);
+    const options = { collapse: true, mix: true, javImage: 'cover' };
+    expect(arrangeTiles([initial], options).tiles.some((tile) => tile.kind === 'mix')).toBe(false);
+    const combined = arrangeTiles([initial, next], options);
+    expect(combined.tiles[MIX_SLOT]?.kind).toBe('mix');
+    expect(combined.tiles.filter((tile) => tile.kind === 'card')).toHaveLength(10);
+    const later = page(Array.from({ length: 10 }, (_, at) => named(at + 11)), 10);
+    const expanded = arrangeTiles([initial, next, later], options);
+    expect(expanded.tiles.slice(0, combined.tiles.length)).toEqual(combined.tiles);
+    expect(expanded.tiles.filter((tile) => tile.kind === 'mix')).toHaveLength(2);
+  });
+
   it('Mix 的种子不取它挨着的那张：从 Mix 位往下隔一屏找有图有署名的，都没署名就取末尾', () => {
     const visible = Array.from({ length: 20 }, (_, index) => item(index + 1, { creator: `作者 ${index + 1}` }));
     expect(mixSeed(visible, 'cover')?.id).toBe(MIX_SLOT + 9);

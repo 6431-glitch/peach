@@ -138,6 +138,11 @@ describe('设计决定：作品卡、管理页与复核', () => {
     try {
       await page.locator('#grid [data-shorts-strip]').first().waitFor({ timeout: 10_000 });
       await page.locator('#grid [data-media-grid] > [data-media-card] [data-media-progress]').first().waitFor({ timeout: 10_000 });
+      if (!(await page.locator('#grid [data-mix-card]').count())) {
+        await page.evaluate(() => document.querySelector('#grid [data-load-more]')?.scrollIntoView());
+        await page.locator('#grid [data-mix-card]').first().waitFor();
+        await page.locator('#grid [data-media-grid] > [data-media-card]').first().scrollIntoViewIfNeeded();
+      }
       const catalog = await readStyles({
         card: '[data-media-grid] > [data-media-card]',
         badge: '[data-media-grid] > [data-media-card] [data-media-badge]',

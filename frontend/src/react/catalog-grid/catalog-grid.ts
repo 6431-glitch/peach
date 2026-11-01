@@ -167,7 +167,7 @@ export function mixSeed(visible: readonly MediaItem[], javImage: string): MediaI
 /** 网格里的一格：一张作品卡，或一张 Mix。 */
 export type Tile = { kind: 'card'; item: MediaItem } | { kind: 'mix'; seed: MediaItem };
 
-/** 把已取回的各页排成一列格子。每一页各自折叠、各自插 Mix，和逐页接上来时一样。
+/** 把已取回的各页排成一列格子。首枚 Mix 等累计够八张再插入，随后各页独立插入。
  *  `pageStarts[i]` 是第 i 页在这一列里的起点，竖屏带的落点要落在那一页新增的格子之间。 */
 export function arrangeTiles(
   pages: readonly GridPage[], { collapse, mix, javImage }: { collapse: boolean; mix: boolean; javImage: string },
@@ -183,11 +183,13 @@ export function arrangeTiles(
     const fresh = page.items.filter((item) => !ids.has(item.id) && Boolean(ids.add(item.id)));
     const visible = collapseGroups(fresh, seen, collapse);
     const cards: Tile[] = visible.map((item) => ({ kind: 'card', item }));
-    if (mix && visible.length >= 8) {
-      const seed = mixSeed(visible, javImage);
-      if (seed) cards.splice(MIX_SLOT, 0, { kind: 'mix', seed });
-    }
     tiles.push(...cards);
+    if (mix) {
+      const firstMix = !tiles.some((tile) => tile.kind === 'mix');
+      const pool = firstMix ? tiles.flatMap((tile) => tile.kind === 'card' ? [tile.item] : []) : visible;
+      const seed = pool.length >= 8 ? mixSeed(pool, javImage) : undefined;
+      if (seed) tiles.splice(firstMix ? MIX_SLOT : pageStarts.at(-1)! + MIX_SLOT, 0, { kind: 'mix', seed });
+    }
   }
   return { tiles, pageStarts };
 }

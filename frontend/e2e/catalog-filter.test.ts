@@ -29,6 +29,7 @@ const TAGS = Array.from({ length: 40 }, (_, at) => ({ k: `演示标签${String(a
 interface Counts {
   /** 目录网格那一路：竖屏那一排（`orient=竖屏`）与只探有没有内容的 `limit=1` 各走各的，不算在里面。 */
   items: URL[];
+  summaries: URL[];
   facets: URL[];
   tops: URL[];
 }
@@ -50,7 +51,7 @@ async function until(done: () => boolean, message: string, timeout = 10_000) {
 async function openHome(browser: Browser, path = '/', viewport = DESKTOP): Promise<ItemVisit & { counts: Counts }> {
   const opened = await openItemPage(browser, '/', viewport, { ready: '#grid [data-media-card]' });
   const { page } = opened;
-  const counts: Counts = { items: [], facets: [], tops: [] };
+  const counts: Counts = { items: [], summaries: [], facets: [], tops: [] };
   await page.route((url) => url.pathname === '/api/tops', (route) => {
     const url = new URL(route.request().url());
     counts.tops.push(url);
@@ -66,7 +67,14 @@ async function openHome(browser: Browser, path = '/', viewport = DESKTOP): Promi
   /* 加一条标签筛选，列表就只剩一半：读数跟着换，才看得出这一趟真按新口径取了。 */
   await page.route((url) => url.pathname === '/api/items', (route) => {
     const url = new URL(route.request().url());
-    if (!url.searchParams.has('orient') && url.searchParams.get('limit') !== '1') counts.items.push(url);
+
+    if (url.searchParams.get('summary_only') === '1') {
+      counts.summaries.push(url);
+      const total = url.searchParams.get('tag') ? 3 : CATALOG.length;
+      return route.fulfill({ json: { total, bytes: 0, work_total: total } });
+    }
+    if (!url.searchParams.has('orient')
+      && (url.searchParams.get('limit') !== '1' || url.searchParams.get('count') === '0')) counts.items.push(url);
     const ids = url.searchParams.get('tag') || url.searchParams.get('owner') === 'none' ? CATALOG.slice(0, 3) : CATALOG;
     return route.fulfill({ json: {
       items: ids.map((id) => ({ id, name: `sample_${id}.mp4`, title: `演示作品 ${id}`, is_jav: false, medium: 'video',
@@ -204,7 +212,7 @@ describe('首页筛选条', () => {
         const first = document.querySelector(`${filter} [data-tier-performer]`) as HTMLElement & { __kept?: boolean };
         first.__kept = true;
       }, FILTER);
-      const [items, facets] = [counts.items.length, counts.facets.length];
+      const [items, facets, summaries] = [counts.items.length, counts.facets.length, counts.summaries.length];
       const order = () => page.locator(`${FILTER} [data-catalog-tag]`).evaluateAll((pills) =>
         pills.map((pill) => pill.getAttribute('data-catalog-tag')));
       const members = await order();
@@ -225,6 +233,8 @@ describe('首页筛选条', () => {
       assert.equal(new URL(page.url()).searchParams.get('tag'), key);
       assert.deepEqual(counts.items.slice(items).map((url) => url.searchParams.get('tag')), [key],
         '点一枚标签应当只按新口径取一次列表');
+      assert.deepEqual(counts.summaries.slice(summaries).map((url) => url.searchParams.get('tag')), [key],
+        '点一枚标签应当只按新口径取一次后台统计');
       assert.deepEqual(counts.facets.slice(facets).map((url) => url.searchParams.get('tag')), [key],
         '侧栏计数应当按新口径取一次聚合');
       /* 口径变了两排头像会按新口径再取一次（`getBarsData`），但同一位的那一格原地换数，不拆了重建。 */
@@ -322,6 +332,7 @@ describe('首页筛选条', () => {
       await page.waitForFunction(() => location.pathname === '/' && new URLSearchParams(location.search).get('jav') === '1');
       await page.getByRole('tab', { name: '馆藏', exact: true, selected: true }).waitFor();
       await page.locator('#grid [data-media-card]').first().waitFor();
+      await until(() => counts.items.slice(before).some((url) => url.searchParams.get('jav') === '1'), 'JAV 口径没有重取列表');
       await settle(page);
       assert.ok(counts.items.slice(before).some((url) => url.searchParams.get('jav') === '1'), 'JAV 口径没有重取列表');
       assert.equal(await page.evaluate(() => document.querySelector('#javLibraryHeader')!.getBoundingClientRect().bottom <= document.querySelector('#catalogFilter [data-catalog-tier="performers"]')!.getBoundingClientRect().top), true, 'JAV 标题和分区应在可见筛选行之前');

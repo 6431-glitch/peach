@@ -74,6 +74,8 @@ describe('馆藏卡片与列表', () => {
         assert.equal(await page.getByRole('button', { name: '第 2 页', exact: true }).getAttribute('aria-current'), 'page');
         await choose('卡片');
         await page.locator('[data-catalog-view-mode="cards"] [data-media-card]').first().waitFor();
+        await page.evaluate(() => document.querySelector('#grid [data-load-more]')?.scrollIntoView());
+        await page.waitForFunction((total) => document.querySelectorAll('#grid [data-media-card]').length === total, count);
         assert.equal(await page.locator('#grid [data-media-card]').count(), count);
         if (viewport.mobile) {
           await page.evaluate(() => {
