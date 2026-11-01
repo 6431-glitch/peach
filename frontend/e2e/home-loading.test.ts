@@ -128,11 +128,15 @@ describe('首页加载结构',()=>{
      await held;
      await route.abort('failed');
     });
+    const imageRequested=page.waitForRequest(request=>request.resourceType()==='image'
+     &&/\/(poster|thumb|cover|entity-image|avatar)(\?|$)/.test(request.url()));
+    void imageRequested.catch(()=>{});
     await page.goto(requiredEnv('PEACH_E2E_ORIGIN')+path,{waitUntil:'domcontentloaded'});
     const card=page.locator('#grid [data-media-card]').first();
     const title=card.locator('[data-media-title]');
     await title.waitFor({state:'visible'});
     await card.scrollIntoViewIfNeeded();
+    await imageRequested;
     assert.ok((await title.innerText()).trim(),'图片未取得也应显示片名');
     assert.ok(firstPages.length>0&&firstPages.every(params=>params.get('count')==='0'),'首屏不等待整库统计');
     assert.ok(shapeRequests>0,'实体索引仍在等待时首屏已可用');
