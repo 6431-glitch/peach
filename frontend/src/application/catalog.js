@@ -27,7 +27,7 @@ import { entityFaceImg, facePos, logoUrl } from './../card-art/markup';
 import { sidebarHasCatalogContent } from './../sidebar';
 import { rememberRepresentatives } from './../card-art/representatives';
 import { clearHomeFeed, isFeedNewPath, renderHomeFeed } from './feed.js';
-import { loadingState, renderCatalogLoading } from './loading.js';
+import { renderCatalogLoading } from './loading.js';
 import { releaseHoverPreviews } from './../card-art/hover';
 import { revealRoutedPage } from './follow.js';
 import { pageSkeletonHtml } from './../management-placeholder';
