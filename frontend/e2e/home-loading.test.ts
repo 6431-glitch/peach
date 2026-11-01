@@ -92,4 +92,45 @@ describe('首页加载结构',()=>{
    }finally{release();await context.close()}
   });
  }
+ for(const viewport of VIEWPORTS){
+  it(`${viewport.name} 图片一直等待或失败时作品文字与操作仍可用`,{timeout:60000},async()=>{
+   const context=await browser.newContext({viewport:{width:viewport.width,height:viewport.height}});
+   let release:()=>void=()=>{};
+   const held=new Promise<void>(resolve=>{release=resolve});
+   let imageRequests=0;
+   try{
+    await context.addInitScript(()=>{
+     localStorage.setItem('peach.settings.v1',JSON.stringify({detailAutoplay:false}));
+    });
+    const page=await context.newPage();
+    const failures:string[]=[];
+    page.on('pageerror',error=>failures.push(error.message));
+    await page.route(/\/(poster|thumb|cover|entity-image|avatar)(\?|$)/,async route=>{
+     imageRequests++;
+     await held;
+     await route.abort('failed');
+    });
+    await page.goto(requiredEnv('PEACH_E2E_ORIGIN')+'/',{waitUntil:'domcontentloaded'});
+    const card=page.locator('#grid [data-media-card]').first();
+    const title=card.locator('[data-media-title]');
+    await title.waitFor({state:'visible'});
+    await card.scrollIntoViewIfNeeded();
+    assert.ok((await title.innerText()).trim(),'图片未取得也应显示片名');
+    assert.ok(imageRequests>0,'确实拦住了卡片图片请求');
+    const open=card.locator('[data-media-open]');
+    assert.equal(await open.isEnabled(),true);
+    const picture=card.locator('[data-media-pic]');
+    const before=await picture.evaluate(node=>({width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height}));
+    assert.ok(before.width>0&&before.height>0,'图片等待时保留画面位置');
+    const imageFailed=page.waitForEvent('requestfailed',{predicate:request=>request.resourceType()==='image'});
+    release();
+    await imageFailed;
+    assert.equal(await title.isVisible(),true,'图片失败后片名仍可见');
+    assert.equal(await open.isEnabled(),true,'图片失败后仍可打开作品');
+    const after=await picture.evaluate(node=>({width:node.getBoundingClientRect().width,height:node.getBoundingClientRect().height}));
+    assert.ok(Math.abs(after.width-before.width)<=1&&Math.abs(after.height-before.height)<=1,'图片失败不挤动卡片');
+    assert.deepEqual(failures,[]);
+   }finally{release();await context.close()}
+  });
+ }
 });
