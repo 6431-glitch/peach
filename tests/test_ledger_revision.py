@@ -21,7 +21,7 @@ from peach.previews import entity_image_key, logo_key
 from peach.repository import LedgerDatabase
 from peach.web_catalog import FACETS_TABLES, GROUP_TABLES, TOPS_TABLES
 from peach.web_contract import dispatch_api_get
-from peach.web_entity import INDEX_TABLES
+from peach.web_entity import INDEX_TABLES, SHAPE_TABLES
 from peach.web_state import WebContract
 from support.ledger import fresh_ledger
 
@@ -97,25 +97,45 @@ class LedgerRevisionTests(unittest.TestCase):
     def test_concurrent_catalog_requests_share_one_computation(self):
         from concurrent.futures import ThreadPoolExecutor
         from threading import Event
-        def check(tables):
-            self.calls = 0
-            entered, release = Event(), Event()
-            def derive():
-                self.calls += 1
-                entered.set()
-                release.wait(5)
-                return self.calls
-            key = repr(('catalog', tables))
+        entered, release = Event(), Event()
+        def derive():
+            self.calls += 1
+            entered.set()
+            release.wait(5)
+            return self.calls
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            first = pool.submit(self.contract.cached_until_changed, 'catalog', derive, tables=('asset',))
+            self.assertTrue(entered.wait(5))
+            second = pool.submit(self.contract.cached_until_changed, 'catalog', derive, tables=('asset',))
+            release.set()
+            self.assertEqual((first.result(), second.result()), (1, 1))
+        self.assertEqual(self.calls, 1)
+
+    def test_entity_shapes_share_inflight_result_and_refresh_after_a_write(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Event
+        from peach import web_router
+        entered, release = Event(), Event()
+
+        def derive(contract, args):
+            self.calls += 1
+            entered.set()
+            self.assertTrue(release.wait(10))
+            contract.cache_bust()
+            return {"ok": True, "generation": self.calls}
+
+        with mock.patch.object(web_router, "q_entity_shapes", side_effect=derive):
             with ThreadPoolExecutor(max_workers=2) as pool:
-                first = pool.submit(self.contract.cached_until_changed, key, derive, tables=tables)
-                self.assertTrue(entered.wait(5))
-                second = pool.submit(self.contract.cached_until_changed, key, derive, tables=tables)
+                first = pool.submit(dispatch_api_get, self.contract, "/api/entity/shapes", {})
+                self.assertTrue(entered.wait(10))
+                second = pool.submit(dispatch_api_get, self.contract, "/api/entity/shapes", {})
                 release.set()
-                self.assertEqual((first.result(), second.result()), (1, 1))
+                self.assertEqual(first.result(), {"ok": True, "generation": 1})
+                self.assertEqual(second.result(), first.result())
             self.assertEqual(self.calls, 1)
-        for tables in ((), ('asset',)):
-            with self.subTest(tables=tables):
-                check(tables)
+            insert_asset(self.db_path, 1)
+            self.assertEqual(dispatch_api_get(self.contract, "/api/entity/shapes", {}),
+                             {"ok": True, "generation": 2})
 
     def test_a_changed_file_input_recomputes(self):
         self.contract.cached_until_changed("review", self.compute, "csv-1")
@@ -159,12 +179,8 @@ class LedgerRevisionTests(unittest.TestCase):
             self.calls += 1
             self.contract.cache_bust()
             return self.calls
-        for tables in ((), ('asset',)):
-            with self.subTest(tables=tables):
-                self.calls = 0
-                key = repr(('catalog', tables))
-                self.assertEqual(self.contract.cached_until_changed(key, derive, tables=tables), 1)
-                self.assertEqual(self.contract.cached_until_changed(key, derive, tables=tables), 1)
+        self.assertEqual(self.contract.cached_until_changed("catalog", derive, tables=("asset",)), 1)
+        self.assertEqual(self.contract.cached_until_changed("catalog", derive, tables=("asset",)), 1)
 
 
 class _TableReads:
@@ -384,6 +400,7 @@ class DeclaredTablesTests(unittest.TestCase):
         self._get("/api/item", id="1")
         for kind in ("performers", "creators", "studios", "agencies", "tags"):
             self._get("/api/index", kind=kind)
+        self._get("/api/entity/shapes")
         self._get("/api/stats")
         self._get("/api/folders")
         with closing(sqlite3.connect(self.db_path)) as connection:
@@ -406,6 +423,7 @@ class DeclaredTablesTests(unittest.TestCase):
         declarations = {
             "GROUP_TABLES": GROUP_TABLES, "TOPS_TABLES": TOPS_TABLES,
             "FACETS_TABLES": FACETS_TABLES, "INDEX_TABLES": INDEX_TABLES,
+            "SHAPE_TABLES": SHAPE_TABLES,
             "STATS_TABLES": web_stats.STATS_TABLES,
             "FOLLOW_GROUP_TABLES": web_follow.FOLLOW_GROUP_TABLES,
             "TASTE_TABLES": web_stats.TASTE_TABLES,
@@ -563,6 +581,7 @@ class ResultVersionTablesTests(unittest.TestCase):
     REFRESHED_BY = {
         "catalog-grid": ("catalog",),
         "index": ("catalog", "follow", "discoveries"),
+        "entity-shapes": ("catalog", "follow", "discoveries"),
         "stats": ("catalog", "follow"),
         "taste": ("catalog", "follow"),
         "follow-feed": ("catalog", "follow"),
@@ -574,7 +593,8 @@ class ResultVersionTablesTests(unittest.TestCase):
     def test_every_cached_page_is_refreshed_by_the_tables_it_reads(self):
         from peach.web_result_versions import RESULT_TABLES
         declared = {
-            "catalog-grid": GROUP_TABLES, "index": INDEX_TABLES, "stats": web_stats.STATS_TABLES,
+            "catalog-grid": GROUP_TABLES, "index": INDEX_TABLES, "entity-shapes": SHAPE_TABLES,
+            "stats": web_stats.STATS_TABLES,
             "taste": web_stats.TASTE_TABLES, "follow-feed": web_follow.FOLLOW_GROUP_TABLES,
         }
         missing = {}

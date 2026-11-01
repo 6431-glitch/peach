@@ -437,6 +437,12 @@ def entity_page_shape(contract, connection, entity) -> dict:
             "parts": _entity_shape_parts(contract, connection, entity_id).get(entity_id, [])}
 
 
+#: 形状名单及显示名只依赖这些账本表；复用按表版本与同键计算锁。
+SHAPE_TABLES = ("asset", "asset_entity", "asset_tag", "entity", "entity_alias", "entity_classification",
+                "entity_identity_link", "entity_external_ref", "performer_profile",
+                "feed_discovery", "feed_discovery_entity", "profile")
+
+
 def q_entity_shapes(contract, args) -> dict:
     """资料页上可有可无的那几块，哪些实体有：新作那一行（`feed`）、卡底的同台艺人（`costars`）、
     页头右侧那张资料表（`facts`，ADR-0069），以及作品的 JAV 版式（`jav`）。

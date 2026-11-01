@@ -328,10 +328,14 @@ class WebContract:
         由调用方给出：漏一样，那一样变了页面就一直是旧的。版本号在计算前读，计算期间
         有进程外的写，结果记在旧版本下，下一次请求读到新版本照样重算。库还没有版本号时
         退回 `CACHE_TTL`。
-        `tables` 声明聚合依赖的表，留空时累计全库版本；缓存经过提交通知后仍按版本核验，
+        `tables` 声明聚合依赖的表；这类缓存经过提交通知后仍按声明的版本核验，
         同键的并发请求共用一次计算。
         """
-        # 按键共用计算；计算期间的提交由下一次版本核验接住。
+        if not tables:
+            revision = self.ledger_revision()
+            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf,
+                               version=(revision, *inputs))
+        # 指定依赖表的聚合共用一次计算；提交后仍按这些表的代次核验。
         with self.cache_lock:
             lock = self.aggregate_locks.setdefault(key, threading.RLock())
         with lock:
