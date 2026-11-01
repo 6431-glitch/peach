@@ -161,8 +161,40 @@ class ReviewQueueTests(unittest.TestCase):
             self.assertEqual({row['item_key'] for row in first},
                              {'EXM-001:title:0', 'EXM-001:title:1'})
             self.assertEqual(identifies.call_count, 2)
+            self.write_metadata_candidates(rows)
             rm_review._review_rows(self.contract, 'metadata_fields')
             self.assertEqual(identifies.call_count, 4)
+
+    def test_counts_share_exact_members_without_loading_card_evidence(self):
+        self.write_metadata_rows([{'item_key': 'EXM-001:title', 'code': 'EXM-001',
+                                   'field': 'title', 'current': '', 'candidates': ['New title']}])
+        with mock.patch.object(rm_review, '_attach_review_asset_context',
+                               side_effect=AssertionError('计数不需要卡片旁证')), \
+                mock.patch.object(self.contract, 'cover_path',
+                                  side_effect=AssertionError('计数不需要图片')):
+            counts = rm_review.q_review_counts(self.contract)
+        full = rm_review.q_review(self.contract)
+        self.assertEqual(counts['counts'], full['counts'])
+        self.assertEqual(counts['sources'], full['sources'])
+        self.assertEqual(counts['skipped_rows'], full['skipped_rows'])
+        self.assertNotIn('sections', counts)
+
+    def test_member_snapshot_is_not_mutated_by_cards_and_ledger_changes_rebuild_it(self):
+        self.write_metadata_rows([{'item_key': 'EXM-001:title', 'code': 'EXM-001',
+                                   'field': 'title', 'current': '', 'candidates': ['New title']}])
+        with mock.patch.object(rm_review, '_metadata_queue_rows',
+                               wraps=rm_review._metadata_queue_rows) as project:
+            first = rm_review.q_review(self.contract)
+            first['sections']['metadata_fields'][0]['candidates'][0]['value'] = 'client mutation'
+            again = rm_review.q_review(self.contract)
+            self.assertEqual(again['sections']['metadata_fields'][0]['candidates'][0]['value'], 'New title')
+            self.assertEqual(project.call_count, 1)
+            rm_review.q_review_counts(self.contract)
+            self.assertEqual(project.call_count, 1)
+            with self.contract.write_transaction() as connection:
+                connection.execute("UPDATE asset SET catalog_title='Changed' WHERE id=1")
+            rm_review.q_review_counts(self.contract)
+            self.assertEqual(project.call_count, 2)
 
     def test_settled_creator_rows_do_not_load_asset_previews(self):
         self.write_candidates('creator-tags-candidate-20260818.csv', [
