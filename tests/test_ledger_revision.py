@@ -174,6 +174,22 @@ class LedgerRevisionTests(unittest.TestCase):
                 self.assertEqual(connection.execute(
                     "SELECT peach_is_local_extra(?,?)", ("Film.mp4", "R:/Movies/Shorts/Film.mp4")
                 ).fetchone()[0], 1)
+            database.media_roots = ("R:/Movies",)
+            with database.read_connection() as connection:
+                self.assertEqual(connection.execute(
+                    "SELECT peach_is_local_extra(?,?)", ("Film.mp4", "R:/Movies/Shorts/Film.mp4")
+                ).fetchone()[0], 1, "新连接按更新后的库根重新判定")
+
+    def test_catalog_totals_follow_updated_library_boundaries(self):
+        insert_asset(self.db_path, 1)
+        with self.contract.write_transaction() as connection:
+            connection.execute("UPDATE asset SET path='R:/Movies/Shorts/Film.mp4' WHERE id=1")
+        self.contract.database.media_roots = ('R:/Movies',)
+        self.assertEqual(dispatch_api_get(self.contract, '/api/items', {})['total'], 0)
+        self.contract.database.media_roots = ('R:/Movies/Shorts',)
+        result = dispatch_api_get(self.contract, '/api/items', {})
+        self.assertEqual(result['total'], 1)
+        self.assertEqual([row['id'] for row in result['items']], [1])
 
     def test_a_changed_file_input_recomputes(self):
         self.contract.cached_until_changed("review", self.compute, "csv-1")

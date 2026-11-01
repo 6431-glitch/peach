@@ -404,7 +404,8 @@ def _catalog_totals(contract: WebContract, where, parameters, args):
     if any(value and key not in common for key, value in args.items()):
         return read()
     return contract.cached_until_changed(
-        repr(('catalog-totals', tuple(where), tuple(parameters))), read, tables=CATALOG_TOTAL_TABLES)
+        repr(('catalog-totals', tuple(where), tuple(parameters))), read,
+        tuple(contract.database.media_roots), tables=CATALOG_TOTAL_TABLES)
 
 
 def q_items(contract: WebContract, args):

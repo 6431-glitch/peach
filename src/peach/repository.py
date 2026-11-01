@@ -20,12 +20,11 @@ class LedgerDatabase:
         self.media_roots = tuple(media_roots)
         self.write_lock = threading.Lock()
         self.after_commit = lambda: None
-        roots = self.media_roots
         # 这些判据只读输入；同一实例的连接共用有界结果，改名、改番号自然换键。
+        self._local_extra_rule = lru_cache(maxsize=32768)(
+            lambda name, path, roots: is_local_extra(name, path, library_roots=roots))
         self._sql_rules = (
             ('is_jav_code', 1, lru_cache(maxsize=32768)(is_jav_code)),
-            ('peach_is_local_extra', 2, lru_cache(maxsize=32768)(
-                lambda name, path: is_local_extra(name, path, library_roots=roots))),
             ('normalise_code_key', 1, lru_cache(maxsize=32768)(normalise_code_key)),
             ('infer_region', 2, lru_cache(maxsize=32768)(infer_region)),
             ('peach_normalize', 1, lru_cache(maxsize=32768)(normalize_entity_name)),
@@ -41,6 +40,9 @@ class LedgerDatabase:
             target, timeout=timeout, check_same_thread=False, uri=not write,
         )
         connection.row_factory = sqlite3.Row
+        roots = tuple(self.media_roots)
+        connection.create_function('peach_is_local_extra', 2,
+            lambda name, path: self._local_extra_rule(name, path, roots), deterministic=True)
         # 产地推断要和 Python 侧同一份实现。SQL 里重写一遍前缀名单的话，账本筛出来的
         # 那批片和页面上标着的产地会从某一次改名单开始悄悄分家。
         # 标签归一化必须两边同一份。SQLite 自带的 lower() 只认 ASCII：西里尔、
