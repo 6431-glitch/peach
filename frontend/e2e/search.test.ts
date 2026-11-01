@@ -289,6 +289,10 @@ describe('顶栏搜索', () => {
       for (const [key, want] of [['ArrowDown', '七海ひな'], ['ArrowDown', '七海の夏'], ['ArrowDown', '七海ひな'],
         ['ArrowUp', '七海の夏']] as const) {
         await page.keyboard.press(key);
+        await page.waitForFunction(({ selector, value }) => {
+          const selected = [...document.querySelectorAll(`${selector}[data-active]`)];
+          return selected.length === 1 && selected[0]?.getAttribute('data-search-value') === value;
+        }, { selector: OPTION, value: want });
         assert.deepEqual(await active(page), [want], `${key} 之后选中的不对`);
       }
       assert.equal(await page.locator('#q').inputValue(), SUGGEST.q, '上下键不该改输入框里的字');
