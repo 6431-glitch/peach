@@ -120,7 +120,7 @@ describe('首页加载结构',()=>{
       url.searchParams.delete('jav');
       const response=await route.fetch({url:url.href});
       const data=await response.json();
-      await route.fulfill({json:{...data,items:data.items?.map((item:{id:number})=>({...item,is_jav:true,code:`ABC-${String(item.id).padStart(3,'0')}`}))}});
+      await route.fulfill({json:{...data,items:data.items?.map((item:{id:number})=>({...item,is_jav:true,code:`ABC-${String(item.id).padStart(3,'0')}`,has_cover:false,has_thumb:true}))}});
      }else await route.continue();
     });
     await page.route(/\/(poster|thumb|cover|entity-image|avatar)(\?|$)/,async route=>{
