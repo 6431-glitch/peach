@@ -200,6 +200,9 @@ export const IDLE_POLL_MS = 10_000;
 /** 读失败时页面上留的那句话。上一份数据不撤，下一轮轮询自己会接上。 */
 export const DISCONNECTED_TEXT = '连接中断，正在重新读取处理进度';
 
+/** 有任务在跑时点同步给的回执；任务可能是命令行或托盘起的，页面上不一定看得出是谁发起的。 */
+export const BUSY_TEXT = '当前的扫描与采集任务还没结束，等它完成或停止后再开始新的同步';
+
 export function pollInterval(
   data: LibraryProcessingData | undefined, watching: boolean,
 ): number | false {

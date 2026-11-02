@@ -742,6 +742,8 @@ body .gselectmenu [role=option][aria-selected=true],body .popmenu [aria-checked=
 [data-split-button][data-variant=primary]{--split-seam:var(--color-accent-400);border:0;background:none;box-shadow:none}
 [data-split-button][data-variant=primary]>button:not(:disabled){background:var(--board-blue);color:#fff}
 [data-split-button][data-variant=primary]>button:not(:disabled,[aria-disabled=true]):active{background:var(--board-blue-active)}
+/* 只标 `aria-disabled` 的键（已有任务在跑，点了要说明原因）沿用忙碌键的淡出面，光标换成不可用。 */
+[data-split-button][data-variant=primary]>button[aria-disabled=true]:not([aria-busy=true]){cursor:not-allowed;opacity:.55;filter:saturate(.35)}
 [data-split-button][data-variant=primary]>button:last-child{width:36px;padding:8px}
 /* 骨架里等数据的键（`data-skeleton-action`，原生 `disabled`）不管哪一档都是同一副禁用面：
    `--surface` 底、一圈 `--border-15`、`--muted` 字，不靠 opacity。属性写两遍是为了压过

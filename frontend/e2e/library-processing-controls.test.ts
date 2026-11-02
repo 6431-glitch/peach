@@ -253,7 +253,13 @@ describe('扫描与采集控制', () => {
         await resume.waitFor();
         assert.equal(await resume.innerText(), '');
         assert.equal(await resume.locator('svg').count(), 1);
-        assert.equal(await card.getByRole('button', { name: '同步新增文件', exact: true }).getAttribute('aria-disabled'), 'true');
+        const occupied = card.getByRole('button', { name: '同步新增文件', exact: true });
+        assert.equal(await occupied.getAttribute('aria-disabled'), 'true');
+        // 任务没结束时点同步不发请求，但要说清为什么没开始；Playwright 把 aria-disabled 当成不可点，人是能点的。
+        const sent = writes.length;
+        await occupied.click({ force: true });
+        await page.locator('#toasts [data-sonner-toast]').filter({ hasText: '当前的扫描与采集任务还没结束' }).waitFor();
+        assert.equal(writes.length, sent);
         await page.reload();
         await resume.waitFor();
         const lowSpeed = dock.getByRole('button', { name: '处理速度：低占用' });
