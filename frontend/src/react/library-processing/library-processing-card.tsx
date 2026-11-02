@@ -131,17 +131,17 @@ function Outcome(
               {/* 三层东西叠在同一块提示里：一句结论、一份清单、一条日志地址。各自之间
                   横一条自己颜色的发丝线，读的人才看得出哪一段结束了——只靠间距的话，
                   几十条同样长短的明细会连成一片。 */}
-              {details ? <div className="mt-3 border-t border-current/20 pt-3">
+              {details ? <div className="-mx-3 mt-3 border-t border-current/20 px-3 pt-3">
                   <Disclosure summary={details.label} contentClassName="gap-0">
                     {/* 轨道是滚动容器的兄弟，得有一层只裹着清单的定位祖先给它落脚。 */}
-                    <div className="relative">
+                    <div className="relative -mr-3">
                       {/* 条间线画在每条自己身上，不用 `divide-y`：那一族的选择器裹在
                           `:where()` 里没有特异性，压不过岛内 `@scope` 末尾那条把所有元素
                           边框清零的 preflight，线会静默消失。 */}
-                      <ul ref={list} className="max-h-96 overflow-y-auto pr-3">
+                      <ul ref={list} className="max-h-96 overflow-y-auto">
                         {details.items.map((item) => (
                           <li key={item.key}
-                            className="flex flex-col gap-1 border-b border-current/15 py-2 wrap-anywhere first:pt-0 last:border-b-0 last:pb-0">
+                            className="flex flex-col gap-1 border-b border-current/15 py-2 pr-6 wrap-anywhere first:pt-0 last:border-b-0 last:pb-0">
                             {item.href
                               ? <a href={item.href} className="text-body-2-medium underline-offset-4 hover:underline">{item.label}</a>
                               : <span className="text-body-2-medium">{item.label}</span>}
@@ -154,11 +154,11 @@ function Outcome(
                   </Disclosure>
                 </div> : null}
               {/* 日志地址与分隔线使用次级文字色；导出读的是同一份记录，排在打开位置旁边。 */}
-              {log ? <div className="mt-3 border-t border-current/20 pt-3 text-text-secondary">
+              {log ? <div className="-mx-3 mt-3 border-t border-current/20 px-3 pt-3 text-text-secondary">
                   <PathLine path={log} prefix="完整记录：" className="text-caption-1-regular"
                     action={exportButton} onRevealed={toast} />
                 </div>
-              : exportButton ? <div className="mt-3 flex justify-end border-t border-current/20 pt-3">{exportButton}</div>
+              : exportButton ? <div className="-mx-3 mt-3 flex justify-end border-t border-current/20 px-3 pt-3">{exportButton}</div>
               : null}
             </>}>
             {body}

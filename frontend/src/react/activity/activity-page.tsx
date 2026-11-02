@@ -78,12 +78,12 @@ function StatusBadge({ run }: { run: TaskRunPayload }) {
  * 条间线写在每个 li 自己身上，第一条那根同时充当与卡片正文的分隔。 */
 function FollowupList({ rows }: { rows: TaskRunPayload[] }) {
   return (
-    <ul className="flex min-w-0 flex-col">
+    <ul className="-mr-5 flex min-w-0 flex-col">
       {rows.map((row) => {
         const detail = followupDetail(row);
         return (
           <li key={row.id} data-status={row.status} data-followup-key={row.followup_key}
-            className="flex min-w-0 flex-col gap-1 border-t border-separator-border px-5 py-2.5">
+            className="flex min-w-0 flex-col gap-1 border-t border-separator-border py-2.5 pr-10 pl-5">
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="min-w-0 break-words text-caption-1-regular text-text-primary">
@@ -133,7 +133,6 @@ function RunCard(
     <li id={`run-${run.id}`} data-status={run.status} data-task-key={run.task_key} data-run-id={run.id}
       className={cardClass({
         padding: 'none',
-        bordered: 'line',
         className: run.status === 'failed' ? 'flex flex-col border-border-error-default' : 'flex flex-col',
       })}>
       {/* 卡片标题比分段标题（「正在进行」）低一档，标题、时间与摘要之间同一个行距。 */}
