@@ -505,6 +505,26 @@ class ProcessingControlTests(unittest.TestCase):
             self.assertEqual(q_library_processing(contract,{})['status'],'cancelled')
             self.assertEqual(job_recovery.resume(db,{'library-processing':Mock()}),[])
 
+    def test_status_names_how_a_command_line_run_was_started(self):
+        from peach.jobs import BackgroundJob
+        from peach.library_processing import _save, state_path
+        from peach.task_runs import TaskRunStore
+        from peach.web_library_processing import q_library_processing
+        root = self.config.directory('database')
+        root.mkdir(parents=True)
+        db = fresh_ledger(root)
+        runs = TaskRunStore(db)
+        contract = SimpleNamespace(db_path=db, library_processing_job=BackgroundJob('library-processing'),
+                                   task_runs=runs)
+        _save(state_path(self.config), {'job_id': 'cli', 'status': 'running', 'started_at': 1})
+        with patch('peach.web_library_processing.settings_file.active', return_value=self.config):
+            self.assertNotIn('trigger', q_library_processing(contract, {}))
+            run = runs.start('library-processing', trigger='cli')
+            self.assertEqual(q_library_processing(contract, {})['trigger'], 'cli')
+            runs.finish(run.id, 'succeeded')
+            _save(state_path(self.config), {'job_id': 'cli', 'status': 'complete', 'started_at': 1})
+            self.assertNotIn('trigger', q_library_processing(contract, {}))
+
     def test_web_pause_and_resume_preserve_running_job_and_initial_estimate(self):
         from peach.jobs import BackgroundJob
         from peach.library_processing import _save, state_path

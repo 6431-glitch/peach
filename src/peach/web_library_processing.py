@@ -11,7 +11,7 @@ from .processing_control import control_for, initial_estimate, valid_mode, mode_
 ACTIVE = ('running', 'pausing', 'paused', 'stopping')
 
 #: 回给页面的状态字段：`frontend/src/react/library-processing/library-processing.ts` 的
-#: `LibraryProcessingData`，加上对应任务中心那一行的 `run_id`。状态文件里另有续跑用的 `local_metadata`（带完整媒体路径）、
+#: `LibraryProcessingData`，加上对应任务中心那一行的 `run_id` 与发起方式 `trigger`。状态文件里另有续跑用的 `local_metadata`（带完整媒体路径）、
 #: `asset_ids`、`completed_metadata` 等大字段，页面一个都不读；照发的话每页每 10 秒轮询一次
 #: 就是两兆多，还把媒体路径交给了浏览器。续跑与重试读的是 `_current()`，不经过这里。
 PUBLIC_FIELDS = frozenset({
@@ -22,7 +22,7 @@ PUBLIC_FIELDS = frozenset({
     'performer_profile_failed', 'error', 'issue_count', 'paused_count', 'issue_preview',
     'issues_log', 'issues_truncated', 'retryable_asset_ids', 'notes', 'current_asset_id',
     'current_asset_name', 'current_action', 'current_started_at', 'last_progress_at', 'stalled',
-    'waited_seconds', 'completed_at', 'current_source', 'skip_requested', 'archived', 'new_asset_count',
+    'waited_seconds', 'completed_at', 'current_source', 'skip_requested', 'archived', 'new_asset_count', 'trigger',
 })
 
 
@@ -51,6 +51,19 @@ def _current(contract):
     return stored
 
 
+def _active_run(contract, state):
+    """进行中这一轮在任务中心的那一行。
+
+    命令行那一轮没有恢复记录，状态里也就没有 `run_id`：按任务键找还在跑的那一行。
+    """
+    if state.get('run_id') is not None:
+        return contract.task_runs.get(state['run_id'])
+    if not getattr(contract.task_runs, 'enabled', True):
+        return None
+    runs = contract.task_runs.query(status='active', task_key='library-processing', limit=1)
+    return runs[0] if runs else None
+
+
 def q_library_processing(contract, _args):
     if _args.get('estimate') == '1':
         config = settings_file.active()
@@ -66,10 +79,13 @@ def q_library_processing(contract, _args):
         return {'traffic': preview(config, contract.db_path, stage, asset_ids, _args.get('inventory'),
                                    incremental=body.get('incremental', False))}
     state = _current(contract)
-    if state.get('status') in ACTIVE and state.get('run_id') is not None:
+    run = _active_run(contract, state) if state.get('status') in ACTIVE else None
+    if run is not None:
+        # 忙碌回执要说清这一轮是谁发起的：托盘保存设置后起的扫描在网页上看不出来源。
+        state['trigger'] = run.trigger
+    if run is not None and state.get('run_id') is not None:
         from .task_control import projection
-        run = contract.task_runs.get(state['run_id'])
-        control_state = projection(contract.task_runs, run) if run is not None else None
+        control_state = projection(contract.task_runs, run)
         if control_state is not None:
             status = control_state['state']
             state['status'] = 'stopping' if status == 'cancelling' else status
