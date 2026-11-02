@@ -56,7 +56,7 @@ export PATH="$PWD/build/macos-media-toolchain/env/bin:$PATH"
 
 打开匹配架构的 DMG，把 `Peach.app` 拖入 Applications，再打开应用完成首次设置。菜单栏提供打开页面、重启、查看日志、导出诊断报告、检查更新和退出入口；数据默认保存在 `~/Library/Application Support/Peach/peach-data`，可用 `PEACH_DATA_ROOT` 指定独立目录。
 
-更新按 macOS 应用的常规做法手动替换：配置页「检查更新」只认本机架构的 DMG，有新版本时给出该 DMG 的下载键，下载后同样拖入 Applications 覆盖旧版本，数据目录与设置保留。未启用下文的 Sparkle 时，macOS 没有应用内安装与自动下载，自动更新只做定期检查。卸载时先在配置页关闭开机自启并退出 Peach，再把应用移到废纸篓；需要完全卸载时，再删除配置页「卸载 Peach」列出的数据目录。
+菜单栏「版本与更新」>「检查更新」由下文的 Sparkle 在应用内安装新版本。配置页「检查更新」只认本机架构的 DMG，有新版本时给出该 DMG 的下载键，下载后同样拖入 Applications 覆盖旧版本，数据目录与设置保留；0.53.0 及更早的版本只能这样手动替换。卸载时先在配置页关闭开机自启并退出 Peach，再把应用移到废纸篓；需要完全卸载时，再删除配置页「卸载 Peach」列出的数据目录。
 
 测试包没有公证，从浏览器或聊天软件下载后带有隔离属性，较新的 macOS 会提示「Peach 已损坏，无法打开」，「隐私与安全性」里也不出现「仍要打开」。拖入 Applications 后在终端执行下面的命令，再打开应用：
 
@@ -64,7 +64,7 @@ export PATH="$PWD/build/macos-media-toolchain/env/bin:$PATH"
 sudo /usr/bin/xattr -rd com.apple.quarantine "/Applications/Peach.app"
 ```
 
-提示输入密码时，输入这台 Mac 的登录密码；输入过程中屏幕不显示字符。这条命令只移除 Peach 的隔离标记；安装新版本后需要再运行一次。命令写全路径 `/usr/bin/xattr`，避开 Python 包装的同名命令；`sudo` 覆盖应用不归当前用户所有的情况。
+提示输入密码时，输入这台 Mac 的登录密码；输入过程中屏幕不显示字符。这条命令只移除 Peach 的隔离标记；手动拖入新版本后需要再运行一次，经 Sparkle 安装的新版本不需要。命令写全路径 `/usr/bin/xattr`，避开 Python 包装的同名命令；`sudo` 覆盖应用不归当前用户所有的情况。
 
 首次设置页只在数据目录里没有 `config.toml` 时出现。这台 Mac 之前装过 Peach 时，应用会沿用原有设置直接打开首页；要重新设置，先退出 Peach，把整个 `peach-data` 目录移到别处再打开。
 
@@ -104,16 +104,16 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.longmeidao.pea
 
 ### macOS 应用内更新（Sparkle）
 
-应用随包带 [Sparkle 2](https://sparkle-project.org/) 框架（`Contents/Frameworks/Sparkle.framework`，版本与摘要固定在 `scripts/sparkle-macos.json`），取舍见 [ADR-0130](adr/0130-macos-sparkle-in-app-update.md)。`src/peach/sparkle_update.py` 的 `PUBLIC_ED_KEY` 为空时不启用：构建不写 `SUPublicEDKey`，菜单栏「检查更新」沿用上面的版本检查与 DMG 下载。
+应用随包带 [Sparkle 2](https://sparkle-project.org/) 框架（`Contents/Frameworks/Sparkle.framework`，版本与摘要固定在 `scripts/sparkle-macos.json`），取舍见 [ADR-0130](adr/0130-macos-sparkle-in-app-update.md)。`src/peach/sparkle_update.py` 的 `PUBLIC_ED_KEY` 决定是否启用：有值时构建写入 `SUPublicEDKey` 与更新源地址；清空后构建不写这些键，菜单栏「检查更新」改回版本检查与系统通知。
 
-启用后，菜单栏「版本与更新」>「检查更新」交给 Sparkle：下载本机架构的 DMG、核对 EdDSA 签名，在用户确认后退出 Peach、替换应用并重新打开，替换时移除新应用的隔离标记。设置页的自动更新开关与检查频率同步到 Sparkle 的定时检查；不自动下载安装。安装前先让任务保存进度、停掉 Peach 拉起的服务；本机是账本读取端且新版本带有本机未应用的迁移时不安装，并用通知说明要先在写入端更新。
+菜单栏「版本与更新」>「检查更新」交给 Sparkle：下载本机架构的 DMG、核对 EdDSA 签名，在用户确认后退出 Peach、替换应用并重新打开，替换时移除新应用的隔离标记。设置页的自动更新开关与检查频率同步到 Sparkle 的定时检查；不自动下载安装。安装前先让任务保存进度、停掉 Peach 拉起的服务；本机是账本读取端且新版本带有本机未应用的迁移时不安装，并用通知说明要先在写入端更新。
 
-维护者按下面的顺序启用。生成与保存私钥属于凭据操作，每一步都要单独授权：
+发布侧的设置：
 
-1. 用 Sparkle 发布包里的 `generate_keys` 生成密钥对，把公钥写入 `PUBLIC_ED_KEY`；ad-hoc 签名下无法轮换，私钥须离线备份。
-2. 私钥存入 GitHub 仓库 `release` environment 的 secret `SPARKLE_ED_PRIVATE_KEY`，该 environment 只允许 `v*` 标签部署；同一 environment 配好 R2 的 `PEACH_R2_ACCESS_KEY_ID`、`PEACH_R2_SECRET_ACCESS_KEY`、`PEACH_R2_ENDPOINT` 与变量 `PEACH_R2_BUCKET`。
-3. 仓库变量 `SPARKLE_APPCAST_ENABLED` 设为 `true`。之后每个版本标签在 GitHub Release 公开后运行 `sparkle-appcast` 作业：官方 `generate_appcast` 生成两个架构的 appcast，`scripts/sparkle_appcast.py` 补写迁移号并核对版本、下载地址与大小，官方 `sign_update --verify` 核对签名，最后上传到 `https://downloads.peach.video/sparkle/macos-<架构>.xml`。
-4. 第一个带公钥的版本须手动安装一次；之后的版本才能经 Sparkle 更新。上线前在真机按 ADR-0130「未取得的证据」逐项验收。
+1. 私钥在 GitHub 仓库 `release` environment 的 secret `SPARKLE_ED_PRIVATE_KEY`，该 environment 只允许 `v*` 标签部署；维护者另有离线备份。ad-hoc 签名下无法轮换，丢失后已装客户端只能手动重装。导入 Mac 钥匙串用 Sparkle 发布包的 `generate_keys -f <私钥文件>`。
+2. 同一 environment 需要 R2 的 secret `PEACH_R2_ACCESS_KEY_ID`、`PEACH_R2_SECRET_ACCESS_KEY`、`PEACH_R2_ENDPOINT` 与变量 `PEACH_R2_BUCKET`。
+3. 仓库变量 `SPARKLE_APPCAST_ENABLED` 为 `true` 时，每个版本标签在 GitHub Release 公开后运行 `sparkle-appcast` 作业：官方 `generate_appcast` 生成两个架构的 appcast，`scripts/sparkle_appcast.py` 补写迁移号并核对版本、下载地址与大小，官方 `sign_update --verify` 核对签名，最后上传到 `https://downloads.peach.video/sparkle/macos-<架构>.xml`。没有 appcast 时，Sparkle 的检查会报更新源不可用。
+4. 第一个带公钥的版本须手动安装一次；之后的版本才能经 Sparkle 更新。在真机按 ADR-0130「未取得的证据」逐项验收。
 
 ### GitLab 发布与下载后端
 

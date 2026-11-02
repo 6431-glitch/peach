@@ -1,6 +1,6 @@
 # ADR-0130：macOS 独立包用 Sparkle 2 做应用内更新
 
-- 状态：已采纳；代码已实施，签名公钥未设置前不启用
+- 状态：已采纳；代码已实施，2026-11-02 设置签名公钥，之后构建的 macOS 包启用
 - 日期：2026-11-01（2026-11-02 按实施结果修订）
 - 关系：补充 [ADR-0012](0012-version-and-update-boundary.md) 的更新边界与 [ADR-0120](0120-standalone-update-client-compatibility.md) 的旧客户端兼容门槛；appcast 作业排在 [ADR-0127](0127-verified-release-artifact-promotion.md) 晋级发布的 GitHub Release 之后
 
@@ -111,10 +111,17 @@ Sparkle 由 `Autoupdate` 经 LaunchServices 重开应用，不带 LaunchAgent �
 
 ## 需要用户授权或决定的步骤
 
-1. 生成 EdDSA 密钥对、导出私钥、写入 GitHub `release` environment secret、离线备份并删除导出文件（第六节）。凭据与私钥操作须在同一轮取得明确授权。
-2. 在 GitHub 仓库设置中把 `release` environment 限定为 `v*` 标签部署，配好 R2 凭据，再把 `SPARKLE_APPCAST_ENABLED` 设为 `true`。
-3. 认可「私钥无法轮换、丢失即全体手动重装」这一后果。
-4. 在真机上完成下节的验收后，才发布第一个带公钥的版本。
+维护者 2026-11-02 授权并完成：
+
+1. 生成 EdDSA 密钥对。官方 `generate_keys` 把私钥存进登录钥匙串，经 SSH 无法解锁，所以用 `cryptography` 按同一格式（32 字节 seed 的 base64）生成；私钥经标准输入写入 GitHub `release` environment 的 secret，另一份放维护者 Mac 的文件里供导入钥匙串与离线备份。官方 `sign_update` 用这把私钥签出的签名能用公钥验过，格式一致。
+2. 新建 GitHub `release` environment，只允许 `v*` 标签部署；写入变量 `PEACH_R2_BUCKET`。
+3. 公钥写入 `PUBLIC_ED_KEY`。
+
+尚待完成：
+
+1. R2 的三项凭据。GitGud 上的同名变量是隐藏变量，读不回值，需要维护者在 Cloudflare 新建或取得后写入 `release` environment。
+2. 凭据就位后把仓库变量 `SPARKLE_APPCAST_ENABLED` 设为 `true`。没有 appcast 时，启用了 Sparkle 的客户端检查更新会报更新源不可用。
+3. 用第一个带公钥的版本在真机完成下节的验收。
 
 ## 未取得的证据
 

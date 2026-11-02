@@ -274,7 +274,8 @@ class SparkleUpdateTests(TestCase):
     def test_info_plist_carries_sparkle_keys_only_once_a_public_key_is_set(self):
         from peach import sparkle_update
 
-        self.assertEqual(sparkle_update.info_plist_keys("arm64"), {})
+        with mock.patch.object(sparkle_update, "PUBLIC_ED_KEY", None):
+            self.assertEqual(sparkle_update.info_plist_keys("arm64"), {})
         with mock.patch.object(sparkle_update, "PUBLIC_ED_KEY", "cHVibGlj"):
             keys = sparkle_update.info_plist_keys("x86_64")
         self.assertEqual(keys["SUFeedURL"], "https://downloads.peach.video/sparkle/macos-x86_64.xml")
