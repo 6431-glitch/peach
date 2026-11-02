@@ -218,7 +218,7 @@ npm 安装沿用 Node.js 24 LTS 附带的官方 [`npm ci`](https://docs.npmjs.co
 
 ## 浏览器错误的构建映射
 
-前端复用官方 [`@sentry/vite-plugin` 11.8.0](https://github.com/getsentry/sentry-javascript-bundler-plugins)（MIT，维护中，Node ≥23.2，与项目 Node 24 和 Vite 8 兼容）生成确定性 Debug ID 与 hidden source maps；[`@sentry/cli` 3.8.0](https://github.com/getsentry/sentry-cli)（FSL-1.1-MIT）仅用于构建期本地定位和显式上传。两者精确固定在前端开发依赖，纳入现有 Dependabot；不进入 Python 运行时或独立包依赖。
+前端复用官方 [`@sentry/vite-plugin` 11.8.0](https://github.com/getsentry/sentry-javascript-bundler-plugins)（MIT，维护中，Node ≥23.2，与项目 Node 24 和 Vite 8 兼容）生成确定性 Debug ID 与 hidden source maps；[`@sentry/cli` 3.8.0](https://github.com/getsentry/sentry-cli)（FSL-1.1-MIT）仅用于构建期本地定位和显式上传。两者精确固定在前端开发依赖，纳入现有 Dependabot；不进入 Python 运行时或独立包依赖。插件的 `@sentry/bundler-plugins` 声明 glob `^13`，经它引入的 minimatch 10 有拒绝服务告警（GHSA-g3hv-75wg-m249），修复只在 minimatch 11；插件只用 `glob()` 的 `absolute`、`nodir`、`ignore`、`root` 选项，`frontend/package.json` 的 `overrides` 将其 glob 固定为 14.0.3。插件自身声明 glob 14 后移除这条 override。
 
 `frontend/scripts/sentry-build.ts` 只保留 Peach 的公开／私有目录边界与产物匹配检查。官方插件禁用遥测、自动上传与 release 注入，普通构建不需要凭据；私有目录保存 JS/CSS/maps，公开目录只复制四个正式 JS/CSS。显式上传复用官方 CLI，先核对分发字节和 map 身份。没有实现自定义 source map 编解码器或上传协议，也没有为此引入浏览器 SDK、页面回放或性能采集。
 
