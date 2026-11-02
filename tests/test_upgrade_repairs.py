@@ -504,6 +504,15 @@ class UpgradeRepairTests(unittest.TestCase):
                 self.contract, 'upgrade-library:processing-v2:1', Mock())
         self.assertEqual(result['outcome'], '影片升级补全完成')
 
+    def test_media_handler_retries_later_when_a_source_was_cooling_down(self):
+        from peach.settings_file import load_config
+        self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
+        with patch('peach.library_processing.process_library', return_value={
+                'status': 'failed', 'outcome': 'partial', 'issue_count': 2, 'paused_count': 1,
+                'error': '2 项需要处理，其中 1 项是来源限流', 'retryable_asset_ids': [1]}), \
+                self.assertRaisesRegex(RuntimeError, '来源限流'):
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:processing-v2:1', Mock())
+
     def test_media_handler_resumes_its_own_checkpoint(self):
         from peach.settings_file import load_config
         self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
