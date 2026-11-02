@@ -255,9 +255,10 @@ describe('扫描与采集控制', () => {
         assert.equal(await resume.locator('svg').count(), 1);
         const occupied = card.getByRole('button', { name: '同步新增文件', exact: true });
         assert.equal(await occupied.getAttribute('aria-disabled'), 'true');
-        // 任务没结束时点同步不发请求，但要说清为什么没开始；Playwright 把 aria-disabled 当成不可点，人是能点的。
+        // 任务没结束时点同步不发请求，但要说清为什么没开始。Playwright 把 aria-disabled 当成不可点，按键又常落在
+        // 视口外或进度浮窗底下，直接在键上派发点击：它照样经过共享忙碌拦截的捕获阶段。
         const sent = writes.length;
-        await occupied.click({ force: true });
+        await occupied.dispatchEvent('click');
         await page.locator('#toasts [data-sonner-toast]').filter({ hasText: '当前的扫描与采集任务还没结束' }).waitFor();
         assert.equal(writes.length, sent);
         // 和任务中心的取消同一枚图标，先确认；在确认框里点「取消」就不发请求。
@@ -271,7 +272,7 @@ describe('扫描与采集控制', () => {
         state = { ...state, trigger: 'cli' };
         await page.reload();
         await resume.waitFor();
-        await occupied.click({ force: true });
+        await occupied.dispatchEvent('click');
         await page.locator('#toasts [data-sonner-toast]')
           .filter({ hasText: '当前的扫描与采集任务（由命令行或托盘发起）还没结束' }).waitFor();
         const lowSpeed = dock.getByRole('button', { name: '处理速度：低占用' });
