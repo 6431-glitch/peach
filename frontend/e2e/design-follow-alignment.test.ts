@@ -37,6 +37,24 @@ describe('关注与馆藏共用卡片交互', () => {
     } finally { await opened.stub.release(); await opened.close() }
   });
 
+  for (const viewport of VIEWPORTS) it(`${viewport.name}：筛空时空态铺满整行，不缩成一列卡宽`, async () => {
+    const opened = await openFollowFeed(browser, '/follow', viewport);
+    try {
+      const page = opened.page;
+      await page.route((url) => url.pathname === '/api/follow' && !url.searchParams.has('item'), async (route) => {
+        const response = await route.fetch();
+        await route.fulfill({ json: { ...await response.json(), groups: [], has_more: false } });
+      });
+      await page.reload({ waitUntil: 'domcontentloaded' });
+      const empty = page.locator('[data-follow-list] [data-follow-empty] [data-empty-state]');
+      await empty.waitFor({ timeout: 15_000 });
+      const widths = await empty.evaluate(node => ({
+        empty: node.getBoundingClientRect().width, list: node.closest('[data-follow-list]')!.getBoundingClientRect().width,
+      }));
+      assert.ok(Math.abs(widths.empty - widths.list) <= 1, JSON.stringify(widths));
+    } finally { await opened.close() }
+  });
+
   it('创作者头像悬停显示描边，键盘焦点可见', async () => {
     const opened = await openFollowFeed(browser, '/follow', VIEWPORTS[0]!, { bindAuthors: true });
     try {
