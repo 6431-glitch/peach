@@ -505,6 +505,25 @@ class ProcessingControlTests(unittest.TestCase):
             self.assertEqual(q_library_processing(contract,{})['status'],'cancelled')
             self.assertEqual(job_recovery.resume(db,{'library-processing':Mock()}),[])
 
+    def test_status_names_how_a_command_line_run_was_started(self):
+        from peach.task_runs import TaskRunStore
+        from peach.web_library_processing import q_library_processing
+        root = self.config.directory('database')
+        root.mkdir(parents=True)
+        db = fresh_ledger(root)
+        runs = TaskRunStore(db)
+        # 命令行那一轮在另一个进程里写状态；这里用一份进行中的快照代替，状态里没有 `run_id`。
+        job = Mock()
+        job.snapshot.return_value = {'job_id': 'cli', 'status': 'running', 'started_at': 1}
+        contract = SimpleNamespace(db_path=db, library_processing_job=job, task_runs=runs)
+        with patch('peach.web_library_processing.settings_file.active', return_value=self.config):
+            self.assertNotIn('trigger', q_library_processing(contract, {}))
+            run = runs.start('library-processing', trigger='cli')
+            self.assertEqual(q_library_processing(contract, {})['trigger'], 'cli')
+            runs.finish(run.id, 'succeeded')
+            job.snapshot.return_value = {'job_id': 'cli', 'status': 'complete', 'started_at': 1}
+            self.assertNotIn('trigger', q_library_processing(contract, {}))
+
     def test_web_pause_and_resume_preserve_running_job_and_initial_estimate(self):
         from peach.jobs import BackgroundJob
         from peach.library_processing import _save, state_path
@@ -740,7 +759,8 @@ class ProcessingControlTests(unittest.TestCase):
         control = control_for(self.config)
         job = BackgroundJob('library-processing')
         job.state = dict(job_id='one', status='paused', speed_mode='low', eta_seconds_min=180, eta_seconds_max=360)
-        contract = SimpleNamespace(db_path=self.db, library_processing_job=job)
+        from peach.task_runs import TaskRunStore
+        contract = SimpleNamespace(db_path=self.db, library_processing_job=job, task_runs=TaskRunStore(self.db))
         with control.bind('one', publish=lambda **_: None, active=lambda: True, db_path=self.db, mode='low'), \
                 patch('peach.web_library_processing.settings_file.active', return_value=self.config):
             control.request('pause', 'one')

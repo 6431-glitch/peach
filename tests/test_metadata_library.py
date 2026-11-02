@@ -864,6 +864,7 @@ class LibraryNfoTests(unittest.TestCase):
         contract = Mock()
         contract.db_path = self.root / 'database/ledger.db'
         contract.library_processing_job.snapshot.return_value = {'status': 'running', 'job_id': 'one'}
+        contract.task_runs.query.return_value = []
         with patch('peach.web_library_processing.process_library') as worker:
             self.assertEqual(q_library_processing(contract, {})['job_id'], 'one')
             worker.assert_not_called()

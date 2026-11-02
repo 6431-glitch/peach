@@ -90,7 +90,7 @@ def checkpoint_values(values):
 
 def interrupted_state(control):
     if control is not None and control.cancelled:
-        return dict(status='cancelled', outcome='cancelled', stage='已停止', error='')
+        return dict(status='cancelled', outcome='cancelled', stage='已取消', error='')
     return dict(status='paused', error='', completed_at=None) if control is not None and control.paused else {}
 
 

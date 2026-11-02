@@ -19,6 +19,12 @@ import type { LibraryProcessingProps } from '../../src/react/bundle';
 
 import { actionOrder, buttonNamed as textButtonNamed, click, mount, mountRoot, submit } from './render';
 
+// 取消要过真的确认框：桩里的 `confirmModal` 不画对话框。
+vi.mock('@peach/legacy/ui', async (original) => ({
+  ...await original<typeof import('@peach/legacy/ui')>(),
+  confirmModal: (await import('../../src/ui-kit/modal')).confirmModal,
+}));
+
 const buttonNamed = (name: string, root: ParentNode = document) =>
   [...root.querySelectorAll('button')].find(button => button.getAttribute('aria-label') === name)
   ?? textButtonNamed(name, root);
@@ -57,17 +63,22 @@ it('补全待处理影片只提交已登记范围，不触发文件发现',async
   expect(calls.filter(call=>call.method==='POST').map(call=>call.body)).toEqual([{stage:'collect',scope:'new'}]);
 });
 
-it('停止请求绑定原任务，正在停止时保留进度并禁止重发',async()=>{
+it('取消先确认，请求绑定原任务，正在取消时保留进度并禁止重发',async()=>{
   let state:LibraryProcessingData={status:'running',job_id:'one',candidates:3};
   const {calls}=await open(state,(method)=>{
     if(method==='POST') state={...state,status:'stopping'};
     return state;
   });
+  const posts=()=>calls.filter(call=>call.method==='POST').map(call=>call.body);
   const host=await mount(card({toast:vi.fn()}));
-  await click(buttonNamed('停止任务',host)!);
-  expect(calls.filter(call=>call.method==='POST').map(call=>call.body)).toEqual([{action:'cancel',job_id:'one'}]);
-  expect(host.textContent).toContain('正在停止');
-  expect(buttonNamed('正在停止',host)?.disabled).toBe(true);
+  await click(buttonNamed('取消任务',host)!);
+  await click(document.querySelector('[data-modal-cancel]'));
+  expect(posts()).toEqual([]);
+  await click(buttonNamed('取消任务',host)!);
+  await click(document.querySelector('[data-modal-confirm]'));
+  await vi.waitFor(()=>expect(posts()).toEqual([{action:'cancel',job_id:'one'}]));
+  await vi.waitFor(()=>expect(host.textContent).toContain('正在取消'));
+  expect(buttonNamed('正在取消',host)?.disabled).toBe(true);
 });
 
 type Reply = (method: string, body: unknown) => LibraryProcessingData;

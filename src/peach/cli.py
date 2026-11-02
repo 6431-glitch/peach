@@ -497,6 +497,27 @@ def _scan(args: argparse.Namespace) -> int:
     return 0
 
 
+def _processing_line(state: dict) -> str:
+    """一行进度，口径同页面的 `processingLine`：总量已知写完成数，扫描目录时写已发现的文件数。"""
+    if state.get('total'):
+        return f"{state['stage']}：{state.get('checked', 0)}/{state['total']}"
+    if state.get('current_action') == 'scanning_files' or state.get('stage') == '扫描文件':
+        return f"{state['stage']}：已发现 {state.get('scanned', 0):,} 个文件"
+    return str(state['stage'])
+
+
+def _processing_printer():
+    """资料处理的进度回调：流量、问题等回报也会走这里，和上一行相同就不再打印。"""
+    last = None
+    def report(state):
+        nonlocal last
+        line = _processing_line(state)
+        if line != last:
+            print(line, flush=True)
+            last = line
+    return report
+
+
 def _process_library(args: argparse.Namespace) -> int:
     """命令行跑资料处理，和网页那一轮一样记进任务中心、结算时派发声明的后继。
 
@@ -512,11 +533,10 @@ def _process_library(args: argparse.Namespace) -> int:
         try:
             result = process_library(config, args.db, config.directory('generated'),
                                      config.directory('generated') / 'covers', location=args.location,
-                                     database=LedgerDatabase(args.db),
-                                     report=lambda state: print(f"{state['stage']}：{state['checked']}/{state['total']}", flush=True))
+                                     database=LedgerDatabase(args.db), report=_processing_printer())
         except JobCancelled:
             handle.finish('cancelled', error='用户停止任务')
-            print('任务已停止，已保存结果保留。')
+            print('任务已取消，已保存结果保留。')
             return 130
         rows = declared_rows(result.get('followups'))
         queued = handle.store.enqueue_followups(handle.run_id, rows)

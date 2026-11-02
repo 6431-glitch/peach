@@ -340,7 +340,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
     }
   });
 
-  it('扫描卡的进度条走焦点环色，底槽是三级底，按下的那颗键转成忙态', { timeout: 60_000 }, async () => {
+  it('扫描卡的进度条走焦点环色，底槽是三级底，任务在跑时同步键标为不可用但仍可聚焦', { timeout: 60_000 }, async () => {
     const opened = await openProcessing(browser, '/data-cleanup', RUNNING_JOB);
     try {
       const card = opened.page.locator('section[aria-label="扫描与采集"]');
@@ -354,9 +354,10 @@ describe('设计决定：控件、状态与首页顶部', () => {
         await tokenColor(opened.page, '.peach-react', '--color-background-tertiary-default'));
       assert.equal(await fill(1),
         await tokenColor(opened.page, '.peach-react', '--color-border-focus-ring'));
-      // 忙态不改 `disabled`：控件仍可聚焦，重复触发由页面自己挡。
+      // 已有任务在跑只标 `aria-disabled`、不改 `disabled`：控件仍可聚焦，点了由卡片说明为什么没开始。
       const scan = card.getByRole('button', { name: '同步新增文件', exact: true });
-      assert.equal(await scan.getAttribute('aria-busy'), 'true');
+      assert.equal(await scan.getAttribute('aria-disabled'), 'true');
+      assert.equal(await scan.getAttribute('aria-busy'), null);
       assert.equal(await scan.evaluate((element) => (element as HTMLButtonElement).disabled), false,
         '用原生 disabled 挡的话按钮连焦点都拿不到');
       const split = card.locator('[data-split-button]');

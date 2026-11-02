@@ -25,7 +25,7 @@ import { PathLine } from '../components/path-line';
 import { Disclosure } from '../settings/section';
 import { queryClient } from '../query';
 import {
-  ALL_CONTENT_URL, DISCONNECTED_TEXT, issueDetails, LIBRARY_PROCESSING_KEY, LIBRARY_PROCESSING_URL, PARTIAL_RESULT_TEXT,
+  ALL_CONTENT_URL, busyText, DISCONNECTED_TEXT, issueDetails, LIBRARY_PROCESSING_KEY, LIBRARY_PROCESSING_URL, PARTIAL_RESULT_TEXT,
   notesLine, processingActive, processingHasPartialResult, remainingTime, slowItem, type LibraryProcessingCommand, type LibraryProcessingData,
 } from './library-processing';
 import { SlowItemNote } from './slow-item';
@@ -115,8 +115,9 @@ function Outcome(
       {settled?.status === 'complete'
         ? <Note tone="success" title="处理完成">{receiptText(settled)}</Note>
         : null}
-      {settled?.status === 'cancelled' ? <Note tone="neutral" title="任务已停止">
-        已取得的资料和预览已保留，不会自动继续这趟任务。
+      {/* 取消不止是眼前点的那一下：命令行、任务中心取消的、重开页面才读到的，都留这一句。 */}
+      {(settled ?? state).status === 'cancelled' && !state.archived ? <Note tone="neutral" title="已取消上次任务">
+        已取得的资料和预览已保留，这一轮不会自动继续，需要时重新同步。
       </Note> : null}
       {issues
         ? <Note tone={!failed ? 'neutral' : partial ? 'warning' : 'error'} className="gap-0 p-3"
@@ -219,8 +220,8 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
             ? <LinkButton href="/review" size="small" trailingIcon={RiArrowRightLine}>复核资料</LinkButton>
             : null}
           {/* 日常同步保留独立入口，原任务的定向重试只处理该任务的失败项。 */}
-          <ProcessingActions scan busy={busy} metadataOnly={state?.metadata_only} speedMode={state.speed_mode}
-            pendingCount={state.new_asset_count} onRun={run} />
+          <ProcessingActions scan busy={start.isPending} occupied={processingActive(state)} metadataOnly={state?.metadata_only}
+            speedMode={state.speed_mode} pendingCount={state.new_asset_count} onRun={run} onOccupied={() => toast(busyText(state))} />
         </>
       }>
         <div className="flex flex-col gap-2">
