@@ -115,8 +115,8 @@ function Outcome(
       {settled?.status === 'complete'
         ? <Note tone="success" title="处理完成">{receiptText(settled)}</Note>
         : null}
-      {/* 终止不止是眼前点的那一下：命令行、任务中心终止的、重开页面才读到的，都留这一句。 */}
-      {(settled ?? state).status === 'cancelled' && !state.archived ? <Note tone="neutral" title="已终止上次任务">
+      {/* 取消不止是眼前点的那一下：命令行、任务中心取消的、重开页面才读到的，都留这一句。 */}
+      {(settled ?? state).status === 'cancelled' && !state.archived ? <Note tone="neutral" title="已取消上次任务">
         已取得的资料和预览已保留，这一轮不会自动继续，需要时重新同步。
       </Note> : null}
       {issues

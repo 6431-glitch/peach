@@ -260,11 +260,11 @@ describe('扫描与采集控制', () => {
         await occupied.click({ force: true });
         await page.locator('#toasts [data-sonner-toast]').filter({ hasText: '当前的扫描与采集任务还没结束' }).waitFor();
         assert.equal(writes.length, sent);
-        // 终止和任务中心的取消同一枚图标，先确认；在确认框里取消就不发请求。
-        const terminate = dock.getByRole('button', { name: '终止任务', exact: true });
-        assert.equal(await terminate.innerText(), '');
-        await terminate.click();
-        const confirm = page.getByRole('dialog', { name: '终止扫描与采集', exact: true });
+        // 和任务中心的取消同一枚图标，先确认；在确认框里点「取消」就不发请求。
+        const cancelTask = dock.getByRole('button', { name: '取消任务', exact: true });
+        assert.equal(await cancelTask.innerText(), '');
+        await cancelTask.click();
+        const confirm = page.getByRole('dialog', { name: '取消任务「扫描与采集」', exact: true });
         await confirm.getByRole('button', { name: '取消', exact: true }).click();
         await confirm.waitFor({ state: 'hidden' });
         assert.equal(writes.length, sent);

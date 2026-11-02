@@ -165,7 +165,7 @@ export const ALL_CONTENT_URL = '/?loc=&thumb=0';
 /** 时间向分钟取整；区间两端始终使用同一单位。 */
 export function remainingTime(state: LibraryProcessingData): string {
   if (!processingActive(state)) return '';
-  if (state.status === 'stopping') return '正在终止，等待当前步骤退出；已取得的结果会保留';
+  if (state.status === 'stopping') return '正在取消，等待当前步骤退出；已取得的结果会保留';
   if (state.status === 'paused') return '已暂停，继续后更新预估';
   if (state.status === 'pausing') return '正在暂停，当前步骤结束后暂停';
   if (state.stalled) return '等待当前文件响应，剩余时间待更新';
@@ -220,7 +220,7 @@ export function restartEffectText(state: LibraryProcessingData, scanAfterSave: b
 /** 已有任务在跑时点同步的回执，写明这一轮是怎么发起的。 */
 export function busyText(state: LibraryProcessingData): string {
   const origin = TRIGGER_PHRASES[state.trigger || ''];
-  return `当前的扫描与采集任务${origin ? `（${origin}）` : ''}还没结束，等它完成或终止后再开始新的同步`;
+  return `当前的扫描与采集任务${origin ? `（${origin}）` : ''}还没结束，等它完成或取消后再开始新的同步`;
 }
 
 export function pollInterval(
