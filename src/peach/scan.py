@@ -495,30 +495,47 @@ def _relative_directory(directory, top):
 
 
 def _walk_smb(top, pending, onerror):
+    """SMB 版 `_walk`：整趟遍历共用一条连接。
+
+    逐目录新建连接时，TCP 握手、会话认证与挂载共享的开销远大于列目录本身。
+    连接断开或请求超时就换一条新连接重试一次；单个路径不存在或无权访问不影响连接，照常跳过。
+    """
     from types import SimpleNamespace
+    from .smb_transport import PATH_ERRNOS
     stack = pending if pending is not None else [str(top)]
-    while stack:
-        checkpoint('scan')
-        directory = stack.pop()
-        resource = top.joinpath(*_relative_directory(directory, top))
-        try:
-            entries = resource.scandir()
-        except OSError as error:
-            onerror(error)
-            continue
-        files, children = [], []
-        for entry in entries:
-            if entry.is_symlink:
+    transport = top._transport()
+    try:
+        while stack:
+            checkpoint('scan')
+            directory = stack.pop()
+            resource = top.joinpath(*_relative_directory(directory, top))
+            try:
+                try:
+                    entries = resource.scandir(transport)
+                except OSError as error:
+                    if error.errno in PATH_ERRNOS:
+                        raise
+                    transport.close()
+                    transport = top._transport()
+                    entries = resource.scandir(transport)
+            except OSError as error:
+                onerror(error)
                 continue
-            path = str(resource / entry.name)
-            if entry.is_dir:
-                if not entry.name.startswith('@') and entry.name.casefold() != '#recycle':
-                    children.append(path)
-            else:
-                stat = SimpleNamespace(st_size=entry.size, st_mtime=entry.mtime, st_mtime_ns=entry.mtime_ns)
-                files.append(SimpleNamespace(name=entry.name, path=path, stat=lambda value=stat: value))
-        stack.extend(path for path in sorted(children, reverse=True) if path not in stack)
-        yield directory, sorted(files, key=lambda entry: entry.name)
+            files, children = [], []
+            for entry in entries:
+                if entry.is_symlink:
+                    continue
+                path = str(resource / entry.name)
+                if entry.is_dir:
+                    if not entry.name.startswith('@') and entry.name.casefold() != '#recycle':
+                        children.append(path)
+                else:
+                    stat = SimpleNamespace(st_size=entry.size, st_mtime=entry.mtime, st_mtime_ns=entry.mtime_ns)
+                    files.append(SimpleNamespace(name=entry.name, path=path, stat=lambda value=stat: value))
+            stack.extend(path for path in sorted(children, reverse=True) if path not in stack)
+            yield directory, sorted(files, key=lambda entry: entry.name)
+    finally:
+        transport.close()
 
 
 class _ScanProgress:
