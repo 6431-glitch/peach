@@ -55,6 +55,16 @@ describe('关注与馆藏共用卡片交互', () => {
     } finally { await opened.close() }
   });
 
+  it('图片瀑布流的卡片按内容定高，文字区底下不留等高网格的空白', async () => {
+    const opened = await openFollowFeed(browser, '/follow?media=images', VIEWPORTS[0]!,
+      { settings: { photoLayout: 'masonry', followImagesOnly: false }, ready: '[data-follow-wall][data-layout="masonry"] > [data-follow-item]' });
+    try {
+      const gaps = await opened.page.locator('[data-follow-wall][data-layout="masonry"] > [data-follow-item] [data-media-meta]').evaluateAll(nodes =>
+        nodes.map(node => node.getBoundingClientRect().bottom - Math.max(...[...node.children].map(child => child.getBoundingClientRect().bottom))));
+      assert.ok(gaps.length && gaps.every(gap => gap <= 1), JSON.stringify(gaps));
+    } finally { await opened.close() }
+  });
+
   it('创作者头像悬停显示描边，键盘焦点可见', async () => {
     const opened = await openFollowFeed(browser, '/follow', VIEWPORTS[0]!, { bindAuthors: true });
     try {

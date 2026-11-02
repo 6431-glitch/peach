@@ -291,6 +291,11 @@
   .peach-react [data-follow-wall] { --photo-columns: 2; gap: 12px 8px; }
   .peach-react [data-follow-wall][data-size="big"] { --photo-columns: 1; }
 }
+/* 文字区的最小高度是给等高网格对齐同一行卡片的；瀑布流每列各自往下排，按内容定高，卡片底下不留空。 */
+.peach-react [data-follow-wall][data-layout="masonry"] [data-follow-item] [data-media-meta] {
+  min-height: 0;
+  contain-intrinsic-block-size: none;
+}
 .peach-react [data-follow-wall][data-layout="masonry"]:has(> [data-media-card]) {
   row-gap: 0;
 }
