@@ -316,11 +316,13 @@ it('失败时把问题清单折叠进错误提示，重试只交失败的那些�
      不然几十条同样长短的明细连成一片，看不出哪一条结束了。 */
   expect(list.querySelector('li')!.className).toContain('border-b');
   expect(details.parentElement?.className).toContain('border-t');
-  // 完整记录是出事之后自己去翻的东西，退回灰字，旁边给一颗打开它的键。
-  const log = details.querySelector('p')!;
-  expect(log.textContent).toBe(`完整记录：${LOG}`);
-  expect(log.closest('.text-text-secondary')).not.toBeNull();
-  expect(details.querySelector('button[aria-label="在资源管理器中显示"]')).not.toBeNull();
+  /* 完整记录是出事之后自己去翻的东西，退回灰字，清单收着也看得见；旁边是打开它和
+     导出它的两颗键，导出和这份记录排在一起。 */
+  const reveal = alert!.querySelector('button[aria-label="在资源管理器中显示"]')!;
+  expect(details.contains(reveal)).toBe(false);
+  const logRow = reveal.closest('.text-text-secondary')!;
+  expect(logRow.querySelector('p')?.textContent).toBe(`完整记录：${LOG}`);
+  expect(logRow.contains(buttonNamed('导出完整问题清单', host))).toBe(true);
   // 发现新增文件和原任务的定向重试分别保留入口。
   expect(buttonNamed('同步新增文件', host)?.textContent).toBe('同步新增文件');
 
@@ -556,15 +558,33 @@ it('首屏暂停状态在卡片和任务面保留进度与继续入口', async (
   expect(host.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow')).toBe('2');
 });
 
-it('没有逐项问题的任务失败也能归档提示，保留历史任务号', async () => {
+it('没有逐项问题的任务失败也能归档提示，可撤销，重新进来不再留那句已归档', async () => {
   const state: LibraryProcessingData = { status:'failed', job_id:'one', error:'任务未能自动恢复' };
-  const served = await open(state, () => ({...state,archived:true}));
-  const host = await mount(card({toast:vi.fn()}));
+  let archived = false;
+  const served = await open(state, (method, body) => {
+    if (method === 'POST') archived = (body as {action:string}).action === 'archive';
+    return {...state,archived};
+  });
+  const toast = vi.fn();
+  const host = await mount(card({toast}));
   expect(buttonNamed('导出完整问题清单',host)).toBeNull();
-  await click(buttonNamed('归档提示',host));
+  const archive = buttonNamed('归档提示',host)!;
+  expect(host.querySelector('[role="alert"]')!.contains(archive)).toBe(true);
+  await click(archive);
   expect(served.posts()).toEqual([{action:'archive',job_id:'one'}]);
-  expect(host.textContent).toContain('历史记录仍保留');
+  expect(host.textContent).toContain('完整记录仍保留');
   expect(host.textContent).not.toContain('任务未能自动恢复');
+  expect(toast).not.toHaveBeenCalled();
+  await click(buttonNamed('撤销',host));
+  expect(served.posts()).toEqual([{action:'archive',job_id:'one'},{action:'unarchive',job_id:'one'}]);
+  expect(host.textContent).toContain('任务未能自动恢复');
+  expect(host.textContent).not.toContain('完整记录仍保留');
+
+  await open({...state,archived:true});
+  const again = await mount(card({toast}));
+  expect(again.textContent).not.toContain('任务未能自动恢复');
+  expect(again.textContent).not.toContain('完整记录仍保留');
+  expect(buttonNamed('撤销',again)).toBeNull();
 });
 
 it('模式切换失败保留服务端选中值和原位错误，可重试', async () => {

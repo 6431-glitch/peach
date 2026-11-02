@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "4e068b5f-d9af-48cf-8b3b-3f59f605c9e0", e._sentryDebugIdIdentifier = "sentry-dbid-4e068b5f-d9af-48cf-8b3b-3f59f605c9e0");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "d0c1afa2-9dcf-4b52-9e33-07419cd4e2be", e._sentryDebugIdIdentifier = "sentry-dbid-d0c1afa2-9dcf-4b52-9e33-07419cd4e2be");
 	} catch {}
 })();
 import { Button as e, Chip as t, Disclosure as n, DownloadsPanel as r, EmptyState as i, Gg as a, HN as o, LinkButton as s, LoadingDots as c, Note as l, OV as u, Progress as d, TASKS_KEY as f, TRIGGER_LABELS as p, __toESM as m, apiGet as h, apiSend as g, busyProps as _, cardClass as v, confirmModal as y, controlTask as b, cx as x, elapsedText as S, errorMessage as C, f1 as ee, fetchEarlier as te, fetchTasks as ne, fmtSize as re, foldByKind as ie, foldRoutine as ae, followupDetail as w, followupTally as T, groupFollowups as oe, hasResultProblems as E, i2 as D, isActive as O, isRoutine as se, latestOfKind as ce, mergeFinished as k, momentText as A, notifyManager as j, pollInterval as le, problemDestination as ue, progressText as M, replaceEqualDeep as N, require_jsx_runtime as P, require_react as F, statusLabel as I, summaryItems as L, taskIssues as R, uo as de, useMutation as z, useQuery as fe, useQueryClient as B } from "./peach-app.js";
@@ -300,13 +300,13 @@ function X({ run: e }) {
 }
 function Ae({ rows: e }) {
 	return /* @__PURE__ */ (0, G.jsx)("ul", {
-		className: "flex min-w-0 flex-col",
+		className: "-mr-5 flex min-w-0 flex-col",
 		children: e.map((e) => {
 			let t = w(e);
 			return /* @__PURE__ */ (0, G.jsxs)("li", {
 				"data-status": e.status,
 				"data-followup-key": e.followup_key,
-				className: "flex min-w-0 flex-col gap-1 border-t border-separator-border px-5 py-2.5",
+				className: "flex min-w-0 flex-col gap-1 border-t border-separator-border py-2.5 pr-10 pl-5",
 				children: [
 					/* @__PURE__ */ (0, G.jsxs)("div", {
 						className: "flex min-w-0 items-start justify-between gap-3",
@@ -352,7 +352,6 @@ function Z({ run: e, meta: t, children: r, footer: i, followups: a, followupTota
 		"data-run-id": e.id,
 		className: v({
 			padding: "none",
-			bordered: "line",
 			className: e.status === "failed" ? "flex flex-col border-border-error-default" : "flex flex-col"
 		}),
 		children: [
@@ -693,4 +692,4 @@ function Pe() {
 }
 export { Pe as ActivityPage };
 
-//# debugId=4e068b5f-d9af-48cf-8b3b-3f59f605c9e0
+//# debugId=d0c1afa2-9dcf-4b52-9e33-07419cd4e2be

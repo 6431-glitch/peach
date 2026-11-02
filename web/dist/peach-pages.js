@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "010066a7-52db-4709-88bb-eb96d4af01ce", e._sentryDebugIdIdentifier = "sentry-dbid-010066a7-52db-4709-88bb-eb96d4af01ce");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "c130df40-8d0c-456e-8105-de2f858a4bb2", e._sentryDebugIdIdentifier = "sentry-dbid-c130df40-8d0c-456e-8105-de2f858a4bb2");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -20192,10 +20192,10 @@ function nh({ children: e }) {
 }
 function rh({ divided: e = !1, children: t }) {
 	return e ? /* @__PURE__ */ (0, R.jsx)("div", {
-		className: "flex flex-col gap-4 border-t border-separator-border py-4 pr-3 empty:hidden",
+		className: "flex flex-col gap-4 border-t border-separator-border py-4 pr-3 empty:hidden [&>.ui-settings-facts]:-mr-3",
 		children: t
 	}) : /* @__PURE__ */ (0, R.jsx)("div", {
-		className: "flex flex-col gap-4 py-4 pr-3 empty:hidden",
+		className: "flex flex-col gap-4 py-4 pr-3 empty:hidden [&>.ui-settings-facts]:-mr-3",
 		children: t
 	});
 }
@@ -23344,4 +23344,4 @@ E();
 var Sv = document.getElementById("peach-page"), Cv = Sv ? xv[Sv.dataset.page ?? ""] : void 0;
 Sv && Cv && (0, j.createRoot)(Sv).render(/* @__PURE__ */ (0, R.jsx)(Cv, { data: { ...Sv.dataset } }));
 
-//# debugId=010066a7-52db-4709-88bb-eb96d4af01ce
+//# debugId=c130df40-8d0c-456e-8105-de2f858a4bb2

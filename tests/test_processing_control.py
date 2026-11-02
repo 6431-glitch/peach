@@ -427,6 +427,9 @@ class ProcessingControlTests(unittest.TestCase):
             first=q_library_processing_issues(contract,{'job_id':'legacy','limit':200})
             last=q_library_processing_issues(contract,{'job_id':'legacy','limit':200,'offset':200,'revision':first['revision']})
             self.assertEqual(first['rows']+last['rows'],state['issues'])
+            restored=w_library_processing(contract,{'action':'unarchive','job_id':'legacy'})
+            self.assertFalse(restored['archived'],'撤销归档后提示回来')
+            self.assertEqual(json.loads(state_path(self.config).read_text(encoding='utf-8'))['issues'],state['issues'])
             state['issues'].append({'asset_id':None,'message':'恢复后新增的问题'})
             _save(state_path(self.config),state)
             with self.assertRaisesRegex(ValueError,'变化'):

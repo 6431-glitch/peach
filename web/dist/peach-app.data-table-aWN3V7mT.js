@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "9e570fe0-9b07-49a2-82da-425ef414d3d6", e._sentryDebugIdIdentifier = "sentry-dbid-9e570fe0-9b07-49a2-82da-425ef414d3d6");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "08049a4d-1354-4ab2-aae6-7fd0d8120a10", e._sentryDebugIdIdentifier = "sentry-dbid-08049a4d-1354-4ab2-aae6-7fd0d8120a10");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
@@ -93,7 +93,6 @@ function F({ label: e, items: t, columns: y, rowId: x, rowLabel: w, selected: T,
 		"data-data-table-panel": R || void 0,
 		className: R ? b({
 			padding: "none",
-			bordered: "line",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 		}) : "flex min-w-0 flex-col gap-4",
 		children: [
@@ -214,4 +213,4 @@ function F({ label: e, items: t, columns: y, rowId: x, rowLabel: w, selected: T,
 }
 export { F as DataTable };
 
-//# debugId=9e570fe0-9b07-49a2-82da-425ef414d3d6
+//# debugId=08049a4d-1354-4ab2-aae6-7fd0d8120a10

@@ -111,7 +111,8 @@ def _request_skip(control, previous, body):
     control.skip_current(str(body['job_id']), asset_id)
 
 
-def _archive_notice(contract, config, body):
+def _archive_notice(contract, config, body, archived):
+    """归档与撤销归档只翻这一趟的 `archived`，问题记录和任务历史原样留着。"""
     previous = _current(contract)
     if not body.get('job_id') or body['job_id'] != previous.get('job_id'):
         raise ValueError('任务已变化，请刷新页面后重试')
@@ -121,7 +122,7 @@ def _archive_notice(contract, config, body):
     saved = json.loads(state_path(config).read_text(encoding='utf-8'))
     if saved.get('job_id') != body['job_id']:
         raise ValueError('任务已变化，请刷新页面后重试')
-    _save(state_path(config), {**saved, 'archived':True})
+    _save(state_path(config), {**saved, 'archived':archived})
     return q_library_processing(contract, {})
 
 
@@ -159,8 +160,8 @@ def _set_processing_speed(contract, control, previous, body):
 
 def _control_action(contract, config, body):
     action = body['action']
-    if action == 'archive':
-        return _archive_notice(contract, config, body)
+    if action in ('archive', 'unarchive'):
+        return _archive_notice(contract, config, body, action == 'archive')
     if action not in ('pause', 'resume', 'set_speed', 'skip_current', 'cancel'):
         raise ValueError('处理动作无效')
     previous = _current(contract)

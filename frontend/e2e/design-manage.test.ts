@@ -89,7 +89,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
         }));
         const waiting = await geometry();
         assert.equal(waiting.length, 1);
-        assert.equal(waiting[0]!.face[3], '1px', '骨架卡缺少外框');
+        assert.equal(waiting[0]!.face[3], '0px', '骨架卡还带着外框，页面上的卡只靠填充底');
         const expected = await disabledTokens(page);
         const faces = await waitingActionFaces(page, `[data-skeleton="${item.skeleton}"] [data-skeleton-action]`);
         assert.deepEqual(faces.map(face => face.name).filter(Boolean), item.names);
