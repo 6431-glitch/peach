@@ -146,11 +146,14 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
           waiting[path] = await frame(`[data-skeleton="cleanup/${key}"] [inert]`);
         }
         release();
+        // 接管那一拍旧骨架挪进淡出层 `.skelfade`，不再挂在 `[data-skeleton]` 下，两层都要排除。
+        const content = '#stats .max-w-board:not([data-skeleton] *, .skelfade *)';
         for (const [path] of cleanupTools) {
           await page.goto(new URL(path, page.url()).href, { waitUntil: 'load' });
-          await page.locator('#stats .max-w-board:not([data-skeleton] *) > *').first().waitFor({ timeout: 15_000 });
+          await page.locator(`${content} > *`).first().waitFor({ timeout: 15_000 });
+          await page.locator('#stats .skelfade').waitFor({ state: 'detached', timeout: 15_000 });
           await settle(page);
-          assert.deepEqual(await frame('#stats .max-w-board:not([data-skeleton] *)'), waiting[path], `${path} 骨架与内容的正文列或首张卡位置不一致`);
+          assert.deepEqual(await frame(content), waiting[path], `${path} 骨架与内容的正文列或首张卡位置不一致`);
         }
         assert.deepEqual(opened.problems, []);
       } finally { await opened.close() }
