@@ -536,7 +536,7 @@ def _process_library(args: argparse.Namespace) -> int:
                                      database=LedgerDatabase(args.db), report=_processing_printer())
         except JobCancelled:
             handle.finish('cancelled', error='用户停止任务')
-            print('任务已停止，已保存结果保留。')
+            print('任务已终止，已保存结果保留。')
             return 130
         rows = declared_rows(result.get('followups'))
         queued = handle.store.enqueue_followups(handle.run_id, rows)
