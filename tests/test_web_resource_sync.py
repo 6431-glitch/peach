@@ -326,6 +326,45 @@ class PurgeMissingTests(unittest.TestCase):
         self.assertEqual((result['purged'], result['vanished']), (2, 1))
         self.assertEqual(self.ids(), [1, 2, 4])
 
+    def _add_removed_folder_row(self):
+        """这一行原先在一个媒体目录下，那个目录已从设置里移除、盘上也删掉了；所在的盘还在。"""
+        (self.root / "local").mkdir()
+        with self.contract.write_transaction() as connection:
+            connection.execute("INSERT INTO asset(id,location,path,name,medium,size) "
+                               "VALUES(5,'115','R:\\strm\\CESD-499.strm','CESD-499.strm','video',10)")
+
+    def test_rows_under_a_removed_media_folder_are_cleaned_with_the_rest(self):
+        self._add_removed_folder_row()
+        with self._synced():
+            scan = finish_scan(self.contract)
+            self.assertEqual(scan["missing"], 3)
+            result = rm_sync.w_resource_sync_apply(
+                self.contract, {"confirm": True, "clean_cache": False, "scan_id": scan["scan_id"]})
+        self.assertEqual((result["purged"], result["vanished"], result["blocked_count"]), (2, 1, 0))
+        self.assertEqual(self.ids(), [1, 2, 4])
+
+    def test_rows_under_a_removed_media_folder_stay_when_their_disk_cannot_be_read(self):
+        self._add_removed_folder_row()
+        readable = web_batch.root_online
+        with self._synced(), mock.patch.object(
+                web_batch, "root_online", lambda path: path != Path(path.anchor) and readable(path)):
+            scan = finish_scan(self.contract)
+            result = rm_sync.w_resource_sync_apply(
+                self.contract, {"confirm": True, "clean_cache": False, "scan_id": scan["scan_id"]})
+        self.assertEqual(result["blocked"], [{"id": 5, "name": "CESD-499.strm", "reason": "媒体来源未挂载或不可读取"}])
+        self.assertEqual(self.ids(), [1, 2, 4, 5])
+
+    def test_deleting_media_outside_every_media_folder_is_still_refused(self):
+        self._add_removed_folder_row()
+        kept = self.root / "local" / "strm" / "CESD-499.strm"
+        kept.parent.mkdir()
+        kept.write_bytes(b"x")
+        with self._synced(), self.contract.write_transaction() as connection:
+            row = connection.execute("SELECT id,location,path,snapshot_path FROM asset WHERE id=5").fetchone()
+            outcome = web_batch.purge_assets(connection, [row])
+        self.assertEqual((outcome["purged"], len(outcome["blocked"])), (0, 1))
+        self.assertTrue(kept.is_file())
+
     def test_apply_resumes_after_a_committed_chunk_with_cumulative_receipt(self):
         saved = {}
         def remember(**fields):
