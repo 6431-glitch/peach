@@ -127,7 +127,7 @@ export interface LibraryProcessingCommand {
   speed_mode?: ProcessingSpeed;
 }
 export type ProcessingControlCommand =
-  | { action: 'pause' | 'resume' | 'cancel' | 'archive'; job_id: string }
+  | { action: 'pause' | 'resume' | 'cancel' | 'archive' | 'unarchive'; job_id: string }
   | { action: 'set_speed'; speed_mode: ProcessingSpeed; job_id?: string }
   | { action: 'skip_current'; job_id: string; asset_id: number };
 

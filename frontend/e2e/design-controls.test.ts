@@ -440,7 +440,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
       await list.waitFor({ state: 'visible', timeout: 5_000 });
       const geometry = await alert.evaluate((element) => {
         const note = element.getBoundingClientRect();
-        const button = element.querySelector('button')!.getBoundingClientRect();
+        const button = element.querySelector('[data-note-action]')!.getBoundingClientRect();
         const items = element.querySelector('ul')!;
         return {
           padding: parseFloat(getComputedStyle(element).paddingRight),
@@ -451,7 +451,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
         };
       });
       assert.ok(geometry.noteRight - geometry.buttonRight - geometry.padding < 1,
-        '重试键没有贴着提示的右内边，读起来就不是这条提示的主动作');
+        '重试与归档没有贴着提示的右内边，读起来就不是这条提示的动作');
       assert.ok(geometry.noteRight - geometry.listRight - geometry.padding < 1,
         '问题清单没有铺满提示的宽度');
       assert.equal(geometry.client, geometry.offset, '原生滚动条还占着清单右边一列');
@@ -468,7 +468,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
         };
         // `divide-y` 把线画在每条的下缘（末条除外），所以量的是第一条的下边。
         const first = element.querySelectorAll('li')[0]!;
-        const log = element.querySelector('details p')!;
+        const log = element.querySelector('[aria-label="在资源管理器中显示"]')!.closest('.text-text-secondary')!.querySelector('p')!;
         return {
           divider: parseFloat(getComputedStyle(first).borderBottomWidth),
           dividerInk: paint(getComputedStyle(first).borderBottomColor),
@@ -486,7 +486,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
     }
   });
 
-  it('同一份问题日志只印一处，「7 天内不再问」与失败提示同一组留白', { timeout: 60_000 }, async () => {
+  it('一趟的问题收在同一块提示里，「7 天内不再问」、完整记录与导出都跟着它', { timeout: 60_000 }, async () => {
     const notes = { fetching_cover: 84, querying_metadata: 18 };
     const button = '[aria-label="在资源管理器中显示"]';
     const reveal = `#libraryProcessing ${button}`;
@@ -494,22 +494,12 @@ describe('设计决定：控件、状态与首页顶部', () => {
     try {
       const alert = failed.page.locator('#libraryProcessing [role="alert"]');
       await expectBody(failed.page, '/data-cleanup 失败提示与不再问提示', [alert], failed.problems);
-      await alert.locator('summary').click();
-      await alert.locator('ul').waitFor({ state: 'visible', timeout: 5_000 });
-      assert.equal(await failed.page.locator(reveal).count(), 1, '完整记录在两块提示里各印了一遍');
-      assert.equal(await alert.locator(button).count(), 1, '完整记录该跟着问题清单');
-      const spacing = await failed.page.evaluate(() => {
-        const box = (element: Element) => {
-          const style = getComputedStyle(element);
-          return { top: style.paddingTop, bottom: style.paddingBottom, left: style.paddingLeft };
-        };
-        const alert = document.querySelector('#libraryProcessing [role="alert"]')!;
-        const note = [...document.querySelectorAll('#libraryProcessing [role="note"]')]
-          .find((element) => element.textContent!.includes('7 天内不再问'))!;
-        return { alert: box(alert), note: box(note) };
-      });
-      assert.equal(spacing.note.top, spacing.note.bottom, '不再问提示的上下留白不一样');
-      assert.deepEqual(spacing.note, spacing.alert, '不再问提示和失败提示的内边距对不上');
+      assert.ok((await alert.textContent())!.includes('7 天内不再问'), '「7 天内不再问」没有并进失败提示');
+      assert.equal(await failed.page.locator('#libraryProcessing [role="note"]').count(), 0,
+        '失败提示旁边还另挂着一块同类提示');
+      assert.equal(await failed.page.locator(reveal).count(), 1, '完整记录印了不止一处');
+      assert.equal(await alert.locator(button).count(), 1, '完整记录该跟着问题提示');
+      assert.equal(await alert.getByRole('button', { name: '导出完整问题清单' }).count(), 1, '导出没有跟着完整记录');
       assert.deepEqual(failed.problems, []);
     } finally {
       await failed.close();
