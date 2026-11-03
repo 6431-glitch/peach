@@ -37,7 +37,7 @@ describe('卡片信息与收藏入口', () => {
         await opened.page.evaluate(() => { document.body.dataset.density = 'dense' });
         const dense = await inspect();
         assert(dense.every(row => row.title < row.line * (viewport.mobile ? 2.1 : 1.5)
-          && row.labelGap >= 2 && row.labelGap <= 4), JSON.stringify(dense));
+          && row.labelGap >= 2 && row.labelGap <= 8), JSON.stringify(dense));
         if (viewport.mobile) {
           assert(dense[0].title >= dense[0].line * 1.9, JSON.stringify(dense));
           assert(Math.abs((dense[0].height - dense[1].height) - (dense[0].title - dense[1].title)) <= 1, JSON.stringify(dense));

@@ -19,7 +19,8 @@ export function CardDate({ value, label, title }: { value: string; label: string
   return <time data-media-release="" dateTime={value} title={title || label}><Icon name="calendar" />{label}</time>;
 }
 
-/** 卡片的标签行：最多三枚。能点的是筛选键（`data-tag`），只读的照样是按钮外观但禁用、不接筛选。 */
+/** 卡片的标签行：最多三枚。能点的是筛选键（按钮，带 `data-tag`）；只读的是同一张脸的文字，
+ *  不是禁用的按钮——它本来就不可操作，读屏不该念成「按钮，不可用」，也不该被当成控件选中。 */
 export function CardTags({ tags, label, readOnly = false, attrs, ...row }: {
   tags: readonly string[]; label(tag: string): string; readOnly?: boolean;
   /** 每一枚额外的属性：关注卡写上来源类型与自己的选择器钩子。 */
@@ -27,10 +28,9 @@ export function CardTags({ tags, label, readOnly = false, attrs, ...row }: {
 } & ComponentPropsWithoutRef<'div'>) {
   return (
     <div {...row} data-media-tags="">
-      {tags.map((tag) => (
-        <button key={tag} type="button" data-media-tag="" disabled={readOnly} data-tag={readOnly ? undefined : tag}
-          {...attrs?.(tag)}>{label(tag)}</button>
-      ))}
+      {tags.map((tag) => readOnly
+        ? <span key={tag} data-media-tag="" {...attrs?.(tag)}>{label(tag)}</span>
+        : <button key={tag} type="button" data-media-tag="" data-tag={tag} {...attrs?.(tag)}>{label(tag)}</button>)}
     </div>
   );
 }
