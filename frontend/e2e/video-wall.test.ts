@@ -52,10 +52,12 @@ describe('播放墙的浏览与详情', () => {
       const geometry = await notice.evaluate(node => {
         const box = node.getBoundingClientRect(), back = document.querySelector('[data-wall-back]')!.getBoundingClientRect();
         const text = node.querySelector('p')!.getBoundingClientRect(), action = node.querySelector('button')!.getBoundingClientRect();
-        return { left:box.left, right:box.right, backRight:back.right, width:innerWidth,
+        return { left:box.left, right:box.right, top:box.top, backRight:back.right, backBottom:back.bottom, width:innerWidth,
           overlap:action.left < text.right && action.right > text.left && action.top < text.bottom && action.bottom > text.top };
       });
-      assert(geometry.left >= geometry.backRight + 8 && geometry.right <= geometry.width, JSON.stringify(geometry));
+      // 提示条和左上角圆键同排时排在后面，窄屏放不下时换到下一行，都不压住返回键。
+      const clear = geometry.left >= geometry.backRight + 8 || geometry.top >= geometry.backBottom + 8;
+      assert(clear && geometry.right <= geometry.width, JSON.stringify(geometry));
       assert.equal(geometry.overlap, false);
       await notice.getByRole('button', { name:'清除筛选', exact:true }).click();
       await notice.waitFor({ state:'detached' });
