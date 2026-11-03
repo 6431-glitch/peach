@@ -161,8 +161,17 @@ describe('任务页云下载布局', () => {
       assert.equal(await errors.evaluate((node) => getComputedStyle(node.parentElement!).backgroundColor), background);
       assert.match(await card.locator('[data-task-issues]').innerText(), /示例作者.*示例站点.*检查失败/s);
       assert.match(await card.locator('[data-task-issues]').innerText(), /HTTP 403：站点拒绝访问/);
-      assert.equal(await card.getByText('示例作者 1 · 示例站点 · 检查失败', { exact: true })
-        .evaluate((node) => getComputedStyle(node).fontWeight), '400');
+      // 分层：名字是中等字重，来源与类别次级色，原因比名字小一档且用次级色。
+      const layers = await card.locator('[data-task-issues] > li').first().evaluate((item) => {
+        const name = item.firstElementChild!, meta = name.querySelector('span')!, reason = item.querySelector('[data-error-excerpt]')!;
+        const style = (node: Element) => getComputedStyle(node);
+        return { name: style(name).fontWeight, metaColor: style(meta).color, nameColor: style(name).color,
+          reasonColor: style(reason).color, smaller: parseFloat(style(reason).fontSize) < parseFloat(style(name).fontSize) };
+      });
+      assert.equal(layers.name, '500');
+      assert.equal(layers.smaller, true);
+      assert.notEqual(layers.metaColor, layers.nameColor);
+      assert.equal(layers.reasonColor, layers.metaColor);
       const link = card.getByRole('link', { name: '查看关注来源', exact: true });
       assert.equal(await link.getAttribute('href'), '/subscriptions');
       await link.click();

@@ -25,6 +25,7 @@ import { errorMessage } from '../../api';
 import { cardClass } from '../components/card';
 import { CodeBlock } from '../components/code-block';
 import { EmptyState } from '../components/empty-state';
+import { IssueRow } from '../components/issue-row';
 import { LoadingDots } from '../components/loading-dots';
 import { NameLink } from '../components/name-link';
 import { Note } from '../components/note';
@@ -247,11 +248,16 @@ function SettledRun(
     <RunCard run={run} meta={meta} error={run.error} followups={followups} followupTotal={followupTotal}
       issues={issues.length ? <Disclosure summary={`问题详情 · ${issues.length} 项`} contentClassName="pb-2.5">
         <ErrorDetails label="任务问题详情">
-        <ul className="flex min-w-0 flex-col gap-3" data-task-issues="">
-          {issues.map((issue, index) => <li key={`${issue.source}-${index}`} className="flex min-w-0 flex-col gap-1 text-body-2-regular wrap-anywhere">
-            <p className="text-body-regular text-text-primary">{[issue.label, issue.provider, issue.kind].filter(Boolean).join(' · ')}</p>
-            <ErrorExcerpt text={issue.error} className="text-text-primary" />
-          </li>)}
+        {/* 与数据管理的问题清单同一种分层：名字一层，来源与问题类别跟在名字后面用次级色，原因再低一档。 */}
+        <ul className="flex min-w-0 flex-col whitespace-normal" data-task-issues="">
+          {issues.map((issue, index) => <IssueRow key={`${issue.source}-${index}`} title={<>
+              {issue.label}
+              {issue.provider || issue.kind
+                ? <span className="text-body-2-regular text-text-secondary"> · {[issue.provider, issue.kind].filter(Boolean).join(' · ')}</span>
+                : null}
+            </>}>
+            <ErrorExcerpt text={issue.error} className="text-caption-1-regular text-text-secondary" />
+          </IssueRow>)}
         </ul>
         </ErrorDetails>
       </Disclosure> : undefined}
