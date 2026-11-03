@@ -23,6 +23,12 @@ function unavailable(state: TaskResourceState) {
   return state === 'sampling' ? '采样中' : '未取得';
 }
 
+/* 读数为 0 说的是这一轮没占用这项资源，直接写「未使用」，不让人去读一个 0。 */
+function reading(key: 'cpu' | 'gpu' | 'network', value: number) {
+  if (value === 0) return '未使用';
+  return key === 'network' ? `${fmtSize(value)}/s` : `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })}%`;
+}
+
 export function TaskResources({ run, active = isActive(run) || Boolean(run.control) }: {
   run: TaskRunPayload; active?: boolean;
 }) {
@@ -35,15 +41,13 @@ export function TaskResources({ run, active = isActive(run) || Boolean(run.contr
       const value = key === 'network' ? resources.network.bytes_per_second : resources[key].percent;
       const ready = metric.state === 'ready' && value !== null;
       const high = ready && metric.high;
-      const label = ready
-        ? key === 'network' ? `${fmtSize(value)}/s` : `${value.toLocaleString(undefined, { maximumFractionDigits: 1 })}%`
-        : unavailable(metric.state);
+      const label = ready ? reading(key, value) : unavailable(metric.state);
       const explanation = [metric.reason, high ? '当前为高占用。' : '', appearance.description, resources.detail]
         .filter(Boolean).join('\n');
       return <ResourceChip key={key} color={appearance.color} high={high}
         tabIndex={0} title={explanation}
         data-task-resource={key} data-resource-state={metric.state} data-resource-high={high || undefined}
-        data-copy-ignore=""
+        data-resource-idle={ready && value === 0 || undefined} data-copy-ignore=""
         data-tooltip-copy-key={!metric.reason && !resources.detail && !high ? `tasks.resources.${key}.description` : undefined}>
         {appearance.name} {label}
       </ResourceChip>;

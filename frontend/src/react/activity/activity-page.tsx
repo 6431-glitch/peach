@@ -14,7 +14,7 @@
  * 轮询只管第一页，翻过的那些不会被下一次刷新冲掉。 */
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
-import { RiArrowDownSLine, RiArrowRightLine, RiHistoryLine } from '@remixicon/react';
+import { RiArrowDownSLine, RiArrowRightLine, RiFileVideoLine, RiHistoryLine } from '@remixicon/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { Chip } from '@/components/base/badges/chip';
@@ -39,7 +39,7 @@ import { TaskResources } from './task-resources';
 import {
   elapsedText, fetchEarlier, fetchTasks, foldByKind, foldRoutine, followupDetail, followupTally, groupFollowups, isActive,
   hasResultProblems, isRoutine, latestOfKind, mergeFinished, momentText, pollInterval, problemDestination, progressText,
-  statusLabel, summaryItems, taskIssues, TASKS_KEY, TRIGGER_LABELS, type FollowupCounts, type TaskControlState, type TaskRunPayload,
+  statusLabel, summaryItems, taskIssues, taskSubject, TASKS_KEY, TRIGGER_LABELS, type FollowupCounts, type TaskControlState, type TaskRunPayload,
 } from './tasks';
 
 /** 一张卡里最多列多少条后继。几批合成一张卡时会有上千条，全画出来一屏都是同一句。 */
@@ -128,6 +128,7 @@ function RunCard(
     rank(b) - rank(a) || b.id - a.id).slice(0, FOLLOWUP_ROWS) : [];
   const shown = listed.length;
   const total = Math.max(followups?.length || 0, followupTotal);
+  const subject = taskSubject(run);
   return (
     // `id` 让「需要处理」那一行的「查看失败记录」能直接滚到这张卡。
     <li id={`run-${run.id}`} data-status={run.status} data-task-key={run.task_key} data-run-id={run.id}
@@ -146,6 +147,12 @@ function RunCard(
         </div>
         <p className="text-caption-1-regular text-text-secondary">{meta}</p>
         <TaskResources run={run} active={resourceActive} />
+        {/* 文件名常有上百字：单行末尾省略，番号在开头，完整名称在悬停提示里。不用 data-middle-truncate：
+            它按 Canvas 量宽，不计中西文自动间距，中日文夹英文的名字会被裁掉末尾几个像素。 */}
+        {subject ? <LinkButton href={subject.href} size="xs" leadingIcon={RiFileVideoLine} data-task-subject={run.id}
+          title={subject.label} className="min-w-0 max-w-full self-start justify-start [&>span]:min-w-0 [&>span]:truncate">
+          {subject.label}
+        </LinkButton> : null}
         {children}
       </div>
       {shown ? <div className="border-t border-separator-border px-5 py-2.5">
@@ -158,7 +165,8 @@ function RunCard(
           <FollowupList rows={listed} />
         </Disclosure>
       </div> : null}
-      {Object.keys(run.result_summary || {}).length ? <div className="border-t border-separator-border px-5 py-2.5">
+      {/* 在跑的那一轮只有开跑时写下的作品，已经链接在卡片上，结算后才有可看的详情。 */}
+      {!isActive(run) && Object.keys(run.result_summary || {}).length ? <div className="border-t border-separator-border px-5 py-2.5">
         <Disclosure summary="技术详情" contentClassName="pb-2.5">
           <CodeBlock code={JSON.stringify(run.result_summary, null, 2)} language="json"
             label={`${run.task_label}技术详情`} />
@@ -210,7 +218,9 @@ function SettledRun(
   const summary = batches
     ? [`共处理 ${followupTotal!.toLocaleString()} 项`, followupFailed ? `其中 ${followupFailed.toLocaleString()} 项失败` : '']
         .filter(Boolean)
-    : summaryItems(run.result_summary).filter((line) => line !== run.error);
+    // 作品链接已写出文件名，摘要不再列「名称」。
+    : summaryItems(taskSubject(run) ? { ...run.result_summary, name: '' } : run.result_summary)
+        .filter((line) => line !== run.error);
   const issues = taskIssues(run);
   const destination = problemDestination(run, latest);
   const elapsed = elapsedText(run.elapsed_seconds);

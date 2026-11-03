@@ -228,6 +228,14 @@ export function problemDestination(run: TaskRunPayload, latest = true): { href: 
   return target ? { href: target[0], label: target[1] } : null;
 }
 
+/** 这一轮只处理一部作品时，摘要里带它的 `asset_id` 与文件名，任务卡据此链接到作品详情。 */
+export function taskSubject(run: TaskRunPayload): { href: string; label: string } | null {
+  const id = run.result_summary?.asset_id;
+  const name = run.result_summary?.name;
+  return typeof id === 'number' && Number.isInteger(id) && id > 0 && typeof name === 'string' && name
+    ? { href: `/assets/${id}`, label: name } : null;
+}
+
 /** `LATEST_ONLY` 里每种任务最新那一轮的 id。后继不算：它们挂在父任务下，不是这种任务的一轮。 */
 export function latestOfKind(rows: TaskRunPayload[]): Set<number> {
   const newest = new Map<string, number>();

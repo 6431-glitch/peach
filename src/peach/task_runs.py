@@ -277,7 +277,8 @@ class TaskRunStore:
 
     def start(self, task_key: str, *, trigger: str, mutex_key: str | None = None,
               conflict: str = "skip", total: int | None = None,
-              label: str = "", pid: int | None = None) -> TaskRun | None:
+              label: str = "", pid: int | None = None,
+              summary: dict | None = None) -> TaskRun | None:
         from .update_tasks import admission
         with admission(self.database.db_path):
             from .job_recovery import current_run
@@ -285,7 +286,8 @@ class TaskRunStore:
             if resumed is not None:
                 return resumed
             return self._start(task_key, trigger=trigger, mutex_key=mutex_key,
-                               conflict=conflict, total=total, label=label, pid=pid)
+                               conflict=conflict, total=total, label=label, pid=pid,
+                               summary=summary)
 
     def suspend(self, run_id: int, *, label: str = '等待安装完成后继续',
                 paused_for_update: bool = True) -> None:
@@ -310,8 +312,11 @@ class TaskRunStore:
 
     def _start(self, task_key: str, *, trigger: str, mutex_key: str | None = None,
                conflict: str = "skip", total: int | None = None,
-               label: str = "", pid: int | None = None) -> TaskRun | None:
+               label: str = "", pid: int | None = None,
+               summary: dict | None = None) -> TaskRun | None:
         """开一轮。互斥冲突时按 `conflict` 处理，返回 None 或抛 `TaskRunConflict`。
+
+        `summary` 是开跑时就知道的那部分摘要，例如这一轮处理的是哪部作品；结算时由最终摘要替换。
 
         `conflict="skip"` 是定时触发的语义：本轮不跑，但要留下一条记录说明被谁挡了。
         `conflict="raise"` 是手动触发的语义：告诉用户是哪一轮挡着，让他自己决定。
@@ -329,9 +334,9 @@ class TaskRunStore:
                     "INSERT INTO task_run(task_key,trigger,status,mutex_key,pid,host,"
                     "started_at,heartbeat_at,progress_current,progress_total,"
                     "progress_label,result_summary) "
-                    "VALUES(?,?,'running',?,?,?,?,?,0,?,?,'{}')",
+                    "VALUES(?,?,'running',?,?,?,?,?,0,?,?,?)",
                     (task_key, trigger, mutex_key, pid if pid is not None else os.getpid(),
-                     self.host, moment, moment, total, label))
+                     self.host, moment, moment, total, label, json.dumps(summary or {}, ensure_ascii=False)))
                 run_id = int(cursor.lastrowid)
         except sqlite3.IntegrityError:
             if mutex_key is None:

@@ -69,6 +69,46 @@ describe('任务页云下载布局', () => {
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close() }
   });
+  for (const viewport of VIEWPORTS) it(`${viewport.name} 零读数标为未使用，单部作品的任务链接到作品详情`, async () => {
+    const name = '[Studio]Very_Long_Unbroken_File_Name_That_Should_Wrap_Inside_The_Card_2026-11-03_1080p.mp4';
+    const opened = await visit(browser, '/tasks', viewport, async page => {
+      await page.route('**/api/downloads?*', route => route.fulfill({ json: { available: false, tasks: [], providers: [] } }));
+      await page.route('**/api/tasks*', route => route.fulfill({ json: {
+        available: true, skipped: [], finished: [], running: [{
+          id: 7, task_key: 'mp4-header-repair', task_label: '播放文件头修复', trigger: 'manual', status: 'running',
+          host: 'desk', started_at: '2026-11-03T08:00:00Z', finished_at: null, elapsed_seconds: 140,
+          progress_current: 0, progress_total: null, progress_label: '读取帧时间戳',
+          result_summary: { asset_id: 6297, name }, error: '', parent_run_id: null, followup_key: '',
+          control: { state: 'running', actions: ['pause', 'cancel'] },
+          resources: {
+            cpu: { state: 'ready', percent: 61.6, high: true },
+            gpu: { state: 'ready', percent: 0, high: false },
+            network: { state: 'unavailable', bytes_per_second: null, high: false, reason: '挂载或 SMB 的缓存与预读无法按任务取得实际网速' },
+            sampled_at: '2026-11-03T08:02:20Z',
+          },
+        }],
+      } }));
+    });
+    try {
+      const page = opened.page;
+      const chips = page.locator('[data-task-resources="7"]');
+      await chips.waitFor();
+      const idle = await chips.locator('[data-task-resource]').evaluateAll(nodes =>
+        Object.fromEntries(nodes.map(node => [(node as HTMLElement).dataset.taskResource, 'resourceIdle' in (node as HTMLElement).dataset])));
+      assert.deepEqual(idle, { cpu: false, gpu: true, network: false });
+      const link = page.locator('[data-task-subject="7"]');
+      assert.equal(await link.getAttribute('href'), '/assets/6297');
+      assert.equal(await link.getAttribute('title'), name);
+      assert.equal(await page.locator('#run-7').getByText('技术详情').count(), 0);
+      const geometry = await page.locator('#run-7').evaluate(card => {
+        const box = card.getBoundingClientRect();
+        const link = card.querySelector('[data-task-subject]')!.getBoundingClientRect();
+        return { fits: document.documentElement.scrollWidth <= innerWidth, inside: link.right <= box.right };
+      });
+      assert.deepEqual(geometry, { fits: true, inside: true });
+      assert.deepEqual(opened.problems, []);
+    } finally { await opened.close() }
+  });
   for (const viewport of VIEWPORTS) it(`${viewport.name} 追更问题展示来源原因和管理入口`, async () => {
     const opened = await visit(browser, '/tasks', viewport, async page => {
       await page.route('**/api/tasks*', route => route.fulfill({ json: {
