@@ -327,6 +327,11 @@ body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-follo
   body .peach-react [data-follow-list] [data-follow-item] [data-media-meta] {
     min-height: 0; content-visibility: visible; contain-intrinsic-block-size: none;
   }
+  /* 关注卡也是 `data-media-card`，密集档把标题行钉成 1.35em 的那条网格会把两行标题切成一行；
+     同首页单列卡改回按内容排的竖列。 */
+  body[data-density]:not([data-surface="/trash"]) .peach-react [data-follow-list] [data-follow-item] [data-media-text] {
+    display: flex; flex-direction: column; height: auto;
+  }
   body[data-density]:not([data-surface="/trash"]) .peach-react [data-follow-item] [data-media-title] {
     display: -webkit-box; min-height: 0; white-space: normal; -webkit-line-clamp: 2;
   }
