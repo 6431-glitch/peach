@@ -2033,7 +2033,8 @@ def _scan_sources(config, db_path, *, locations, asset_ids, stage, guard, update
                 if stage == SCAN_STAGE:
                     result.probed += probe_unmeasured(
                         db_path, ffprobe, source, root, config=config,
-                        on_junk=count_junk, asset_ids=list(registered.new_ids) if incremental else None,
+                        on_junk=count_junk,
+                        asset_ids=[*registered.new_ids, *registered.relocated_ids] if incremental else None,
                         report=lambda done, total: update(stage='读取时长与分辨率',
                             checked=result.probed + done, total=result.probed + total, probed=result.probed + done))
                 reattach_in(db_path, registered.new_ids)
