@@ -59,7 +59,7 @@ export async function searchRecommendations(request: Request,
     who, whoAvatarHtml, card, href,
   });
   const library = (card: SuggestCard) => {
-    const { kind, name, coStarred, performers, refs, total } = cardIdentity(card as IdentityItem);
+    const { kind, name, coStarred, refs, total } = cardIdentity(card as IdentityItem);
     if (!kind) return work(card, undefined, '');
     const ref = kind === 'performer' ? refs[0] : (card as IdentityItem).creator_entity;
     const shown = entityDisplayName(kind, name, ref?.id);
