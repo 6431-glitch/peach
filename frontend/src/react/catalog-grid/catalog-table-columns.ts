@@ -5,27 +5,30 @@ export const CATALOG_COLUMN_VISIBILITY_KEY = 'peach.catalog-column-visibility.v1
 
 export const columnSizes: Record<string, { width: number; min: number; max: number }> = {
   select: { width: 48, min: 48, max: 48 },
-  name: { width: 260, min: 240, max: 2000 },
-  library: { width: 120, min: 104, max: 320 },
-  people: { width: 190, min: 160, max: 400 },
-  dur: { width: 96, min: 80, max: 240 },
-  size: { width: 96, min: 88, max: 240 },
-  resolution: { width: 120, min: 112, max: 320 },
+  name: { width: 300, min: 240, max: 2000 },
+  people: { width: 220, min: 160, max: 400 },
+  library: { width: 112, min: 96, max: 320 },
+  tags: { width: 156, min: 144, max: 560 },
+  dur: { width: 88, min: 80, max: 240 },
   rating: { width: 168, min: 168, max: 320 },
-  o: { width: 112, min: 96, max: 240 },
   plays: { width: 96, min: 96, max: 240 },
-  new: { width: 184, min: 144, max: 320 },
-  played: { width: 184, min: 144, max: 320 },
-  release: { width: 144, min: 128, max: 320 },
+  new: { width: 152, min: 144, max: 320 },
+  release: { width: 120, min: 112, max: 320 },
+  played: { width: 152, min: 144, max: 320 },
+  o: { width: 96, min: 96, max: 240 },
+  resolution: { width: 120, min: 112, max: 320 },
+  size: { width: 96, min: 88, max: 240 },
   code: { width: 144, min: 112, max: 400 },
-  tags: { width: 172, min: 144, max: 560 },
 };
 
-export const defaultColumnVisibility: Record<string, boolean> = { code: false, o: false, new: false, played: false, release: false };
+/* 默认显示浏览时常看的：作品、艺人、媒体库、标签、时长、评分、观看次数、入库时间，1440 宽下正好放下；
+ * 发行时间、观看时间、高潮计数、分辨率、体积、番号（标题里已有）默认收起，在「显示列」里打开。
+ * 列的先后也按这个顺序，表格与骨架都照 `catalogColumns` 排。 */
+export const defaultColumnVisibility: Record<string, boolean> = { release: false, played: false, o: false, resolution: false, size: false, code: false };
 const labels: Record<string, string> = { select: '选择', name: '作品', dur: '时长', size: '体积', resolution: '分辨率',
   rating: '评分', o: '高潮计数', plays: '观看次数', new: '入库时间', played: '观看时间', release: '发行时间', code: '番号', tags: '标签',
   library: '媒体库', people: '艺人' };
-export const catalogColumns = ['select', 'name', 'library', 'people', 'tags', 'code', 'dur', 'resolution', 'size', 'rating', 'plays', 'o', 'played', 'new', 'release']
+export const catalogColumns = ['select', 'name', 'people', 'library', 'tags', 'dur', 'rating', 'plays', 'new', 'release', 'played', 'o', 'resolution', 'size', 'code']
   .map(id => ({ id, label: labels[id]!, ...columnSizes[id]!, flex: id === 'name', required: id === 'select' || id === 'name', visible: defaultColumnVisibility[id] !== false }));
 
 function stored(key: string): Record<string, unknown> {

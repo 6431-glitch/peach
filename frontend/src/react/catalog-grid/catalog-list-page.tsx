@@ -26,12 +26,14 @@ import { completionRowRemembered, rememberCompletionRow } from '../library-proce
 import { catalogParams } from './catalog-grid';
 import type { CatalogGridProps, MediaItem, MediaPage } from './types';
 import { useCatalogTablePreferences } from './catalog-column-widths';
+import { catalogColumns } from './catalog-table-columns';
 import { CatalogRating, catalogTableDate } from './catalog-table-controls';
 import { TableColumnControls, TableColumnResizer } from '../components/table-column-controls';
 import { TableSelectionHeader } from '../components/table-selection-header';
 import './catalog-list.css';
 
 const features = tableFeatures({ rowSortingFeature, rowSelectionFeature, rowPaginationFeature, columnVisibilityFeature });
+const COLUMN_ORDER = catalogColumns.map(column => column.id);
 const sortOptions = [
   { id: 'name', label: '名称' }, { id: 'dur', label: '时长' }, { id: 'size', label: '体积' },
   { id: 'new', label: '入库时间' }, { id: 'release', label: '发行时间' },
@@ -98,6 +100,7 @@ export function CatalogListPage(props: CatalogGridProps) {
   const rowSelection: RowSelectionState = props.selectMode ? Object.fromEntries([...props.selected].map(id => [String(id), true])) : {};
   const columns = useMemo(() => {
     const helper = createColumnHelper<typeof features, MediaItem>();
+    /* 列的先后照 `catalogColumns`，与骨架、「显示列」里的顺序同一份。 */
     return helper.columns([
       helper.display({ id: 'select', header: ({ table }) => <TableSelectionHeader table={table} label="全选本页作品" disabled={result.isPlaceholderData} />,
       cell: ({ row }) => <Checkbox slot={null} aria-label={`选择 ${props.helpers.displayName(row.original, row.original.name || '')}`}
@@ -142,7 +145,7 @@ export function CatalogListPage(props: CatalogGridProps) {
         cell: ({ row }) => catalogTableDate(row.original.first_seen) }),
       helper.accessor(item => item.release_date, { id: 'release', header: '发行时间', enableSorting: true,
         cell: ({ row }) => row.original.release_date || '—' }),
-    ]);
+    ]).sort((a, b) => COLUMN_ORDER.indexOf(a.id!) - COLUMN_ORDER.indexOf(b.id!));
   }, [props.helpers, props.actions, props.layout, props.selectMode, result.isPlaceholderData]);
   const table = useTable({
     features, columns, data: items, getRowId: item => String(item.id),
@@ -266,7 +269,7 @@ function ListIdentity({ item, props, disabled }: { item: MediaItem; props: Catal
 function ListLibrary({ item }: { item: MediaItem }) {
   const tints = useLibraryTints({ names: true });
   const tint = item.library_id ? tints.get(item.library_id) : undefined;
-  return tint?.name ? <span data-list-library="" title={`媒体库：${tint.name}`}><SourceMark mark={tint.icon} />{tint.name}</span> : '—';
+  return tint?.name ? <span data-list-library="" title={`媒体库：${tint.name}`}><SourceMark mark={tint.icon} /><span>{tint.name}</span></span> : '—';
 }
 
 /** 艺人那一列：头像与署名和卡片同一套（`identityParts`）。点头像或人名打开人物、厂牌页，没有署名的那批

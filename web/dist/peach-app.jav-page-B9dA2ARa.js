@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e7d5e503-517e-44e0-9b4c-cdb3bd351197", e._sentryDebugIdIdentifier = "sentry-dbid-e7d5e503-517e-44e0-9b4c-cdb3bd351197");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "3f2ac6ed-77d5-4dff-bc28-167f9b4d545c", e._sentryDebugIdIdentifier = "sentry-dbid-3f2ac6ed-77d5-4dff-bc28-167f9b4d545c");
 	} catch {}
 })();
 import { $76d00c5a4edb230a$export$76ccd210b9029917 as e, $76d00c5a4edb230a$export$816b5d811295e6bc as t, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as n, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as r, $76d00c5a4edb230a$export$f850895b287ef28e as i, $fe21c36db05242bb$export$d7b12c4107be0d61 as a, ArtSlot as o, Button as s, ButtonLink as c, Bx as l, CatalogViewToggle as u, ChevronSortDown as d, Chip as f, CloudDownloadDialog as p, DISCOVERY_SORTS as m, DOWNLOADS_KEY as h, DOWNLOADS_URL as g, DataTableFrame as _, E3 as v, EmptyFocusButton as y, EmptyState as b, FilterGlassRows as x, FilterIconButton as S, FilterPill as C, GlassPill as w, Help as T, IndexSearch as E, Input as ee, JAV_LAYOUTS as te, JAV_RECOMMENDATION_GRID as ne, JavHeader as D, LibraryShortcuts as O, M6 as k, Note as A, PHASES as j, Pagination as M, RELEASE_COLUMN_VISIBILITY_KEY as N, RELEASE_COLUMN_WIDTHS_KEY as P, RELEASE_SORTS as F, RELEASE_SORT_COLUMNS as I, SEGMENT as L, SEGMENTED_TRACK as R, SegmentedRadioGroup as z, Segments as re, Shuffle as B, SortKeys as ie, SourceAvatar as V, Table as ae, TableColumnControls as oe, TableColumnResizer as se, TaskProgress as ce, WANTS_KEY as H, WantMagnets as U, Wt as le, __toESM as ue, addWant as de, apiGet as fe, appSettingsStore as pe, avatarInner as me, busyProps as W, cachedMagnetStates as he, cardClass as ge, cardRatio as _e, catalogListSkeletonCellHtml as ve, coverUrl as ye, discoveryArtwork as be, discoveryKey as xe, discoveryScore as Se, entityDisplayName as G, entityFaceImg as Ce, entityPath as we, errorMessage as K, esc as Te, facePos as Ee, fetchDiscoveries as De, fetchReleases as Oe, fetchWants as ke, firstGrapheme as Ae, fmtDur as je, gridLayout as Me, invalidateWants as q, javContentSkeleton as Ne, javLayout as Pe, javTagSkeleton as Fe, keepPreviousData as Ie, leadingGraphemes as Le, logoUrl as Re, pageWindow as ze, qE as Be, recommendationScore as Ve, relayoutCovers as He, releaseColumns as Ue, releaseFilters as We, releaseKey as Ge, removeWants as Ke, require_jsx_runtime as qe, require_react as Je, resetWants as Ye, searchNote as Xe, spriteGlyph as Ze, storeJavLayout as Qe, textLang as $e, tierPlaceholdersHtml as et, useAction as J, useCatalogView as tt, useEntityNames as nt, useQuery as Y, useTablePreferences as rt, wantName as X, wireHorizontalScroller as it, writeJavQuery as Z } from "./peach-app.js";
@@ -599,7 +599,7 @@ function vt({ items: a, waiting: c, filters: l, studios: u, javImage: f, readOnl
 			case "studio": return t.studio ? /* @__PURE__ */ (0, $.jsxs)("span", {
 				"data-list-library": "",
 				title: t.studio,
-				children: [/* @__PURE__ */ (0, $.jsx)(_t, { studio: w.get(t.studio) }), t.studio]
+				children: [/* @__PURE__ */ (0, $.jsx)(_t, { studio: w.get(t.studio) }), /* @__PURE__ */ (0, $.jsx)("span", { children: t.studio })]
 			}) : "—";
 			case "tags": return t.tags?.length ? /* @__PURE__ */ (0, $.jsx)("div", {
 				"data-media-tags": "",
@@ -1354,4 +1354,4 @@ function Ot({ readOnly: e, receipt: t, resource: n, query: r, navigate: i, clear
 }
 export { Dt as JavPage };
 
-//# debugId=e7d5e503-517e-44e0-9b4c-cdb3bd351197
+//# debugId=3f2ac6ed-77d5-4dff-bc28-167f9b4d545c

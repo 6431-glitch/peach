@@ -64,7 +64,7 @@ export function ReleaseTable({ items, waiting, filters, studios, javImage, readO
           {(item.performer_refs?.length || 0) > 1 ? <span data-media-who-more="">等 {item.performer_refs!.length} 人</span> : null}
         </div> : '—';
       case 'studio':
-        return item.studio ? <span data-list-library="" title={item.studio}><StudioMark studio={logos.get(item.studio)} />{item.studio}</span> : '—';
+        return item.studio ? <span data-list-library="" title={item.studio}><StudioMark studio={logos.get(item.studio)} /><span>{item.studio}</span></span> : '—';
       case 'tags':
         return item.tags?.length ? <div data-media-tags="" data-list-tags="">
           {item.tags.map(tag => <button key={tag} type="button" data-media-tag="" aria-pressed={filters.tag === tag}

@@ -35,7 +35,9 @@
 .peach-react [data-catalog-table] [data-list-identity]:has([data-list-open]:hover, [data-list-name]:hover) [data-list-name] { text-decoration: underline; }
 /* 媒体库列：图标加名称；用户给这个媒体库选了来源色时整行铺淡色。
  * 个人状态图标缩小后贴在预览图左下角。 */
-.peach-react [data-catalog-table] [data-list-library] { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; overflow: hidden; color: var(--ink-2); font-size: var(--fs-sm); text-overflow: ellipsis; }
+.peach-react [data-catalog-table] [data-list-library] { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-width: 0; color: var(--ink-2); font-size: var(--fs-sm); }
+/* 名字是弹性容器里的一项，省略号要写在它自己身上才生效。 */
+.peach-react [data-catalog-table] [data-list-library] > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .peach-react [data-catalog-table] [data-catalog-row][data-library] > td { background: color-mix(in oklab, var(--library-color) 9%, transparent); }
 [data-theme="dark"] .peach-react [data-catalog-table] [data-catalog-row][data-library] > td { background: color-mix(in oklab, var(--library-color) 13%, transparent); }
 .peach-react [data-catalog-table] [data-list-picture] [data-media-status] { left: 4px; bottom: 4px; gap: 4px; }
