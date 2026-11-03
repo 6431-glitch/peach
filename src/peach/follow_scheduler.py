@@ -197,6 +197,7 @@ class FollowUpdateScheduler:
     def _run(self) -> None:
         with self._state_lock:
             started_before = self._last_started_at
+            error_before = self._last_error
             self._running = True
             self._last_started_at = _stamp()
             self._last_error = None
@@ -220,6 +221,15 @@ class FollowUpdateScheduler:
                 with self._state_lock:
                     self._last_skipped_at = _stamp()
                     self._last_started_at = started_before
+                return
+            if result.get("idle"):
+                # 这一跳没有到期的来源（订阅源每半小时一跳，ADR-0132）：什么也没做，
+                # 上一轮的结论原样留着。按成功结算的话，一次真实失败半小时后就从界面上消失，
+                # 而失败的那几个源还要等到下一次到期才重拉。
+                skipped = True
+                with self._state_lock:
+                    self._last_started_at = started_before
+                    self._last_error = error_before
                 return
             rows = result.get("results") or []
             failures = [row for row in rows if not row.get("ok")]

@@ -2395,8 +2395,8 @@ class _FollowCheckSession:
                 connector_factory=build_connector, older=older, progress=progress,
                 initial_days=self.initial_days, cooldown=self.cooldown))
             more = (older and self.body.get('backfill_all') and result.get('ok')
-                    and not result.get('exhausted') and isinstance(result.get('page'), int)
-                    and round_index < 500)
+                    and not result.get('exhausted') and not result.get('deferred')
+                    and isinstance(result.get('page'), int) and round_index < 500)
             self.remember(row, result, finished=not more)
             if not more:
                 break

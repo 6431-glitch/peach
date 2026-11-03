@@ -183,8 +183,11 @@ class FollowContractTests(unittest.TestCase):
         self.contract.follow_media_resolver.pause('rule34video', 60)
         with mock.patch.object(web_follow, 'build_connector') as factory:
             result = self._post('/api/follow/check', {})
+            # 往回一路抓到底也一样：冷却中的那条只跳过一次，不在原地空转翻页。
+            backfill = self._post('/api/follow/check', {'older': True, 'backfill_all': True})
         self.assertEqual(factory.call_count, 0)
         self.assertEqual((result['results'], result['deferred']), ([], 2))
+        self.assertEqual((backfill['results'], backfill['deferred']), ([], 2))
 
     def test_a_scheduled_round_checks_only_the_sources_that_are_due(self):
         """定时那一跳跳过刚查过、又久未更新的来源；手动检查照旧全查。"""

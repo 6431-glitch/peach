@@ -211,6 +211,23 @@ class FollowUpdateSchedulerTests(unittest.TestCase):
                             before + timedelta(minutes=31))
             self.assertEqual(scheduler.backoff_minutes(2), 60)
 
+    def test_an_idle_tick_keeps_the_last_failure_on_record(self):
+        """没有到期源的一跳什么也没做：上一轮的失败、连续失败计数和上次运行时间都留着。"""
+        outcomes = [{"ok": True, "checked": 1, "results": [{"ok": False, "added": 0}]},
+                    {"ok": True, "idle": True, "checked": 0, "results": []}]
+        with tempfile.TemporaryDirectory() as temporary:
+            scheduler = FollowUpdateScheduler(Path(temporary), lambda: outcomes.pop(0),
+                                              available=True, tick_minutes=30)
+            scheduler._run()
+            failed = scheduler.status()
+            scheduler._run()
+            status = scheduler.status()
+            self.assertEqual(status["last_error"], "1 个来源检查失败")
+            self.assertEqual(status["consecutive_failures"], 1)
+            self.assertEqual((status["last_started_at"], status["last_finished_at"], status["last_checked"]),
+                             (failed["last_started_at"], failed["last_finished_at"], 1))
+            self.assertFalse(status["running"])
+
     def test_reader_never_starts_or_accepts_schedule_changes(self):
         with tempfile.TemporaryDirectory() as temporary:
             scheduler = FollowUpdateScheduler(Path(temporary), lambda: {}, available=False)
