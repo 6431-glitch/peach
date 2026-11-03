@@ -328,10 +328,14 @@ def _asyncio_fields(context) -> dict:
     return fields
 
 
+#: 清理回调里 `shutdown` 会报的 Winsock 错误：10054 对端已重置连接，10022 套接字已失效（WSAEINVAL）。
+_CLEANUP_WINERRORS = frozenset({10054, 10022})
+
+
 def is_asyncio_connection_cleanup(error, fields) -> bool:
-    """识别 Winsock 重置连接时、纯标准库清理回调中的异常。"""
+    """识别对端断开后、纯标准库清理回调中 `shutdown` 抛出的 Winsock 异常。"""
     callback = "asyncio.proactor_events._ProactorBasePipeTransport._call_connection_lost"
-    if (not isinstance(error, ConnectionResetError) or getattr(error, "winerror", None) != 10054
+    if (not isinstance(error, OSError) or getattr(error, "winerror", None) not in _CLEANUP_WINERRORS
             or fields.get("asyncio_callback") != callback
             or error.__cause__ is not None or error.__context__ is not None):
         return False

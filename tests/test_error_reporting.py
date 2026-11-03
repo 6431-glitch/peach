@@ -1071,6 +1071,21 @@ class ErrorReportingTests(unittest.TestCase):
 
         asyncio.run(run())
 
+    def test_shutdown_rejected_during_connection_cleanup_is_the_same_cleanup(self):
+        """对端先断开时，清理回调里的 `shutdown` 报 WinError 10022（普通 OSError），收尾照常完成。"""
+        from peach import remote_reporting
+        error = OSError(22, 'invalid argument')
+        error.winerror = 10022
+        with mock.patch.object(remote_reporting, 'send') as send:
+            loop = self.asyncio_callback(error, recoverable=True)
+        send.assert_not_called()
+        record = self.records()[-1]
+        self.assertEqual(record['classification'], 'connection-cleanup')
+        self.assertTrue(record['cleanup_recovered'])
+        self.assertIsNone(loop.diagnostic_transport._sock)
+        loop.diagnostic_socket.close.assert_called_once()
+        loop.default_exception_handler.assert_not_called()
+
     def test_asyncio_tls_cleanup_keeps_protocol_class_after_application_detaches(self):
         from peach import remote_reporting
         error = ConnectionResetError(10054, 'connection reset')
