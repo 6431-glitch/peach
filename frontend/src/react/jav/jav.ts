@@ -5,6 +5,7 @@ import type { FaceRef, CoverItem } from '@peach/card-art';
 import { coverImage, javArtwork, remoteCoverUrl } from '@peach/card-art';
 import { esc } from '@peach/legacy/core';
 import type { DiscoveryDirection, DiscoverySort } from './discovery-sorts';
+import { JAV_RELEASE_SORT } from '../../sort-preferences';
 
 export { JAV_TABS, javTab, javPath, javLibraryPath } from './jav-navigation';
 export interface Discovery extends CoverItem {
@@ -37,8 +38,20 @@ export function fetchDiscoveries(scope: DiscoveryScope, signal: AbortSignal, opt
   return apiGet<DiscoveryResult>(`/api/jav/discoveries?${params}`, signal);
 }
 
-/** 新作分区的筛选：都写在地址栏里，刷新与返回原样恢复。 */
-export interface ReleaseFilters { page: number; performer: string; studio: string; tag: string; q: string }
+/** 新作分区的排序：发行时间打头（默认），其余同「发现」；`random` 是「换一批」，没有对应的排序键。 */
+export const RELEASE_SORTS = [
+  ['release_date', JAV_RELEASE_SORT[1], '按发行日期排序'],
+  ['source_score', '来源评分', '按来源评分排序'],
+  ['duration', '时长', '按时长排序'],
+  ['code', '番号', '按番号排序'],
+  ['taste', '口味', '按口味匹配排序'],
+] as const;
+export type ReleaseSort = typeof RELEASE_SORTS[number][0] | 'random';
+/** 新作分区的筛选与排序：都写在地址栏里，刷新与返回原样恢复。`seed` 只在换一批时有值。 */
+export interface ReleaseFilters {
+  page: number; performer: string; studio: string; tag: string; q: string;
+  sort: ReleaseSort; dir: DiscoveryDirection; seed: string;
+}
 export interface ReleaseFacetPerformer extends FaceRef { name: string; count: number; source_actor_id?: string; source_avatar?: boolean }
 export interface ReleaseFacetStudio { name: string; count: number; has_logo: boolean; logo_version?: string }
 /** `/api/jav/releases`：一页新作，加只取自订阅新作的筛选项。 */
@@ -50,14 +63,19 @@ export interface ReleaseResult {
 export const RELEASE_PAGE_SIZE = 24;
 export function releaseFilters(search: string): ReleaseFilters {
   const params = new URLSearchParams(search);
+  const sort = params.get('sort');
+  const seed = params.get('seed') || '';
   return { page: Math.max(1, Math.floor(Number(params.get('page'))) || 1), performer: params.get('performer') || '',
-    studio: params.get('studio') || '', tag: params.get('tag') || '', q: (params.get('q') || '').trim() };
+    studio: params.get('studio') || '', tag: params.get('tag') || '', q: (params.get('q') || '').trim(),
+    sort: sort === 'random' && seed ? 'random' : RELEASE_SORTS.find(([key]) => key === sort)?.[0] || 'release_date',
+    dir: params.get('dir') === 'asc' ? 'asc' : 'desc', seed };
 }
 export const releaseKey = (filters: ReleaseFilters) =>
-  ['jav-releases', filters.page, filters.performer, filters.studio, filters.tag, filters.q] as const;
+  ['jav-releases', filters.page, filters.performer, filters.studio, filters.tag, filters.q, filters.sort, filters.dir, filters.seed] as const;
 export function fetchReleases(filters: ReleaseFilters, signal: AbortSignal, jobId = '') {
-  const params = new URLSearchParams({ page: String(filters.page), size: String(RELEASE_PAGE_SIZE) });
-  for (const key of ['performer', 'studio', 'tag', 'q'] as const) if (filters[key]) params.set(key, filters[key]);
+  const params = new URLSearchParams({ page: String(filters.page), size: String(RELEASE_PAGE_SIZE),
+    sort: filters.sort, direction: filters.dir });
+  for (const key of ['performer', 'studio', 'tag', 'q', 'seed'] as const) if (filters[key]) params.set(key, filters[key]);
   if (jobId) params.set('metadata_job_id', jobId);
   return apiGet<ReleaseResult>(`/api/jav/releases?${params}`, signal);
 }

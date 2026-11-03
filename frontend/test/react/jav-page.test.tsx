@@ -126,6 +126,31 @@ it('新作分区的女优、厂牌、标签只列接口给的订阅新作筛选�
   history.replaceState(null, '', before);
 });
 
+it('新作分区默认按发行时间倒序，排序键再点翻方向，换一批按新种子重排且不按下排序键', async () => {
+  const before = location.pathname + location.search;
+  history.replaceState(null, '', '/jav?tab=releases');
+  const fetcher = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ items: [], total: 0, candidate_total: 0, page: 1, size: 24,
+    facets: { performers: [], studios: [], tags: [] } }) }));
+  vi.stubGlobal('fetch', fetcher);
+  const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="releases" readOnly navigate={vi.fn()} receipt={vi.fn()} /></QueryClientProvider>);
+  await settle();
+  const asked = () => new URL(String(fetcher.mock.calls.at(-1)?.[0]), location.origin).searchParams;
+  expect([...host.querySelectorAll('[data-entity-sort]')].map(node => node.textContent)).toEqual(['发行时间', '来源评分', '时长', '番号', '口味']);
+  expect([asked().get('sort'), asked().get('direction')]).toEqual(['release_date', 'desc']);
+  await click(host.querySelector('[data-entity-sort="source_score"]'));
+  await settle();
+  expect([asked().get('sort'), asked().get('direction')]).toEqual(['source_score', 'desc']);
+  await click(host.querySelector('[data-entity-sort="source_score"]'));
+  await settle();
+  expect([asked().get('sort'), asked().get('direction')]).toEqual(['source_score', 'asc']);
+  await click(host.querySelector('[data-entity-batch]'));
+  await settle();
+  expect(asked().get('sort')).toBe('random');
+  expect(asked().get('seed')).toBeTruthy();
+  expect(host.querySelector('[data-entity-sort][aria-pressed="true"]')).toBeNull();
+  history.replaceState(null, '', before);
+});
+
 it('没有推荐时空态的查看口味在左，主入口在右', async () => {
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ items: [] }) })));
   const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="discover" readOnly navigate={vi.fn()} receipt={vi.fn()} /></QueryClientProvider>);

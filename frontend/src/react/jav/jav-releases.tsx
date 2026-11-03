@@ -18,13 +18,15 @@ import { TaskProgress } from '../components/task-progress';
 import { EmptyState } from '../components/empty-state';
 import { Pagination } from '../components/table-pagination';
 import { FilterGlassRows, FilterPill, GlassPill } from '../components/filter-glass';
-import { Segments } from '../entity-filter/entity-filter-page';
+import { Segments, Shuffle, SortKeys } from '../entity-filter/entity-filter-page';
+import { Chip } from '@/components/base/badges/chip';
+import { recommendationScore, type DiscoveryDirection } from './discovery-sorts';
 import { addWant, invalidateWants } from '../wants/wants';
 import { useAction } from '../settings/use-action';
 import { useEntityNames } from '../use-entity-names';
 import { DiscoveryCard, resourcePrefill } from './discovery-card';
-import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, type ReleaseFacetPerformer, type ReleaseFacetStudio,
-  type ReleaseFilters } from './jav';
+import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, RELEASE_SORTS, type ReleaseFacetPerformer, type ReleaseFacetStudio,
+  type ReleaseFilters, type ReleaseSort } from './jav';
 import { writeJavQuery } from './jav-navigation';
 
 type Facet = 'performer' | 'studio' | 'tag';
@@ -33,6 +35,12 @@ const performerRing = (person: ReleaseFacetPerformer) =>
   `<span data-tier-initial>${esc(firstGrapheme(entityDisplayName('performer', person.name, person.id)))}</span>${entityFaceImg({
     id: person.id, hasImage: person.has_image, version: person.image_version, style: facePos(person.avatar_focus),
     focus: person.avatar_focus, standIn: person.avatar_stand_in })}`;
+
+/** 按口味排时卡上那枚推荐档，与「发现」同一套分档。 */
+function TasteChip({ value }: { value?: number | null }) {
+  const recommendation = recommendationScore(value);
+  return <span data-jav-taste-score="" title={`口味 ${recommendation.score}`}><Chip color={recommendation.color}>{recommendation.label}</Chip></span>;
+}
 
 function StudioMark({ studio }: { studio: ReleaseFacetStudio }) {
   const [broken, setBroken] = useState(false);
@@ -69,6 +77,18 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
     setFilters(current => ({ ...current, performer: '', studio: '', tag: '', q: '', page: 1 }));
     writeJavQuery({ performer: '', studio: '', tag: '', page: '' });
     clearText();
+  };
+  /* 点选中的那一枚翻方向；换一枚时番号默认正序，其余倒序（同「发现」）。 */
+  const sortBy = (key: ReleaseSort) => {
+    const dir: DiscoveryDirection = key === filters.sort ? (filters.dir === 'asc' ? 'desc' : 'asc') : key === 'code' ? 'asc' : 'desc';
+    setFilters(current => ({ ...current, sort: key, dir, seed: '', page: 1 }));
+    writeJavQuery({ sort: key === 'release_date' ? '' : key, dir: dir === 'asc' ? 'asc' : '', seed: '', page: '' });
+  };
+  /* 换一批：同一批新作按新种子重排，翻页时顺序不变；排序键都不再按下。 */
+  const reshuffle = () => {
+    const seed = Math.random().toString(36).slice(2, 10);
+    setFilters(current => ({ ...current, sort: 'random', dir: 'desc', seed, page: 1 }));
+    writeJavQuery({ sort: 'random', dir: '', seed, page: '' });
   };
   useEffect(() => {
     const rows = section.current?.querySelectorAll('[data-catalog-tier],[data-catalog-tags],[data-filter-row="bottom"]');
@@ -126,7 +146,12 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
         <span data-catalog-readout="">{waiting ? <span data-skeleton="count" aria-hidden className="relative inline-block h-3.5 w-37.5 rounded-md align-middle skeleton-sheen" />
           : filtered ? `${data?.total || 0} / ${data?.candidate_total || 0} 部` : `${data?.total || 0} 部`}</span>
         {filtered ? <GlassPill onPress={clear}>清除筛选</GlassPill> : null}
-        <span data-entity-sorts=""><Segments label="JAV 卡片版式" value={layout} options={JAV_LAYOUTS} onChange={storeJavLayout} /></span>
+        <span data-entity-sorts="">
+          <Shuffle onPress={reshuffle} busy={filters.sort === 'random' && releases.isFetching} />
+          <Segments label="JAV 卡片版式" value={layout} options={JAV_LAYOUTS} onChange={storeJavLayout} />
+          <SortKeys sorts={RELEASE_SORTS.map(([key, label, ariaLabel]) => ({ key, label, ariaLabel, pressed: key === filters.sort, dir: filters.dir }))}
+            onSort={key => sortBy(key as ReleaseSort)} />
+        </span>
       </>} />
     {waiting ? <div role="status" aria-label="正在读取新作" dangerouslySetInnerHTML={{ __html: javContentSkeleton('discover', layout) }} /> : null}
     {releases.error ? <Note tone="error" title="新作未取得">{errorMessage(releases.error)}</Note> : null}
@@ -145,7 +170,7 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
         onWant={() => { void action.run(String(item.id), signal => addWant({ code: item.code }, signal), () => {
           receipt('已加入想要'); void invalidateWants(); void releases.refetch();
         }) }}
-        onResource={() => resource(resourcePrefill(item))} />)}
+        onResource={() => resource(resourcePrefill(item))} badge={filters.sort === 'taste' ? <TasteChip value={item.taste_score} /> : undefined} />)}
     </div>
     <div className="flex justify-center"><Pagination page={filters.page} pages={pages} onPage={goPage} label="新作分页" /></div>
   </section>;
