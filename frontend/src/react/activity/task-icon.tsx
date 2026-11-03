@@ -1,12 +1,12 @@
 /* 任务卡标题前的图标：按任务做的事分十类，同类共用一枚。关注、数据管理、口味三类与导航里对应页面同一枚，
  * 其余按对象选。35 种任务各配一枚会有一半长得差不多，反而认不出来。不在表里的任务用通用任务图标。 */
-import type { ComponentType } from 'react';
+import type { RemixiconComponentType } from '@remixicon/react';
 import {
   RiDownloadCloud2Line, RiFileSearchLine, RiFilmLine, RiHardDrive3Line, RiHeart3Line, RiImage2Line,
   RiLinksLine, RiRssLine, RiTaskLine, RiToolsLine, RiUser3Line,
 } from '@remixicon/react';
 
-type Icon = ComponentType<{ className?: string; 'aria-hidden'?: boolean }>;
+type Icon = RemixiconComponentType;
 
 const FAMILIES: [Icon, string[]][] = [
   [RiRssLine, ['follow-check', 'follow-resolve', 'follow-creator', 'feed-check', 'feed-scrape', 'feed-cover']],
