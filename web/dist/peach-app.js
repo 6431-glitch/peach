@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "a03b049d-cf65-4ed7-98ed-223ad15089da", e._sentryDebugIdIdentifier = "sentry-dbid-a03b049d-cf65-4ed7-98ed-223ad15089da");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "910b7443-a1a8-4395-ae58-02cc4c28ad22", e._sentryDebugIdIdentifier = "sentry-dbid-910b7443-a1a8-4395-ae58-02cc4c28ad22");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, n) => {
@@ -45979,39 +45979,8 @@ function zH({ toast: e, mode: t, monitor: n }) {
 		forget: () => o(null)
 	};
 }
-// src/react/components/card.tsx
-var D_e = "min-w-0", O_e = {
-	filled: "bg-background-secondary-default",
-	outlined: "border border-separator-border bg-background-primary-default",
-	raised: "bg-background-primary-default"
-}, k_e = {
-	default: "rounded-2xl shadow-card",
-	chart: "rounded-2-5xl",
-	surface: "rounded-surface",
-	plain: "rounded-2xl"
-}, A_e = {
-	line: "border border-border-button-default",
-	soft: "border border-separator-border",
-	error: "outline-1 -outline-offset-1 outline-border-error-default"
-}, j_e = {
-	none: "",
-	default: "p-5"
-}, M_e = "cursor-pointer outline-none not-data-selected:hover:bg-card-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-3", N_e = "relative data-selected:bg-background-primary-default data-selected:shadow-none data-selected:after:pointer-events-none data-selected:after:absolute data-selected:after:inset-0 data-selected:after:z-1 data-selected:after:rounded-[inherit] data-selected:after:border-2 data-selected:after:border-border-focus-ring";
-function BH(e = {}) {
-	let { variant: t = "filled", padding: n = "default", interactive: r, selectable: i, bordered: a, className: o } = e, s = e.radius ?? (t === "outlined" ? "surface" : "default");
-	return [
-		D_e,
-		O_e[t],
-		k_e[s],
-		j_e[n],
-		a ? A_e[a] : "",
-		r ? M_e : "",
-		i ? N_e : "",
-		o ?? ""
-	].filter(Boolean).join(" ");
-}
 // src/react/components/loading-dots.tsx
-function VH({ label: e }) {
+function BH({ label: e }) {
 	return /* @__PURE__ */ (0, I.jsxs)("p", {
 		role: "status",
 		className: "flex min-w-0 items-center gap-2 text-caption-1-regular text-text-secondary",
@@ -46030,32 +45999,32 @@ function VH({ label: e }) {
 	});
 }
 // src/react/components/progress.tsx
-var HH = 100, P_e = .4;
-function UH({ label: e, value: t, max: n = 100, stops: r = [] }) {
-	let i = n > 0 ? n : 1, a = (e) => Math.min(Math.max(Number.isFinite(e) ? e : 0, 0), i), o = (e) => a(e) / i * HH;
+var VH = 100, D_e = .4;
+function HH({ label: e, value: t, max: n = 100, stops: r = [], tinted: i = !1 }) {
+	let a = n > 0 ? n : 1, o = (e) => Math.min(Math.max(Number.isFinite(e) ? e : 0, 0), a), s = (e) => o(e) / a * VH;
 	return /* @__PURE__ */ (0, I.jsxs)("svg", {
 		role: "progressbar",
 		"aria-label": e,
 		"aria-valuemin": 0,
-		"aria-valuemax": i,
-		"aria-valuenow": a(t),
-		viewBox: `0 0 ${HH} 1`,
+		"aria-valuemax": a,
+		"aria-valuenow": o(t),
+		viewBox: `0 0 ${VH} 1`,
 		preserveAspectRatio: "none",
 		className: "h-1.5 w-full overflow-hidden rounded-full",
 		children: [
 			/* @__PURE__ */ (0, I.jsx)("rect", {
-				width: HH,
+				width: VH,
 				height: 1,
-				className: "fill-background-tertiary-default"
+				className: i ? "fill-text-primary/10" : "fill-background-tertiary-default"
 			}),
 			/* @__PURE__ */ (0, I.jsx)("rect", {
-				width: o(t),
+				width: s(t),
 				height: 1,
 				className: "fill-border-focus-ring"
 			}),
 			r.map((e) => /* @__PURE__ */ (0, I.jsx)("rect", {
-				x: o(e),
-				width: P_e,
+				x: s(e),
+				width: D_e,
 				height: 1,
 				className: "fill-background-secondary-default"
 			}, e))
@@ -46063,26 +46032,23 @@ function UH({ label: e, value: t, max: n = 100, stops: r = [] }) {
 	});
 }
 // src/react/components/task-progress.tsx
-function WH({ label: e, value: t = 0, total: n, embedded: r = !1 }) {
+function UH({ label: e, value: t = 0, total: n, embedded: r = !1 }) {
 	return /* @__PURE__ */ (0, I.jsx)("div", {
-		"data-task-progress": !0,
-		className: r ? "flex flex-col gap-1.5" : BH({
-			variant: "outlined",
-			padding: "none",
-			className: "flex flex-col gap-1.5 px-4 py-3.5"
-		}),
-		children: n && n > 0 ? /* @__PURE__ */ (0, I.jsxs)(I.Fragment, { children: [/* @__PURE__ */ (0, I.jsx)(UH, {
+		"data-task-progress": r ? "embedded" : "framed",
+		className: q("flex flex-col gap-1.5", !r && "gap-2 rounded-2lg bg-background-tertiary-default px-4 py-3 text-text-secondary"),
+		children: n && n > 0 ? /* @__PURE__ */ (0, I.jsxs)(I.Fragment, { children: [/* @__PURE__ */ (0, I.jsx)(HH, {
 			label: e,
 			value: t,
-			max: n
+			max: n,
+			tinted: !r
 		}), /* @__PURE__ */ (0, I.jsx)("p", {
 			className: "text-caption-1-regular text-text-secondary wrap-anywhere",
 			children: e
-		})] }) : /* @__PURE__ */ (0, I.jsx)(VH, { label: e })
+		})] }) : /* @__PURE__ */ (0, I.jsx)(BH, { label: e })
 	});
 }
 // src/react/library-processing/processing-line.tsx
-function GH(e) {
+function WH(e) {
 	let [t, n] = (0, F.useState)({
 		snapshot: e,
 		seconds: 0
@@ -46103,12 +46069,12 @@ function GH(e) {
 		waited_seconds: r + a
 	} : e);
 }
-function F_e({ state: e }) {
-	return GH(e);
+function O_e({ state: e }) {
+	return WH(e);
 }
-function I_e({ state: e }) {
-	let t = GH(e);
-	return /* @__PURE__ */ (0, I.jsx)(WH, {
+function k_e({ state: e }) {
+	let t = WH(e);
+	return /* @__PURE__ */ (0, I.jsx)(UH, {
 		embedded: !0,
 		label: t,
 		value: Math.min(e.checked || 0, e.total || 0),
@@ -46116,7 +46082,7 @@ function I_e({ state: e }) {
 	});
 }
 // src/react/components/collapse-region.tsx
-function KH({ open: e, children: t, ...n }) {
+function GH({ open: e, children: t, ...n }) {
 	let r = (0, F.useRef)(null), i = (0, F.useRef)(!1);
 	return (0, F.useLayoutEffect)(() => {
 		let t = r.current;
@@ -46127,7 +46093,7 @@ function KH({ open: e, children: t, ...n }) {
 		children: t
 	});
 }
-function qH(e) {
+function KH(e) {
 	return /* @__PURE__ */ (0, I.jsx)("svg", {
 		...e,
 		"aria-hidden": !0,
@@ -46142,19 +46108,19 @@ function qH(e) {
 	});
 }
 // src/react/boardui/components/application/settings/settings-rows.tsx
-function JH({ className: e, children: t }) {
+function qH({ className: e, children: t }) {
 	return /* @__PURE__ */ (0, I.jsx)("div", {
 		className: q("flex w-full flex-col rounded-2xl bg-background-secondary-default pl-3", e),
 		children: t
 	});
 }
-function YH({ className: e, children: t }) {
+function JH({ className: e, children: t }) {
 	return /* @__PURE__ */ (0, I.jsx)("p", {
 		className: q("w-full px-3 text-body-2-medium text-text-secondary", e),
 		children: t
 	});
 }
-function L_e({ label: e, description: t, children: n }) {
+function A_e({ label: e, description: t, children: n }) {
 	return /* @__PURE__ */ (0, I.jsxs)("div", {
 		className: q("flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5", "border-b border-separator-border last:border-b-0"),
 		children: [/* @__PURE__ */ (0, I.jsxs)("div", {
@@ -46170,7 +46136,7 @@ function L_e({ label: e, description: t, children: n }) {
 	});
 }
 // src/react/settings/section.tsx
-function R_e({ title: e, guide: t, icon: n, id: r, aside: i, onSubmit: a, children: o }) {
+function j_e({ title: e, guide: t, icon: n, id: r, aside: i, onSubmit: a, children: o }) {
 	let s = n ? /* @__PURE__ */ (0, I.jsxs)("span", {
 		className: "inline-flex items-center gap-1.5",
 		children: [n, e]
@@ -46178,12 +46144,12 @@ function R_e({ title: e, guide: t, icon: n, id: r, aside: i, onSubmit: a, childr
 		className: "flex w-full flex-wrap items-center justify-between gap-2",
 		children: [/* @__PURE__ */ (0, I.jsx)("div", {
 			className: "min-w-40 flex-1",
-			children: /* @__PURE__ */ (0, I.jsx)(YH, { children: s })
+			children: /* @__PURE__ */ (0, I.jsx)(JH, { children: s })
 		}), /* @__PURE__ */ (0, I.jsx)("div", {
 			className: "flex min-w-0 max-w-full",
 			children: i
 		})]
-	}) : /* @__PURE__ */ (0, I.jsx)(YH, { children: s }), /* @__PURE__ */ (0, I.jsx)(JH, { children: o })] });
+	}) : /* @__PURE__ */ (0, I.jsx)(JH, { children: s }), /* @__PURE__ */ (0, I.jsx)(qH, { children: o })] });
 	return a ? /* @__PURE__ */ (0, I.jsx)("form", {
 		id: r,
 		"data-guide-target": t,
@@ -46200,13 +46166,13 @@ function R_e({ title: e, guide: t, icon: n, id: r, aside: i, onSubmit: a, childr
 		children: c
 	});
 }
-function z_e({ children: e }) {
+function M_e({ children: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("div", {
 		className: "ui-settings-rows flex flex-col empty:hidden",
 		children: e
 	});
 }
-function B_e({ divided: e = !1, children: t }) {
+function N_e({ divided: e = !1, children: t }) {
 	return e ? /* @__PURE__ */ (0, I.jsx)("div", {
 		className: "flex flex-col gap-4 border-t border-separator-border py-4 pr-3 empty:hidden [&>.ui-settings-facts]:-mr-3",
 		children: t
@@ -46215,7 +46181,7 @@ function B_e({ divided: e = !1, children: t }) {
 		children: t
 	});
 }
-function V_e({ label: e, html: t }) {
+function P_e({ label: e, html: t }) {
 	let [n] = (0, F.useState)(t);
 	return /* @__PURE__ */ (0, I.jsx)("div", {
 		className: "contents",
@@ -46225,7 +46191,7 @@ function V_e({ label: e, html: t }) {
 		dangerouslySetInnerHTML: { __html: n }
 	});
 }
-function H_e({ status: e, children: t }) {
+function F_e({ status: e, children: t }) {
 	return /* @__PURE__ */ (0, I.jsxs)("div", {
 		className: "-ml-3 flex flex-wrap items-center justify-end gap-3 rounded-b-2xl border-t border-separator-border bg-card-footer px-3 py-3 empty:hidden",
 		children: [e ? /* @__PURE__ */ (0, I.jsx)("div", {
@@ -46234,27 +46200,27 @@ function H_e({ status: e, children: t }) {
 		}) : null, t]
 	});
 }
-function XH({ role: e, children: t }) {
+function YH({ role: e, children: t }) {
 	return /* @__PURE__ */ (0, I.jsx)("p", {
 		role: e,
 		className: "text-body-2-regular text-text-secondary",
 		children: t
 	});
 }
-function ZH({ children: e }) {
+function XH({ children: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("p", {
 		role: "alert",
 		className: "text-body-2-regular text-text-error-primary",
 		children: e
 	});
 }
-function QH({ children: e }) {
+function ZH({ children: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("p", {
 		className: "text-body-medium text-text-primary",
 		children: e
 	});
 }
-function U_e({ href: e, children: t, leadingIcon: n }) {
+function I_e({ href: e, children: t, leadingIcon: n }) {
 	return /* @__PURE__ */ (0, I.jsx)(DH, {
 		href: e,
 		target: "_blank",
@@ -46269,7 +46235,7 @@ function U_e({ href: e, children: t, leadingIcon: n }) {
 		})
 	});
 }
-function W_e() {
+function L_e() {
 	return /* @__PURE__ */ (0, I.jsx)(DH, {
 		href: "/tasks",
 		size: "small",
@@ -46278,13 +46244,13 @@ function W_e() {
 		children: "在任务中心查看进度"
 	});
 }
-function G_e({ children: e }) {
+function R_e({ children: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("dl", {
 		className: "ui-settings-facts flex flex-col empty:hidden",
 		children: e
 	});
 }
-function K_e({ term: e, children: t }) {
+function z_e({ term: e, children: t }) {
 	return /* @__PURE__ */ (0, I.jsxs)("div", {
 		className: "flex min-h-11 items-center justify-between gap-4 border-b border-separator-border py-2.5 pr-3 last:border-b-0",
 		children: [/* @__PURE__ */ (0, I.jsx)("dt", {
@@ -46296,7 +46262,7 @@ function K_e({ term: e, children: t }) {
 		})]
 	});
 }
-function $H({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing: i = !1, onOpenChange: a, contentClassName: o }) {
+function QH({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing: i = !1, onOpenChange: a, contentClassName: o }) {
 	let s = (0, F.useId)(), c = (0, F.useRef)(null), l = (0, F.useRef)(null), u = (0, F.useRef)(!1), [d, f] = (0, F.useState)(n ?? t);
 	return (0, F.useLayoutEffect)(() => {
 		n !== void 0 && n !== d && c.current && l.current && (zo(c.current, l.current, n), f(n));
@@ -46333,7 +46299,7 @@ function $H({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing:
 		})]
 	});
 }
-function q_e({ name: e }) {
+function B_e({ name: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("svg", {
 		"aria-hidden": !0,
 		"data-source-mark": e,
@@ -46343,34 +46309,34 @@ function q_e({ name: e }) {
 		children: /* @__PURE__ */ (0, I.jsx)("use", { href: `#i-${e}` })
 	});
 }
-function eU({ mark: e }) {
+function $H({ mark: e }) {
 	return e.startsWith("data:image/png;base64,") ? /* @__PURE__ */ (0, I.jsx)("img", {
 		src: e,
 		alt: "",
 		width: 16,
 		height: 16,
 		className: "size-(--icon-inline) shrink-0"
-	}) : /* @__PURE__ */ (0, I.jsx)(q_e, { name: e });
+	}) : /* @__PURE__ */ (0, I.jsx)(B_e, { name: e });
 }
 // src/react/components/source-label.tsx
-var tU = (e) => e.startsWith("clouddrive:") ? e.split(":")[1] : e, J_e = Object.fromEntries(Object.entries(gs).map(([e, t]) => [e, function({ className: e }) {
+var eU = (e) => e.startsWith("clouddrive:") ? e.split(":")[1] : e, V_e = Object.fromEntries(Object.entries(gs).map(([e, t]) => [e, function({ className: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("span", {
 		className: e,
-		children: /* @__PURE__ */ (0, I.jsx)(eU, { mark: t })
+		children: /* @__PURE__ */ (0, I.jsx)($H, { mark: t })
 	});
 }]));
-function Y_e({ className: e }) {
+function H_e({ className: e }) {
 	return /* @__PURE__ */ (0, I.jsx)("span", {
 		className: e,
-		children: /* @__PURE__ */ (0, I.jsx)(eU, { mark: "database" })
+		children: /* @__PURE__ */ (0, I.jsx)($H, { mark: "database" })
 	});
 }
-var nU = (e) => J_e[tU(e)] ?? Y_e;
-function X_e({ site: e, label: t }) {
+var tU = (e) => V_e[eU(e)] ?? H_e;
+function U_e({ site: e, label: t }) {
 	let [n, r] = (0, F.useState)(!1), i = e === "javdb" ? "/site-mark?source=javdb" : e === "missav" ? "/site-mark?domain=missav.com" : null;
 	return /* @__PURE__ */ (0, I.jsxs)("span", {
 		className: "inline-flex min-w-0 items-center gap-1.5",
-		children: [n || !i ? /* @__PURE__ */ (0, I.jsx)(eU, { mark: "globe" }) : /* @__PURE__ */ (0, I.jsx)("img", {
+		children: [n || !i ? /* @__PURE__ */ (0, I.jsx)($H, { mark: "globe" }) : /* @__PURE__ */ (0, I.jsx)("img", {
 			src: i,
 			alt: "",
 			className: "size-(--icon-inline) shrink-0 object-contain",
@@ -46378,23 +46344,23 @@ function X_e({ site: e, label: t }) {
 		}), /* @__PURE__ */ (0, I.jsx)("span", { children: t })]
 	});
 }
-function rU({ source: e, label: t }) {
-	let n = tU(e);
+function nU({ source: e, label: t }) {
+	let n = eU(e);
 	return /* @__PURE__ */ (0, I.jsxs)("span", {
 		className: "inline-flex min-w-0 items-center gap-1.5",
-		children: [/* @__PURE__ */ (0, I.jsx)(eU, { mark: gs[n] || (n === "local" ? "hard-drive" : "database") }), /* @__PURE__ */ (0, I.jsx)("span", {
+		children: [/* @__PURE__ */ (0, I.jsx)($H, { mark: gs[n] || (n === "local" ? "hard-drive" : "database") }), /* @__PURE__ */ (0, I.jsx)("span", {
 			className: "min-w-0 truncate",
 			children: t
 		})]
 	});
 }
 // src/react/library-processing/processing-traffic.tsx
-var iU = (e) => Yn(e).replace(/\s/g, ""), aU = (e) => e >= 1024 ** 2 && e < 1024 ** 3 ? `${Number((e / 1024 ** 2).toFixed(1))}MB` : iU(e), Z_e = (e, t) => {
-	if (e === t) return iU(t);
+var rU = (e) => Yn(e).replace(/\s/g, ""), iU = (e) => e >= 1024 ** 2 && e < 1024 ** 3 ? `${Number((e / 1024 ** 2).toFixed(1))}MB` : rU(e), W_e = (e, t) => {
+	if (e === t) return rU(t);
 	let [n, r] = Yn(e).split(" "), [i, a] = Yn(t).split(" ");
-	return r === a ? `${n}-${i}${a}` : `${iU(e)}-${iU(t)}`;
-}, oU = (e, t, n) => e === void 0 ? Z_e(t, n) : `${e > 0 ? "约 " : ""}${iU(e)}`;
-function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDetailsChange: i }) {
+	return r === a ? `${n}-${i}${a}` : `${rU(e)}-${rU(t)}`;
+}, aU = (e, t, n) => e === void 0 ? W_e(t, n) : `${e > 0 ? "约 " : ""}${rU(e)}`;
+function oU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDetailsChange: i }) {
 	let a = $V(), [o, s] = (0, F.useState)(!1), c = (0, F.useId)(), l = r ?? o;
 	if (!e) return null;
 	let u = (e) => e.toLocaleString("zh-CN"), d = !!e.workload || !(!e.inventory || e.inventory.complete) || !!(e.unknown_files && e.inventory?.complete !== !1) || !!e.inventory?.errors;
@@ -46432,7 +46398,7 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 					children: "部分目录无法读取，数量和预估不完整"
 				}) : null
 			]
-		}), /* @__PURE__ */ (0, I.jsx)(KH, {
+		}), /* @__PURE__ */ (0, I.jsx)(GH, {
 			open: !n,
 			"data-processing-estimate": "",
 			children: /* @__PURE__ */ (0, I.jsxs)("div", {
@@ -46453,18 +46419,18 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 								}),
 								/* @__PURE__ */ (0, I.jsx)("p", {
 									className: "text-title-3-semibold text-text-primary",
-									children: oU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)
+									children: aU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)
 								}),
 								/* @__PURE__ */ (0, I.jsxs)("p", { children: [
 									e.unknown_route_estimated_bytes ? "已确认代理" : "代理",
 									" ",
-									oU(e.metered_estimated_bytes, e.metered_estimated_min_bytes, e.metered_estimated_max_bytes)
+									aU(e.metered_estimated_bytes, e.metered_estimated_min_bytes, e.metered_estimated_max_bytes)
 								] }),
 								t ? null : /* @__PURE__ */ (0, I.jsxs)("p", { children: [
 									"已用 ",
-									/* @__PURE__ */ (0, I.jsxs)("span", { children: [e.partial ? "约 " : "", iU(e.used_bytes)] }),
+									/* @__PURE__ */ (0, I.jsxs)("span", { children: [e.partial ? "约 " : "", rU(e.used_bytes)] }),
 									" · 代理 ",
-									iU(e.metered_used_bytes)
+									rU(e.metered_used_bytes)
 								] })
 							]
 						}), e.disk ? /* @__PURE__ */ (0, I.jsxs)("section", {
@@ -46480,18 +46446,18 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 								}),
 								/* @__PURE__ */ (0, I.jsxs)("p", {
 									className: "text-title-3-semibold text-text-primary",
-									children: ["约 ", iU(e.disk.estimated_bytes)]
+									children: ["约 ", rU(e.disk.estimated_bytes)]
 								}),
-								e.disk.temporary_bytes > 0 ? /* @__PURE__ */ (0, I.jsxs)("p", { children: ["抽帧临时文件约 ", aU(e.disk.temporary_bytes)] }) : null,
+								e.disk.temporary_bytes > 0 ? /* @__PURE__ */ (0, I.jsxs)("p", { children: ["抽帧临时文件约 ", iU(e.disk.temporary_bytes)] }) : null,
 								e.disk.volumes.map((e) => /* @__PURE__ */ (0, I.jsxs)("div", {
 									className: "flex min-w-0 flex-col gap-1",
 									children: [/* @__PURE__ */ (0, I.jsxs)("p", { children: [
 										e.path,
 										" 剩余 ",
-										e.free_bytes == null ? "未取得" : iU(e.free_bytes)
+										e.free_bytes == null ? "未取得" : rU(e.free_bytes)
 									] }), e.can_fit === !1 ? /* @__PURE__ */ (0, I.jsxs)("p", {
 										role: "status",
-										children: ["空间不足，还差 ", iU(e.shortfall_bytes || 0)]
+										children: ["空间不足，还差 ", rU(e.shortfall_bytes || 0)]
 									}) : null]
 								}, e.path)),
 								e.disk.cache_unknown ? /* @__PURE__ */ (0, I.jsx)("p", {
@@ -46526,12 +46492,12 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 									children: [
 										/* @__PURE__ */ (0, I.jsxs)("div", {
 											className: "flex min-w-0 items-start justify-between gap-2",
-											children: [e.root ? /* @__PURE__ */ (0, I.jsx)(rU, {
+											children: [e.root ? /* @__PURE__ */ (0, I.jsx)(nU, {
 												source: e.location,
 												label: e.label
 											}) : /* @__PURE__ */ (0, I.jsxs)("span", {
 												className: "inline-flex min-w-0 items-center gap-1.5",
-												children: [/* @__PURE__ */ (0, I.jsx)(eU, { mark: "globe" }), e.label]
+												children: [/* @__PURE__ */ (0, I.jsx)($H, { mark: "globe" }), e.label]
 											}), /* @__PURE__ */ (0, I.jsx)("span", {
 												className: "shrink-0",
 												children: e.connection === "system" ? "跟随系统" : e.connection === "unknown" ? "连接待确认" : e.metered ? "代理" : "直连"
@@ -46553,7 +46519,7 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 												"待补资料 ",
 												u(e.workload.pending_jav_titles),
 												" 部 · 平均约 ",
-												aU(e.workload.metadata_average_bytes || 0),
+												iU(e.workload.metadata_average_bytes || 0),
 												"/部"
 											]
 										}) : null,
@@ -46563,8 +46529,8 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 												"已用",
 												e.unobserved.length ? "约" : "",
 												" ",
-												iU(e.used_bytes)
-											] }), /* @__PURE__ */ (0, I.jsxs)("span", { children: ["预计 ", oU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)] })]
+												rU(e.used_bytes)
+											] }), /* @__PURE__ */ (0, I.jsxs)("span", { children: ["预计 ", aU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)] })]
 										})
 									]
 								}, e.key))
@@ -46577,15 +46543,15 @@ function sU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDe
 	});
 }
 // src/react/library-processing/library-processing-notice.tsx
-var cU = "peach.library-processing.collapsed";
-function lU(e) {
+var sU = "peach.library-processing.collapsed";
+function cU(e) {
 	try {
-		return !e || sessionStorage.getItem(cU) !== e;
+		return !e || sessionStorage.getItem(sU) !== e;
 	} catch {
 		return !0;
 	}
 }
-function Q_e({ value: e, max: t }) {
+function G_e({ value: e, max: t }) {
 	let n = Math.max(0, Math.min(100, e / t * 100));
 	return /* @__PURE__ */ (0, I.jsxs)("svg", {
 		role: "progressbar",
@@ -46615,17 +46581,17 @@ function Q_e({ value: e, max: t }) {
 		})]
 	});
 }
-function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
-	let [i, a] = (0, F.useState)(() => lU(e?.job_id)), [o, s] = (0, F.useState)(!1), c = (0, F.useRef)(!1), l = (0, F.useRef)(0), u = i && !o, d = (0, F.useRef)(u);
+function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
+	let [i, a] = (0, F.useState)(() => cU(e?.job_id)), [o, s] = (0, F.useState)(!1), c = (0, F.useRef)(!1), l = (0, F.useRef)(0), u = i && !o, d = (0, F.useRef)(u);
 	d.current = u;
 	let f = (0, F.useId)(), [p, m] = (0, F.useState)(!1), h = (0, F.useRef)(null), g = !t && hH(e), _ = e?.status === "failed" && !g, v = mH(e);
 	(0, F.useEffect)(() => {
-		a(lU(e?.job_id)), m(!1);
+		a(cU(e?.job_id)), m(!1);
 	}, [e?.job_id]);
 	let y = () => {
 		if (!(o && (c.current = !0, s(!1), i))) {
 			try {
-				i && e?.job_id ? sessionStorage.setItem(cU, e.job_id) : sessionStorage.removeItem(cU);
+				i && e?.job_id ? sessionStorage.setItem(sU, e.job_id) : sessionStorage.removeItem(sU);
 			} catch {}
 			i && m(!1), a(!i);
 		}
@@ -46669,7 +46635,7 @@ function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 				/* @__PURE__ */ (0, I.jsxs)("div", {
 					className: "flex min-w-0 items-center gap-3",
 					children: [
-						v && e?.total ? /* @__PURE__ */ (0, I.jsx)(Q_e, {
+						v && e?.total ? /* @__PURE__ */ (0, I.jsx)(G_e, {
 							value: e.checked || 0,
 							max: e.total
 						}) : _ || x ? /* @__PURE__ */ (0, I.jsx)(Uhe, {
@@ -46694,7 +46660,7 @@ function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 							size: "small",
 							variant: "secondary",
 							iconOnly: !0,
-							leadingIcon: qH,
+							leadingIcon: KH,
 							"data-processing-toggle": "",
 							"data-collapse-upward": "",
 							"aria-label": u ? "收起任务详情" : "展开任务详情",
@@ -46712,7 +46678,7 @@ function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 						}) : null
 					]
 				}),
-				/* @__PURE__ */ (0, I.jsx)(sU, {
+				/* @__PURE__ */ (0, I.jsx)(oU, {
 					traffic: e?.traffic,
 					compact: !u,
 					detailsOpen: p,
@@ -46723,7 +46689,7 @@ function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 					slow: b
 				}) : null
 			]
-		}), /* @__PURE__ */ (0, I.jsx)(KH, {
+		}), /* @__PURE__ */ (0, I.jsx)(GH, {
 			id: f,
 			open: u,
 			"data-processing-body": "",
@@ -46760,7 +46726,7 @@ function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 						}) : null,
 						/* @__PURE__ */ (0, I.jsx)("p", {
 							className: "text-body-2-regular wrap-anywhere",
-							children: t || (_ || g ? e?.error || "请查看并处理未完成项" : /* @__PURE__ */ (0, I.jsx)(F_e, { state: e }))
+							children: t || (_ || g ? e?.error || "请查看并处理未完成项" : /* @__PURE__ */ (0, I.jsx)(O_e, { state: e }))
 						}),
 						g ? /* @__PURE__ */ (0, I.jsx)("p", {
 							className: "text-body-2-regular wrap-anywhere",
@@ -46801,67 +46767,67 @@ function uU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 		})]
 	});
 }
-function $_e(e) {
+function K_e(e) {
 	let { job: t } = zH(e);
-	return /* @__PURE__ */ (0, I.jsx)(uU, {
+	return /* @__PURE__ */ (0, I.jsx)(lU, {
 		state: t.data,
 		problem: t.isError ? t.data ? xH : cr(t.error) : ""
 	});
 }
 // src/react/library-processing/processing-notice-visibility.ts
-var dU = "peach.library-processing.visibility", fU = /* @__PURE__ */ new Set(), pU = "";
-function eve() {
+var uU = "peach.library-processing.visibility", dU = /* @__PURE__ */ new Set(), fU = "";
+function q_e() {
 	try {
-		return sessionStorage.getItem(dU) || "";
+		return sessionStorage.getItem(uU) || "";
 	} catch {
-		return pU;
+		return fU;
 	}
 }
-function tve(e) {
-	return fU.add(e), () => {
-		fU.delete(e);
+function J_e(e) {
+	return dU.add(e), () => {
+		dU.delete(e);
 	};
 }
-function mU(e, t) {
-	pU = `${t ? "shown" : "hidden"}:${e}`;
+function pU(e, t) {
+	fU = `${t ? "shown" : "hidden"}:${e}`;
 	try {
-		sessionStorage.setItem(dU, pU);
+		sessionStorage.setItem(uU, fU);
 	} catch {}
-	fU.forEach((e) => e());
+	dU.forEach((e) => e());
 }
-function hU(e) {
-	let t = (0, F.useSyncExternalStore)(tve, eve, () => "");
+function mU(e) {
+	let t = (0, F.useSyncExternalStore)(J_e, q_e, () => "");
 	return {
 		hidden: t === `hidden:${e}`,
 		requested: t === `shown:${e}`
 	};
 }
 // src/react/library-processing/library-processing-dock.tsx
-var gU = "peach-library-processing";
-function nve({ toast: e }) {
+var hU = "peach-library-processing";
+function Y_e({ toast: e }) {
 	let { job: t, settled: n } = zH({
 		toast: e,
 		mode: "notice"
-	}), r = (0, F.useRef)(!1), i = t.data, a = i?.job_id || "unavailable", { hidden: o, requested: s } = hU(a), c = t.isError ? i ? xH : cr(t.error) : "";
+	}), r = (0, F.useRef)(!1), i = t.data, a = i?.job_id || "unavailable", { hidden: o, requested: s } = mU(a), c = t.isError ? i ? xH : cr(t.error) : "";
 	return (0, F.useEffect)(() => {
 		let e = mH(i), t = i?.status === "failed" && (n?.job_id === i.job_id || TH(i));
-		o || i?.archived && !c || !e && !c && !t && !(s && i?.status === "failed") ? (r.current && iH.dismiss(gU), r.current = !1) : (iH.custom(() => /* @__PURE__ */ (0, I.jsx)("div", {
+		o || i?.archived && !c || !e && !c && !t && !(s && i?.status === "failed") ? (r.current && iH.dismiss(hU), r.current = !1) : (iH.custom(() => /* @__PURE__ */ (0, I.jsx)("div", {
 			className: "peach-react",
-			children: /* @__PURE__ */ (0, I.jsx)(uU, {
+			children: /* @__PURE__ */ (0, I.jsx)(lU, {
 				state: i,
 				problem: c,
 				measure: !0,
-				onHide: () => mU(a, !1)
+				onHide: () => pU(a, !1)
 			})
 		}), {
-			id: gU,
+			id: hU,
 			toasterId: "processing",
 			duration: Infinity,
 			dismissible: !1,
 			closeButton: !1,
 			className: "processing-task-toast",
 			onDismiss: () => {
-				mU(a, !1), r.current = !1;
+				pU(a, !1), r.current = !1;
 			}
 		}), r.current = !0);
 	}, [
@@ -46872,19 +46838,19 @@ function nve({ toast: e }) {
 		o,
 		s
 	]), (0, F.useEffect)(() => () => {
-		r.current && iH.dismiss(gU), r.current = !1;
+		r.current && iH.dismiss(hU), r.current = !1;
 	}, []), null;
 }
 // src/react/network-banner.tsx
-var rve = ["network-status"], ive = "Peach 连不上外网，资料采集、关注更新和在线来源暂不可用；本机媒体照常浏览和播放。";
-function ave(e) {
+var X_e = ["network-status"], Z_e = "Peach 连不上外网，资料采集、关注更新和在线来源暂不可用；本机媒体照常浏览和播放。";
+function Q_e(e) {
 	return e?.state === "online" ? 12e4 : 3e4;
 }
-function ove() {
+function $_e() {
 	let e = Pt({
-		queryKey: rve,
+		queryKey: X_e,
 		queryFn: ({ signal: e }) => B("/api/network-status", e),
-		refetchInterval: (e) => ave(e.state.data),
+		refetchInterval: (e) => Q_e(e.state.data),
 		retry: !1
 	}), t = document.querySelector("[data-network-banner]");
 	return e.data?.state !== "offline" || !t ? null : (0, Lt.createPortal)(/* @__PURE__ */ (0, I.jsxs)("aside", {
@@ -46895,55 +46861,55 @@ function ove() {
 			viewBox: "0 0 24 24",
 			"aria-hidden": "true",
 			children: /* @__PURE__ */ (0, I.jsx)("use", { href: "#i-alert" })
-		}), /* @__PURE__ */ (0, I.jsx)("p", { children: ive })] }), /* @__PURE__ */ (0, I.jsx)("a", {
+		}), /* @__PURE__ */ (0, I.jsx)("p", { children: Z_e })] }), /* @__PURE__ */ (0, I.jsx)("a", {
 			href: "/settings/network#peachProxy",
 			children: "检查 Peach 代理"
 		})]
 	}), t);
 }
 // src/react/components/segmented.tsx
-function sve(e) {
+function eve(e) {
 	let t = wL(AH("selection"));
 	return /* @__PURE__ */ (0, I.jsx)(DB, {
 		...e,
 		ref: t
 	});
 }
-function _U(e) {
+function gU(e) {
 	let t = wL(AH("selection"));
 	return /* @__PURE__ */ (0, I.jsx)(Kz, {
 		...e,
 		ref: t
 	});
 }
-var vU = "inline-flex w-max max-w-full items-center gap-0.5 overflow-x-auto overscroll-x-contain rounded-2lg bg-background-tertiary-default p-1", yU = "flex min-h-7 flex-none cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 max-sm:px-2 text-body-medium whitespace-nowrap text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring data-focus-visible:ring-2 data-focus-visible:ring-border-focus-ring data-selected:bg-background-primary-default data-selected:text-text-primary data-selected:shadow-card dark:data-selected:bg-background-primary-hover", cve = "flex size-7 flex-none cursor-pointer items-center justify-center rounded-md text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring data-focus-visible:ring-2 data-focus-visible:ring-border-focus-ring data-selected:bg-background-primary-default data-selected:text-text-primary data-selected:shadow-card dark:data-selected:bg-background-primary-hover", bU = "inline-flex w-max max-w-full flex-none items-center gap-0.5 rounded-lg", xU = "relative flex size-8 flex-none cursor-pointer items-center justify-center rounded-lg text-(--glass-text)/62 outline-none transition-colors hover:text-(--glass-text) focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:text-(--glass-text)", SU = [
+var _U = "inline-flex w-max max-w-full items-center gap-0.5 overflow-x-auto overscroll-x-contain rounded-2lg bg-background-tertiary-default p-1", vU = "flex min-h-7 flex-none cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 max-sm:px-2 text-body-medium whitespace-nowrap text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring data-focus-visible:ring-2 data-focus-visible:ring-border-focus-ring data-selected:bg-background-primary-default data-selected:text-text-primary data-selected:shadow-card dark:data-selected:bg-background-primary-hover", tve = "flex size-7 flex-none cursor-pointer items-center justify-center rounded-md text-text-secondary outline-none transition-colors hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring data-focus-visible:ring-2 data-focus-visible:ring-border-focus-ring data-selected:bg-background-primary-default data-selected:text-text-primary data-selected:shadow-card dark:data-selected:bg-background-primary-hover", yU = "inline-flex w-max max-w-full flex-none items-center gap-0.5 rounded-lg", bU = "relative flex size-8 flex-none cursor-pointer items-center justify-center rounded-lg text-(--glass-text)/62 outline-none transition-colors hover:text-(--glass-text) focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:text-(--glass-text)", xU = [
 	["library", "馆藏"],
 	["discover", "发现"],
 	["wants", "想要"]
-], CU = (e) => SU.some(([t]) => t === e) ? e : "library", wU = (e) => CU(e) === "library" ? "/?jav=1" : `/jav?tab=${e}`;
-function lve(e) {
+], SU = (e) => xU.some(([t]) => t === e) ? e : "library", CU = (e) => SU(e) === "library" ? "/?jav=1" : `/jav?tab=${e}`;
+function nve(e) {
 	let t = new URLSearchParams(e);
 	return t.delete("tab"), t.set("jav", "1"), "/?" + t;
 }
 // src/onboarding/guide-catalog.ts
-var TU = (e, t, n, r, i, a) => ({
+var wU = (e, t, n, r, i, a) => ({
 	id: e,
 	title: t,
 	body: n,
 	route: r,
 	target: i,
 	scope: a
-}), EU = (e, t, n, r, i) => TU(e, t, n, r, i), DU = [
+}), TU = (e, t, n, r, i) => wU(e, t, n, r, i), EU = [
 	{
 		id: "basics",
 		kind: "interface",
 		title: "认识界面",
 		summary: "4 步认识搜索、导航、作品详情和设置。",
 		steps: [
-			EU("search", "搜索馆藏", "输入作品名、番号、艺人、厂牌或标签。搜索结果来自已经入库的内容。", "/", "#q, #searchBtn"),
-			EU("navigation", "切换浏览入口", "在侧栏按人物、厂牌和标签浏览。手机上用导航按钮展开侧栏；入口与顺序可以在设置里调整。", "/", "#filterBtn, [data-sidebar-nav]"),
-			EU("cards", "打开作品详情", "选择作品查看资料、版本和播放入口。首次扫描尚未入库时，可以先继续认识导航。", "/", "[data-media-grid] > [data-id], [data-catalog-row], [data-media-empty]"),
-			EU("preferences", "调整自己的界面", "侧栏底部的设置包含显示与播放偏好；手机上先展开侧栏。媒体目录、网络和后台服务放在其中的 Peach 配置入口。", "/", "#settingsBtn, #filterBtn")
+			TU("search", "搜索馆藏", "输入作品名、番号、艺人、厂牌或标签。搜索结果来自已经入库的内容。", "/", "#q, #searchBtn"),
+			TU("navigation", "切换浏览入口", "在侧栏按人物、厂牌和标签浏览。手机上用导航按钮展开侧栏；入口与顺序可以在设置里调整。", "/", "#filterBtn, [data-sidebar-nav]"),
+			TU("cards", "打开作品详情", "选择作品查看资料、版本和播放入口。首次扫描尚未入库时，可以先继续认识导航。", "/", "[data-media-grid] > [data-id], [data-catalog-row], [data-media-empty]"),
+			TU("preferences", "调整自己的界面", "侧栏底部的设置包含显示与播放偏好；手机上先展开侧栏。媒体目录、网络和后台服务放在其中的 Peach 配置入口。", "/", "#settingsBtn, #filterBtn")
 		]
 	},
 	{
@@ -46952,23 +46918,23 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "找到并播放",
 		summary: "搜索、筛选、详情、版本、字幕和播放器。",
 		steps: [
-			EU("library", "选择媒体库", "导航顶部可以切换全部媒体库或某个媒体库；手机上先展开侧栏。媒体库把不同目录组织成一组。", "/", "#brandHome, #filterBtn"),
-			EU("search", "按关键词找内容", "输入作品、番号或人物名称，结合筛选与排序定位内容。搜索记录数量可在搜索与推荐中设置。", "/", "#q, #searchBtn"),
-			EU("filter", "筛选与清除", "多个筛选条件会共同缩小结果。找不到内容时先检查媒体库和筛选条件。", "/", "[data-catalog-frame]"),
+			TU("library", "选择媒体库", "导航顶部可以切换全部媒体库或某个媒体库；手机上先展开侧栏。媒体库把不同目录组织成一组。", "/", "#brandHome, #filterBtn"),
+			TU("search", "按关键词找内容", "输入作品、番号或人物名称，结合筛选与排序定位内容。搜索记录数量可在搜索与推荐中设置。", "/", "#q, #searchBtn"),
+			TU("filter", "筛选与清除", "多个筛选条件会共同缩小结果。找不到内容时先检查媒体库和筛选条件。", "/", "[data-catalog-frame]"),
 			{
-				...TU("detail", "作品详情", "这里显示当前作品的标题和源文件工具。评分、人物和标签在下方；有分卷或版本的作品可从馆藏卡片进入相应队列。", "/", "[data-item-title]"),
+				...wU("detail", "作品详情", "这里显示当前作品的标题和源文件工具。评分、人物和标签在下方；有分卷或版本的作品可从馆藏卡片进入相应队列。", "/", "[data-item-title]"),
 				surface: "detail"
 			},
 			{
-				...TU("player", "播放器控件", "底部控制条提供播放、进度、音量和全屏。右侧齿轮打开播放速度、字幕、画面旋转和清晰度等选项。", "/", "#stage .vjs-control-bar"),
+				...wU("player", "播放器控件", "底部控制条提供播放、进度、音量和全屏。右侧齿轮打开播放速度、字幕、画面旋转和清晰度等选项。", "/", "#stage .vjs-control-bar"),
 				surface: "player"
 			},
 			{
-				...TU("subtitles", "字幕与播放选项", "从播放器齿轮菜单进入字幕，可以选择已有字幕、加载本地字幕文件或搜索字幕；播放速度和清晰度也在这个菜单中。", "/", "#stage [data-player-subtitles]"),
+				...wU("subtitles", "字幕与播放选项", "从播放器齿轮菜单进入字幕，可以选择已有字幕、加载本地字幕文件或搜索字幕；播放速度和清晰度也在这个菜单中。", "/", "#stage [data-player-subtitles]"),
 				surface: "subtitles"
 			},
 			{
-				...TU("external", "外部播放器", "在这里选择本地播放器、M3U 播放列表或网络播放地址，再点打开。另一台设备需要能访问当前 Peach 地址。", "/", "#stage [data-local-playback-row]"),
+				...wU("external", "外部播放器", "在这里选择本地播放器、M3U 播放列表或网络播放地址，再点打开。另一台设备需要能访问当前 Peach 地址。", "/", "#stage [data-local-playback-row]"),
 				surface: "detail"
 			}
 		]
@@ -46980,15 +46946,15 @@ var TU = (e, t, n, r, i, a) => ({
 		summary: "评分、标记、播放列表与当前播放队列。",
 		steps: [
 			{
-				...EU("marks", "评分", "点击星星给作品评分；下方的喜欢、稍后看和加入播放列表用于保存感兴趣的内容。", "/", "#stage [data-item-rating]"),
+				...TU("marks", "评分", "点击星星给作品评分；下方的喜欢、稍后看和加入播放列表用于保存感兴趣的内容。", "/", "#stage [data-item-rating]"),
 				surface: "detail"
 			},
 			{
-				...EU("mark-actions", "标记与加入列表", "喜欢影响口味推荐，稍后看便于回找；加入播放列表可把作品整理到自己的列表。", "/", "#stage [data-item-feedback]"),
+				...TU("mark-actions", "标记与加入列表", "喜欢影响口味推荐，稍后看便于回找；加入播放列表可把作品整理到自己的列表。", "/", "#stage [data-item-feedback]"),
 				surface: "detail"
 			},
-			EU("lists", "建立播放列表", "在这里输入名称，创建自己的播放列表。之后从作品详情的加入播放列表按钮添加内容。", "/playlists", "[data-playlist-create]"),
-			EU("queue", "从列表开始播放", "选择一张播放列表卡片进入队列，查看和调整播放顺序。没有列表时先创建，再加入作品。", "/playlists", "[data-playlist-card]")
+			TU("lists", "建立播放列表", "在这里输入名称，创建自己的播放列表。之后从作品详情的加入播放列表按钮添加内容。", "/playlists", "[data-playlist-create]"),
+			TU("queue", "从列表开始播放", "选择一张播放列表卡片进入队列，查看和调整播放顺序。没有列表时先创建，再加入作品。", "/playlists", "[data-playlist-card]")
 		]
 	},
 	{
@@ -46997,10 +46963,10 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "按人物与主题浏览",
 		summary: "从人物、厂牌和标签继续发现相关馆藏。",
 		steps: [
-			EU("people", "艺人与创作者", "选择人物卡片进入资料页，查看相关作品、照片与已连接的来源。上方可以切换艺人、卖家与在线人物。", "/performers", "[data-index-body] [data-index-cell], [data-index-body] [data-empty-state]"),
-			EU("studios", "厂牌", "选择厂牌卡片集中查看作品。资料页中的作品仍会受到当前媒体库范围影响。", "/studios", "[data-index-body] [data-index-cell], [data-index-body] [data-empty-state]"),
-			EU("tags", "标签与主题", "选择标签继续浏览相关馆藏；本地与在线使用不同的标签词表。", "/tags", "[data-index-body] [data-alpha-tag], [data-index-body] [data-tag-chip], [data-index-body] [data-empty-state]"),
-			EU("manage-tags", "管理标签", "铅笔按钮打开标签管理，用于整理标签名称和关系；再次点击返回浏览。", "/tags", "[data-tag-mode]")
+			TU("people", "艺人与创作者", "选择人物卡片进入资料页，查看相关作品、照片与已连接的来源。上方可以切换艺人、卖家与在线人物。", "/performers", "[data-index-body] [data-index-cell], [data-index-body] [data-empty-state]"),
+			TU("studios", "厂牌", "选择厂牌卡片集中查看作品。资料页中的作品仍会受到当前媒体库范围影响。", "/studios", "[data-index-body] [data-index-cell], [data-index-body] [data-empty-state]"),
+			TU("tags", "标签与主题", "选择标签继续浏览相关馆藏；本地与在线使用不同的标签词表。", "/tags", "[data-index-body] [data-alpha-tag], [data-index-body] [data-tag-chip], [data-index-body] [data-empty-state]"),
+			TU("manage-tags", "管理标签", "铅笔按钮打开标签管理，用于整理标签名称和关系；再次点击返回浏览。", "/tags", "[data-tag-mode]")
 		]
 	},
 	{
@@ -47009,10 +46975,10 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "JAV 与追新",
 		summary: "馆藏、新作、想要清单与高清版。",
 		steps: [
-			EU("library", "JAV 馆藏", "按番号、出演者和厂牌查找已入库的作品，可以选择官方封面或预览图。", wU("library"), "[data-catalog-frame]"),
-			EU("new", "发现推荐", "发现页按口味推荐作品。在这里切换馆藏或外部内容，并按标签筛选。", wU("discover"), "[data-jav-filter] [data-catalog-views]"),
-			EU("wants", "查看想要清单", "喜欢的外部作品可以加入想要清单；在这里切换馆藏、发现与想要。", wU("discover"), "[aria-label=\"JAV 分区\"]"),
-			EU("quality", "高清版", "待升级卡片列出当前版本信息和判定原因，可以查看版本或查找资源；没有目标时这里显示空状态。", "/quality-goals", "[data-goal-id], #main [data-empty-state]")
+			TU("library", "JAV 馆藏", "按番号、出演者和厂牌查找已入库的作品，可以选择官方封面或预览图。", CU("library"), "[data-catalog-frame]"),
+			TU("new", "发现推荐", "发现页按口味推荐作品。在这里切换馆藏或外部内容，并按标签筛选。", CU("discover"), "[data-jav-filter] [data-catalog-views]"),
+			TU("wants", "查看想要清单", "喜欢的外部作品可以加入想要清单；在这里切换馆藏、发现与想要。", CU("discover"), "[aria-label=\"JAV 分区\"]"),
+			TU("quality", "高清版", "待升级卡片列出当前版本信息和判定原因，可以查看版本或查找资源；没有目标时这里显示空状态。", "/quality-goals", "[data-goal-id], #main [data-empty-state]")
 		]
 	},
 	{
@@ -47021,9 +46987,9 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "关注创作者",
 		summary: "多来源更新、同作品合并和来源状态。",
 		steps: [
-			EU("feed", "集中看关注更新", "来自不同来源的创作者更新汇集在这里，选择一项更新查看内容；尚未关注来源时，按空状态中的入口添加。", "/follow", "[data-follow-item], [data-follow-empty] [data-empty-state]"),
-			EU("sources", "管理关注来源", "从列表查看启用状态、采集结果和失败原因；切换到添加区域，添加创作者或订阅来源。", "/subscriptions", "[aria-label=\"关注管理区域\"]"),
-			EU("credentials", "按需配置凭据", "部分来源需要登录凭据；先确认要启用的来源，再展开对应站点，填写其要求的信息。", "/settings/subscriptions", "[data-guide-target=\"credentials\"]")
+			TU("feed", "集中看关注更新", "来自不同来源的创作者更新汇集在这里，选择一项更新查看内容；尚未关注来源时，按空状态中的入口添加。", "/follow", "[data-follow-item], [data-follow-empty] [data-empty-state]"),
+			TU("sources", "管理关注来源", "从列表查看启用状态、采集结果和失败原因；切换到添加区域，添加创作者或订阅来源。", "/subscriptions", "[aria-label=\"关注管理区域\"]"),
+			TU("credentials", "按需配置凭据", "部分来源需要登录凭据；先确认要启用的来源，再展开对应站点，填写其要求的信息。", "/settings/subscriptions", "[data-guide-target=\"credentials\"]")
 		]
 	},
 	{
@@ -47032,9 +46998,9 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "专注观看",
 		summary: "播放墙、沉浸模式与详情小窗。",
 		steps: [
-			EU("wall", "播放墙", "播放墙提供多画面观看入口。结束导览后点击进入，再选择要播放的内容。", "/", "#wallBtn"),
-			EU("immerse", "沉浸模式", "沉浸模式适合连续观看。点击入口会进入观看流程，请在准备好播放时使用。", "/", "#immerseBtn"),
-			EU("mini", "离开详情后继续看", "开启小窗播放后，离开详情可以继续观看。自动播放、小窗和快进步长都在浏览与播放设置中。", "/settings/playback", "#miniplayerSetting")
+			TU("wall", "播放墙", "播放墙提供多画面观看入口。结束导览后点击进入，再选择要播放的内容。", "/", "#wallBtn"),
+			TU("immerse", "沉浸模式", "沉浸模式适合连续观看。点击入口会进入观看流程，请在准备好播放时使用。", "/", "#immerseBtn"),
+			TU("mini", "离开详情后继续看", "开启小窗播放后，离开详情可以继续观看。自动播放、小窗和快进步长都在浏览与播放设置中。", "/settings/playback", "#miniplayerSetting")
 		]
 	},
 	{
@@ -47043,11 +47009,11 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "整理与维护",
 		summary: "扫描、补资料、复核、文件整理与回收站。",
 		steps: [
-			EU("scan", "扫描与补资料", "在媒体库处理区域选择扫描和资料处理范围。读取策略取决于媒体库配置；导览不会启动任务。", "/data-cleanup", "#libraryProcessing"),
-			EU("review", "人工复核", "先按分类找到待复核资料，再查看项目的来源和证据后作决定。", "/review", "[aria-labelledby=\"reviewcategories\"]"),
-			EU("organize", "文件整理", "文件整理先查看预览，确认命名与目标目录再执行。资料整理和真实文件操作有不同的影响范围。", "/data-cleanup", "[data-cleanup-organize]"),
-			EU("trash", "回收站", "查看已移入回收站的作品，按需要恢复或处理。永久删除前认真核对确认框中的范围。", "/trash", "[data-media-grid] > [data-id], [data-catalog-row], [data-media-empty]"),
-			EU("tasks", "任务与失败原因", "任务记录显示处理状态；展开记录查看详情与失败原因。还没有任务时，这里会说明哪些操作会留下记录。", "/tasks", "[data-run-id], #main [data-empty-state]")
+			TU("scan", "扫描与补资料", "在媒体库处理区域选择扫描和资料处理范围。读取策略取决于媒体库配置；导览不会启动任务。", "/data-cleanup", "#libraryProcessing"),
+			TU("review", "人工复核", "先按分类找到待复核资料，再查看项目的来源和证据后作决定。", "/review", "[aria-labelledby=\"reviewcategories\"]"),
+			TU("organize", "文件整理", "文件整理先查看预览，确认命名与目标目录再执行。资料整理和真实文件操作有不同的影响范围。", "/data-cleanup", "[data-cleanup-organize]"),
+			TU("trash", "回收站", "查看已移入回收站的作品，按需要恢复或处理。永久删除前认真核对确认框中的范围。", "/trash", "[data-media-grid] > [data-id], [data-catalog-row], [data-media-empty]"),
+			TU("tasks", "任务与失败原因", "任务记录显示处理状态；展开记录查看详情与失败原因。还没有任务时，这里会说明哪些操作会留下记录。", "/tasks", "[data-run-id], #main [data-empty-state]")
 		]
 	},
 	{
@@ -47056,10 +47022,10 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "了解自己的馆藏",
 		summary: "统计、口味，以及浏览历史和书签来源。",
 		steps: [
-			EU("stats", "馆藏统计", "选择统计视图查看馆藏、存储和观看情况，各视图中的入口可继续查看相关作品。", "/stats", "[aria-label=\"统计视图\"]"),
-			EU("taste", "口味与记录", "在这里切换浏览器记录与 Peach 观看评价，分析各自的口味。", "/taste", "[aria-label=\"口味分析的数据来源\"]"),
-			EU("import", "取得浏览历史与书签", "读取浏览器记录需要在运行 Peach 的电脑操作；更多方式菜单可以导入历史或书签文件，适合其它设备。", "/taste", "[data-guide-target=\"history-import\"]"),
-			EU("history", "管理记录来源", "已取得的记录来源集中列在这里，可以停用本机浏览器读取或移除已导入的数据源；导览不会修改这些记录。", "/taste", "section[aria-label=\"数据源\"]")
+			TU("stats", "馆藏统计", "选择统计视图查看馆藏、存储和观看情况，各视图中的入口可继续查看相关作品。", "/stats", "[aria-label=\"统计视图\"]"),
+			TU("taste", "口味与记录", "在这里切换浏览器记录与 Peach 观看评价，分析各自的口味。", "/taste", "[aria-label=\"口味分析的数据来源\"]"),
+			TU("import", "取得浏览历史与书签", "读取浏览器记录需要在运行 Peach 的电脑操作；更多方式菜单可以导入历史或书签文件，适合其它设备。", "/taste", "[data-guide-target=\"history-import\"]"),
+			TU("history", "管理记录来源", "已取得的记录来源集中列在这里，可以停用本机浏览器读取或移除已导入的数据源；导览不会修改这些记录。", "/taste", "section[aria-label=\"数据源\"]")
 		]
 	},
 	{
@@ -47068,9 +47034,9 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "从外部加入内容",
 		summary: "云下载、目录映射与浏览器添加。",
 		steps: [
-			EU("downloads", "配置下载渠道", "先连接支持的渠道，再指定云端目标目录与本地媒体目录。下载完成后按目录规则入库。", "/settings/downloads", "[data-guide-target=\"download\"]"),
-			EU("search", "搜索资源", "资源搜索使用配置的索引器。查到结果后还需要你主动选择下载。", "/settings/subscriptions", "[data-guide-target=\"indexers\"]"),
-			EU("browser", "浏览器添加 JAV", "用户脚本与 Peach 配对后可从浏览器添加作品。专用令牌、默认渠道和开关在下载渠道里管理。", "/settings/downloads", "[data-guide-target=\"browser\"]")
+			TU("downloads", "配置下载渠道", "先连接支持的渠道，再指定云端目标目录与本地媒体目录。下载完成后按目录规则入库。", "/settings/downloads", "[data-guide-target=\"download\"]"),
+			TU("search", "搜索资源", "资源搜索使用配置的索引器。查到结果后还需要你主动选择下载。", "/settings/subscriptions", "[data-guide-target=\"indexers\"]"),
+			TU("browser", "浏览器添加 JAV", "用户脚本与 Peach 配对后可从浏览器添加作品。专用令牌、默认渠道和开关在下载渠道里管理。", "/settings/downloads", "[data-guide-target=\"browser\"]")
 		]
 	},
 	{
@@ -47079,18 +47045,18 @@ var TU = (e, t, n, r, i, a) => ({
 		title: "手机与其他设备",
 		summary: "访问地址、密码、局域网和公网入口。",
 		steps: [
-			EU("address", "找到访问地址", "同一局域网的设备使用 Peach 的局域网地址。仅本机访问时，其它设备无法连接。", "/settings/network", "[data-guide-target=\"port\"]"),
-			EU("password", "访问密码", "能连接到 Peach 的设备按访问密码登录。显示偏好与访问权限是不同的设置。", "/settings/network", "[data-guide-target=\"access\"]"),
-			EU("tunnel", "需要时启用公网入口", "Cloudflare 公网入口适合离开局域网后访问，需要按实际部署配置连接信息。", "/settings/network", "[data-guide-target=\"tunnel\"]")
+			TU("address", "找到访问地址", "同一局域网的设备使用 Peach 的局域网地址。仅本机访问时，其它设备无法连接。", "/settings/network", "[data-guide-target=\"port\"]"),
+			TU("password", "访问密码", "能连接到 Peach 的设备按访问密码登录。显示偏好与访问权限是不同的设置。", "/settings/network", "[data-guide-target=\"access\"]"),
+			TU("tunnel", "需要时启用公网入口", "Cloudflare 公网入口适合离开局域网后访问，需要按实际部署配置连接信息。", "/settings/network", "[data-guide-target=\"tunnel\"]")
 		]
 	}
-], uve = "当前浏览器 · 修改后自动保存", OU = "跟随馆藏 · 修改后自动保存", kU = "运行 Peach 的电脑 · 确认后保存配置", AU = (e, t, n = uve) => t.map(([t, r, i, a, o]) => TU(t, r, i, `/settings/${e}`, a || `[data-guide-target="${t}"]`, o || n)), jU = [
+], rve = "当前浏览器 · 修改后自动保存", DU = "跟随馆藏 · 修改后自动保存", OU = "运行 Peach 的电脑 · 确认后保存配置", kU = (e, t, n = rve) => t.map(([t, r, i, a, o]) => wU(t, r, i, `/settings/${e}`, a || `[data-guide-target="${t}"]`, o || n)), AU = [
 	{
 		id: "appearance",
 		kind: "settings",
 		title: Ef.appearance,
 		summary: "主题、光晕与导航入口。",
-		steps: AU("appearance", [
+		steps: kU("appearance", [
 			[
 				"theme",
 				"主题",
@@ -47120,7 +47086,7 @@ var TU = (e, t, n, r, i, a) => ({
 				"导航入口与顺序",
 				"把常用入口放到侧栏，拖动调整顺序。",
 				"[data-sidebar-setting]",
-				OU
+				DU
 			]
 		])
 	},
@@ -47129,7 +47095,7 @@ var TU = (e, t, n, r, i, a) => ({
 		kind: "settings",
 		title: Ef.playback,
 		summary: "列表呈现、悬停预览与播放行为。",
-		steps: AU("playback", [
+		steps: kU("playback", [
 			[
 				"batch",
 				"每批作品",
@@ -47185,13 +47151,13 @@ var TU = (e, t, n, r, i, a) => ({
 		kind: "settings",
 		title: Ef.jav,
 		summary: "封面与新作筛选。",
-		steps: AU("jav", [
+		steps: kU("jav", [
 			[
 				"names",
 				"女优名称",
 				"选择中文或日文名称；偏好跟随馆藏，其他设备读取同一份设置。",
 				"#performerNameLanguageSetting",
-				OU
+				DU
 			],
 			[
 				"image",
@@ -47216,21 +47182,21 @@ var TU = (e, t, n, r, i, a) => ({
 				"隐藏大合集",
 				"过滤新作中的大合集，只影响新作展示，馆藏仍可查找。",
 				"#feedHideGroupSetting",
-				OU
+				DU
 			],
 			[
 				"solo-compilations",
 				"隐藏单人合集",
 				"过滤新作中的单人合集，只影响新作展示，馆藏仍可查找。",
 				"#feedHideSoloSetting",
-				OU
+				DU
 			],
 			[
 				"excerpts",
 				"隐藏切片",
 				"过滤新作中的切片，只影响新作展示，馆藏仍可查找。",
 				"#feedHideExcerptSetting",
-				OU
+				DU
 			]
 		])
 	},
@@ -47239,12 +47205,12 @@ var TU = (e, t, n, r, i, a) => ({
 		kind: "settings",
 		title: Ef.search,
 		summary: "搜索记录、推荐数量与口味入口。",
-		steps: [...AU("search", [[
+		steps: [...kU("search", [[
 			"history",
 			"搜索记录",
 			"设置保留的搜索记录上限，0 表示不记录。",
 			"#searchHistoryLimitSetting"
-		]], OU), ...AU("search", [[
+		]], DU), ...kU("search", [[
 			"related",
 			"相关推荐数量",
 			"决定详情中显示多少项相关推荐。口味和记录来源在口味页面管理。",
@@ -47256,7 +47222,7 @@ var TU = (e, t, n, r, i, a) => ({
 		kind: "settings",
 		title: Ef.content,
 		summary: "SFW 模式与画面显示。",
-		steps: AU("content", [[
+		steps: kU("content", [[
 			"sfw",
 			"SFW 模式",
 			"隐藏敏感画面并停止悬停预览，适合需要遮挡画面的环境。访问控制请另设访问密码。",
@@ -47268,7 +47234,7 @@ var TU = (e, t, n, r, i, a) => ({
 		kind: "settings",
 		title: Df.library,
 		summary: "媒体库、目录、读取与处理方式。",
-		steps: AU("library", [
+		steps: kU("library", [
 			[
 				"media",
 				"媒体库名称与外观",
@@ -47319,14 +47285,14 @@ var TU = (e, t, n, r, i, a) => ({
 				"视频预览",
 				"生成视频预览会读取视频并产生缓存。时间轴预览的开关与采集间隔控制本机磁盘缩略图；抽帧解码方式决定生成预览使用的解码器。修改后自动保存，并受媒体库处理方式与读取策略约束。"
 			]
-		], kU)
+		], OU)
 	},
 	{
 		id: "subscriptions",
 		kind: "settings",
 		title: Df.subscriptions,
 		summary: "资料来源、关注、索引器与站点入口。",
-		steps: AU("subscriptions", [
+		steps: kU("subscriptions", [
 			[
 				"sources",
 				"采集来源与登录状态",
@@ -47353,14 +47319,14 @@ var TU = (e, t, n, r, i, a) => ({
 				"作品资料站点",
 				"配置资料站点和镜像入口，用于打开相关作品页面。地址和登录凭据分别管理。"
 			]
-		], kU)
+		], OU)
 	},
 	{
 		id: "downloads",
 		kind: "settings",
 		title: Df.downloads,
 		summary: "云下载目录、账号与浏览器配对。",
-		steps: AU("downloads", [
+		steps: kU("downloads", [
 			[
 				"download",
 				"云下载",
@@ -47376,14 +47342,14 @@ var TU = (e, t, n, r, i, a) => ({
 				"浏览器添加 JAV",
 				"安装用户脚本并配对 Peach。默认渠道决定提交到哪里；启用开关控制功能，专用令牌可更新或关闭，脚本检测帮助确认配对。"
 			]
-		], kU)
+		], OU)
 	},
 	{
 		id: "network",
 		kind: "settings",
 		title: Df.network,
 		summary: "访问端口、代理、密码和公网入口。",
-		steps: AU("network", [
+		steps: kU("network", [
 			[
 				"port",
 				"访问地址与端口",
@@ -47404,14 +47370,14 @@ var TU = (e, t, n, r, i, a) => ({
 				"Cloudflare 公网入口",
 				"临时链接用于临时连接，命名隧道使用主机名与隧道令牌。连接状态显示是否已可用，按需要启用。"
 			]
-		], kU)
+		], OU)
 	},
 	{
 		id: "app-maintenance",
 		kind: "settings",
 		title: Df.maintenance,
 		summary: "更新、存储、数据选择与应用维护。",
-		steps: AU("maintenance", [
+		steps: kU("maintenance", [
 			[
 				"updates",
 				"检查更新",
@@ -47452,14 +47418,14 @@ var TU = (e, t, n, r, i, a) => ({
 				"卸载 Peach",
 				"卸载移除程序；完全卸载还移除设置、资料库、记录、凭据和缓存。执行前核对页面列出的数据目录与确认内容。"
 			]
-		], kU)
+		], OU)
 	},
 	{
 		id: "diagnostics",
 		kind: "settings",
 		title: Df.diagnostics,
 		summary: "遇到问题时查看检查项与诊断报告。",
-		steps: AU("diagnostics", [
+		steps: kU("diagnostics", [
 			[
 				"attention",
 				"需要关注的检查项",
@@ -47484,7 +47450,7 @@ var TU = (e, t, n, r, i, a) => ({
 			]
 		], "只读检查 · 重新检查与下载由你主动执行")
 	}
-], dve = {
+], ive = {
 	glow: [
 		["配色预设", "一次应用一组配色和参数，适合先挑选整体外观。"],
 		["强度", "控制光晕的明亮程度；太抢眼时降低。"],
@@ -47591,8 +47557,8 @@ var TU = (e, t, n, r, i, a) => ({
 		["上传预览", "查看本次会包含的内容，再决定是否启用明细上传。"]
 	]
 };
-for (let e of jU) for (let t of e.steps) t.details = dve[t.id], (t.id === "preview" || t.id === "transcode") && (t.scope = "运行 Peach 的电脑 · 修改后自动保存"), (t.id === "follow-options" || t.id === "sources" || t.id === "reporting" || t.id === "storage") && (t.scope = "按页面中各项的保存或确认动作生效");
-var MU = [...DU, ...jU], fve = [
+for (let e of AU) for (let t of e.steps) t.details = ive[t.id], (t.id === "preview" || t.id === "transcode") && (t.scope = "运行 Peach 的电脑 · 修改后自动保存"), (t.id === "follow-options" || t.id === "sources" || t.id === "reporting" || t.id === "storage") && (t.scope = "按页面中各项的保存或确认动作生效");
+var jU = [...EU, ...AU], ave = [
 	{
 		id: "browse",
 		kind: "interface",
@@ -47670,35 +47636,35 @@ var MU = [...DU, ...jU], fve = [
 		]
 	}
 ];
-function pve(e) {
-	return e === "/" ? DU[0] : jU.find((t) => t.steps[0]?.route === e) || DU.find((t) => t.id !== "basics" && t.steps.some((t) => t.route === e)) || DU[0];
+function ove(e) {
+	return e === "/" ? EU[0] : AU.find((t) => t.steps[0]?.route === e) || EU.find((t) => t.id !== "basics" && t.steps.some((t) => t.route === e)) || EU[0];
 }
 // src/onboarding/guide-state.ts
-var mve = () => ({
+var sve = () => ({
 	version: 1,
 	campaign: "",
 	invited: !1,
 	completed: !1,
 	chapters: {}
 });
-function NU(e, t) {
+function MU(e, t) {
 	let n = e.chapters[t.id]?.read || [];
 	return t.steps.every((e) => n.includes(e.id));
 }
-function hve(e, t) {
+function cve(e, t) {
 	let n = e.chapters[t.id];
-	return !n || NU(e, t) ? 0 : n.next < t.steps.length ? n.next : t.steps.findIndex((e) => !n.read.includes(e.id));
+	return !n || MU(e, t) ? 0 : n.next < t.steps.length ? n.next : t.steps.findIndex((e) => !n.read.includes(e.id));
 }
-function gve() {
+function lve() {
 	return B("/api/tutorial-progress");
 }
-function _ve(e, t) {
+function uve(e, t) {
 	return V("/api/tutorial-progress", {
 		campaign: e,
 		...t
 	});
 }
-function vve(e, t, n, r, i) {
+function dve(e, t, n, r, i) {
 	let a = e.chapters[t] || {
 		next: 0,
 		read: [],
@@ -47716,21 +47682,52 @@ function vve(e, t, n, r, i) {
 		}
 	};
 }
-var PU = null, FU = /* @__PURE__ */ new Set();
-function IU(e = {}) {
-	FU.size || (PU = e);
-	for (let t of FU) t(e);
+var NU = null, PU = /* @__PURE__ */ new Set();
+function FU(e = {}) {
+	PU.size || (NU = e);
+	for (let t of PU) t(e);
 }
-function yve(e) {
-	if (FU.add(e), PU) {
-		let t = PU;
-		PU = null, queueMicrotask(() => {
-			FU.has(e) && e(t);
+function fve(e) {
+	if (PU.add(e), NU) {
+		let t = NU;
+		NU = null, queueMicrotask(() => {
+			PU.has(e) && e(t);
 		});
 	}
 	return () => {
-		FU.delete(e);
+		PU.delete(e);
 	};
+}
+// src/react/components/card.tsx
+var pve = "min-w-0", mve = {
+	filled: "bg-background-secondary-default",
+	outlined: "border border-separator-border bg-background-primary-default",
+	raised: "bg-background-primary-default"
+}, hve = {
+	default: "rounded-2xl shadow-card",
+	chart: "rounded-2-5xl",
+	surface: "rounded-surface",
+	plain: "rounded-2xl"
+}, gve = {
+	line: "border border-border-button-default",
+	soft: "border border-separator-border",
+	error: "outline-1 -outline-offset-1 outline-border-error-default"
+}, _ve = {
+	none: "",
+	default: "p-5"
+}, vve = "cursor-pointer outline-none not-data-selected:hover:bg-card-hover focus-visible:ring-2 focus-visible:ring-border-focus-ring focus-visible:ring-offset-3", yve = "relative data-selected:bg-background-primary-default data-selected:shadow-none data-selected:after:pointer-events-none data-selected:after:absolute data-selected:after:inset-0 data-selected:after:z-1 data-selected:after:rounded-[inherit] data-selected:after:border-2 data-selected:after:border-border-focus-ring";
+function IU(e = {}) {
+	let { variant: t = "filled", padding: n = "default", interactive: r, selectable: i, bordered: a, className: o } = e, s = e.radius ?? (t === "outlined" ? "surface" : "default");
+	return [
+		pve,
+		mve[t],
+		hve[s],
+		_ve[n],
+		a ? gve[a] : "",
+		r ? vve : "",
+		i ? yve : "",
+		o ?? ""
+	].filter(Boolean).join(" ");
 }
 // src/react/onboarding/guide-directory.tsx
 var bve = {
@@ -47777,7 +47774,7 @@ function LU({ icon: e, title: t, description: n, children: r, completed: i = !1 
 	return /* @__PURE__ */ (0, I.jsxs)("section", {
 		"data-guide-banner": "",
 		"data-guide-completed": i || void 0,
-		className: BH({
+		className: IU({
 			radius: "plain",
 			className: "flex flex-col gap-4"
 		}),
@@ -47807,7 +47804,7 @@ function LU({ icon: e, title: t, description: n, children: r, completed: i = !1 
 	});
 }
 function RU({ chapter: e, progress: t, loading: n, start: r }) {
-	let i = NU(t, e), a = !i && !!t.chapters[e.id];
+	let i = MU(t, e), a = !i && !!t.chapters[e.id];
 	return /* @__PURE__ */ (0, I.jsxs)("button", {
 		type: "button",
 		disabled: n,
@@ -47857,7 +47854,7 @@ function zU() {
 	});
 }
 function Cve({ kind: e, query: t, setQuery: n, context: r, progress: i, loading: a, start: o }) {
-	let [s, c] = (0, F.useState)(null), l = MU.find((t) => t.id === (e === "interface" ? "basics" : "appearance")), u = NU(i, l), d = !u && !!i.chapters[l.id], f = t.trim().toLowerCase(), p = MU.filter((t) => t.kind === e && `${t.title} ${t.summary} ${t.steps.map((e) => `${e.title} ${e.body} ${(e.details || []).flat().join(" ")}`).join(" ")}`.toLowerCase().includes(f));
+	let [s, c] = (0, F.useState)(null), l = jU.find((t) => t.id === (e === "interface" ? "basics" : "appearance")), u = MU(i, l), d = !u && !!i.chapters[l.id], f = t.trim().toLowerCase(), p = jU.filter((t) => t.kind === e && `${t.title} ${t.summary} ${t.steps.map((e) => `${e.title} ${e.body} ${(e.details || []).flat().join(" ")}`).join(" ")}`.toLowerCase().includes(f));
 	return /* @__PURE__ */ (0, I.jsxs)("div", {
 		className: "flex flex-col gap-4",
 		children: [
@@ -47916,12 +47913,12 @@ function Cve({ kind: e, query: t, setQuery: n, context: r, progress: i, loading:
 				}) : null]
 			}), /* @__PURE__ */ (0, I.jsx)("div", {
 				className: "peach-guide-topics",
-				children: fve.filter((t) => t.kind === e).map((e) => {
+				children: ave.filter((t) => t.kind === e).map((e) => {
 					let t = bve[e.id];
 					return /* @__PURE__ */ (0, I.jsx)("div", {
 						"data-guide-topic": e.id,
 						className: "peach-guide-topic",
-						children: /* @__PURE__ */ (0, I.jsx)($H, {
+						children: /* @__PURE__ */ (0, I.jsx)(QH, {
 							trailing: !0,
 							isOpen: s === e.id,
 							onOpenChange: (t) => c(t ? e.id : null),
@@ -47947,7 +47944,7 @@ function Cve({ kind: e, query: t, setQuery: n, context: r, progress: i, loading:
 							children: /* @__PURE__ */ (0, I.jsx)("div", {
 								className: "peach-guide-topic-chapters",
 								children: e.chapters.map((e) => /* @__PURE__ */ (0, I.jsx)(RU, {
-									chapter: MU.find((t) => t.id === e),
+									chapter: jU.find((t) => t.id === e),
 									progress: i,
 									loading: a,
 									start: o
@@ -47998,7 +47995,7 @@ function wve(e) {
 		};
 	}
 	let i = new URLSearchParams(n);
-	if (t === "/jav" || i.get("jav") === "1") return VU("JAV", SU.find(([e]) => e === (i.get("tab") || "library"))?.[1] || SU[0][1]);
+	if (t === "/jav" || i.get("jav") === "1") return VU("JAV", xU.find(([e]) => e === (i.get("tab") || "library"))?.[1] || xU[0][1]);
 	if (t === "/") {
 		switch (e.id) {
 			case "search": return {
@@ -48063,15 +48060,15 @@ function Tve({ details: e }) {
 	}) : null;
 }
 function Eve({ chapter: e }) {
-	let t = MU.find((t) => t.id === e);
+	let t = jU.find((t) => t.id === e);
 	return t ? /* @__PURE__ */ (0, I.jsx)("div", {
 		className: "text-body-2-regular text-text-secondary",
-		children: /* @__PURE__ */ (0, I.jsxs)($H, {
+		children: /* @__PURE__ */ (0, I.jsxs)(QH, {
 			summary: "了解这些设置",
 			children: [/* @__PURE__ */ (0, I.jsx)("p", { children: t.summary }), /* @__PURE__ */ (0, I.jsx)("div", { children: /* @__PURE__ */ (0, I.jsx)(J, {
 				variant: "secondary",
 				size: "small",
-				onClick: () => IU({ chapter: e }),
+				onClick: () => FU({ chapter: e }),
 				children: "逐步了解这个分区"
 			}) })]
 		})
@@ -48137,7 +48134,7 @@ function Dve({ step: e, position: t, total: n, missing: r, next: i, previous: a,
 							className: "text-caption-1-regular text-text-secondary",
 							children: "导览期间不自动播放；退出后仍按原来的播放设置使用。"
 						}) : null,
-						e.details?.length ? /* @__PURE__ */ (0, I.jsx)($H, {
+						e.details?.length ? /* @__PURE__ */ (0, I.jsx)(QH, {
 							summary: "更多说明",
 							children: /* @__PURE__ */ (0, I.jsx)(Tve, { details: e.details })
 						}) : null,
@@ -48304,7 +48301,7 @@ function Ove({ go: e }) {
 					] })
 				]
 			}),
-			/* @__PURE__ */ (0, I.jsx)($H, {
+			/* @__PURE__ */ (0, I.jsx)(QH, {
 				summary: "更多接入方式",
 				children: /* @__PURE__ */ (0, I.jsx)("div", {
 					className: "peach-guide-routes",
@@ -48366,14 +48363,14 @@ function Ove({ go: e }) {
 }
 var WU = "tutorial-sync";
 function kve({ actions: e }) {
-	let [t, n] = (0, F.useState)(!1), [r, i] = (0, F.useState)(!1), [a, o] = (0, F.useState)("interface"), [s, c] = (0, F.useState)(""), [l, u] = (0, F.useState)(mve), [d, f] = (0, F.useState)(!1), [p, m] = (0, F.useState)(""), [h, g] = (0, F.useState)(""), [_, v] = (0, F.useState)(!1), y = $V(), b = (0, F.useRef)(null), x = (0, F.useRef)(null), S = (0, F.useRef)(0), C = (0, F.useRef)(l);
+	let [t, n] = (0, F.useState)(!1), [r, i] = (0, F.useState)(!1), [a, o] = (0, F.useState)("interface"), [s, c] = (0, F.useState)(""), [l, u] = (0, F.useState)(sve), [d, f] = (0, F.useState)(!1), [p, m] = (0, F.useState)(""), [h, g] = (0, F.useState)(""), [_, v] = (0, F.useState)(!1), y = $V(), b = (0, F.useRef)(null), x = (0, F.useRef)(null), S = (0, F.useRef)(0), C = (0, F.useRef)(l);
 	C.current = l;
 	let w = (0, F.useRef)(0), T = (0, F.useRef)(null), E = (0, F.useRef)(""), D = (0, F.useRef)(!1), O = (0, F.useRef)(() => {}), k = (0, F.useRef)(Promise.resolve()), A = (0, F.useRef)(0), j = (0, F.useRef)(0), M = (0, F.useRef)(!0), ee = (e) => {
 		C.current = e, u(e);
 	}, N = async (e = !0) => {
 		let t = j.current;
 		try {
-			let n = await gve();
+			let n = await lve();
 			return !M.current || t !== j.current ? !1 : (ee(n), f(!0), e && m(""), b.current || i(!n.invited && !n.completed), !0);
 		} catch {
 			return M.current && m("未取得账本中的教程状态，请重新读取。"), !1;
@@ -48383,7 +48380,7 @@ function kve({ actions: e }) {
 		let n = ++j.current;
 		A.current += 1, k.current = k.current.then(async () => {
 			try {
-				let r = await _ve(e.campaign, t);
+				let r = await uve(e.campaign, t);
 				M.current && n === j.current && ee(r);
 			} catch {
 				M.current && (m("教程进度未保存到本机账本，其他设备尚未同步。请重新读取后继续。"), n === j.current && await N(!1));
@@ -48465,12 +48462,12 @@ function kve({ actions: e }) {
 			D.current = !1;
 		});
 		document.addEventListener("input", e), document.addEventListener("change", e);
-		let r = yve((e) => {
+		let r = fve((e) => {
 			(async () => {
 				let t = document.activeElement;
 				if (await k.current, !M.current || !await N() || e.invitation) return;
 				ie(), T.current = t, g(""), c("");
-				let r = MU.find((t) => t.id === e.chapter);
+				let r = jU.find((t) => t.id === e.chapter);
 				e.reopen ? (i(!1), te({
 					...C.current,
 					invited: !0,
@@ -48503,7 +48500,7 @@ function kve({ actions: e }) {
 			g("请先关闭正在播放的小窗，再开始播放器导览。");
 			return;
 		}
-		let i = r ? hve(C.current, t) : 0;
+		let i = r ? cve(C.current, t) : 0;
 		if (D.current && t.steps.some((e) => e.route && e.route !== location.pathname)) {
 			g("当前配置表单有编辑内容。请先处理表单，再开启需要切换页面的章节。");
 			return;
@@ -48548,18 +48545,18 @@ function kve({ actions: e }) {
 				},
 				next: async (e = !1) => {
 					let n = w.current + 1;
-					if (te(vve(C.current, t.id, t.steps[w.current].id, n, e), {
+					if (te(dve(C.current, t.id, t.steps[w.current].id, n, e), {
 						action: "step",
 						chapter: t.id,
 						step: t.steps[w.current].id,
 						next: n,
 						skipped: e
 					}), n >= t.steps.length) {
-						if (t.id === "basics" && NU(C.current, t) && te({
+						if (t.id === "basics" && MU(C.current, t) && te({
 							...C.current,
 							completed: !0
 						}, { action: "complete" }), await k.current, a !== S.current) return;
-						ie(!0), o(t.kind), g(NU(C.current, t) ? t.id === "basics" ? C.current.completed ? "快速导览已完成，所有设备的教程入口都会收起。以后可到设置 → Peach 配置 → 应用与维护 → 新手教程重新打开，其余内容按需查看。" : "导览已结束，但完成状态未保存。请重新读取教程状态后再试。" : "这段导览已完成。需要时再了解其他功能。" : "本章已结束，未显示的步骤尚未完成，可以稍后继续。");
+						ie(!0), o(t.kind), g(MU(C.current, t) ? t.id === "basics" ? C.current.completed ? "快速导览已完成，所有设备的教程入口都会收起。以后可到设置 → Peach 配置 → 应用与维护 → 新手教程重新打开，其余内容按需查看。" : "导览已结束，但完成状态未保存。请重新读取教程状态后再试。" : "这段导览已完成。需要时再了解其他功能。" : "本章已结束，未显示的步骤尚未完成，可以稍后继续。");
 					} else w.current = n, l();
 				}
 			}), l();
@@ -48572,7 +48569,7 @@ function kve({ actions: e }) {
 	O.current = (e, t) => {
 		se(e, t);
 	};
-	let ce = pve(location.pathname);
+	let ce = ove(location.pathname);
 	return (0, Lt.createPortal)(/* @__PURE__ */ (0, I.jsx)(I.Fragment, { children: /* @__PURE__ */ (0, I.jsxs)(xV, {
 		isOpen: t,
 		onOpenChange: (e) => {
@@ -48595,11 +48592,11 @@ function kve({ actions: e }) {
 			}),
 			/* @__PURE__ */ (0, I.jsx)("div", {
 				className: "peach-guide-tools flex shrink-0 flex-col gap-4 px-6 pt-4 pb-3",
-				children: /* @__PURE__ */ (0, I.jsx)(_U, {
+				children: /* @__PURE__ */ (0, I.jsx)(gU, {
 					"aria-label": "教程路径",
 					name: "guide-path",
 					orientation: "horizontal",
-					className: vU,
+					className: _U,
 					value: a,
 					onChange: (e) => {
 						o(e), c(""), g("");
@@ -48610,7 +48607,7 @@ function kve({ actions: e }) {
 						["settings", "设置导览"]
 					].map(([e, t]) => /* @__PURE__ */ (0, I.jsx)(qz, {
 						value: e,
-						className: yU,
+						className: vU,
 						children: t
 					}, e))
 				})
@@ -49040,7 +49037,7 @@ function Wve({ task: e, writable: t }) {
 	return /* @__PURE__ */ (0, I.jsxs)("li", {
 		"data-download-state": e.state,
 		"data-download-id": e.id,
-		className: BH({
+		className: IU({
 			padding: "none",
 			bordered: p ? "error" : void 0,
 			className: "flex flex-col"
@@ -49101,7 +49098,7 @@ function Wve({ task: e, writable: t }) {
 							className: "flex min-w-0 items-center gap-2 text-caption-1-regular text-text-secondary",
 							children: [/* @__PURE__ */ (0, I.jsx)("span", {
 								className: "flex shrink-0",
-								children: /* @__PURE__ */ (0, I.jsx)(rU, {
+								children: /* @__PURE__ */ (0, I.jsx)(nU, {
 									source: e.provider,
 									label: e.provider_label
 								})
@@ -49128,7 +49125,7 @@ function Wve({ task: e, writable: t }) {
 								children: [d.map((e) => tn("performer", e.name, e.id)).join("、"), (u?.performer_total || 0) > d.length ? ` 等 ${u.performer_total} 人` : ""]
 							})]
 						}) : null,
-						e.state === "remote_running" && e.progress != null ? /* @__PURE__ */ (0, I.jsx)(UH, {
+						e.state === "remote_running" && e.progress != null ? /* @__PURE__ */ (0, I.jsx)(HH, {
 							label: "远端下载进度",
 							value: Math.round(e.progress * 100),
 							max: 100
@@ -49138,7 +49135,7 @@ function Wve({ task: e, writable: t }) {
 							title: e.ledger_path,
 							children: e.ledger_path
 						}) : null,
-						r.error ? /* @__PURE__ */ (0, I.jsx)(ZH, { children: r.error }) : null,
+						r.error ? /* @__PURE__ */ (0, I.jsx)(XH, { children: r.error }) : null,
 						/* @__PURE__ */ (0, I.jsxs)("div", {
 							"data-download-actions": "",
 							className: "flex flex-wrap items-center gap-2 pt-1 sm:mt-auto",
@@ -49255,7 +49252,7 @@ function qve({ initialCode: e, reason: t, choose: n, onSearch: r, onWork: i }) {
 		"aria-busy": !!y.busy,
 		className: "flex min-w-0 flex-col gap-4",
 		children: [
-			t ? /* @__PURE__ */ (0, I.jsxs)(XH, { children: [
+			t ? /* @__PURE__ */ (0, I.jsxs)(YH, { children: [
 				"版本目标：",
 				t,
 				"。可在下方调整搜索优先项；完整度与水印需要逐条复核。"
@@ -49276,7 +49273,7 @@ function qve({ initialCode: e, reason: t, choose: n, onSearch: r, onWork: i }) {
 			}),
 			/* @__PURE__ */ (0, I.jsxs)("div", {
 				className: "flex flex-col gap-1",
-				children: [/* @__PURE__ */ (0, I.jsx)(QH, { children: "优先寻找" }), /* @__PURE__ */ (0, I.jsxs)(nW, {
+				children: [/* @__PURE__ */ (0, I.jsx)(ZH, { children: "优先寻找" }), /* @__PURE__ */ (0, I.jsxs)(nW, {
 					"aria-label": "优先寻找",
 					selectedKey: s,
 					isDisabled: !!y.busy,
@@ -49313,20 +49310,20 @@ function qve({ initialCode: e, reason: t, choose: n, onSearch: r, onWork: i }) {
 					onChange: f
 				})]
 			}),
-			y.busy ? /* @__PURE__ */ (0, I.jsx)(XH, {
+			y.busy ? /* @__PURE__ */ (0, I.jsx)(YH, {
 				role: "status",
 				children: "正在搜索资源"
 			}) : null,
-			y.error ? /* @__PURE__ */ (0, I.jsx)(ZH, { children: y.error }) : null,
-			p?.error ? /* @__PURE__ */ (0, I.jsx)(XH, {
+			y.error ? /* @__PURE__ */ (0, I.jsx)(XH, { children: y.error }) : null,
+			p?.error ? /* @__PURE__ */ (0, I.jsx)(YH, {
 				role: "status",
 				children: p.error
 			}) : null,
-			p?.state === "ready" && !p.items.length ? /* @__PURE__ */ (0, I.jsx)(XH, {
+			p?.state === "ready" && !p.items.length ? /* @__PURE__ */ (0, I.jsx)(YH, {
 				role: "status",
 				children: "没有符合条件的资源。"
 			}) : null,
-			p?.warnings.map((e) => /* @__PURE__ */ (0, I.jsx)(XH, { children: e }, e)),
+			p?.warnings.map((e) => /* @__PURE__ */ (0, I.jsx)(YH, { children: e }, e)),
 			p?.items.length ? /* @__PURE__ */ (0, I.jsx)("ul", {
 				className: "flex min-w-0 flex-col gap-4",
 				children: p.items.map((e) => /* @__PURE__ */ (0, I.jsxs)("li", {
@@ -49336,7 +49333,7 @@ function qve({ initialCode: e, reason: t, choose: n, onSearch: r, onWork: i }) {
 							className: "break-words text-body-2-medium text-text-primary",
 							children: e.name
 						}),
-						/* @__PURE__ */ (0, I.jsx)(XH, { children: [
+						/* @__PURE__ */ (0, I.jsx)(YH, { children: [
 							e.size > 0 ? `${(e.size / 1024 ** 3).toFixed(2)} GiB` : "体积未取得",
 							e.seeders >= 0 ? `${e.seeders} 个做种` : "做种未取得",
 							e.resolution ? `${e.resolution}p` : "",
@@ -49476,7 +49473,7 @@ function Xve({ header: e, snapshot: t, prefill: n, close: r, receipt: i, provide
 							children: [/* @__PURE__ */ (0, I.jsx)("p", {
 								className: "break-words text-body-medium text-text-primary",
 								children: _ ? [_.code, _.title].filter(Boolean).join(" · ") : "作品资料未取得"
-							}), _ ? /* @__PURE__ */ (0, I.jsx)(XH, { children: [
+							}), _ ? /* @__PURE__ */ (0, I.jsx)(YH, { children: [
 								_.performers,
 								_.studio,
 								_.release_date,
@@ -49511,7 +49508,7 @@ function Xve({ header: e, snapshot: t, prefill: n, close: r, receipt: i, provide
 					/* @__PURE__ */ (0, I.jsxs)("div", {
 						className: "flex flex-col gap-1",
 						children: [
-							/* @__PURE__ */ (0, I.jsx)(QH, { children: "下载到" }),
+							/* @__PURE__ */ (0, I.jsx)(ZH, { children: "下载到" }),
 							/* @__PURE__ */ (0, I.jsx)(nW, {
 								"aria-label": "下载到",
 								selectedKey: l || null,
@@ -49522,13 +49519,13 @@ function Xve({ header: e, snapshot: t, prefill: n, close: r, receipt: i, provide
 								children: s.map((e) => /* @__PURE__ */ (0, I.jsx)(rW, {
 									id: e.key,
 									textValue: e.label,
-									children: /* @__PURE__ */ (0, I.jsx)(rU, {
+									children: /* @__PURE__ */ (0, I.jsx)(nU, {
 										source: e.key,
 										label: e.label
 									})
 								}, e.key))
 							}),
-							l === "115" ? /* @__PURE__ */ (0, I.jsx)(XH, { children: "每提交一次扣一条离线配额，重新提交也算。" }) : null
+							l === "115" ? /* @__PURE__ */ (0, I.jsx)(YH, { children: "每提交一次扣一条离线配额，重新提交也算。" }) : null
 						]
 					}),
 					t.available ? null : /* @__PURE__ */ (0, I.jsx)(CV, {
@@ -49560,7 +49557,7 @@ function Xve({ header: e, snapshot: t, prefill: n, close: r, receipt: i, provide
 							m(e), pW(e, _?.code) || v(null);
 						}
 					}),
-					y || S.error ? /* @__PURE__ */ (0, I.jsx)(ZH, { children: y || S.error }) : null
+					y || S.error ? /* @__PURE__ */ (0, I.jsx)(XH, { children: y || S.error }) : null
 				]
 			}),
 			/* @__PURE__ */ (0, I.jsxs)("div", {
@@ -49718,14 +49715,14 @@ function jW({ tab: e, navigate: t, find: n }) {
 				children: "查找资源"
 			})]
 		}), /* @__PURE__ */ (0, I.jsx)(AW, {
-			tabs: SU.map(([e, t]) => ({
+			tabs: xU.map(([e, t]) => ({
 				value: e,
 				label: t
 			})),
 			value: e,
 			label: "JAV 分区",
 			className: "",
-			onChange: (e) => t(wU(e))
+			onChange: (e) => t(CU(e))
 		})]
 	});
 }
@@ -50094,8 +50091,8 @@ function oye({ children: e, actions: t = null, background: n, processing: r = !1
 			/* @__PURE__ */ (0, I.jsx)(nye, {}),
 			/* @__PURE__ */ (0, I.jsx)(GW, {}),
 			/* @__PURE__ */ (0, I.jsx)(JW, {}),
-			r && t ? /* @__PURE__ */ (0, I.jsx)(nve, { toast: t.toast }) : null,
-			r && t ? /* @__PURE__ */ (0, I.jsx)(ove, {}) : null,
+			r && t ? /* @__PURE__ */ (0, I.jsx)(Y_e, { toast: t.toast }) : null,
+			r && t ? /* @__PURE__ */ (0, I.jsx)($_e, {}) : null,
 			r && t ? /* @__PURE__ */ (0, I.jsx)(Nve, { navigate: t.navigate }) : null,
 			r && t ? /* @__PURE__ */ (0, I.jsx)(kve, { actions: t }) : null,
 			/* @__PURE__ */ (0, I.jsx)(aye, { children: e })
@@ -50264,7 +50261,7 @@ function cye({ folder: e, rule: t, revision: n, close: r }) {
 								}) : null,
 								m.conflicts.length ? /* @__PURE__ */ (0, I.jsx)(CV, {
 									tone: "warning",
-									extra: /* @__PURE__ */ (0, I.jsx)($H, {
+									extra: /* @__PURE__ */ (0, I.jsx)(QH, {
 										summary: "查看归属冲突",
 										children: /* @__PURE__ */ (0, I.jsx)("ul", {
 											className: "mt-2 flex flex-col gap-2",
@@ -50743,11 +50740,11 @@ function hG() {
 		value: e,
 		onChange: hye,
 		"data-entity-layout": "",
-		className: bU,
+		className: yU,
 		children: [/* @__PURE__ */ (0, I.jsx)(qz, {
 			value: "cards",
 			"aria-label": "卡片",
-			className: xU,
+			className: bU,
 			"data-glass-segment": "",
 			children: /* @__PURE__ */ (0, I.jsx)("span", {
 				title: "卡片",
@@ -50760,7 +50757,7 @@ function hG() {
 		}), /* @__PURE__ */ (0, I.jsx)(qz, {
 			value: "list",
 			"aria-label": "列表",
-			className: xU,
+			className: bU,
 			"data-glass-segment": "",
 			children: /* @__PURE__ */ (0, I.jsx)("span", {
 				title: "列表",
@@ -51195,14 +51192,14 @@ function RG({ name: e, label: t, value: n, options: r, onChange: i }) {
 		value: n,
 		onChange: i,
 		"data-entity-layout": "",
-		className: bU,
+		className: yU,
 		children: r.map(([e, t, n]) => {
 			let r = EV(n);
 			return /* @__PURE__ */ (0, I.jsx)(qz, {
 				value: e,
 				"aria-label": t,
 				"data-glass-segment": "",
-				className: xU,
+				className: bU,
 				children: /* @__PURE__ */ (0, I.jsx)("span", {
 					title: t,
 					className: "contents",
@@ -57492,18 +57489,18 @@ function Ibe({ items: e, finite: t, hasMore: n, busy: r, loading: i = !1, error:
 							defaultValue: new URLSearchParams(location.search).get("q") || ""
 						})]
 					}),
-					/* @__PURE__ */ (0, I.jsxs)(_U, {
+					/* @__PURE__ */ (0, I.jsxs)(gU, {
 						"aria-label": "播放墙图片",
 						value: Te,
 						onChange: Ee,
-						className: vU,
+						className: _U,
 						children: [/* @__PURE__ */ (0, I.jsx)(qz, {
 							value: "cover",
-							className: yU,
+							className: vU,
 							children: "封面"
 						}), /* @__PURE__ */ (0, I.jsx)(qz, {
 							value: "thumbnail",
-							className: yU,
+							className: vU,
 							children: "缩略图"
 						})]
 					}),
@@ -57872,7 +57869,7 @@ function Bbe({ command: e, speed: t, dialog: n, onSpeed: r, busy: i }) {
 					}
 				})
 			}),
-			s ? /* @__PURE__ */ (0, I.jsx)(sU, {
+			s ? /* @__PURE__ */ (0, I.jsx)(oU, {
 				traffic: s,
 				initial: !0
 			}) : null,
@@ -61315,7 +61312,7 @@ function OCe({ item: e, props: t, disabled: n }) {
 					children: [p?.name ? /* @__PURE__ */ (0, I.jsxs)("span", {
 						"data-list-library": "",
 						title: `媒体库：${p.name}`,
-						children: [/* @__PURE__ */ (0, I.jsx)(eU, { mark: p.icon }), p.name]
+						children: [/* @__PURE__ */ (0, I.jsx)($H, { mark: p.icon }), p.name]
 					}) : null, u]
 				})]
 			})
@@ -62630,7 +62627,7 @@ function bZ({ name: e, readout: t, big: n, children: r, following: i, onPress: a
 		...o,
 		"data-index-cell": "",
 		onClick: a,
-		className: BH({
+		className: IU({
 			radius: "plain",
 			padding: "none",
 			interactive: !0,
@@ -67198,7 +67195,7 @@ function ZQ({ groups: e, actions: t }) {
 		className: "flex flex-col gap-4",
 		children: e.map(([e, n], r) => /* @__PURE__ */ (0, I.jsxs)("section", {
 			"data-alpha-group": r,
-			className: BH({
+			className: IU({
 				radius: "plain",
 				padding: "none",
 				className: "px-5 pt-4 pb-3"
@@ -67315,14 +67312,14 @@ function $Q({ categories: e, category: t, online: n, readout: r, letters: i, vie
 				orientation: "horizontal",
 				value: a,
 				onChange: (e) => c(e),
-				className: `ml-auto ${bU}`,
+				className: `ml-auto ${yU}`,
 				children: hOe.map(([e, t, n]) => {
 					let r = EV(n);
 					return /* @__PURE__ */ (0, I.jsx)(qz, {
 						value: e,
 						"aria-label": t,
 						"data-glass-segment": "",
-						className: xU,
+						className: bU,
 						children: /* @__PURE__ */ (0, I.jsx)("span", {
 							title: t,
 							className: "contents",
@@ -67836,19 +67833,19 @@ var yOe = [
 	]]
 };
 function COe({ kind: e, layout: t, onChange: n }) {
-	return /* @__PURE__ */ (0, I.jsx)(_U, {
+	return /* @__PURE__ */ (0, I.jsx)(gU, {
 		"aria-label": `${oZ[e]}索引版式`,
 		orientation: "horizontal",
 		value: t,
 		onChange: (e) => n(e),
 		"data-index-layout": "",
-		className: `flex-none ${vU}`,
+		className: `flex-none ${_U}`,
 		children: SOe[e === "series" ? "series" : dZ(e) ? "company" : "people"].map(([e, t, n]) => {
 			let r = EV(n);
 			return /* @__PURE__ */ (0, I.jsx)(qz, {
 				value: e,
 				"aria-label": t,
-				className: cve,
+				className: tve,
 				children: /* @__PURE__ */ (0, I.jsx)("span", {
 					title: t,
 					className: "contents",
@@ -68601,7 +68598,7 @@ function BOe({ onMore: e }) {
 	});
 }
 // src/react/components/fieldset-layout.ts
-var VOe = BH({
+var VOe = IU({
 	padding: "none",
 	className: "overflow-hidden"
 }), b$ = {
@@ -68616,7 +68613,7 @@ function S$(e) {
 }
 // src/react/data-cleanup/cleanup-entry.ts
 var C$ = "inline-grid w-full grid-cols-2 gap-3 max-cleanup-tight:grid-cols-1", w$ = {
-	face: BH({
+	face: IU({
 		padding: "none",
 		radius: "plain",
 		interactive: !0,
@@ -68640,14 +68637,14 @@ var C$ = "inline-grid w-full grid-cols-2 gap-3 max-cleanup-tight:grid-cols-1", w
 	"bg-chart-8/10"
 ];
 function WOe(e = {}) {
-	return `${BH({
+	return `${IU({
 		...e,
 		padding: "none"
 	})} flex flex-col overflow-hidden pt-4 text-left`;
 }
 var GOe = "inline-grid w-full grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4", KOe = "inline-grid w-full grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6";
 function T$({ interactive: e = !1 } = {}) {
-	return BH({
+	return IU({
 		padding: "none",
 		radius: "plain",
 		interactive: e,
@@ -68758,7 +68755,7 @@ function QOe() {
     </div></div>`;
 }
 // src/react/components/fieldset.tsx
-var $Oe = BH({
+var $Oe = IU({
 	padding: "none",
 	radius: "surface",
 	className: "overflow-hidden"
@@ -68992,7 +68989,7 @@ function uke({ state: e, problem: t, settled: n, onRetry: r, toast: i }) {
 				}),
 				extra: /* @__PURE__ */ (0, I.jsxs)(I.Fragment, { children: [a ? /* @__PURE__ */ (0, I.jsx)("div", {
 					className: "-mx-3 mt-3 border-t border-current/20 px-3 pt-3",
-					children: /* @__PURE__ */ (0, I.jsx)($H, {
+					children: /* @__PURE__ */ (0, I.jsx)(QH, {
 						summary: a.label,
 						contentClassName: "gap-0",
 						children: /* @__PURE__ */ (0, I.jsx)("div", {
@@ -69057,7 +69054,7 @@ function z$(e) {
 	(0, F.useEffect)(() => {
 		i && n?.();
 	}, [i, n]);
-	let s = r.data ?? { status: "idle" }, c = s.job_id || "unavailable", { hidden: l } = hU(c), u = o.error ? cr(o.error) : r.isError ? r.data ? xH : cr(r.error) : "", d = o.isPending || mH(s), f = async (e) => {
+	let s = r.data ?? { status: "idle" }, c = s.job_id || "unavailable", { hidden: l } = mU(c), u = o.error ? cr(o.error) : r.isError ? r.data ? xH : cr(r.error) : "", d = o.isPending || mH(s), f = async (e) => {
 		d || (o.reset(), await o.mutateAsync(e));
 	};
 	return /* @__PURE__ */ (0, I.jsxs)("div", {
@@ -69113,7 +69110,7 @@ function z$(e) {
 						}), l && (mH(s) || s.status === "failed" || r.isError) ? /* @__PURE__ */ (0, I.jsx)(J, {
 							variant: "secondary",
 							size: "small",
-							onClick: () => mU(c, !0),
+							onClick: () => pU(c, !0),
 							children: "显示进度浮窗"
 						}) : null]
 					}),
@@ -69124,13 +69121,13 @@ function z$(e) {
 					s.status === "paused" && !s.total ? /* @__PURE__ */ (0, I.jsx)("span", {
 						className: "self-start",
 						children: /* @__PURE__ */ (0, I.jsx)(L$, { children: "已暂停" })
-					}) : mH(s) ? /* @__PURE__ */ (0, I.jsx)(I_e, { state: s }) : null,
+					}) : mH(s) ? /* @__PURE__ */ (0, I.jsx)(k_e, { state: s }) : null,
 					mH(s) ? /* @__PURE__ */ (0, I.jsx)("p", {
 						className: "text-body-2-regular text-text-secondary tabular-nums",
 						"data-processing-eta": "",
 						children: vH(s)
 					}) : null,
-					mH(s) ? /* @__PURE__ */ (0, I.jsx)(sU, { traffic: s.traffic }) : null,
+					mH(s) ? /* @__PURE__ */ (0, I.jsx)(oU, { traffic: s.traffic }) : null,
 					mH(s) ? /* @__PURE__ */ (0, I.jsx)(RH, { state: s }) : null
 				]
 			})
@@ -72147,7 +72144,7 @@ function ije(e) {
 		label: "查找资源",
 		attrs: "disabled data-skeleton-action"
 	})}</div>
-    <div class="relative flex flex-none gap-1 overflow-x-auto max-board-narrow:gap-0">${SU.map(([t, n]) => `<span class="relative flex flex-none items-center whitespace-nowrap rounded-md px-3 py-2 text-body-regular max-board-narrow:px-2.25 max-board-narrow:text-body-2-regular ${t === e ? "bg-background-tertiary-default text-text-primary" : "text-text-secondary"}">${n}</span>`).join("")}</div></div>
+    <div class="relative flex flex-none gap-1 overflow-x-auto max-board-narrow:gap-0">${xU.map(([t, n]) => `<span class="relative flex flex-none items-center whitespace-nowrap rounded-md px-3 py-2 text-body-regular max-board-narrow:px-2.25 max-board-narrow:text-body-2-regular ${t === e ? "bg-background-tertiary-default text-text-primary" : "text-text-secondary"}">${n}</span>`).join("")}</div></div>
     <form aria-label="${t}">${Es("筛选番号、女优或标题", "", t)}</form>
     ${e === "wants" ? `<div class="rounded-2lg bg-background-secondary-default px-6 py-5"><h3 class="mb-4 text-title-2-medium text-text-primary">按番号添加</h3>${j0("100%")}</div>${P0(e)}` : `<section class="flex min-w-0 flex-col gap-4">${aje()}${P0(e)}</section>`}</div></div>`;
 }
@@ -72686,7 +72683,7 @@ var Kje = () => `<section class="flex scroll-mt-20 flex-col gap-4">
 </section>`;
 function x2({ title: e, description: t, search: n = "", columns: r, rows: i }) {
 	let a = r.reduce((e, { width: t }) => e + t, 48), o = `<th style="width:48px"><span class="flex items-center gap-0.5">${K0()}</span></th>${r.map(({ label: e, width: t }, n) => `<th${n ? ` style="width:${t}px"` : ""}><span class="flex items-center gap-0.5">${e}<span data-sort-indicator>${Y0}</span></span></th>`).join("")}<th data-table-space style="width:0"></th>`, s = `<tr><td>${K0()}</td>${r.map(({ cell: e }) => `<td>${e}</td>`).join("")}<td data-table-space></td></tr>`, c = n ? `<div data-index-search class="ml-auto min-w-0 max-w-80 flex-1">${Es("", "", n)}</div>` : "";
-	return `<div data-data-table-panel class="${BH({
+	return `<div data-data-table-panel class="${IU({
 		padding: "none",
 		className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 	})}">
@@ -74262,7 +74259,7 @@ function Y2({ id: e, onOpened: t }) {
 					children: "打开"
 				})]
 			}),
-			f.error || c ? /* @__PURE__ */ (0, I.jsx)(ZH, { children: f.error || c }) : null,
+			f.error || c ? /* @__PURE__ */ (0, I.jsx)(XH, { children: f.error || c }) : null,
 			c ? /* @__PURE__ */ (0, I.jsx)(J, {
 				variant: "secondary",
 				disabled: !!f.busy,
@@ -74275,7 +74272,7 @@ function Y2({ id: e, onOpened: t }) {
 				label: "网络播放地址",
 				value: o.url,
 				isReadOnly: !0
-			}), /* @__PURE__ */ (0, I.jsx)(XH, { children: "链接有效期为 6 小时。VR 播放器可使用网络播放地址；另一台设备需要能访问当前 Peach 地址。" })] }) : null
+			}), /* @__PURE__ */ (0, I.jsx)(YH, { children: "链接有效期为 6 小时。VR 播放器可使用网络播放地址；另一台设备需要能访问当前 Peach 地址。" })] }) : null
 		]
 	});
 }
@@ -75164,7 +75161,7 @@ function MMe({ item: e, queue: t, helpers: n, actions: r, onStatus: i }) {
 						"aria-label": o ? "收起标题" : "展开标题",
 						title: o ? "收起标题" : "展开完整标题",
 						onClick: c,
-						children: /* @__PURE__ */ (0, I.jsx)(qH, {})
+						children: /* @__PURE__ */ (0, I.jsx)(KH, {})
 					}),
 					e.has_cover && (e.cover_key || e.code) ? /* @__PURE__ */ (0, I.jsx)("span", {
 						"data-cover-crop-host": "",
@@ -75743,7 +75740,7 @@ function d4({ want: e, readOnly: t, downloads: n, provider: r, toast: i, onSourc
 					children: "重新查询"
 				})]
 			}),
-			x ? /* @__PURE__ */ (0, I.jsx)(VH, { label: "正在查找资源链接" }) : null,
+			x ? /* @__PURE__ */ (0, I.jsx)(BH, { label: "正在查找资源链接" }) : null,
 			S ? /* @__PURE__ */ (0, I.jsx)(CV, {
 				tone: "error",
 				title: "资源链接未取得",
@@ -75845,7 +75842,7 @@ function d4({ want: e, readOnly: t, downloads: n, provider: r, toast: i, onSourc
 								e.protocol === "magnet" ? /* @__PURE__ */ (0, I.jsx)(J, {
 									variant: "primary",
 									size: "small",
-									leadingIcon: v ? nU(v.key) : zhe,
+									leadingIcon: v ? tU(v.key) : zhe,
 									title: v ? `下载到 ${v.label}` : void 0,
 									disabled: t || !n?.available || !v || r,
 									...OV(f.busy === e.id),
@@ -75859,7 +75856,7 @@ function d4({ want: e, readOnly: t, downloads: n, provider: r, toast: i, onSourc
 				return /* @__PURE__ */ (0, I.jsxs)(I.Fragment, { children: [/* @__PURE__ */ (0, I.jsx)("ul", {
 					className: "flex min-w-0 flex-col gap-4",
 					children: e.slice(0, 3)
-				}), e.length > 3 ? /* @__PURE__ */ (0, I.jsx)($H, {
+				}), e.length > 3 ? /* @__PURE__ */ (0, I.jsx)(QH, {
 					summary: `更多资源（${e.length - 3} 条）`,
 					children: /* @__PURE__ */ (0, I.jsx)("ul", {
 						className: "flex min-w-0 flex-col gap-4",
@@ -76178,7 +76175,7 @@ function QMe({ item: e }) {
 				"aria-label": n ? "收起标题" : "展开标题",
 				title: n ? "收起标题" : "展开完整标题",
 				onClick: i,
-				children: /* @__PURE__ */ (0, I.jsx)(qH, {})
+				children: /* @__PURE__ */ (0, I.jsx)(KH, {})
 			})
 		})]
 	});
@@ -76295,7 +76292,7 @@ function tNe({ code: e, count: t, released: n }) {
 	let l = c.data?.pages || [], u = [...new Map(l.flatMap((e) => e.items).map((e) => [e.id, e])).values()], d = c.error ? cr(c.error) : l.find((e) => !e.ok || e.cache_stale)?.message;
 	return /* @__PURE__ */ (0, I.jsx)("section", {
 		"data-jav-reviews": "",
-		children: /* @__PURE__ */ (0, I.jsxs)($H, {
+		children: /* @__PURE__ */ (0, I.jsxs)(QH, {
 			trailing: !0,
 			summary: /* @__PURE__ */ (0, I.jsxs)(I.Fragment, { children: [
 				/* @__PURE__ */ (0, I.jsx)(Fhe, { "aria-hidden": !0 }),
@@ -76402,7 +76399,7 @@ function nNe({ item: e, actions: t, readOnly: n }) {
 	}), o = a.data?.providers.find((e) => e.configured)?.key || "", [s, c] = (0, F.useState)(!1);
 	return /* @__PURE__ */ (0, I.jsx)("section", {
 		"data-jav-resources": "",
-		children: /* @__PURE__ */ (0, I.jsx)($H, {
+		children: /* @__PURE__ */ (0, I.jsx)(QH, {
 			trailing: !0,
 			summary: /* @__PURE__ */ (0, I.jsxs)(I.Fragment, { children: [/* @__PURE__ */ (0, I.jsx)(h4, { name: "link" }), "资源"] }),
 			onOpenChange: (e) => {
@@ -78258,7 +78255,7 @@ async function mFe(e, t) {
 	if (e === "/jav") {
 		let e = await u6(t);
 		return t.live ? {
-			tab: CU(l6().get("tab")),
+			tab: SU(l6().get("tab")),
 			readOnly: !!e?.ledger_read_only
 		} : null;
 	}
@@ -78295,8 +78292,8 @@ async function mFe(e, t) {
 }
 async function hFe(e, t, n) {
 	let r = W.navigation.seq, i = () => n.live && W.navigation.seq === r;
-	if (e === "/jav" && CU(l6().get("tab")) === "library") {
-		W.replace(lve(window.location.search));
+	if (e === "/jav" && SU(l6().get("tab")) === "library") {
+		W.replace(nve(window.location.search));
 		return;
 	}
 	if (e === "/subscriptions" && l6().get("tab") === "wants") {
@@ -78430,8 +78427,8 @@ async function g6(e, t) {
 	if (r.status === "rejected") throw r.reason;
 	if (n.status === "rejected") throw n.reason;
 }
-var _6 = h6(() => import("./peach-app.jav-page-C2bS144a.js")), v6 = h6(() => import("./peach-app.stats-page-DhNggTPt.js")), y6 = h6(() => import("./peach-app.taste-page-O5P41pRb.js")), b6 = h6(() => import("./peach-app.review-page-kd1HFP2A.js")), x6 = h6(() => import("./peach-app.data-cleanup-page-CZOBqkVd.js")), S6 = h6(() => import("./peach-app.duplicates-page-Bau8HIlx.js")), C6 = h6(() => import("./peach-app.quality-goals-page-Deoy7rhD.js")), w6 = h6(() => import("./peach-app.scraping-page-Ddbx11Bn.js")), T6 = h6(async () => {
-	let [{ ConfigurationPage: e }, { DiagnosticsPage: t }] = await Promise.all([import("./peach-app.configuration-page-BkqUJk6k.js"), import("./peach-app.diagnostics-page-yTNOV5os.js")]);
+var _6 = h6(() => import("./peach-app.jav-page-DUZe3Cv7.js")), v6 = h6(() => import("./peach-app.stats-page-DhNggTPt.js")), y6 = h6(() => import("./peach-app.taste-page-O5P41pRb.js")), b6 = h6(() => import("./peach-app.review-page-kd1HFP2A.js")), x6 = h6(() => import("./peach-app.data-cleanup-page-CZOBqkVd.js")), S6 = h6(() => import("./peach-app.duplicates-page-Bau8HIlx.js")), C6 = h6(() => import("./peach-app.quality-goals-page-Deoy7rhD.js")), w6 = h6(() => import("./peach-app.scraping-page-Ddbx11Bn.js")), T6 = h6(async () => {
+	let [{ ConfigurationPage: e }, { DiagnosticsPage: t }] = await Promise.all([import("./peach-app.configuration-page-BkqUJk6k.js"), import("./peach-app.diagnostics-page-DS1L_wLs.js")]);
 	return {
 		ConfigurationPage: e,
 		DiagnosticsPage: t
@@ -78664,7 +78661,7 @@ var k6 = (e) => ({
 		prefetch: async () => {},
 		page: (e) => /* @__PURE__ */ (0, I.jsx)(LOe, { ...e })
 	}
-}, z6 = (e) => Object.hasOwn(R6, e), wFe = (e) => e.mode === "notice" ? /* @__PURE__ */ (0, I.jsx)($_e, { ...e }) : /* @__PURE__ */ (0, I.jsx)(z$, { ...e }), B6 = {
+}, z6 = (e) => Object.hasOwn(R6, e), wFe = (e) => e.mode === "notice" ? /* @__PURE__ */ (0, I.jsx)(K_e, { ...e }) : /* @__PURE__ */ (0, I.jsx)(z$, { ...e }), B6 = {
 	"catalog-filter": {
 		prefetch: async () => {},
 		page: (e) => /* @__PURE__ */ (0, I.jsx)(Lye, { ...e })
@@ -79671,7 +79668,7 @@ function _Ie(e, t, n, r = "") {
     <div class="entitysection">${o}</div></div></section>`;
 }
 // src/filter-controls-skeleton.ts
-var $8 = (e) => e.startsWith("ri-") ? `<svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><use href="#${e}"/></svg>` : ws(e, "size-4 shrink-0"), e5 = "inert aria-disabled=\"true\" tabindex=\"-1\" data-skeleton-control", t5 = (e, t, n) => `<span data-entity-layout="" class="${bU}" role="radiogroup" aria-label="${z(e)}">${n.map(([e, n, r]) => `<span class="${xU}" role="radio" aria-label="${z(n)}" aria-checked="${e === t}" data-glass-segment=""${e === t ? " data-selected=\"\"" : ""} ${e5}>${$8(r)}</span>`).join("")}</span>`;
+var $8 = (e) => e.startsWith("ri-") ? `<svg class="size-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><use href="#${e}"/></svg>` : ws(e, "size-4 shrink-0"), e5 = "inert aria-disabled=\"true\" tabindex=\"-1\" data-skeleton-control", t5 = (e, t, n) => `<span data-entity-layout="" class="${yU}" role="radiogroup" aria-label="${z(e)}">${n.map(([e, n, r]) => `<span class="${bU}" role="radio" aria-label="${z(n)}" aria-checked="${e === t}" data-glass-segment=""${e === t ? " data-selected=\"\"" : ""} ${e5}>${$8(r)}</span>`).join("")}</span>`;
 function n5(e, t) {
 	let n = pG(), r = new URLSearchParams(location.search), i = t && n === "cards" ? t5(t.label, t.value, t.options) : "";
 	return `<span data-entity-sorts=""><button type="button" data-entity-batch="" data-filter-action="" aria-label="换一批" ${e5}>${$8("shuffle")}</button>${i}${t5("馆藏显示方式", n, [[
@@ -80575,7 +80572,7 @@ function QIe() {
 	else if (/^\/assets\/\d+$/.test(e)) I5();
 	else if (e === "/settings" || /^\/settings\/(appearance|playback|jav|search|content)$/.test(e) || e.startsWith("/posts/") || e.startsWith("/works/")) I5();
 	else if (e === "/junk-files") F5("正在读取垃圾文件");
-	else if (e === "/jav" && CU(new URLSearchParams(location.search).get("tab")) === "library") F5("正在读取馆藏");
+	else if (e === "/jav" && SU(new URLSearchParams(location.search).get("tab")) === "library") F5("正在读取馆藏");
 	else if (Q.managedPagePath(e)) {
 		I5();
 		let t = L("#stats");
@@ -82532,11 +82529,11 @@ function lRe() {
 }
 // src/application/tutorial.js
 async function uRe() {
-	IU({ reopen: !0 });
+	FU({ reopen: !0 });
 }
 function dRe() {
 	let e = new URL(location.href), t = e.searchParams.get("onboarding") === "1";
-	yu({ cameFromSetup: t }), F8.handler(document.getElementById("tutorialBtn"), "onclick", () => IU()), IU({ invitation: !0 }), t && e.searchParams.delete("onboarding");
+	yu({ cameFromSetup: t }), F8.handler(document.getElementById("tutorialBtn"), "onclick", () => FU()), FU({ invitation: !0 }), t && e.searchParams.delete("onboarding");
 	let n = e.searchParams.get("agentation");
 	try {
 		localStorage.removeItem("peach.agentation");
@@ -83583,6 +83580,6 @@ O();
 var $9 = document.getElementById("appRoot");
 if (!$9) throw Error("主界面宿主缺失");
 KRe($9);
-export { tR as $2ec61d1d4f780267$export$a8a3e93435678ff9, lR as $3a442827418ebe87$export$eb2fcfdbd7ba97d4, Ez as $542a13ca2fa5b484$export$5b6b19405a83ff9d, AD as $72abaeab4d80592f$export$78efe591171d7d45, vB as $76d00c5a4edb230a$export$76ccd210b9029917, hB as $76d00c5a4edb230a$export$816b5d811295e6bc, xB as $76d00c5a4edb230a$export$b59bdbef9ce70de2, CB as $76d00c5a4edb230a$export$f6f0c3fe4ec306ea, mB as $76d00c5a4edb230a$export$f850895b287ef28e, fhe as $b4f18e3395fe64d7$export$3d96ec278d3efce4, dhe as $b4f18e3395fe64d7$export$3e41faf802a29e71, che as $b4f18e3395fe64d7$export$b2539bed5023c21c, DB as $b4f18e3395fe64d7$export$e51a686c67fdaa2d, hhe as $bd263d78e9bf3c56$export$f5c9f3c2c4054eec, _E as $ea3928288112382f$export$439d29a4e110a164, zz as $f2ff30fde7b014be$export$3ddf2d174ce01153, Kz as $fe21c36db05242bb$export$a98f0dcb43a68a25, qz as $fe21c36db05242bb$export$d7b12c4107be0d61, Yhe as $l, $j as ACCENTS, Tke as AMANE_BRIDGE_CHECK_URL, Y$ as AMANE_BRIDGE_KEY, Eke as AMANE_BRIDGE_REBUILD_URL, or as ApiError, oW as ArtSlot, p2 as BATCH_DELETE_TEXT, J as Button, NL as ButtonLink, iV as Bx, w$ as CLEANUP_ENTRY, C$ as CLEANUP_ENTRY_GRID, Yf as CLEANUP_HASH_REDIRECTS, qf as CLEANUP_TOOLS, _n as CLOUD_LOCATIONS, Y1 as CLOUD_PROXY_HELP, Gr as COLUMN_SORT, s1 as CONFIGURATION_KEY, iX as CONFIGURATION_URL, Dke as COOKIE_TEXT_LIMIT, J$ as COVER_JOB_KEY, Ji as CREDENTIAL_STATE, W$ as CUSTOM_SOURCES_KEY, U$ as CUSTOM_SOURCES_URL, QV as Checkbox, ZV as CheckboxGlyph, HV as ChevronSortDown, aW as Chip, mW as CloudDownloadDialog, qH as CollapseChevron, KH as CollapseRegion, _$ as CollectionSummary, iwe as DEFAULT_CATEGORY, ur as DEFAULT_SORT, UQ as DIAGNOSTICS_KEY, rTe as DIRECTORY_TEMPLATE_ERROR, A0 as DISCOVERY_SORTS, cW as DOWNLOADS_KEY, sW as DOWNLOADS_URL, wY as DUPLICATES_KEY, aY as DataTableFooter, tY as DataTableFrame, iY as DataTableSort, $H as Disclosure, Uve as DownloadsPanel, Bhe as E3, awe as ENTITY_REVIEW_KINDS, q1 as ENTRY_LINKS_HELP, J1 as ENTRY_LINKS_HINT, XB as Ea, bge as EmptyFocusButton, wV as EmptyState, ZH as ErrorText, U_e as ExternalLink, Br as FEEDS_KEY, fX as FEED_SCHEDULE_KEY, x$ as FIELDSET_FOOT, NPe as FLOW_LABEL_X, q3 as FLOW_VIEWBOX, Rr as FOLLOW_CHECK_KEY, Lr as FOLLOW_CREDENTIALS_KEY, A8 as FOLLOW_INITIAL_RANGE_OPTIONS, Ir as FOLLOW_MANAGE_KEY, KZ as FOLLOW_MANAGE_NAV, zr as FOLLOW_RESOLVE_KEY, dX as FOLLOW_SCHEDULE_KEY, K_e as Fact, G_e as FactList, QH as FieldLabel, P$ as Fieldset, N$ as FieldsetTitle, lpe as FilterGlass, EL as FilterGlassRows, TL as FilterIconButton, DL as FilterPill, H_e as Footer, tV as Gg, OL as GlassPill, cV as HN, XH as Help, hV as HintText, TPe as IDLE_POLL_MS, qCe as IDLE_REPAIR, xL as IconButton, GQ as IndexSearch, bV as Input, yV as InputBase, I$ as IssueRow, _M as JAV_LAYOUTS, M0 as JAV_RECOMMENDATION_GRID, LX as JUNK_KEY, jW as JavHeader, VCe as KEEP_LABELS, Hr as LAYOUTS, K1 as LIBRARY_FOLDER_HELP, dH as LIBRARY_PROCESSING_KEY, XY as LINKS_KEY, ZY as LINK_CHECK_KEY, kwe as LINK_KINDS, QY as LINK_PRUNE_KEY, tr as LOC, mV as Label, z$ as LibraryProcessingCard, VV as LibraryShortcuts, DH as LinkButton, Zhe as Lo, VH as LoadingDots, Vhe as M6, Pwe as MEDIA_PROCESSING_KEY, mX as MEDIA_PROCESSING_URL, kY as MEDIA_REPAIR_KEY, OY as MEDIA_REPAIR_URL, vr as MEDIA_SOURCES_KEY, gs as MEDIA_SOURCE_ICONS, hn as MEDIA_SOURCE_OPTIONS, KV as MENU_ITEM, qV as MENU_ITEM_INTERACTIVE, GV as MENU_POPOVER_SURFACE, $he as Ma, jH as MenuDialog, bK as MixCard, xV as ModalFrame, Tx as MotionConfigContext, fV as NR, F$ as NameLink, CV as Note, gge as OA, _X as ORGANIZE_KEY, u2 as ORGANIZE_PARAMETER_HINT, l2 as ORGANIZE_SCOPE_HINT, c2 as ORGANIZE_TEXT, bX as ORPHAN_RECORDS_KEY, f2 as ORPHAN_RECORDS_TEXT, $B as OV, RB as P7, PX as PERFORMER_DELETE_KEY, Qve as PHASES, aX as PICK_FOLDER_URL, E$ as PLAIN_STAT_STRIP, V$ as PLAYLISTS_KEY, kAe as POLICY_COLUMNS, jAe as POLICY_COVER_NOTE, AAe as POLICY_MATRIX, G1 as POLICY_SUMMARY, rY as Pagination, R$ as PathLine, uV as Pf, XI as PillTabList, qOe as PlainStat, UH as Progress, PY as QUALITY_GOALS_KEY, lV as RB, O$ as REPAIR_CARD_TEXT, AY as REPAIR_LIBRARIES_KEY, TX as RESOURCE_APPLY_KEY, wX as RESOURCE_SCAN_KEY, d2 as RESOURCE_SYNC_TEXT, $Oe as RESULT_PANEL, eke as RESULT_SECTION, rwe as REVIEW_CATEGORIES, IX as REVIEW_COUNTS_KEY, owe as REVIEW_DECISION_LABELS, LY as REVIEW_KEY, RY as REVIEW_LABELS, BY as REVIEW_QUEUES, VY as REVIEW_QUEUE_LABELS, GG as RetryNote, hge as Rf, pV as Rk, z_e as Rows, Cke as SCRAPING_CHECK_URL, K$ as SCRAPING_COVER_URL, q$ as SCRAPING_KEY, Ske as SCRAPING_SETTINGS_URL, yU as SEGMENT, vU as SEGMENTED_TRACK, uX as SETTINGS_KEY, oX as SETTINGS_URL, dr as SORT_DEFAULT_DIR, lr as SORT_OPTIONS, vn as SOURCE_LABELS, v3 as STATS_KEY, GOe as STAT_STRIP, KOe as STAT_STRIP_SIX, R_e as Section, tke as SectionHeading, V_e as SectionSkeleton, _U as SegmentedRadioGroup, sve as SegmentedTabList, RG as Segments, nY as Select, nW as Select$1, d1 as SelectField, rW as SelectItem, fY as SelectionActions, jj as SelectionDock, pY as SelectionPopover, JH as SettingsCard, L_e as SettingsRow, YH as SettingsSectionLabel, X_e as SiteLabel, _G as SortDirectionIcon, BG as SortKeys, EQ as SourceAvatar, rU as SourceLabel, eU as SourceMark, B_e as Stack, JOe as StatCard, L$ as StatusLabel, fge as Su, X2 as Switch, aL as TASKS_KEY, mPe as TASTE_REFRESH_KEY, hPe as TASTE_WINDOWS, pX as THUMBNAIL_JOBS_KEY, zX as TRASH_KEY, Hfe as TRIGGER_LABELS, KJ as Table, mY as TableColumnControls, hY as TableColumnResizer, _Y as TableSelectionHeader, f$ as TagManager, W_e as TaskCenterLink, WH as TaskProgress, _V as TextField, gV as TextFieldContext, ZB as Un, gW as WANTS_KEY, d4 as WantMagnets, Gg as WithPromise, HB as Wt, YB as Xc, dV as Xf, WB as Xl, UB as Xt, BB as _8, o as __commonJSMin, s as __exportAll, l as __toESM, mge as aB, Ti as addAlias, wi as addSource, vW as addWant, mS as animate, B as apiGet, V as apiSend, dM as appSettingsStore, STe as applyConfirmText, NX as applyLeftovers, xTe as applyPlanText, wTe as applyText, hM as applyTheme, yy as asNumber, uTe as attachOrphan, si as authorAvatar, li as authorGroups, oi as authorInitial, ai as authorName, Pq as autoResetPageIndex, go as avatarInner, w3 as bandRows, iTe as baseName, KCe as batchOperate, fue as beginPlayerGuidePreview, Ij as boundedPreference, UCe as bulkCloudPreferences, OV as busyProps, pge as cB, UMe as cachedMagnetStates, zg as calcGeneratorVelocity, pwe as canApprove, mg as cancelFrame, hTe as candidateText, BH as cardClass, AM as cardRatio, JB as cc, Wi as checkEvidenceGap, Ui as checkFailures, Pi as checkFeeds, Nwe as checkLine, Vi as checkReceipt, Hi as checkSummary, kke as checkText, Gi as checkedText, oK as clickedBlank, q5 as closeDrawerAfterNav, FCe as cloudLocations, E0 as cloudProxySkeleton, XC as clsx, nge as cn, cv as collectMotionValues, eJ as columnVisibilityFeature, VJ as column_getCanSort, LJ as column_getSortFn, dwe as commonReviewSources, Of as configurationSection, yPe as configureTasteBrowser, ol as confirmModal, Bfe as controlTask, gq as copyInstancePropertiesWithoutMemos, co as coverUrl, Gq as createColumnHelper, gke as createPlaylist, Yi as credentialDone, S0 as credentialsSkeleton, Swe as currentReviewRow, q as cx, rV as dZ, ywe as decisionPayload, bwe as decisionReceipt, vwe as defaultChoice, ETe as deletePerformerVideos, vke as deletePlaylist, x as diagnosticHeaders, W1 as diagnosticsSkeleton, EW as discoveryArtwork, wW as discoveryKey, tje as discoveryScore, i9 as disposeStage, zCe as distinctName, zi as dropSources, dge as du, WCe as duplicateVictims, fL as elapsedText, tn as entityDisplayName, ho as entityFaceImg, Nn as entityPath, ei as errorHeadline, cr as errorMessage, z as esc, Nq as expandRowModel, MB as f1, $r as feedIntervalText, Q$ as fetchAmaneBridge, _i as fetchCheckJob, c1 as fetchConfiguration, Z$ as fetchCoverJob, gi as fetchCredentials, G$ as fetchCustomSources, FX as fetchDeletePerformers, TTe as fetchDeletePlan, WQ as fetchDiagnostics, TW as fetchDiscoveries, EY as fetchDuplicates, Ife as fetchEarlier, Lwe as fetchFeedSchedule, ji as fetchFeeds, hi as fetchFollow, Iwe as fetchFollowSchedule, VX as fetchJunkSummary, yH as fetchLibraryProcessing, tX as fetchLinkCheck, nX as fetchLinkPrune, eX as fetchLinkStats, Fwe as fetchMediaProcessing, jY as fetchMediaRepair, yr as fetchMediaSources, vX as fetchOrganize, Xwe as fetchOrganizeExample, xX as fetchOrphanRecords, Ai as fetchPending, H$ as fetchPlaylists, FY as fetchQualityGoals, MY as fetchRepairLibraries, vi as fetchResolveJob, DX as fetchResourceApply, EX as fetchResourceScan, qY as fetchReview, BX as fetchReviewCounts, hX as fetchSettings, X$ as fetchSources, y3 as fetchStats, yi as fetchSuggestions, sL as fetchTasks, W3 as fetchTaste, bPe as fetchTasteJob, Rwe as fetchThumbnailJobs, HX as fetchTrashSummary, _W as fetchWants, lwe as filterReviewRows, $n as firstGrapheme, QK as flexRender, FPe as flowGraph, IPe as flowLabel, PNe as fmtCount, qn as fmtDur, Yn as fmtSize, Ffe as foldByKind, Qfe as foldRoutine, Ii as followFeedByName, Vr as followSuggestKey, epe as followupDetail, Pfe as followupTally, pg as frame, IB as g4, rJ as getDefaultPaginationState, kM as gridLayout, ci as groupByAuthor, Zfe as groupFollowups, WY as groupReviewRows, yTe as hasChanges, OX as hasResourceRoots, lL as hasResultProblems, EPe as historySpan, NB as i2, wPe as importTasteExport, C0 as indexersSkeleton, Fg as interpolate, xW as invalidateWants, dL as isActive, Qr as isBroken, Kr as isLayout, yv as isMotionValue, zY as isReviewCategory, $fe as isRoutine, w0 as javBrowserSkeleton, P0 as javContentSkeleton, SM as javLayout, N0 as javTagSkeleton, jTe as junkBreakdown, yke as keepPlaylist, ke as keepPreviousData, fi as keepSelected, b3 as known, Ihe as l7, Xfe as latestOfKind, KNe as lengthRows, Sr as localTime, Fi as lookupFeedActor, LB as m7, nV as mM, En as mapLimit, ki as markItem, T3 as max, WNe as mediumRows, Lfe as mergeFinished, E3 as min, Dwe as mirrorText, XCe as missingToolText, DY as mixedCloudPreferences, gL as momentText, hS as motion, uv as motionValue, nn as nameFallback, He as notifyManager, Hhe as oe, oTe as organizeOutcome, X0 as overlayHost, qr as pageSizeOf, di as pageWindow, mr as paginationRange, Ri as patchSource, W as peachHistory, W as peachHistory$1, _we as pendingGenres, INe as percentText, $we as pickOrganizeFolder, T$ as plainStatClass, aTe as planSummary, x3 as playedFor, RNe as playedItemUrl, oL as pollInterval, Js as popCount, hke as posterUrl, Zye as previewLibraryColor, Qwe as previewOrganize, $Ce as previewUrl, Jfe as problemDestination, mH as processingActive, pL as progressText, nU as providerIcon, Mwe as pruneText, AX as purgeCount, dTe as purgeOrphan, aV as pv, uge as qE, H as queryClient, PB as r2, MPe as radarRows, VNe as radialArc, HNe as radialBarSize, BNe as radialCeiling, zNe as radialSlices, KN as randomId, APe as rankDetail, jPe as rankShares, C3 as reachedShare, mL as readableErrorHeadline, nje as recommendationScore, Cwe as recordGenre, pTe as recordsText, bke as recreatePlaylist, pke as refreshPlaylists, Cl as relayoutCovers, Bi as reloadFollowManage, Ewe as reloadReview, PAe as rememberShape, tTe as rememberTemplates, Ei as removeAlias, Ni as removeFeed, Ci as removeSource, CPe as removeTasteSource, yW as removeWants, Di as renameAliasGroup, _ke as renamePlaylist, Se as replaceEqualDeep, JNe as replayRows, re as require_jsx_runtime, A as require_react, N as require_react_dom, fq as require_with_selector, bW as resetWants, pr as resolveFollowSort, Hg as resolveStartTime, f_e as restartEffectText, mke as resumeAssetId, cwe as reviewGroupingOptions, UY as reviewQueueData, HY as reviewQueueOf, ATe as reviewSummary, uwe as reviewWindow, hwe as rowEvidence, KY as rowFieldName, uJ as rowPaginationFeature, jJ as rowSelectionFeature, WJ as rowSortingFeature, GY as rowSubject, gwe as rowTags, mwe as rowTitle, Nhe as s5, Oi as saveCredential, bTe as scanLine, Uwe as schedulePollInterval, CW as searchNote, fwe as selectReviewRange, pi as selectionState, Mi as setFeedEnabled, Si as setSourceEnabled, Mf as settingsPath, Twe as settleReviewRows, RCe as sharedNamePrefix, Ep as shellNavigate, v8 as showToast, zn as siteMarkUrl, wq as skipFirstRun, JI as sortCx, Yr as sortLabel, yn as sourceDefaultCost, qi as sourceIconUrl, CTe as sourceMeta, zs as spinnerHtml, Ng as spring, EV as spriteGlyph, bi as startCheck, Awe as startLinkCheck, jwe as startLinkPrune, eTe as startOrganize, xi as startResolve, _Te as startResourceApply, gTe as startResourceScan, SPe as startTasteRefresh, WOe as statCardClass, Wfe as statusLabel, YCe as statusLine, Zr as statusText, jM as storeJavLayout, xwe as submitDecision, _L as summaryItems, Kq as tableFeatures, Tq as tableMemo, ui as tableRows, qfe as taskIssues, Yfe as taskSubject, G3 as tasteDate, OPe as tasteDimensions, DPe as tasteHours, U3 as tasteKey, _Pe as tasteRefetchInterval, vPe as tasteTime, eL as textLang, $m as time, qhe as tl, mi as toggleGroup, K3 as topScores, ige as um, Qhe as uo, OH as useAction, VZ as useBackgroundJob, JU as useClientUpdates, dm as useConstant, vL as useEntityNames, wL as useHorizontalScroller, fm as useIsomorphicLayoutEffect, aK as useLibraryTints, Ft as useMutation, $V as useOverlayScrollbar, Pt as useQuery, ae as useQueryClient, rS as useReducedMotion, Hwe as useRunSchedule, Bwe as useSaveFollowSchedule, gX as useSaveSettings, Wwe as useSaveThumbnailMode, GJ as useTable, cY as useTablePreferences, jL as useViewGlide, GCe as victimBytes, Jhe as vl, SW as wantName, LNe as watchNote, S3 as watchedShare, Dc as wireHorizontalScroller, nTe as withOrganizeJob };
+export { tR as $2ec61d1d4f780267$export$a8a3e93435678ff9, lR as $3a442827418ebe87$export$eb2fcfdbd7ba97d4, Ez as $542a13ca2fa5b484$export$5b6b19405a83ff9d, AD as $72abaeab4d80592f$export$78efe591171d7d45, vB as $76d00c5a4edb230a$export$76ccd210b9029917, hB as $76d00c5a4edb230a$export$816b5d811295e6bc, xB as $76d00c5a4edb230a$export$b59bdbef9ce70de2, CB as $76d00c5a4edb230a$export$f6f0c3fe4ec306ea, mB as $76d00c5a4edb230a$export$f850895b287ef28e, fhe as $b4f18e3395fe64d7$export$3d96ec278d3efce4, dhe as $b4f18e3395fe64d7$export$3e41faf802a29e71, che as $b4f18e3395fe64d7$export$b2539bed5023c21c, DB as $b4f18e3395fe64d7$export$e51a686c67fdaa2d, hhe as $bd263d78e9bf3c56$export$f5c9f3c2c4054eec, _E as $ea3928288112382f$export$439d29a4e110a164, zz as $f2ff30fde7b014be$export$3ddf2d174ce01153, Kz as $fe21c36db05242bb$export$a98f0dcb43a68a25, qz as $fe21c36db05242bb$export$d7b12c4107be0d61, Yhe as $l, $j as ACCENTS, Tke as AMANE_BRIDGE_CHECK_URL, Y$ as AMANE_BRIDGE_KEY, Eke as AMANE_BRIDGE_REBUILD_URL, or as ApiError, oW as ArtSlot, p2 as BATCH_DELETE_TEXT, J as Button, NL as ButtonLink, iV as Bx, w$ as CLEANUP_ENTRY, C$ as CLEANUP_ENTRY_GRID, Yf as CLEANUP_HASH_REDIRECTS, qf as CLEANUP_TOOLS, _n as CLOUD_LOCATIONS, Y1 as CLOUD_PROXY_HELP, Gr as COLUMN_SORT, s1 as CONFIGURATION_KEY, iX as CONFIGURATION_URL, Dke as COOKIE_TEXT_LIMIT, J$ as COVER_JOB_KEY, Ji as CREDENTIAL_STATE, W$ as CUSTOM_SOURCES_KEY, U$ as CUSTOM_SOURCES_URL, QV as Checkbox, ZV as CheckboxGlyph, HV as ChevronSortDown, aW as Chip, mW as CloudDownloadDialog, KH as CollapseChevron, GH as CollapseRegion, _$ as CollectionSummary, iwe as DEFAULT_CATEGORY, ur as DEFAULT_SORT, UQ as DIAGNOSTICS_KEY, rTe as DIRECTORY_TEMPLATE_ERROR, A0 as DISCOVERY_SORTS, cW as DOWNLOADS_KEY, sW as DOWNLOADS_URL, wY as DUPLICATES_KEY, aY as DataTableFooter, tY as DataTableFrame, iY as DataTableSort, QH as Disclosure, Uve as DownloadsPanel, Bhe as E3, awe as ENTITY_REVIEW_KINDS, q1 as ENTRY_LINKS_HELP, J1 as ENTRY_LINKS_HINT, XB as Ea, bge as EmptyFocusButton, wV as EmptyState, XH as ErrorText, I_e as ExternalLink, Br as FEEDS_KEY, fX as FEED_SCHEDULE_KEY, x$ as FIELDSET_FOOT, NPe as FLOW_LABEL_X, q3 as FLOW_VIEWBOX, Rr as FOLLOW_CHECK_KEY, Lr as FOLLOW_CREDENTIALS_KEY, A8 as FOLLOW_INITIAL_RANGE_OPTIONS, Ir as FOLLOW_MANAGE_KEY, KZ as FOLLOW_MANAGE_NAV, zr as FOLLOW_RESOLVE_KEY, dX as FOLLOW_SCHEDULE_KEY, z_e as Fact, R_e as FactList, ZH as FieldLabel, P$ as Fieldset, N$ as FieldsetTitle, lpe as FilterGlass, EL as FilterGlassRows, TL as FilterIconButton, DL as FilterPill, F_e as Footer, tV as Gg, OL as GlassPill, cV as HN, YH as Help, hV as HintText, TPe as IDLE_POLL_MS, qCe as IDLE_REPAIR, xL as IconButton, GQ as IndexSearch, bV as Input, yV as InputBase, I$ as IssueRow, _M as JAV_LAYOUTS, M0 as JAV_RECOMMENDATION_GRID, LX as JUNK_KEY, jW as JavHeader, VCe as KEEP_LABELS, Hr as LAYOUTS, K1 as LIBRARY_FOLDER_HELP, dH as LIBRARY_PROCESSING_KEY, XY as LINKS_KEY, ZY as LINK_CHECK_KEY, kwe as LINK_KINDS, QY as LINK_PRUNE_KEY, tr as LOC, mV as Label, z$ as LibraryProcessingCard, VV as LibraryShortcuts, DH as LinkButton, Zhe as Lo, BH as LoadingDots, Vhe as M6, Pwe as MEDIA_PROCESSING_KEY, mX as MEDIA_PROCESSING_URL, kY as MEDIA_REPAIR_KEY, OY as MEDIA_REPAIR_URL, vr as MEDIA_SOURCES_KEY, gs as MEDIA_SOURCE_ICONS, hn as MEDIA_SOURCE_OPTIONS, KV as MENU_ITEM, qV as MENU_ITEM_INTERACTIVE, GV as MENU_POPOVER_SURFACE, $he as Ma, jH as MenuDialog, bK as MixCard, xV as ModalFrame, Tx as MotionConfigContext, fV as NR, F$ as NameLink, CV as Note, gge as OA, _X as ORGANIZE_KEY, u2 as ORGANIZE_PARAMETER_HINT, l2 as ORGANIZE_SCOPE_HINT, c2 as ORGANIZE_TEXT, bX as ORPHAN_RECORDS_KEY, f2 as ORPHAN_RECORDS_TEXT, $B as OV, RB as P7, PX as PERFORMER_DELETE_KEY, Qve as PHASES, aX as PICK_FOLDER_URL, E$ as PLAIN_STAT_STRIP, V$ as PLAYLISTS_KEY, kAe as POLICY_COLUMNS, jAe as POLICY_COVER_NOTE, AAe as POLICY_MATRIX, G1 as POLICY_SUMMARY, rY as Pagination, R$ as PathLine, uV as Pf, XI as PillTabList, qOe as PlainStat, HH as Progress, PY as QUALITY_GOALS_KEY, lV as RB, O$ as REPAIR_CARD_TEXT, AY as REPAIR_LIBRARIES_KEY, TX as RESOURCE_APPLY_KEY, wX as RESOURCE_SCAN_KEY, d2 as RESOURCE_SYNC_TEXT, $Oe as RESULT_PANEL, eke as RESULT_SECTION, rwe as REVIEW_CATEGORIES, IX as REVIEW_COUNTS_KEY, owe as REVIEW_DECISION_LABELS, LY as REVIEW_KEY, RY as REVIEW_LABELS, BY as REVIEW_QUEUES, VY as REVIEW_QUEUE_LABELS, GG as RetryNote, hge as Rf, pV as Rk, M_e as Rows, Cke as SCRAPING_CHECK_URL, K$ as SCRAPING_COVER_URL, q$ as SCRAPING_KEY, Ske as SCRAPING_SETTINGS_URL, vU as SEGMENT, _U as SEGMENTED_TRACK, uX as SETTINGS_KEY, oX as SETTINGS_URL, dr as SORT_DEFAULT_DIR, lr as SORT_OPTIONS, vn as SOURCE_LABELS, v3 as STATS_KEY, GOe as STAT_STRIP, KOe as STAT_STRIP_SIX, j_e as Section, tke as SectionHeading, P_e as SectionSkeleton, gU as SegmentedRadioGroup, eve as SegmentedTabList, RG as Segments, nY as Select, nW as Select$1, d1 as SelectField, rW as SelectItem, fY as SelectionActions, jj as SelectionDock, pY as SelectionPopover, qH as SettingsCard, A_e as SettingsRow, JH as SettingsSectionLabel, U_e as SiteLabel, _G as SortDirectionIcon, BG as SortKeys, EQ as SourceAvatar, nU as SourceLabel, $H as SourceMark, N_e as Stack, JOe as StatCard, L$ as StatusLabel, fge as Su, X2 as Switch, aL as TASKS_KEY, mPe as TASTE_REFRESH_KEY, hPe as TASTE_WINDOWS, pX as THUMBNAIL_JOBS_KEY, zX as TRASH_KEY, Hfe as TRIGGER_LABELS, KJ as Table, mY as TableColumnControls, hY as TableColumnResizer, _Y as TableSelectionHeader, f$ as TagManager, L_e as TaskCenterLink, UH as TaskProgress, _V as TextField, gV as TextFieldContext, ZB as Un, gW as WANTS_KEY, d4 as WantMagnets, Gg as WithPromise, HB as Wt, YB as Xc, dV as Xf, WB as Xl, UB as Xt, BB as _8, o as __commonJSMin, s as __exportAll, l as __toESM, mge as aB, Ti as addAlias, wi as addSource, vW as addWant, mS as animate, B as apiGet, V as apiSend, dM as appSettingsStore, STe as applyConfirmText, NX as applyLeftovers, xTe as applyPlanText, wTe as applyText, hM as applyTheme, yy as asNumber, uTe as attachOrphan, si as authorAvatar, li as authorGroups, oi as authorInitial, ai as authorName, Pq as autoResetPageIndex, go as avatarInner, w3 as bandRows, iTe as baseName, KCe as batchOperate, fue as beginPlayerGuidePreview, Ij as boundedPreference, UCe as bulkCloudPreferences, OV as busyProps, pge as cB, UMe as cachedMagnetStates, zg as calcGeneratorVelocity, pwe as canApprove, mg as cancelFrame, hTe as candidateText, IU as cardClass, AM as cardRatio, JB as cc, Wi as checkEvidenceGap, Ui as checkFailures, Pi as checkFeeds, Nwe as checkLine, Vi as checkReceipt, Hi as checkSummary, kke as checkText, Gi as checkedText, oK as clickedBlank, q5 as closeDrawerAfterNav, FCe as cloudLocations, E0 as cloudProxySkeleton, XC as clsx, nge as cn, cv as collectMotionValues, eJ as columnVisibilityFeature, VJ as column_getCanSort, LJ as column_getSortFn, dwe as commonReviewSources, Of as configurationSection, yPe as configureTasteBrowser, ol as confirmModal, Bfe as controlTask, gq as copyInstancePropertiesWithoutMemos, co as coverUrl, Gq as createColumnHelper, gke as createPlaylist, Yi as credentialDone, S0 as credentialsSkeleton, Swe as currentReviewRow, q as cx, rV as dZ, ywe as decisionPayload, bwe as decisionReceipt, vwe as defaultChoice, ETe as deletePerformerVideos, vke as deletePlaylist, x as diagnosticHeaders, W1 as diagnosticsSkeleton, EW as discoveryArtwork, wW as discoveryKey, tje as discoveryScore, i9 as disposeStage, zCe as distinctName, zi as dropSources, dge as du, WCe as duplicateVictims, fL as elapsedText, tn as entityDisplayName, ho as entityFaceImg, Nn as entityPath, ei as errorHeadline, cr as errorMessage, z as esc, Nq as expandRowModel, MB as f1, $r as feedIntervalText, Q$ as fetchAmaneBridge, _i as fetchCheckJob, c1 as fetchConfiguration, Z$ as fetchCoverJob, gi as fetchCredentials, G$ as fetchCustomSources, FX as fetchDeletePerformers, TTe as fetchDeletePlan, WQ as fetchDiagnostics, TW as fetchDiscoveries, EY as fetchDuplicates, Ife as fetchEarlier, Lwe as fetchFeedSchedule, ji as fetchFeeds, hi as fetchFollow, Iwe as fetchFollowSchedule, VX as fetchJunkSummary, yH as fetchLibraryProcessing, tX as fetchLinkCheck, nX as fetchLinkPrune, eX as fetchLinkStats, Fwe as fetchMediaProcessing, jY as fetchMediaRepair, yr as fetchMediaSources, vX as fetchOrganize, Xwe as fetchOrganizeExample, xX as fetchOrphanRecords, Ai as fetchPending, H$ as fetchPlaylists, FY as fetchQualityGoals, MY as fetchRepairLibraries, vi as fetchResolveJob, DX as fetchResourceApply, EX as fetchResourceScan, qY as fetchReview, BX as fetchReviewCounts, hX as fetchSettings, X$ as fetchSources, y3 as fetchStats, yi as fetchSuggestions, sL as fetchTasks, W3 as fetchTaste, bPe as fetchTasteJob, Rwe as fetchThumbnailJobs, HX as fetchTrashSummary, _W as fetchWants, lwe as filterReviewRows, $n as firstGrapheme, QK as flexRender, FPe as flowGraph, IPe as flowLabel, PNe as fmtCount, qn as fmtDur, Yn as fmtSize, Ffe as foldByKind, Qfe as foldRoutine, Ii as followFeedByName, Vr as followSuggestKey, epe as followupDetail, Pfe as followupTally, pg as frame, IB as g4, rJ as getDefaultPaginationState, kM as gridLayout, ci as groupByAuthor, Zfe as groupFollowups, WY as groupReviewRows, yTe as hasChanges, OX as hasResourceRoots, lL as hasResultProblems, EPe as historySpan, NB as i2, wPe as importTasteExport, C0 as indexersSkeleton, Fg as interpolate, xW as invalidateWants, dL as isActive, Qr as isBroken, Kr as isLayout, yv as isMotionValue, zY as isReviewCategory, $fe as isRoutine, w0 as javBrowserSkeleton, P0 as javContentSkeleton, SM as javLayout, N0 as javTagSkeleton, jTe as junkBreakdown, yke as keepPlaylist, ke as keepPreviousData, fi as keepSelected, b3 as known, Ihe as l7, Xfe as latestOfKind, KNe as lengthRows, Sr as localTime, Fi as lookupFeedActor, LB as m7, nV as mM, En as mapLimit, ki as markItem, T3 as max, WNe as mediumRows, Lfe as mergeFinished, E3 as min, Dwe as mirrorText, XCe as missingToolText, DY as mixedCloudPreferences, gL as momentText, hS as motion, uv as motionValue, nn as nameFallback, He as notifyManager, Hhe as oe, oTe as organizeOutcome, X0 as overlayHost, qr as pageSizeOf, di as pageWindow, mr as paginationRange, Ri as patchSource, W as peachHistory, W as peachHistory$1, _we as pendingGenres, INe as percentText, $we as pickOrganizeFolder, T$ as plainStatClass, aTe as planSummary, x3 as playedFor, RNe as playedItemUrl, oL as pollInterval, Js as popCount, hke as posterUrl, Zye as previewLibraryColor, Qwe as previewOrganize, $Ce as previewUrl, Jfe as problemDestination, mH as processingActive, pL as progressText, tU as providerIcon, Mwe as pruneText, AX as purgeCount, dTe as purgeOrphan, aV as pv, uge as qE, H as queryClient, PB as r2, MPe as radarRows, VNe as radialArc, HNe as radialBarSize, BNe as radialCeiling, zNe as radialSlices, KN as randomId, APe as rankDetail, jPe as rankShares, C3 as reachedShare, mL as readableErrorHeadline, nje as recommendationScore, Cwe as recordGenre, pTe as recordsText, bke as recreatePlaylist, pke as refreshPlaylists, Cl as relayoutCovers, Bi as reloadFollowManage, Ewe as reloadReview, PAe as rememberShape, tTe as rememberTemplates, Ei as removeAlias, Ni as removeFeed, Ci as removeSource, CPe as removeTasteSource, yW as removeWants, Di as renameAliasGroup, _ke as renamePlaylist, Se as replaceEqualDeep, JNe as replayRows, re as require_jsx_runtime, A as require_react, N as require_react_dom, fq as require_with_selector, bW as resetWants, pr as resolveFollowSort, Hg as resolveStartTime, f_e as restartEffectText, mke as resumeAssetId, cwe as reviewGroupingOptions, UY as reviewQueueData, HY as reviewQueueOf, ATe as reviewSummary, uwe as reviewWindow, hwe as rowEvidence, KY as rowFieldName, uJ as rowPaginationFeature, jJ as rowSelectionFeature, WJ as rowSortingFeature, GY as rowSubject, gwe as rowTags, mwe as rowTitle, Nhe as s5, Oi as saveCredential, bTe as scanLine, Uwe as schedulePollInterval, CW as searchNote, fwe as selectReviewRange, pi as selectionState, Mi as setFeedEnabled, Si as setSourceEnabled, Mf as settingsPath, Twe as settleReviewRows, RCe as sharedNamePrefix, Ep as shellNavigate, v8 as showToast, zn as siteMarkUrl, wq as skipFirstRun, JI as sortCx, Yr as sortLabel, yn as sourceDefaultCost, qi as sourceIconUrl, CTe as sourceMeta, zs as spinnerHtml, Ng as spring, EV as spriteGlyph, bi as startCheck, Awe as startLinkCheck, jwe as startLinkPrune, eTe as startOrganize, xi as startResolve, _Te as startResourceApply, gTe as startResourceScan, SPe as startTasteRefresh, WOe as statCardClass, Wfe as statusLabel, YCe as statusLine, Zr as statusText, jM as storeJavLayout, xwe as submitDecision, _L as summaryItems, Kq as tableFeatures, Tq as tableMemo, ui as tableRows, qfe as taskIssues, Yfe as taskSubject, G3 as tasteDate, OPe as tasteDimensions, DPe as tasteHours, U3 as tasteKey, _Pe as tasteRefetchInterval, vPe as tasteTime, eL as textLang, $m as time, qhe as tl, mi as toggleGroup, K3 as topScores, ige as um, Qhe as uo, OH as useAction, VZ as useBackgroundJob, JU as useClientUpdates, dm as useConstant, vL as useEntityNames, wL as useHorizontalScroller, fm as useIsomorphicLayoutEffect, aK as useLibraryTints, Ft as useMutation, $V as useOverlayScrollbar, Pt as useQuery, ae as useQueryClient, rS as useReducedMotion, Hwe as useRunSchedule, Bwe as useSaveFollowSchedule, gX as useSaveSettings, Wwe as useSaveThumbnailMode, GJ as useTable, cY as useTablePreferences, jL as useViewGlide, GCe as victimBytes, Jhe as vl, SW as wantName, LNe as watchNote, S3 as watchedShare, Dc as wireHorizontalScroller, nTe as withOrganizeJob };
 
-//# debugId=a03b049d-cf65-4ed7-98ed-223ad15089da
+//# debugId=910b7443-a1a8-4395-ae58-02cc4c28ad22
