@@ -17,7 +17,7 @@ import { useEntityNames } from '../use-entity-names';
 import { TabCount } from '../components/board-tabs';
 import { PillTabList } from '../components/pill-tabs';
 import {
-  menuModel, shufflePicks, SUGGEST_DEBOUNCE, SUGGEST_EACH, SUGGEST_ONE_KIND, SUGGEST_PROFILE_KINDS, SUGGEST_RIGHT_KINDS, fold,
+  menuModel, nextPage, shufflePicks, SUGGEST_DEBOUNCE, SUGGEST_EACH, SUGGEST_ONE_KIND, SUGGEST_PROFILE_KINDS, SUGGEST_RIGHT_KINDS, fold,
   type MenuModel, type MenuSection, type SearchApi, type SearchOption, type SearchProps, type SuggestCard,
   type SuggestGroup, type SuggestItem, type SuggestResponse, type SuggestTab,
 } from './search';
@@ -37,10 +37,8 @@ interface Store {
   recommendationRequest: number;
   /** 排在空闲时的那次推荐预取；卸载时撤掉。 */
   cancelIdle: () => void;
-  /** 点了「换一批」、手上没有备好的那份：这一次取到就换上。 */
-  reshuffling: boolean;
-  /** 「换一批」那枚图标的描线至少走完一圈，到这一刻为止。 */
-  shuffleUntil: number;
+  /** 每组「换一批」那枚图标的描线走到这一刻为止，按组记。 */
+  shuffled: Record<string, number>;
   /** 正在换的那句占位字；开始打字就收掉。 */
   cancelRoll: () => void;
   /** 画的那一刻输入框里的词与洗好的推荐。 */
@@ -62,7 +60,7 @@ interface Store {
 }
 
 const emptyStore = (): Store => ({
-  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, reshuffling: false, shuffleUntil: 0, cancelRoll: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
+  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, shuffled: {}, cancelRoll: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
   suggestRequest: 0, asked: '', timer: 0, kind: '', active: -1, reveal: false, rewind: false,
 });
 
@@ -162,14 +160,15 @@ export function SearchPage(props: SearchProps) {
       event.preventDefault(); op.openPath(group.href!);
     }}>{group.action || '查看全部'}</a>
   ) : null;
-  // 「换一批」只是一枚图标：等新的一批时、以及每点一次，图标的两股线各描一圈（首页换批键那一副）。
-  const shuffling = s.reshuffling || Date.now() < s.shuffleUntil;
+  // 「换一批」只是一枚图标：每点一次，图标的两股线各描一圈（首页换批键那一副）。
+  const shuffling = (kind = '') => Date.now() < (s.shuffled[kind] ?? 0);
   const section = (group: MenuSection) => (
     <section key={group.kind ?? group.label} data-search-group="" data-kind={group.kind}>
       <h3>{group.label}{group.shuffle ? (
         <span data-search-head="">
-          <button type="button" data-search-shuffle="" aria-label="换一批" title="换一批"
-            aria-busy={shuffling || undefined} onMouseDown={keep} onClick={op.reshuffle}><Sprite name="shuffle" /></button>
+          <button type="button" data-search-shuffle="" aria-label={`${group.label}换一批`} title="换一批"
+            aria-busy={shuffling(group.kind) || undefined} onMouseDown={keep}
+            onClick={() => op.reshuffle(group.kind!)}><Sprite name="shuffle" /></button>
           {link(group)}
         </span>
       ) : link(group)}</h3>
@@ -290,25 +289,16 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     const request = s.recommendationRequest;
     const take = (groups: SuggestGroup[], done: boolean) => {
       if (request !== s.recommendationRequest) return;
-      if (done && s.reshuffling) {
-        s.reshuffling = false;
-        s.recommendations = groups;
-        if (focused() && !input().value.trim()) paint();
-        else bump();
-        prefetch();
-        return;
-      }
       if (!s.recommendationsFilling) {
         if (done) { s.nextRecommendations = groups; preloadImages(groups, props().helpers) }
         return;
       }
       s.recommendations = groups;
-      if (done) s.recommendationsFilling = false;
+      if (done) { s.recommendationsFilling = false; preloadImages(groups.map(nextPage), props().helpers) }
       if (focused() && !input().value.trim()) paint();
     };
     void helpers.recommendations(groups => take(groups, false))
       .then(groups => take(groups, true), () => {
-        if (request === s.recommendationRequest && s.reshuffling) { s.reshuffling = false; bump() }
         // 推荐读取失败仍可搜索：占位收掉，退回搜索记录与推荐词。
         if (request !== s.recommendationRequest || !s.recommendationsFilling) return;
         s.recommendations = [];
@@ -325,13 +315,14 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     if (s.nextRecommendations) {
       s.recommendations = s.nextRecommendations;
       s.nextRecommendations = null;
+      preloadImages(s.recommendations.map(nextPage), helpers);
     }
     if (s.recommendations.length) return;
     s.recommendations = helpers.pendingRecommendations?.() ?? [];
     s.recommendationsFilling = true;
     loadRecommendations();
   };
-  /** 空闲时备好下一份：下次打开或点「换一批」直接换上。收起往往紧跟着打开详情，不跟它抢请求。 */
+  /** 空闲时备好下一份：下次打开直接换上。收起往往紧跟着打开详情，不跟它抢请求。 */
   const prefetch = () => {
     s.cancelIdle();
     s.cancelIdle = whenIdle(() => { if (!s.nextRecommendations) loadRecommendations() });
@@ -344,20 +335,14 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       if (!s.pool.length) void loadPool();
     });
   };
-  /** 「换一批」：备好了就当场换，没备好就等这次取到再换，栏里先留着旧的这批。 */
-  const reshuffle = () => {
-    s.shuffleUntil = Date.now() + SHUFFLE_SPIN;
+  /** 一组「换一批」：在这一组取到的池里翻下一页，当场换，不发请求；再下一页的图顺手先拉进缓存。 */
+  const reshuffle = (kind: string) => {
+    s.recommendations = s.recommendations.map(group => group.kind === kind ? nextPage(group) : group);
+    s.shuffled = { ...s.shuffled, [kind]: Date.now() + SHUFFLE_SPIN };
     window.setTimeout(bump, SHUFFLE_SPIN);
-    if (s.nextRecommendations) {
-      s.recommendations = s.nextRecommendations;
-      s.nextRecommendations = null;
-      paint();
-      prefetch();
-      return;
-    }
-    s.reshuffling = true;
+    const shown = s.recommendations.find(group => group.kind === kind);
+    if (shown) preloadImages([nextPage(shown)], props().helpers);
     bump();
-    loadRecommendations();
   };
   /* 分组顺序和每组的名字都由 `/api/suggest` 给出，这里照抄。慢的旧响应不许盖掉新的：连敲两个字时
      先发的那次完全可能后回来。 */

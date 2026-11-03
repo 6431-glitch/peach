@@ -10,16 +10,23 @@ import type { SuggestCard, SuggestGroup, SuggestItem } from './search';
 type Request = (url: string) => Promise<any>;
 type Latest = { id: number; code: string; release_date: string };
 
-/** 推荐栏的分组与次序固定：还没取到的那组照样占着位置（`pending`），取到一组填一组，栏不改版式。 */
+/** 推荐栏的分组与次序固定：还没取到的那组照样占着位置（`pending`），取到一组填一组，栏不改版式。
+ *  `size` 是一页摆几条：人三行、作品一排五格。 */
 const GROUPS = [
-  { kind: 'performer', label: '艺人与新作', href: '/subscriptions?tab=add', action: '订阅新作' },
-  { kind: 'author', label: '关注作者', href: '/subscriptions?tab=add', action: '添加关注' },
-  { kind: 'asset', label: '作品推荐', href: '/', action: '全部作品' },
-  { kind: 'jav', label: 'JAV 推荐', href: '/jav?tab=discover', action: '发现 JAV' },
-  { kind: 'post', label: '关注作品', href: '/follow', action: '全部关注作品' },
-  { kind: 'photo', label: '关注图片', href: '/follow?media=images', action: '全部关注图片' },
-  { kind: 'release', label: '订阅新作', href: '/subscriptions', action: '管理订阅' },
+  { kind: 'performer', label: '艺人与新作', href: '/subscriptions?tab=add', action: '订阅新作', size: 3 },
+  { kind: 'author', label: '关注作者', href: '/subscriptions?tab=add', action: '添加关注', size: 3 },
+  { kind: 'asset', label: '作品推荐', href: '/', action: '全部作品', size: 5 },
+  { kind: 'jav', label: 'JAV 推荐', href: '/jav?tab=discover', action: '发现 JAV', size: 5 },
+  { kind: 'post', label: '关注作品', href: '/follow', action: '全部关注作品', size: 5 },
+  { kind: 'photo', label: '关注图片', href: '/follow?media=images', action: '全部关注图片', size: 5 },
+  { kind: 'release', label: '订阅新作', href: '/subscriptions', action: '管理订阅', size: 5 },
 ] as const;
+
+/* 每组一次多取一池，「换一批」在池里翻页，不再发请求。JAV 推荐按口味分排、订阅新作按发行日排，
+   同一个请求每次回同样的几部：只取一页的话这两组换不出东西。多取到二十条，耗时与取五条相当。 */
+const POOL = 20;
+/** 作者名册有缓存，多取几位不加成本；头一页是条目最多的三位。 */
+const AUTHOR_POOL = 24;
 
 /** 一组都还没取到时的推荐栏：版式与取齐之后相同。 */
 export function pendingRecommendations(): SuggestGroup[] {
@@ -37,8 +44,10 @@ const byline = (names: string[], total = names.length) => total > 1 ? `${names[0
 export async function searchRecommendations(request: Request,
   update?: (groups: SuggestGroup[]) => void): Promise<SuggestGroup[]> {
   const filled = new Map<string, SuggestItem[]>();
-  const build = (): SuggestGroup[] => GROUPS.map(group => filled.has(group.kind)
-    ? { ...group, items: filled.get(group.kind)! } : { ...group, items: [], pending: true });
+  const build = (): SuggestGroup[] => GROUPS.map(group => {
+    const pool = filled.get(group.kind);
+    return pool ? { ...group, items: pool.slice(0, group.size), pool, offset: 0 } : { ...group, items: [], pending: true };
+  });
   const fill = (groups: Record<string, SuggestItem[]>) => {
     for (const [kind, items] of Object.entries(groups)) filled.set(kind, items);
     update?.(build());
@@ -65,11 +74,11 @@ export async function searchRecommendations(request: Request,
   };
 
   await Promise.all([
-    settle('/api/items?sort=rand&limit=5').then(data => fill({
-      asset: ((data?.items || []) as SuggestCard[]).slice(0, 5).map(library),
+    settle(`/api/items?sort=rand&limit=${POOL}`).then(data => fill({
+      asset: ((data?.items || []) as SuggestCard[]).map(library),
     })),
-    settle('/api/jav/discoveries?scope=library&limit=5').then(async data => {
-      const jav: Discovery[] = (data?.items || []).slice(0, 5);
+    settle(`/api/jav/discoveries?scope=library&limit=${POOL}`).then(async data => {
+      const jav: Discovery[] = data?.items || [];
       fill({ jav: jav.map(card => discovered(card, `/assets/${card.asset_id || card.id}`)) });
       const people = new Map<string, SuggestItem>();
       for (const card of jav) {
@@ -82,7 +91,7 @@ export async function searchRecommendations(request: Request,
           });
         }
       }
-      const picked = [...people.values()].slice(0, 3);
+      const picked = [...people.values()].slice(0, POOL);
       const latest: Record<string, Latest> = picked.length
         ? (await settle(`/api/entity/latest?ids=${picked.map(item => item.entity_id).join(',')}`))?.items || {} : {};
       fill({ performer: picked.map(item => {
@@ -109,14 +118,14 @@ export async function searchRecommendations(request: Request,
           });
         }
       }
-      fill({ post: posts.slice(0, 5), photo: photos.slice(0, 5) });
+      fill({ post: posts, photo: photos });
     }),
-    settle('/api/feeds/discoveries?limit=5').then(data => fill({
+    settle(`/api/feeds/discoveries?limit=${POOL}`).then(data => fill({
       release: ((data?.items || []) as Discovery[]).filter(card => card.code)
         .map(card => discovered({ ...card, sourceWork: true } as Discovery, `/works/${encodeURIComponent(card.code)}`)),
     })),
     // 头像与更新时间都用名册那一行自己的：头像官方优先、归档兜底，同艺人页「在线」那一档。
-    settle('/api/follow/authors?limit=3').then(data => fill({
+    settle(`/api/follow/authors?limit=${AUTHOR_POOL}`).then(data => fill({
       author: ((data?.items || []) as OnlineAuthor[]).map(row => ({
         value: row.k, href: row.entity_id ? `/creators/${row.entity_id}` : `/follow?author=${encodeURIComponent(row.key)}`,
         avatarHtml: onlineAuthorRingHtml(row),

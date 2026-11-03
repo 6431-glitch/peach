@@ -222,41 +222,28 @@ describe('输入框上的时序', () => {
     expect(s.input.placeholder).toBe(typed);
   });
 
-  it('「换一批」有备好的就当场换，没备好就留着旧的等新的一批', async () => {
-    const answers = [pending<SuggestGroup[]>(), pending<SuggestGroup[]>(), pending<SuggestGroup[]>()];
-    const idle: (() => void)[] = [];
-    vi.stubGlobal('requestIdleCallback', (task: () => void) => idle.push(task));
-    vi.stubGlobal('cancelIdleCallback', (id: number) => { idle[id - 1] = () => {} });
-    onTestFinished(() => { vi.unstubAllGlobals() });
-    const flushIdle = () => act(async () => { idle.splice(0).forEach(task => task()) });
+  it('每组「换一批」在自己取到的池里翻页：当场换、不发请求，翻到头接着从池首取', async () => {
     let asked = 0;
-    const batch = (value: string): SuggestGroup[] => [{ kind: 'asset', label: '作品推荐', items: [{ value, id: 11 }] }];
-    const s = await stage({ recommendations: () => answers[asked++]!.answer,
-      pendingRecommendations: () => [{ kind: 'asset', label: '作品推荐', items: [], pending: true }] });
-    const shown = () => [...s.menu.querySelectorAll('[data-search-option="work"]:not([data-search-placeholder])')]
-      .map(row => row.textContent);
-    const shuffle = () => s.menu.querySelector<HTMLButtonElement>('[data-search-shuffle]')!;
+    const pool = Array.from({ length: 7 }, (_, index) => ({ value: `作品${index + 1}`, id: index + 1 }));
+    const people = [{ value: '七海ひな' }];
+    const s = await stage({ recommendations: async () => { asked++; return [
+      { kind: 'performer', label: '艺人与新作', items: people, pool: people, offset: 0, size: 3 },
+      { kind: 'asset', label: '作品推荐', items: pool.slice(0, 5), pool, offset: 0, size: 5 },
+    ] } });
+    const shown = () => [...s.menu.querySelectorAll('[data-kind="asset"] [data-search-option="work"]')].map(row => row.textContent);
     await act(async () => s.input.focus());
-    await answers[0]!.release(batch('作品一'));
     await settle();
-    expect(shuffle().getAttribute('aria-label')).toBe('换一批');
-
-    await act(async () => shuffle().click());
-    expect(asked).toBe(2);
-    expect(shown()).toEqual(['作品一']);
-    expect(shuffle().getAttribute('aria-busy')).toBe('true');
-    await answers[1]!.release(batch('作品二'));
-    await settle();
-    expect(shown()).toEqual(['作品二']);
-
-    // 换上之后空闲时备好下一批，再点就不用等。
-    await flushIdle();
-    expect(asked).toBe(3);
-    await answers[2]!.release(batch('作品三'));
-    await settle();
-    expect(shown()).toEqual(['作品二']);
-    await act(async () => shuffle().click());
-    expect(shown()).toEqual(['作品三']);
+    expect(shown()).toEqual(['作品1', '作品2', '作品3', '作品4', '作品5']);
+    // 池里只有一页的那组不摆这枚图标。
+    expect(s.menu.querySelector('[data-kind="performer"] [data-search-shuffle]')).toBeNull();
+    const shuffle = s.menu.querySelector<HTMLButtonElement>('[data-kind="asset"] [data-search-shuffle]')!;
+    expect(shuffle.getAttribute('aria-label')).toBe('作品推荐换一批');
+    await act(async () => shuffle.click());
+    expect(shown()).toEqual(['作品6', '作品7', '作品1', '作品2', '作品3']);
+    expect(shuffle.getAttribute('aria-busy')).toBe('true');
+    await act(async () => shuffle.click());
+    expect(shown()).toEqual(['作品4', '作品5', '作品6', '作品7', '作品1']);
+    expect(asked).toBe(1);
     expect(s.menu.hidden).toBe(false);
   });
 

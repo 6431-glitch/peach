@@ -40,6 +40,10 @@ describe('搜索图片推荐', () => {
     expect(entry('performer').entity_id).toBe(15);
     expect(entry('performer').subtitle).toBe('最新作 ABW-099 · 2025-02-01');
     expect(request).toHaveBeenCalledWith('/api/entity/latest?ids=15');
+    // 每组多取一池，「换一批」在池里翻页；作者名册的池更大，头一页是条目最多的几位。
+    expect(request).toHaveBeenCalledWith('/api/jav/discoveries?scope=library&limit=20');
+    expect(request).toHaveBeenCalledWith('/api/follow/authors?limit=24');
+    expect(groups.find(group => group.kind === 'jav')).toMatchObject({ offset: 0, size: 5 });
     expect(entry('jav').who).toBe('女优');
     expect(entry('post').whoAvatarHtml).toContain('/avatar-fixture');
     expect(request.mock.calls.every(([url]) => !url.includes('scope=external'))).toBe(true);

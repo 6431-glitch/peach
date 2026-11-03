@@ -48,6 +48,10 @@ export interface SuggestGroup {
   action?: string;
   /** 推荐栏里这一组还没取到：照最终版式先占位。 */
   pending?: boolean;
+  /** 推荐栏一组取到的整池；`items` 是从 `offset` 起的一页，一页 `size` 条。「换一批」在池里翻页。 */
+  pool?: SuggestItem[];
+  offset?: number;
+  size?: number;
 }
 
 export interface SuggestTab {
@@ -120,6 +124,15 @@ export const SUGGEST_ONE_KIND = 20;
 export const SUGGEST_PROFILE_KINDS = new Set(['performer', 'creator', 'studio', 'agency', 'series']);
 /** 下拉栏按宽度分两栏：左栏是身份和词，右栏是作品封面格。 */
 export const SUGGEST_RIGHT_KINDS = new Set(['asset', 'jav', 'post', 'photo', 'release']);
+/** 推荐栏一组翻到下一页；翻到头接着从池首取，一页总是摆满。 */
+export function nextPage(group: SuggestGroup): SuggestGroup {
+  const pool = group.pool ?? [];
+  const size = Math.min(group.size ?? group.items.length, pool.length);
+  if (pool.length <= size) return group;
+  const offset = ((group.offset ?? 0) + size) % pool.length;
+  return { ...group, offset, items: Array.from({ length: size }, (_, index) => pool[(offset + index) % pool.length]!) };
+}
+
 /** 推荐栏人物那几组取到之前占几行。 */
 export const PENDING_PEOPLE = 3;
 /** 空输入时推荐几条。 */
@@ -188,17 +201,17 @@ export function menuModel({ query, history, picks, suggestFor, groups, tabs, kin
   if (!query) {
     if (recommendations.length) {
       // 还没取到的那组按最终条数占位：人三行、作品一排五格，取到时原地填上，栏不跳。
-      const section = ({ pending, ...group }: SuggestGroup): MenuSection => ({ ...group,
+      // 池里比一页多才有「换一批」：翻不出别的就不摆这枚图标。
+      const section = ({ pending, pool, offset: _offset, size: _size, ...group }: SuggestGroup): MenuSection => ({ ...group,
         options: group.items.map(item => add({ type: 'suggest', value: item.value, kind: group.kind, item })),
         pending: pending ? (SUGGEST_RIGHT_KINDS.has(group.kind) ? SUGGEST_EACH : PENDING_PEOPLE) : undefined,
+        shuffle: (pool?.length ?? 0) > group.items.length || undefined,
       });
       // 搜索记录排在左栏最下面：它比推荐晚到，排在末尾到了也不把上面的往下推。键盘上下按画出来的
       // 次序走，左栏走完再到右栏，所以编号也按这个次序给。
       const left = recommendations.filter(group => !SUGGEST_RIGHT_KINDS.has(group.kind)).map(section);
       if (matching.length) left.push({ label: '搜索记录', options: matching.map(value => add({ type: 'history', value })) });
       const right = recommendations.filter(group => SUGGEST_RIGHT_KINDS.has(group.kind)).map(section);
-      // 「换一批」换的是整栏，挂在右栏第一组的标题上，和「全部作品」并排。
-      if (right[0]) right[0] = { ...right[0], shuffle: true };
       return { tabs: null, recent: null, left, right, empty: false, options };
     }
     const recent = matching.length ? { label: '搜索记录', options: matching.map((value) => add({ type: 'history', value })) } : null;
