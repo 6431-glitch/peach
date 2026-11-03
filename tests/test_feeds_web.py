@@ -1325,14 +1325,17 @@ class JavDiscoveryTest(FeedWebFixture):
                   "HMN-071": {"actors": [{"name": "女优乙"}], "tags": [], "maker_name": "厂牌乙"},
                   "OWN-001": {"actors": [{"name": "馆藏女优"}], "tags": [{"name": "巨乳"}], "maker_name": "馆藏厂牌"}}
 
+        reads = []
+
         def releases(**args):
             with patch.object(web_jav_discovery, "_cached_movie", side_effect=lambda code, contract: movies.get(code, {})), \
-                    patch("peach.javdb_public.PUBLIC_API.movie") as movie:
-                result = web_jav_discovery.q_jav_releases(self.contract, args)
-            movie.assert_not_called()
-            return result
+                    patch("peach.jav_discovery_metadata.DiscoveryMetadata.ensure",
+                          side_effect=lambda codes, **options: reads.append((codes, options))):
+                return web_jav_discovery.q_jav_releases(self.contract, args)
 
         every = releases()
+        self.assertEqual(reads[0], (["SSIS-950", "HMN-071"], {"refresh": True, "job_id": None}),
+                         "从没读过来源资料的新作当场起一轮读取，筛选项才完整")
         self.assertEqual(([row["code"] for row in every["items"]], every["total"]), (["SSIS-950", "HMN-071"], 2))
         self.assertEqual([(ref["name"], ref["count"]) for ref in every["facets"]["performers"]], [("女优乙", 1), ("女优甲", 1)])
         self.assertEqual([ref["name"] for ref in every["facets"]["studios"]], ["厂牌乙", "厂牌甲"])

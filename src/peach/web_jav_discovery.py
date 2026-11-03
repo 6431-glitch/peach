@@ -128,15 +128,16 @@ def _metadata_response(contract, args, candidates, picked, limit, scope):
                               job_id=args.get("metadata_job_id"))
     if not job:
         return {}
+    return {**_job_response(job),
+            "metadata_coverage": sum(row["metadata_state"] in ("ready", "partial", "stale") for row in picked),
+            "metadata_next_cursor": cursor + limit if not picked and cursor + limit < len(candidates) else None}
+
+
+def _job_response(job):
     public_job = {key: value for key, value in job.items() if key not in ("codes", "error")}
     public_job["message"] = _metadata_message(job)
     public_job["error"] = public_job["message"] if job["status"] == "failed" else ""
-    response = {"metadata_job": public_job,
-                "metadata_coverage": sum(row["metadata_state"] in ("ready", "partial", "stale") for row in picked),
-                "metadata_next_cursor": cursor + limit if not picked and cursor + limit < len(candidates) else None}
-    if job["status"] == "running":
-        response["poll_after_ms"] = 3000
-    return response
+    return {"metadata_job": public_job, **({"poll_after_ms": 3000} if job["status"] == "running" else {})}
 
 
 def _metadata_message(job):
@@ -228,7 +229,10 @@ def q_jav_releases(contract, args):
 
     候选与「发现」同一批（`_external`），只换成时间顺序、不按口味截断。筛选项只取这批新作里
     出现过的女优、厂牌与标签；每个维度的计数按「文字与其他维度已生效、本维度不计」的行集算，
-    计数为 0 的不列。只读本机缓存的来源资料，不为翻页联网补资料。
+    计数为 0 的不列。
+
+    筛选结果里还有从没读过来源资料的（`metadata_state` 为 pending），就为它们起一轮资料读取，与「发现」
+    共用同一个有预算的后台任务；读过但没取到的不在此列，不会每次打开都重试。`metadata_job_id` 是轮询。
     """
     try:
         size = max(1, min(int(args.get("size") or RELEASE_PAGE_SIZE), 100))
@@ -287,5 +291,11 @@ def q_jav_releases(contract, args):
         row["cover_frame"] = contract.cover_frame(row["code"])
         row["cover_version"] = contract.cover_version(row["code"])
         row["poster_box"] = contract.poster_box(row["code"])
-    return {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
-            "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]}}
+    response = {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
+                "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]}}
+    unread = [row["code"] for row in shown if row.get("metadata_state") == "pending"]
+    if unread or args.get("metadata_job_id"):
+        job = discovery_metadata(contract).ensure(unread, refresh=bool(unread), job_id=args.get("metadata_job_id"))
+        if job:
+            response.update(_job_response(job))
+    return response
