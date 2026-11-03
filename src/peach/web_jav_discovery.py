@@ -261,70 +261,80 @@ def q_jav_releases(contract, args):
         page = max(1, int(args.get("page") or 1))
     except (TypeError, ValueError):
         size, page = RELEASE_PAGE_SIZE, 1
-    chosen = {facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS}
-    query = str(args.get("q") or "").strip().casefold()
     sort = args.get("sort") if args.get("sort") in RELEASE_SORTS else "release_date"
     descending = args.get("direction") != "asc"
+    matches = _release_matcher({facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS},
+                               str(args.get("q") or "").strip().casefold())
     with contract.read_connection() as connection:
-        unique = {}
-        for row in _external(connection, contract):
-            unique.setdefault(web_catalog.normalise_code_key(row["code"]) or row["id"], row)
-        rows = list(unique.values())
-        if sort == "taste":
-            strengths, names, evidence = preference_profile(connection, contract.taste_history_store)
-            for row in rows:
-                row["taste_score"], row["reasons"] = preference_score(row, strengths, names, evidence)
-        refs = web_feeds._discovery_performers(connection, contract, rows)
-        studios = {}
-        for row in rows:
-            row.pop("_source_actors", None)
-            row["performer_refs"] = refs[int(row["id"])]
-            row["performers"] = "、".join(ref["name"] for ref in row["performer_refs"])
-            if row["studio"] and row["studio"] not in studios:
-                studios[row["studio"]] = web_feeds._studio_name(connection, row["studio"])
-            row["studio"] = studios.get(row["studio"], row["studio"])
-            row.pop("entities", None)
-        rows = _release_order(rows, sort, descending, str(args.get("seed") or ""))
-
-        def matches(row, skip=None):
-            if query and query not in " ".join([row["code"] or "", row["title"] or "", row["performers"], row["studio"] or "",
-                                                *row["tags"]]).casefold():
-                return False
-            return all(not value or facet == skip or value in _release_values(row, facet)
-                       for facet, value in chosen.items())
-
-        facets = {}
-        for facet in RELEASE_FACETS:
-            counts, first = {}, {}
-            for row in rows:
-                if matches(row, skip=facet):
-                    for value in dict.fromkeys(_release_values(row, facet)):
-                        counts[value] = counts.get(value, 0) + 1
-                        first.setdefault(value, row)
-            facets[facet] = sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))
-            if facet == "performer":
-                facets[facet] = [{**next(ref for ref in first[name]["performer_refs"] if ref["name"] == name), "count": count}
-                                 for name, count in facets[facet]]
-            elif facet == "studio":
-                facets[facet] = [{"name": name, "count": count, "has_logo": contract.has_logo(name),
-                                  "logo_version": contract.logo_version(name)} for name, count in facets[facet]]
-            else:
-                facets[facet] = [{"name": name, "count": count} for name, count in facets[facet]]
+        rows = _release_order(_release_rows(contract, connection, taste=sort == "taste"), sort, descending,
+                              str(args.get("seed") or ""))
+        facets = {facet: _release_facet(contract, rows, facet, matches) for facet in RELEASE_FACETS}
         shown = [row for row in rows if matches(row)]
         picked = shown[(page - 1) * size:page * size]
         wanted = wants.wanted_keys(connection, (web_catalog.normalise_code_key(row["code"]) for row in picked))
     for row in picked:
         row["wanted"] = web_catalog.normalise_code_key(row["code"]) in wanted
-        row["has_cover"] = contract.has_cover(row["code"])
-        row["cover_frame"] = contract.cover_frame(row["code"])
-        row["cover_version"] = contract.cover_version(row["code"])
-        row["poster_box"] = contract.poster_box(row["code"])
-    response = {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
-                "sort": sort, "direction": "desc" if descending else "asc",
-                "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]}}
+        row.update(has_cover=contract.has_cover(row["code"]), cover_frame=contract.cover_frame(row["code"]),
+                   cover_version=contract.cover_version(row["code"]), poster_box=contract.poster_box(row["code"]))
+    return {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
+            "sort": sort, "direction": "desc" if descending else "asc",
+            "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]},
+            **_release_metadata(contract, shown, args.get("metadata_job_id"))}
+
+
+def _release_rows(contract, connection, *, taste):
+    """新作候选：「发现」那批去重，出演换成解析后的规范名、厂牌换成规范名；按口味排时现算口味分。"""
+    unique = {}
+    for row in _external(connection, contract):
+        unique.setdefault(web_catalog.normalise_code_key(row["code"]) or row["id"], row)
+    rows = list(unique.values())
+    if taste:
+        strengths, names, evidence = preference_profile(connection, contract.taste_history_store)
+        for row in rows:
+            row["taste_score"], row["reasons"] = preference_score(row, strengths, names, evidence)
+    refs = web_feeds._discovery_performers(connection, contract, rows)
+    studios = {name: web_feeds._studio_name(connection, name) for name in {row["studio"] for row in rows if row["studio"]}}
+    for row in rows:
+        row.pop("_source_actors", None)
+        row.pop("entities", None)
+        row["performer_refs"] = refs[int(row["id"])]
+        row["performers"] = "、".join(ref["name"] for ref in row["performer_refs"])
+        row["studio"] = studios.get(row["studio"], row["studio"])
+    return rows
+
+
+def _release_matcher(chosen, query):
+    """筛选判据：文字匹配番号、标题、出演、厂牌与标签，三个维度各按所选值；`skip` 的那一维不看。"""
+    def matches(row, skip=None):
+        if query and query not in " ".join([row["code"] or "", row["title"] or "", row["performers"], row["studio"] or "",
+                                            *row["tags"]]).casefold():
+            return False
+        return all(not value or facet == skip or value in _release_values(row, facet) for facet, value in chosen.items())
+    return matches
+
+
+def _release_facet(contract, rows, facet, matches):
+    """一个维度的筛选项：本维度不计、其余条件生效的行集里出现过的值与部数，部数多的在前。"""
+    counts, first = {}, {}
+    for row in rows:
+        if matches(row, skip=facet):
+            for value in dict.fromkeys(_release_values(row, facet)):
+                counts[value] = counts.get(value, 0) + 1
+                first.setdefault(value, row)
+    ordered = sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))
+    if facet == "performer":
+        return [{**next(ref for ref in first[name]["performer_refs"] if ref["name"] == name), "count": count}
+                for name, count in ordered]
+    if facet == "studio":
+        return [{"name": name, "count": count, "has_logo": contract.has_logo(name), "logo_version": contract.logo_version(name)}
+                for name, count in ordered]
+    return [{"name": name, "count": count} for name, count in ordered]
+
+
+def _release_metadata(contract, shown, job_id):
+    """筛选结果里从没读过来源资料的那几部起一轮读取；`job_id` 是轮询。没有要读的也没在轮询就不回任务。"""
     unread = [row["code"] for row in shown if row.get("metadata_state") == "pending"]
-    if unread or args.get("metadata_job_id"):
-        job = discovery_metadata(contract).ensure(unread, refresh=bool(unread), job_id=args.get("metadata_job_id"))
-        if job:
-            response.update(_job_response(job))
-    return response
+    if not unread and not job_id:
+        return {}
+    job = discovery_metadata(contract).ensure(unread, refresh=bool(unread), job_id=job_id)
+    return _job_response(job) if job else {}
