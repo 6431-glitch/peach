@@ -2,7 +2,7 @@
  * 的行为——占位推荐词、空输入回车、作品项开详情、慢回来的旧补全、失焦之后才回来的补全。键盘上下、
  * 组字、Escape 与删记录在真浏览器里验，见 `e2e/search.test.ts`。 */
 import { act } from 'react';
-import { describe, expect, it, vi, type Mock } from 'vitest';
+import { describe, expect, it, onTestFinished, vi, type Mock } from 'vitest';
 
 import { SearchPage } from '../../src/react/search/search-page';
 import {
@@ -143,6 +143,11 @@ describe('输入框上的时序', () => {
 
   it('推荐没回来先照最终版式占位；开着时取到的下一批留到下次打开再换', async () => {
     const answers = [pending<SuggestGroup[]>(), pending<SuggestGroup[]>()];
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (task: () => void) => idle.push(task));
+    vi.stubGlobal('cancelIdleCallback', (id: number) => { idle[id - 1] = () => {} });
+    onTestFinished(() => { vi.unstubAllGlobals() });
+    const flushIdle = () => act(async () => { idle.splice(0).forEach(task => task()) });
     let asked = 0;
     const batch = (value: string): SuggestGroup[] => [{ kind: 'asset', label: '作品推荐', items: [{ value, id: 11 }] }];
     const s = await stage({ recommendations: () => answers[asked++]!.answer,
@@ -161,10 +166,14 @@ describe('输入框上的时序', () => {
 
     expect(asked).toBe(1);
 
-    // 收起时才去备下一批；再打开时那批还在路上，栏里照旧，到了也不当场换。
-    await act(async () => { s.api?.close(); s.input.blur(); s.input.focus() });
-    await settle();
+    // 收起后等页面空闲才去备下一批，不跟紧接着的打开详情抢请求；再打开时那批还在路上，栏里照旧，
+    // 到了也不当场换。
+    await act(async () => s.api?.close());
+    expect(asked).toBe(1);
+    await flushIdle();
     expect(asked).toBe(2);
+    await act(async () => { s.input.blur(); s.input.focus() });
+    await settle();
     await answers[1]!.release(batch('作品二'));
     await settle();
     expect(shown()).toEqual(['作品一']);

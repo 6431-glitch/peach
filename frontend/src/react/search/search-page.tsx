@@ -35,6 +35,8 @@ interface Store {
   recommendationsFilling: boolean;
   recommendationLoading: boolean;
   recommendationRequest: number;
+  /** 排在空闲时的那次推荐预取；卸载时撤掉。 */
+  cancelIdle: () => void;
   /** 画的那一刻输入框里的词与洗好的推荐。 */
   query: string;
   picks: string[];
@@ -54,7 +56,7 @@ interface Store {
 }
 
 const emptyStore = (): Store => ({
-  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
+  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
   suggestRequest: 0, asked: '', timer: 0, kind: '', active: -1, reveal: false, rewind: false,
 });
 
@@ -65,8 +67,18 @@ const modelOf = (s: Store): MenuModel => menuModel({
 });
 const hasContent = (m: MenuModel) => !!(m.tabs || m.recent || m.left.length || m.right.length || m.empty);
 
-/** 页面一直不空闲时，推荐最晚在挂上之后这么久开始取。 */
+/** 页面一直不空闲时，推荐最晚这么久之后开始取。 */
 const PREFETCH_TIMEOUT = 4000;
+
+/** 等页面闲下来再做；返回撤销函数。不支持 `requestIdleCallback` 的浏览器退回定时器。 */
+function whenIdle(task: () => void): () => void {
+  if (window.requestIdleCallback) {
+    const id = window.requestIdleCallback(task, { timeout: PREFETCH_TIMEOUT });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(task, PREFETCH_TIMEOUT);
+  return () => window.clearTimeout(id);
+}
 
 const Sprite = ({ name }: { name: string }) => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><use href={`#i-${name}`} /></svg>
@@ -102,8 +114,7 @@ export function SearchPage(props: SearchProps) {
     const api: SearchApi = { close: op.close };
     latest.current.expose(api);
     // 页面闲下来就先把推荐取好，点开搜索框时直接画；等不到空闲也最多拖几秒。
-    const idle = window.requestIdleCallback?.(op.prefetch, { timeout: PREFETCH_TIMEOUT })
-      ?? window.setTimeout(op.prefetch, PREFETCH_TIMEOUT);
+    op.prefetch();
     return () => {
       input.removeEventListener('input', onInput);
       input.removeEventListener('compositionend', onInput);
@@ -112,8 +123,7 @@ export function SearchPage(props: SearchProps) {
       input.removeEventListener('focus', onFocus);
       input.removeEventListener('click', onClick);
       clearTimeout(s.timer);
-      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
-      else clearTimeout(idle);
+      s.cancelIdle();
       s.recommendationRequest++;
       latest.current.expose(null);
     };
@@ -262,8 +272,11 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     s.recommendationsFilling = true;
     loadRecommendations();
   };
-  /** 收起之后再备下一份：下次打开换一批，且不用等。 */
-  const prepareNext = () => { if (!s.nextRecommendations) loadRecommendations() };
+  /** 空闲时备好下一份：下次打开换一批，且不用等。收起往往紧跟着打开详情，不跟它抢请求。 */
+  const prefetch = () => {
+    s.cancelIdle();
+    s.cancelIdle = whenIdle(() => { if (!s.nextRecommendations) loadRecommendations() });
+  };
   /* 分组顺序和每组的名字都由 `/api/suggest` 给出，这里照抄。慢的旧响应不许盖掉新的：连敲两个字时
      先发的那次完全可能后回来。 */
   const loadSuggestions = async (query: string, kind = '') => {
@@ -290,7 +303,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     const el = menu();
     if (el) props().helpers.dismiss(el);
     s.active = -1;
-    prepareNext();
+    prefetch();
     bump();
   };
   /** 按此刻的输入与手上的数据画一遍：有东西就掀开，没有就收起。推荐每画一次洗一次。 */
@@ -429,7 +442,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       if (input().value.trim() !== s.asked) refresh();
     });
   };
-  return { input: onInput, key, focus, close, pick, peek, remove, pickKind, openPath, prefetch: loadRecommendations };
+  return { input: onInput, key, focus, close, pick, peek, remove, pickKind, openPath, prefetch };
 }
 
 function Tabs({ tabs, kind, onPick, wire }: {
