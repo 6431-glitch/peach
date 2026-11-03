@@ -814,6 +814,8 @@ describe('设计决定：控件、状态与首页顶部', () => {
       // 推荐词池在页面空闲时取，取到就把第一句换上去；之后每隔几秒换一句。
       await opened.page.waitForFunction(() => document.querySelector<HTMLInputElement>('#q')?.dataset.suggestion,
         null, { timeout: 15_000 });
+      // 第一句换上去时也走一次换句动画，等它走完再记「换之前」的那一句。
+      await ghost.waitFor({ state: 'detached', timeout: 2_000 });
       const before = await input.getAttribute('placeholder');
       await ghost.waitFor({ timeout: 8_000 });
       const after = await input.getAttribute('placeholder');

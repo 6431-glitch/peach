@@ -187,6 +187,9 @@ describe('顶栏搜索', () => {
             feeds: { items: [{ id: 91, code: 'ABW-102', title: '订阅新作', has_cover: true }] },
           } });
         });
+        // 推荐在页面空闲时就预取好了，那时夹具还没挂上；挂好之后重开一次页面，预取走夹具。
+        await page.reload({ waitUntil: 'load' });
+        await page.locator(`${MENU} > .peach-react`).waitFor({ state: 'attached', timeout: 15_000 });
         if (viewport.mobile) await page.locator('#searchBtn').click();
         await page.locator('#q').click();
         await page.locator(`${MENU} [data-search-recommendations]`).waitFor();
@@ -206,7 +209,7 @@ describe('顶栏搜索', () => {
         assert.ok(overflow.scrollWidth <= overflow.width + 1);
         assert.ok(overflow.right <= overflow.viewport + 1);
         assert.equal(await page.locator(`${MENU} [data-kind="photo"] h3 a`).getAttribute('href'), '/follow?media=images');
-        assert.ok((await page.locator(`${MENU} [data-kind="photo"] img`).getAttribute('src'))?.includes('id=13'));
+        assert.ok((await page.locator(`${MENU} [data-kind="photo"] [data-search-pic] img`).getAttribute('src'))?.includes('id=13'));
         await page.screenshot({ path: `../build/agent-verification/browser/search-recommendations-${viewport.name}.png` });
         const subscription = page.locator(`${MENU} [data-kind="performer"] h3 a`);
         await subscription.focus();
