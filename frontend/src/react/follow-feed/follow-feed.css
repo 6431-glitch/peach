@@ -308,12 +308,13 @@
 .peach-react [data-follow-item] [data-media-meta] {
   display: grid;
   grid-template-columns: 38px minmax(0, 1fr);
-  gap: 12px 10px;
+  /* 行距 6px 同首页卡文字栏的间距：标签离署名那一行和首页卡离日期那一行一样远。 */
+  gap: 6px 10px;
   grid-template-rows: auto auto;
   align-content: start;
   align-items: start;
   --card-meta-byline: max(1lh, 21px);
-  --card-meta-tags: calc(var(--fs-xs) * 1.45 + var(--tag-pad-y) * 2 + 2px + 12px);
+  --card-meta-tags: calc(var(--fs-xs) * 1.45 + var(--tag-pad-y) * 2 + 2px + 6px);
 }
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-follow-item] [data-media-meta] {
   --card-meta-block: calc(var(--fs-md) * 1.35 + 6px + var(--card-meta-byline) + var(--card-meta-tags));
@@ -324,7 +325,8 @@ body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-follo
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-follow-item] [data-follow-labels] {
   height: calc(var(--fs-xs) * 1.45 + var(--tag-pad-y) * 2 + 2px + 8px);
 }
-.peach-react [data-follow-labels] { grid-column: 1 / -1; }
+/* 标签排在文字那一栏里，和标题、署名同一条左缘，照首页卡；不从头像底下起头。 */
+.peach-react [data-follow-labels] { grid-column: 2; }
 .peach-react [data-follow-item] [data-media-meta] > [data-follow-labels] { pointer-events: none; }
 .peach-react [data-follow-list]:not([data-follow-wall]) [data-follow-item] [data-media-meta] {
   min-height: calc(var(--card-meta-block) + 16px);
@@ -574,17 +576,8 @@ body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-follo
   pointer-events: auto;
 }
 .peach-react [data-follow-sources] [data-follow-site-icon] { width: 18px; height: 18px; }
-/* 卡上的标签：线与底取类型色，没记类型的按 general 那一档蓝。 */
-.peach-react [data-follow-item] [data-media-tag] {
-  --tag-color: #55a7ff;
-  border-color: color-mix(in srgb, var(--tag-color) 42%, transparent);
-  background: color-mix(in srgb, var(--tag-color) 10%, transparent);
-  cursor: default;
-}
-.peach-react [data-follow-item] [data-media-tag][data-tag-cat="r34-artist"] { --tag-color: #e36c6c; }
-.peach-react [data-follow-item] [data-media-tag][data-tag-cat="r34-character"] { --tag-color: #68c76f; }
-.peach-react [data-follow-item] [data-media-tag][data-tag-cat="r34-copyright"] { --tag-color: #d675d6; }
-.peach-react [data-follow-item] [data-media-tag][data-tag-cat="r34-metadata"] { --tag-color: #f5a24a; }
+/* 卡上的标签和首页卡同一张脸（中性底与线）；类型色只留在详情的标签区。卡上的标签只读，不给手形。 */
+.peach-react [data-follow-item] [data-media-tag] { cursor: default; }
 .peach-react [data-follow-issue] { display: block; margin: 18px 0 8px; color: var(--drop); font-size: var(--fs-sm); line-height: 1.7; overflow-wrap: anywhere; }
 .peach-react [data-follow-state] { flex: 1 1 100%; color: var(--drop); font-size: var(--fs-xs); }
 @media (max-width: 760px) {
