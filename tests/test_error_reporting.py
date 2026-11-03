@@ -12,6 +12,7 @@ from pathlib import Path
 from unittest import mock
 
 from peach import error_reporting, support_bundle, scraping_diagnostics
+from support.ledger import fresh_ledger
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -232,7 +233,6 @@ class ErrorReportingTests(unittest.TestCase):
         from peach.routes_configuration import router
         from peach.review_csv import write_rows
         from peach.web_contract import WebContract
-        from support.ledger import fresh_ledger
         config, _evidence = self.scraping_config()
         outside = self.root / 'outside.json'
         outside.write_text(json.dumps({'title': 'private-outside-evidence'}), encoding='utf-8')
