@@ -39,7 +39,8 @@ SRC_DIR = PROJECT_ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from peach.config import GENERATED_DIR
+from peach.config import GENERATED_DIR, SECRETS_DIR, SHARED_CREDENTIAL_ROOT
+from peach.follow_secrets import CredentialError, credential_store_for
 from peach.follow_sources import FollowSourceError, build_connector
 from peach.review_csv import read_rows, write_rows
 from peach.scripting import (
@@ -227,6 +228,19 @@ def run(args: argparse.Namespace) -> int:
     print(f"rule34xxx 共 {total} 条，已写入 {len(done)} 条，本趟待问 {len(rows)} 条", flush=True)
     if not rows:
         return 0
+    # dapi 要账号自己的 user_id + api_key；只读文件头不需要。缺凭据在备份与写入之前就停。
+    credential = None
+    if not args.duration_only:
+        try:
+            credential = credential_store_for(
+                SECRETS_DIR, shared_root=SHARED_CREDENTIAL_ROOT).load("rule34xxx")
+        except CredentialError as error:
+            print(f"rule34xxx 凭据不可用：{error}", file=sys.stderr)
+            return 2
+        if credential is None:
+            print("rule34xxx 需要 user_id 与 api_key；请把它们写进 "
+                  "peach-data/secrets/follow/rule34xxx.json", file=sys.stderr)
+            return 2
 
     writer: sqlite3.Connection | None = None
     before = 0
@@ -238,7 +252,7 @@ def run(args: argparse.Namespace) -> int:
         print(f"备份：{args.backup}", flush=True)
         before = writer.execute("SELECT COUNT(*) FROM follow_item").fetchone()[0]
 
-    connector = build_connector("rule34xxx")
+    connector = build_connector("rule34xxx", credential=credential)
     log: list[dict] = []
     staged: list[tuple[int, dict]] = []
     staged_logs: list[dict] = []

@@ -1778,6 +1778,24 @@ class OperationalScriptTests(unittest.TestCase):
         self.assertEqual(json.loads(rows[2]), {"tags": []})
         self.assertEqual(backfill.settled_ids(out), {1})
 
+    def test_rule34_backfill_without_credentials_stops_before_the_backup(self):
+        """分类与上传时间要问 dapi，dapi 要账号凭据；缺凭据就在备份与写入之前停。"""
+        backfill = load_script("backfill_rule34_details")
+        database = self.tmp_ledger()
+        backup = database.parent / "b.db"
+        store = mock.Mock()
+        store.load.return_value = None
+        args = backfill.build_parser().parse_args(
+            ["--db", str(database), "--apply", "--backup", str(backup),
+             "--out", str(database.parent / "r.csv"), "--delay", "0"])
+        with mock.patch.object(backfill, "credential_store_for", return_value=store), \
+                mock.patch.object(backfill, "build_connector") as build, \
+                redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            self.assertEqual(backfill.run(args), 2)
+        store.load.assert_called_once_with("rule34xxx")
+        build.assert_not_called()
+        self.assertFalse(backup.exists())
+
     def test_follow_image_dims_backfill_reads_archives_first_and_probes_headers_for_the_rest(self):
         """图片墙的比例占位要每张图都有宽高；存量行里只有 fanbox 记过。
 
