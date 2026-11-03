@@ -92,6 +92,19 @@ class PickTests(unittest.TestCase):
         cancelled = FakeRun(b"", returncode=1, stderr=b"execution error: User canceled. (-128)\n")
         self.assertIsNone(folder_picker.pick_folder(platform="darwin", run=cancelled))
 
+    def test_cancelling_on_a_localized_macos_is_still_a_cancel(self):
+        """osascript 的消息跟随系统语言，中文系统写「用户已取消。」；错误码 -128 不变。"""
+        cancelled = FakeRun(b"", returncode=1,
+                            stderr="0:120: execution error: 用户已取消。 (-128)\n".encode("utf-8"))
+        self.assertIsNone(folder_picker.pick_folder(platform="darwin", run=cancelled))
+
+    def test_macos_without_interaction_or_automation_permission_has_no_picker(self):
+        """-1713 不允许用户交互、-1743 未获自动化授权：这台机器此刻不提供对话框，不是服务故障。"""
+        for code in (b"-1713", b"-1743"):
+            denied = FakeRun(b"", returncode=1, stderr=b"execution error: Not authorized. (" + code + b")\n")
+            with self.subTest(code=code), self.assertRaises(folder_picker.PickerUnsupported):
+                folder_picker.pick_folder(platform="darwin", run=denied)
+
     def test_macos_paths_lose_the_trailing_slash(self):
         self.assertEqual(folder_picker.pick_folder(platform="darwin", run=FakeRun(b"/Volumes/Media/\n")),
                          "/Volumes/Media")

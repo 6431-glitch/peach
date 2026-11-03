@@ -18,6 +18,7 @@ from __future__ import annotations
 import base64
 import ntpath
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -44,6 +45,9 @@ _LOCK = threading.Lock()
 DIALOG_TIMEOUT_SECONDS = 15 * 60
 
 PROMPT = "选择媒体目录"
+
+#: osascript 没法弹窗的错误码：-1713 当前会话不允许用户交互，-1743 未获自动化授权。
+_MACOS_NO_DIALOG = frozenset({"-1713", "-1743"})
 
 #: `IFileOpenDialog` 的最小互操作：vtable 顺序必须与 shobjidl 一致，一个都不能少。
 #: FOS_NOCHANGEDIR 0x8 不改进程工作目录，FOS_PICKFOLDERS 0x20 选文件夹，
@@ -201,9 +205,13 @@ def pick_folder(initial: str | None = None, *, platform: str = sys.platform,
         _LOCK.release()
     stderr = (result.stderr or b"").decode("utf-8", "replace")
     if result.returncode != 0:
-        # osascript 在用户取消时以 1 退出，stderr 是 "User canceled."；这不是失败。
-        if "canceled" in stderr.lower():
-            return None
+        # osascript 失败时以 1 退出，消息跟随系统语言（中文是「用户已取消。」），
+        # 末尾括号里的 AppleScript 错误码不变，所以按错误码判断。
+        codes = set(re.findall(r"\((-\d+)\)", stderr))
+        if "-128" in codes:
+            return None  # 用户取消，不是失败。
+        if codes & _MACOS_NO_DIALOG:
+            raise PickerUnsupported("这台电脑上的 Peach 没有弹出对话框的权限")
         raise PickerUnavailable("没能打开文件夹对话框")
     text = (result.stdout or b"").decode("utf-8", "replace").strip()
     if platform == "darwin" and len(text) > 1:
