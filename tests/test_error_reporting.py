@@ -1,5 +1,6 @@
 """异常取证与分享报告只使用临时目录；进程级钩子在子进程里验证。"""
 import asyncio
+import contextlib
 import io
 import json
 import os
@@ -1086,7 +1087,7 @@ class ErrorReportingTests(unittest.TestCase):
         loop.diagnostic_socket.close.assert_called_once()
         loop.default_exception_handler.assert_not_called()
 
-    def accept_failure(self, error):
+    def accept_failure(self, error, **handler_options):
         """按标准库 `_start_serving` 的形状调处理器：监听套接字仍有效时先报告，随后它会关掉监听。"""
         import socket
         from asyncio import trsock
@@ -1096,7 +1097,7 @@ class ErrorReportingTests(unittest.TestCase):
         loop = mock.Mock()
         with mock.patch.object(remote_reporting, 'send') as send:
             error_reporting.asyncio_handler(loop, {'message': 'Accept failed on a socket', 'exception': error,
-                                                   'socket': trsock.TransportSocket(listener)})
+                                                   'socket': trsock.TransportSocket(listener)}, **handler_options)
         return loop, send
 
     def test_a_client_gone_before_accept_completes_is_recorded_locally_with_the_closed_listener(self):
@@ -1119,6 +1120,107 @@ class ErrorReportingTests(unittest.TestCase):
         send.assert_called_once()
         self.assertNotIn('classification', self.records()[-1])
         loop.default_exception_handler.assert_called_once()
+
+    def test_other_accept_failures_do_not_listen_again_even_with_a_server_to_recover(self):
+        error = OSError(24, 'too many open files')
+        error.winerror = 10024
+        uvicorn_server = mock.Mock()
+        loop, send = self.accept_failure(error, uvicorn_server=uvicorn_server)
+        send.assert_called_once()
+        loop.default_exception_handler.assert_called_once()
+        loop.create_task.assert_not_called()
+
+    def test_an_aborted_accept_on_a_socket_the_server_does_not_own_is_only_recorded(self):
+        error = OSError(22, 'The specified network name is no longer available')
+        error.winerror = 64
+        uvicorn_server = mock.Mock(servers=[])
+        loop, send = self.accept_failure(error, uvicorn_server=uvicorn_server)
+        send.assert_not_called()
+        loop.create_task.assert_not_called()
+        record = self.records()[-1]
+        self.assertTrue(record['listener_closed'])
+        self.assertFalse(record['listener_rearm'])
+
+    def serve_with_accept_abort(self, *, bind_failure=None):
+        """起真 uvicorn，让下一次重新挂 accept 时抛 WinError 64，走标准库 `_start_serving` 原路径。"""
+        import functools
+        import socket
+        import time
+        import uvicorn
+        from peach import remote_reporting
+
+        async def app(scope, receive, send):
+            await send({'type': 'http.response.start', 'status': 204, 'headers': []})
+            await send({'type': 'http.response.body', 'body': b''})
+
+        async def request(port, *, within=0.0):
+            deadline = time.monotonic() + within
+            while True:
+                try:
+                    reader, writer = await asyncio.open_connection('127.0.0.1', port)
+                    break
+                except ConnectionRefusedError:
+                    if time.monotonic() >= deadline:
+                        return None
+                    await asyncio.sleep(0.05)
+            writer.write(b'GET / HTTP/1.1\r\nHost: peach\r\nConnection: close\r\n\r\n')
+            status = int((await asyncio.wait_for(reader.readline(), 5)).split()[1])
+            writer.close()
+            await writer.wait_closed()
+            return status
+
+        async def run():
+            loop = asyncio.get_running_loop()
+            server = uvicorn.Server(uvicorn.Config(app, host='127.0.0.1', port=0, lifespan='off', log_config=None))
+            loop.set_exception_handler(functools.partial(error_reporting.asyncio_handler, uvicorn_server=server))
+            serving = asyncio.create_task(server.serve())
+            while not server.started:
+                await asyncio.sleep(0.01)
+            port = server.servers[0].sockets[0].getsockname()[1]
+            accept = loop._proactor.accept
+
+            def abort_once(sock):
+                loop._proactor.accept = accept
+                error = OSError(22, 'The specified network name is no longer available')
+                error.winerror = 64
+                raise error
+
+            loop._proactor.accept = abort_once
+            try:
+                with mock.patch.object(remote_reporting, 'send') as send, \
+                        mock.patch.object(socket, 'create_server', side_effect=bind_failure) \
+                        if bind_failure else contextlib.nullcontext():
+                    first = await request(port)
+                    again = await request(port, within=5)
+                    if bind_failure:
+                        await asyncio.wait_for(serving, 10)
+            finally:
+                server.should_exit = True
+                await asyncio.wait_for(serving, 10)
+            return first, again, server, send
+
+        return asyncio.run(run(), loop_factory=asyncio.ProactorEventLoop)
+
+    @unittest.skipUnless(os.name == 'nt', 'Proactor 事件循环只在 Windows 上')
+    def test_a_listener_closed_by_an_aborted_accept_accepts_connections_again(self):
+        first, again, server, send = self.serve_with_accept_abort()
+        self.assertEqual(first, 204)
+        self.assertEqual(again, 204)
+        self.assertEqual(len(server.servers), 2)
+        send.assert_not_called()
+        record = next(row for row in self.records() if row.get('classification') == 'accept-aborted')
+        self.assertTrue(record['listener_closed'])
+        self.assertTrue(record['listener_rearm'])
+
+    @unittest.skipUnless(os.name == 'nt', 'Proactor 事件循环只在 Windows 上')
+    def test_a_listener_that_cannot_be_bound_again_stops_the_service_and_reports(self):
+        first, again, server, send = self.serve_with_accept_abort(bind_failure=OSError(10048, 'address in use'))
+        self.assertEqual(first, 204)
+        self.assertIsNone(again)
+        self.assertTrue(server.should_exit)
+        send.assert_called_once()
+        record = self.records()[-1]
+        self.assertEqual(record['classification'], 'accept-listener-lost')
 
     def test_asyncio_tls_cleanup_keeps_protocol_class_after_application_detaches(self):
         from peach import remote_reporting

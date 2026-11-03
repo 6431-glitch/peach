@@ -112,7 +112,7 @@ SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺�
 
 `asyncio` 连接清理只在同时满足以下条件时识别为连接重置收尾：`OSError` 的 `winerror` 为 `10054`（对端已重置连接）或 `10022`（Proactor 收尾时 `shutdown` 报 WSAEINVAL），回调为标准库 `_ProactorBasePipeTransport._call_connection_lost`，调用栈只含该回调与 `asyncio.events._run`，且没有关联异常。处理器核对真实 Proactor transport 处于清理状态，关闭 socket、解除服务端登记并完成关闭状态；不重复通知协议。成功记录 `classification=connection-cleanup` 与 `cleanup_recovered=true`，仅保留本机证据。收尾自身失败则保留原始异常链、上报技术故障并交给默认处理器；不能确认对象状态时也沿用默认处理器。没有全局修改 Python 类或替换事件循环。
 
-Windows Proactor 在 accept 完成前客户端已断开时报 `Accept failed on a socket`（`OSError`，`winerror` 为 `64`）。这一类只写本机记录，`classification=accept-aborted`、`listener_closed=true`，不远程上报，也不交给默认处理器重复写 ERROR。CPython 3.14.7 在处理器返回后会关闭该监听 socket，Peach 目前没有在进程内恢复监听；其他 accept 失败仍按技术故障上报。
+Windows Proactor 在 accept 完成前客户端已断开时报 `Accept failed on a socket`（`OSError`，`winerror` 为 `64`）。这一类只写本机记录，`classification=accept-aborted`、`listener_closed=true`，不远程上报，也不交给默认处理器重复写 ERROR。CPython 3.14.7 在处理器返回后会关闭该监听 socket；`peach serve`（主服务与 HTTP 重定向监听都由它启动）随即按原地址新建一份监听，交给 uvicorn 管理，记录里 `listener_rearm=true`。新连接沿用 uvicorn 的协议工厂与连接登记，停机时照常收尾；已建立的连接和同一服务端的其他地址不受影响。重新绑定在约 2.5 秒内重试 3 次，仍失败时以 `classification=accept-listener-lost` 上报技术故障并让服务有序退出，由托盘重新拉起；未经 `peach serve` 启动、拿不到 uvicorn 服务端时 `listener_rearm=false`，只留本机记录。其他 accept 失败不重新监听，仍按技术故障上报并交给默认处理器。
 
 本机记录保留异常与标准库帧，并补充回调、协议类、可识别的服务端类别和 TLS 标志；这些上下文字段不进入远程载荷，不访问连接地址、请求内容或对象文本。资源收尾使用 CPython 3.14.7 的私有对象协议，升级需验证实际 socket、`asyncio.Server`、重复关闭与收尾失败。原始竞争时序在 33 次回环实验中未复现；合成故障验证了资源实际关闭与服务端释放，不能据此推断原始客户端来源。
 
