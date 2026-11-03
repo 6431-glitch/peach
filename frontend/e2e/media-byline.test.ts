@@ -33,6 +33,26 @@ describe('作品卡片署名信息行', () => {
       }
     } finally { await opened.close() }
   });
+  it('密集窄卡的日期另起一行时，标签行让到它下面，不压住日期', { timeout: 60_000 }, async () => {
+    const opened = await openCatalogFixture(browser, payload => {
+      Object.assign(payload.items[0], { is_jav: true, code: 'MIAA-155', performers: ['篠田优'], performer_total: 1,
+        release_date: '2019-09-13', size: 6549825126, tags: ['巨乳', '中出'] });
+    });
+    try {
+      await opened.page.evaluate(() => {
+        document.body.dataset.density = 'dense';
+        document.documentElement.style.setProperty('--tile', '168px');
+      });
+      await settle(opened.page);
+      const rows = await opened.page.locator('#grid [data-media-card]').first().evaluate(card => {
+        const box = (selector: string) => card.querySelector(selector)!.getBoundingClientRect();
+        return { who: box('[data-media-who]').top, date: box('[data-media-release]').top,
+          dateBottom: box('[data-media-release]').bottom, tag: box('[data-media-tag]').top };
+      });
+      assert.ok(rows.date > rows.who + 1, `窄卡的日期应另起一行：${JSON.stringify(rows)}`);
+      assert.ok(rows.tag >= rows.dateBottom, `标签压在日期上：${JSON.stringify(rows)}`);
+    } finally { await opened.close() }
+  });
   for (const viewport of VIEWPORTS) {
     it(`${viewport.name} 姓名靠左，日期在窄卡片换行保留`, { timeout: 60_000 }, async () => {
       const opened = await openCatalogFixture(browser, payload => {

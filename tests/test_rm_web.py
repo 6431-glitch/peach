@@ -2166,6 +2166,27 @@ class WebDataTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             rm_web.w_batch(self.contract, {"ids": list(range(201)), "operation": "seen"})
 
+    def test_related_reason_names_shared_tags_the_user_can_see(self):
+        con = sqlite3.connect(self.db_path)
+        con.execute("INSERT INTO entity(id,kind,canonical_name,normalized_name,created_at,updated_at) "
+                    "VALUES(14,'tag','痴女','痴女','2026-01-01','2026-01-01')")
+        con.executemany("INSERT INTO asset_tag(asset_id,tag,source) VALUES(?,?,?)",
+                        [(1, "痴女", "name"), (2, "足交", "name"), (2, "痴女", "name")])
+        con.executemany("INSERT INTO asset_entity(asset_id,entity_id,role,source,confidence) "
+                        "VALUES(?,?,'tag','test',1.0)", [(1, 14), (2, 10), (2, 14)])
+        con.commit()
+        con.close()
+
+        first = rm_web.q_related(self.contract, 1, 10)["items"][0]
+        self.assertEqual((first["why"], first["why_tags"]), ("同创作者", ["足交", "痴女"]))
+        # 用户在对面那部上隐藏的标签不拿来当理由；一个都不剩时退回「标签接近」。
+        rm_web.w_item_tag(self.contract, {"id": 2, "operation": "remove", "tag": "足交"})
+        first = rm_web.q_related(self.contract, 1, 10)["items"][0]
+        self.assertEqual(first["why_tags"], ["痴女"])
+        rm_web.w_item_tag(self.contract, {"id": 2, "operation": "remove", "tag": "痴女"})
+        first = rm_web.q_related(self.contract, 1, 10)["items"][0]
+        self.assertEqual((first["why"], "why_tags" in first), ("同创作者 · 标签接近", False))
+
     def test_top_lists_and_related_items_use_canonical_entities(self):
         tops = rm_web.q_tops(self.contract, 10)
         self.assertEqual(tops["performers"][0]["k"], "Canonical Alice")

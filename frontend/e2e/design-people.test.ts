@@ -329,7 +329,7 @@ describe('设计决定：人物与厂牌资料页', () => {
     }
   });
 
-  it('详情出演区每一组的标题、头像和名字共用一条左边缘', { timeout: 60_000 }, async () => {
+  it('详情出演区每一组的标题与头像共用一条左边缘，名字在头像正下方居中', { timeout: 60_000 }, async () => {
     const opened = await visit(browser, '/', DESKTOP);
     try {
       const page = opened.page;
@@ -358,15 +358,18 @@ describe('设计决定：人物与厂牌资料页', () => {
           const group = document.querySelector(`[data-item-identity] [data-id-group="${kind}"]`)!;
           const name = document.createRange();
           name.selectNodeContents(group.querySelector('[data-id-name]')!);
+          const face = group.querySelector('[data-id-face]')!.getBoundingClientRect();
+          const text = name.getBoundingClientRect();
           return [kind, {
             label: group.querySelector('[data-id-label]')!.getBoundingClientRect().left,
-            face: group.querySelector('[data-id-face]')!.getBoundingClientRect().left,
-            name: name.getBoundingClientRect().left,
+            face: face.left, faceCenter: face.left + face.width / 2,
+            nameCenter: text.left + text.width / 2,
           }];
         })));
       for (const [kind, edge] of Object.entries(edges)) {
         assert.ok(Math.abs(edge.face - edge.label) < 0.5, `${kind} 组头像左缘 ${edge.face} 不在标题左缘 ${edge.label}`);
-        assert.ok(Math.abs(edge.name - edge.label) < 0.5, `${kind} 组名字左缘 ${edge.name} 不在标题左缘 ${edge.label}`);
+        assert.ok(Math.abs(edge.nameCenter - edge.faceCenter) < 0.5,
+          `${kind} 组名字中线 ${edge.nameCenter} 不在头像中线 ${edge.faceCenter}`);
       }
       assert.deepEqual(opened.problems, []);
     } finally {
