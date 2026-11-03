@@ -311,6 +311,9 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         con.executescript(BASE_SCHEMA)
         for migration in ("0018_online_follow.sql", "0034_feed_discovery.sql"):
             con.executescript((ROOT / "migrations" / migration).read_text(encoding="utf-8"))
+        # 删除与清空回收站后的缓存清理按想要清单认封面的主人；整份 0042 迁移还要连带
+        # 修订号与账户表，这里只建清理读的两列。
+        con.execute("CREATE TABLE want_item(code_key TEXT, state TEXT NOT NULL)")
         con.execute(
             """INSERT INTO asset(id,location,path,name,medium,size,creator,studio,duration,
                                   width,height,ctx_orient,snapshot_path,first_seen)

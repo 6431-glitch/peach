@@ -463,6 +463,26 @@ class PurgeMissingTests(unittest.TestCase):
         self.assertTrue(shared.is_file())
         self.assertNotIn("covers", preview["cache"]["by_kind"])
 
+    def test_cache_cleanup_keeps_covers_of_followed_wanted_and_codeless_works(self):
+        """关注新作、想要清单和无番号作品的封面不在馆藏番号里，同样有主。"""
+        covers = self.root / "covers"
+        covers.mkdir()
+        con = sqlite3.connect(self.db_path)
+        con.executemany("INSERT INTO feed_discovery(code,discovered_at,ignored_at) VALUES(?,'t',?)",
+                        [("NGOD-365", None), ("IGNO-001", "t")])
+        con.execute("INSERT INTO want_item(code,code_key,origin,state,created_at,updated_at)"
+                    " VALUES('WANT-001','WANT-001','code','wanted','t','t')")
+        con.commit();con.close()
+        kept = [covers / name for name in ("NGOD-365.jpg", "NGOD-365.face.json", "WANT-001.jpg", "ASSET-ID-1.jpg")]
+        gone = [covers / "IGNO-001.jpg", covers / "ORPH-001.jpg"]
+        for path in (*kept, *gone):
+            path.write_bytes(b"cover")
+        self.contract.cover_root = covers
+        self.contract.resource_cleanup_enabled = True
+        plan = rm_sync._resource_orphan_plan(self.contract)
+        self.assertEqual(sorted(path.name for _kind, path, _size in plan["files"]),
+                         ["IGNO-001.jpg", "ORPH-001.jpg"])
+
     def test_cache_cleanup_never_crosses_the_database_data_root(self):
         """临时数据库漏配缓存根时，宁可不清理，也不能越界碰真实 generated。"""
         with tempfile.TemporaryDirectory() as outside_tmp:
