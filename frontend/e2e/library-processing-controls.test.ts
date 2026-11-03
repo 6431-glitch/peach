@@ -48,6 +48,39 @@ describe('扫描与采集控制', () => {
       assert.ok((await layout(page)).scrollWidth <= viewport.width);
     } finally { await opened.close() }
   });
+  it('手机：任务卡、下角小窗与回执装不下时先收起任务明细，点展开仍照办', async () => {
+    const viewport = VIEWPORTS.find(entry => entry.mobile)!;
+    const state = { status: 'failed', job_id: 'crowded-preview', checked: 3, total: 9, completed_at: Date.now() / 1000,
+      error: '115 挂载读取超时，3 个文件未完成扫描',
+      steps: [{ id: 'scan', label: '扫描文件', status: 'complete' }, { id: 'metadata', label: '采集影片资料', status: 'current' },
+        { id: 'preview', label: '生成预览与封面', status: 'pending' }] };
+    const opened = await visit(browser, '/', viewport, async page => {
+      await page.route('**/api/library-processing{,?*}', route => route.fulfill({ json: state }));
+    });
+    const { page } = opened;
+    try {
+      const dock = page.locator('#toasts [data-processing-dock]');
+      const toggle = dock.locator('[data-processing-toggle]');
+      await dock.waitFor();
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+      await page.locator('#miniplayer').evaluate(node => { (node as HTMLElement).hidden = false });
+      await page.evaluate(async () => {
+        const entry = '/dist/peach-app.js';
+        const ui = await import(entry);
+        ui.showToast(document.getElementById('toasts'), { success: '<svg/>', error: '<svg/>' },
+          'crowded-preview', { html: '检查失败：来源暂时无法连接，请稍后重试。', alert: true, timeout: Infinity, action: null });
+      });
+      await page.waitForFunction(() => document.querySelector('[data-processing-toggle]')?.getAttribute('aria-expanded') === 'false');
+      await settle(page, '#toasts [data-processing-dock]');
+      const boxes = await page.evaluate(() => [...document.querySelectorAll('#toasts [data-sonner-toast], #miniplayer')]
+        .map(node => node.getBoundingClientRect().toJSON()));
+      for (const box of boxes) assert.ok(box.top >= 0 && box.bottom <= innerHeight, JSON.stringify(boxes));
+      // 明细只是腾空间时暂收，不写进会话里的收起记录。
+      assert.equal(await page.evaluate(() => sessionStorage.getItem('peach.library-processing.collapsed')), null);
+      await toggle.click();
+      assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
+    } finally { await opened.close() }
+  });
   for (const viewport of VIEWPORTS) {
     it(`${viewport.name}：隐藏、刷新、恢复与新任务的浮窗`, async () => {
       let state = { status: 'running', job_id: 'visibility-first', checked: 2, total: 10 };

@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "4aee8ded-10e3-41d8-a2ba-803f29bf8781", e._sentryDebugIdIdentifier = "sentry-dbid-4aee8ded-10e3-41d8-a2ba-803f29bf8781");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e1200430-26d9-4282-be51-72faae4fa96b", e._sentryDebugIdIdentifier = "sentry-dbid-e1200430-26d9-4282-be51-72faae4fa96b");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, n) => {
@@ -46549,35 +46549,54 @@ function K_e({ value: e, max: t }) {
 	});
 }
 function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
-	let [i, a] = (0, F.useState)(() => cU(e?.job_id)), o = (0, F.useId)(), [s, c] = (0, F.useState)(!1), l = (0, F.useRef)(null), u = !t && mH(e), d = e?.status === "failed" && !u, f = pH(e);
+	let [i, a] = (0, F.useState)(() => cU(e?.job_id)), [o, s] = (0, F.useState)(!1), c = (0, F.useRef)(!1), l = (0, F.useRef)(0), u = i && !o, d = (0, F.useId)(), [f, p] = (0, F.useState)(!1), m = (0, F.useRef)(null), h = !t && mH(e), g = e?.status === "failed" && !h, _ = pH(e);
 	(0, F.useEffect)(() => {
-		a(cU(e?.job_id)), c(!1);
+		a(cU(e?.job_id)), p(!1);
 	}, [e?.job_id]);
-	let p = () => {
-		try {
-			i && e?.job_id ? sessionStorage.setItem(sU, e.job_id) : sessionStorage.removeItem(sU);
-		} catch {}
-		i && c(!1), a(!i);
+	let v = () => {
+		if (i && o) c.current = !0, s(!1);
+		else {
+			try {
+				i && e?.job_id ? sessionStorage.setItem(sU, e.job_id) : sessionStorage.removeItem(sU);
+			} catch {}
+			i && p(!1), a(!i);
+		}
 	};
 	if ((0, F.useEffect)(() => {
-		if (!n || !l.current) return;
-		let e = l.current, t = !1, r = () => {
-			!t && e.isConnected && document.documentElement.style.setProperty("--processing-toast-space", `${e.getBoundingClientRect().height + 12}px`);
+		if (!n || !m.current) return;
+		let e = m.current, t = document.documentElement, r = !1, i = (e) => parseFloat(getComputedStyle(t).getPropertyValue(e)) || 0, a = () => {
+			if (r || !e.isConnected) return;
+			let n = e.getBoundingClientRect().height, a = `${n + 12}px`;
+			t.style.getPropertyValue("--processing-toast-space") !== a && t.style.setProperty("--processing-toast-space", a);
+			let o = e.querySelector("[data-processing-body]"), u = o && !o.hidden ? o.getBoundingClientRect().height : 0;
+			o && !o.hidden && (l.current = o.scrollHeight);
+			let d = n - u + l.current, f = Math.max(innerWidth <= 600 ? 16 : 24, i("--selection-dock-space"), i("--miniplayer-space")), p = Math.max(0, ...[...document.querySelectorAll("#toasts [data-sonner-toast]:not(.processing-task-toast)")].map((e) => e.getBoundingClientRect().height)), m = f + d + 12 + (p ? p + 8 : 0) > innerHeight - (i("--topH") || 56);
+			m || (c.current = !1), s(m && !c.current);
 		};
-		r();
-		let i = new ResizeObserver(r);
-		return i.observe(e), () => {
-			t = !0, i.disconnect(), document.documentElement.style.removeProperty("--processing-toast-space");
+		a();
+		let o = new ResizeObserver(a);
+		o.observe(e);
+		let u = new MutationObserver(a);
+		u.observe(t, {
+			attributes: !0,
+			attributeFilter: ["style"]
+		});
+		let d = document.getElementById("toasts");
+		return d && u.observe(d, {
+			childList: !0,
+			subtree: !0
+		}), window.addEventListener("resize", a), () => {
+			r = !0, o.disconnect(), u.disconnect(), window.removeEventListener("resize", a), t.style.removeProperty("--processing-toast-space");
 		};
-	}, [n]), e?.archived && !t || !t && !f && !d && !u) return null;
-	let m = t ? null : dH(e), h = !!t || !!e?.stalled || u || !!m, g = u ? "处理已结束，部分项目需处理" : d ? "扫描与采集已中断" : e?.status === "paused" ? "扫描与采集已暂停" : "扫描与采集";
+	}, [n]), e?.archived && !t || !t && !_ && !g && !h) return null;
+	let y = t ? null : dH(e), b = !!t || !!e?.stalled || h || !!y, x = h ? "处理已结束，部分项目需处理" : g ? "扫描与采集已中断" : e?.status === "paused" ? "扫描与采集已暂停" : "扫描与采集";
 	return /* @__PURE__ */ (0, I.jsxs)("aside", {
-		ref: l,
+		ref: m,
 		"data-processing-dock": "",
-		"data-processing-tone": d ? "error" : h ? "warning" : "neutral",
+		"data-processing-tone": g ? "error" : b ? "warning" : "neutral",
 		"aria-label": "扫描任务",
-		role: d ? "alert" : "status",
-		className: JI("flex min-w-0 flex-col border bg-background-primary-default p-4", d ? "border-current/35 text-text-error-primary" : h ? "border-current/35 text-status-yellow-text" : "border-border-button-default text-text-primary"),
+		role: g ? "alert" : "status",
+		className: JI("flex min-w-0 flex-col border bg-background-primary-default p-4", g ? "border-current/35 text-text-error-primary" : b ? "border-current/35 text-status-yellow-text" : "border-border-button-default text-text-primary"),
 		children: [
 			/* @__PURE__ */ (0, I.jsxs)("div", {
 				className: "flex min-w-0 flex-col gap-3",
@@ -46585,10 +46604,10 @@ function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 					/* @__PURE__ */ (0, I.jsxs)("div", {
 						className: "flex min-w-0 items-center gap-3",
 						children: [
-							f && e?.total ? /* @__PURE__ */ (0, I.jsx)(K_e, {
+							_ && e?.total ? /* @__PURE__ */ (0, I.jsx)(K_e, {
 								value: e.checked || 0,
 								max: e.total
-							}) : d || h ? /* @__PURE__ */ (0, I.jsx)(zhe, {
+							}) : g || b ? /* @__PURE__ */ (0, I.jsx)(zhe, {
 								"aria-hidden": !0,
 								className: "size-5 shrink-0"
 							}) : /* @__PURE__ */ (0, I.jsx)(Yhe, {
@@ -46599,8 +46618,8 @@ function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 								className: "min-w-0 flex-1",
 								children: [/* @__PURE__ */ (0, I.jsx)("p", {
 									className: "text-body-medium",
-									children: g
-								}), f ? /* @__PURE__ */ (0, I.jsx)("p", {
+									children: x
+								}), _ ? /* @__PURE__ */ (0, I.jsx)("p", {
 									"data-processing-eta": "",
 									className: "text-caption-1-regular text-text-secondary tabular-nums wrap-anywhere",
 									children: _H(e)
@@ -46613,10 +46632,10 @@ function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 								leadingIcon: KH,
 								"data-processing-toggle": "",
 								"data-collapse-upward": "",
-								"aria-label": i ? "收起任务详情" : "展开任务详情",
-								"aria-expanded": i,
-								"aria-controls": o,
-								onClick: p
+								"aria-label": u ? "收起任务详情" : "展开任务详情",
+								"aria-expanded": u,
+								"aria-controls": d,
+								onClick: v
 							}),
 							r ? /* @__PURE__ */ (0, I.jsx)(J, {
 								size: "small",
@@ -46630,23 +46649,23 @@ function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 					}),
 					/* @__PURE__ */ (0, I.jsx)(oU, {
 						traffic: e?.traffic,
-						detailsOpen: s,
-						onDetailsChange: c
+						detailsOpen: f,
+						onDetailsChange: p
 					}),
-					m ? /* @__PURE__ */ (0, I.jsx)(g_e, {
+					y ? /* @__PURE__ */ (0, I.jsx)(g_e, {
 						state: e,
-						slow: m
+						slow: y
 					}) : null
 				]
 			}),
 			/* @__PURE__ */ (0, I.jsx)(GH, {
-				id: o,
-				open: i,
+				id: d,
+				open: u,
 				"data-processing-body": "",
 				children: /* @__PURE__ */ (0, I.jsx)("div", {
 					className: "pt-3",
 					children: /* @__PURE__ */ (0, I.jsxs)("div", {
-						className: JI("flex min-w-0 flex-col gap-2 border-t pt-3", d ? "border-border-error-default/20" : h ? "border-current/20" : "border-separator-border"),
+						className: JI("flex min-w-0 flex-col gap-2 border-t pt-3", g ? "border-border-error-default/20" : b ? "border-current/20" : "border-separator-border"),
 						children: [
 							e?.steps?.length ? /* @__PURE__ */ (0, I.jsx)("ol", {
 								"aria-label": "处理步骤",
@@ -46676,17 +46695,17 @@ function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 							}) : null,
 							/* @__PURE__ */ (0, I.jsx)("p", {
 								className: "text-body-2-regular wrap-anywhere",
-								children: t || (d || u ? e?.error || "请查看并处理未完成项" : /* @__PURE__ */ (0, I.jsx)(k_e, { state: e }))
+								children: t || (g || h ? e?.error || "请查看并处理未完成项" : /* @__PURE__ */ (0, I.jsx)(k_e, { state: e }))
 							}),
-							u ? /* @__PURE__ */ (0, I.jsx)("p", {
+							h ? /* @__PURE__ */ (0, I.jsx)("p", {
 								className: "text-body-2-regular wrap-anywhere",
 								children: hH
 							}) : null,
-							f && e?.stage && !e.steps?.length ? /* @__PURE__ */ (0, I.jsxs)("p", {
+							_ && e?.stage && !e.steps?.length ? /* @__PURE__ */ (0, I.jsxs)("p", {
 								className: "text-caption-1-regular text-text-tertiary",
 								children: ["当前阶段 · ", e.stage]
 							}) : null,
-							e?.stalled && !t && !m ? /* @__PURE__ */ (0, I.jsx)("p", {
+							e?.stalled && !t && !y ? /* @__PURE__ */ (0, I.jsx)("p", {
 								className: "text-caption-1-regular",
 								children: "当前步骤耗时较长，正在等待进展"
 							}) : null
@@ -46702,15 +46721,15 @@ function lU({ state: e, problem: t = "", measure: n = !1, onHide: r }) {
 						variant: "secondary",
 						size: "small",
 						trailingIcon: FB,
-						children: t || d || u ? "打开扫描与采集" : "任务详情"
+						children: t || g || h ? "打开扫描与采集" : "任务详情"
 					}),
-					u ? /* @__PURE__ */ (0, I.jsx)(EH, {
+					h ? /* @__PURE__ */ (0, I.jsx)(EH, {
 						href: gH,
 						size: "small",
 						trailingIcon: FB,
 						children: "查看全部内容"
 					}) : null,
-					f ? /* @__PURE__ */ (0, I.jsx)(LH, {
+					_ ? /* @__PURE__ */ (0, I.jsx)(LH, {
 						state: e,
 						disabled: !!t
 					}) : null
@@ -83386,4 +83405,4 @@ if (!$9) throw Error("主界面宿主缺失");
 yRe($9);
 export { nR as $2ec61d1d4f780267$export$a8a3e93435678ff9, uR as $3a442827418ebe87$export$eb2fcfdbd7ba97d4, Dz as $542a13ca2fa5b484$export$5b6b19405a83ff9d, jD as $72abaeab4d80592f$export$78efe591171d7d45, yB as $76d00c5a4edb230a$export$76ccd210b9029917, gB as $76d00c5a4edb230a$export$816b5d811295e6bc, SB as $76d00c5a4edb230a$export$b59bdbef9ce70de2, wB as $76d00c5a4edb230a$export$f6f0c3fe4ec306ea, hB as $76d00c5a4edb230a$export$f850895b287ef28e, uhe as $b4f18e3395fe64d7$export$3d96ec278d3efce4, lhe as $b4f18e3395fe64d7$export$3e41faf802a29e71, ohe as $b4f18e3395fe64d7$export$b2539bed5023c21c, OB as $b4f18e3395fe64d7$export$e51a686c67fdaa2d, phe as $bd263d78e9bf3c56$export$f5c9f3c2c4054eec, vE as $ea3928288112382f$export$439d29a4e110a164, Bz as $f2ff30fde7b014be$export$3ddf2d174ce01153, qz as $fe21c36db05242bb$export$a98f0dcb43a68a25, Jz as $fe21c36db05242bb$export$d7b12c4107be0d61, Whe as $l, tM as ACCENTS, dke as AMANE_BRIDGE_CHECK_URL, Q$ as AMANE_BRIDGE_KEY, fke as AMANE_BRIDGE_REBUILD_URL, ar as ApiError, aW as ArtSlot, g2 as BATCH_DELETE_TEXT, J as Button, PL as ButtonLink, aV as Bx, k$ as CLEANUP_ENTRY, O$ as CLEANUP_ENTRY_GRID, Jf as CLEANUP_HASH_REDIRECTS, Kf as CLEANUP_TOOLS, gn as CLOUD_LOCATIONS, Q1 as CLOUD_PROXY_HELP, Wr as COLUMN_SORT, u1 as CONFIGURATION_KEY, uX as CONFIGURATION_URL, pke as COOKIE_TEXT_LIMIT, Z$ as COVER_JOB_KEY, qi as CREDENTIAL_STATE, q$ as CUSTOM_SOURCES_KEY, K$ as CUSTOM_SOURCES_URL, ZV as Checkbox, XV as CheckboxGlyph, VV as ChevronSortDown, iW as Chip, pW as CloudDownloadDialog, KH as CollapseChevron, GH as CollapseRegion, S$ as CollectionSummary, GCe as DEFAULT_CATEGORY, lr as DEFAULT_SORT, JQ as DIAGNOSTICS_KEY, Wwe as DIRECTORY_TEMPLATE_ERROR, N0 as DISCOVERY_SORTS, sW as DOWNLOADS_KEY, oW as DOWNLOADS_URL, AY as DUPLICATES_KEY, dY as DataTableFooter, sY as DataTableFrame, uY as DataTableSort, QH as Disclosure, Lve as DownloadsPanel, Lhe as E3, KCe as ENTITY_REVIEW_KINDS, X1 as ENTRY_LINKS_HELP, Z1 as ENTRY_LINKS_HINT, qhe as Ea, mge as EmptyFocusButton, CV as EmptyState, XH as ErrorText, L_e as ExternalLink, zr as FEEDS_KEY, vX as FEED_SCHEDULE_KEY, E$ as FIELDSET_FOOT, yPe as FLOW_LABEL_X, X3 as FLOW_VIEWBOX, Lr as FOLLOW_CHECK_KEY, Ir as FOLLOW_CREDENTIALS_KEY, N8 as FOLLOW_INITIAL_RANGE_OPTIONS, Fr as FOLLOW_MANAGE_KEY, QZ as FOLLOW_MANAGE_NAV, Rr as FOLLOW_RESOLVE_KEY, _X as FOLLOW_SCHEDULE_KEY, B_e as Fact, z_e as FactList, ZH as FieldLabel, z$ as Fieldset, R$ as FieldsetTitle, spe as FilterGlass, DL as FilterGlassRows, EL as FilterIconButton, OL as FilterPill, I_e as Footer, nV as Gg, kL as GlassPill, lV as HN, YH as Help, mV as HintText, dPe as IDLE_POLL_MS, PCe as IDLE_REPAIR, SL as IconButton, XQ as IndexSearch, yV as Input, vV as InputBase, yM as JAV_LAYOUTS, F0 as JAV_RECOMMENDATION_GRID, UX as JUNK_KEY, AW as JavHeader, OCe as KEEP_LABELS, Vr as LAYOUTS, Y1 as LIBRARY_FOLDER_HELP, uH as LIBRARY_PROCESSING_KEY, nX as LINKS_KEY, rX as LINK_CHECK_KEY, gwe as LINK_KINDS, iX as LINK_PRUNE_KEY, er as LOC, pV as Label, H$ as LibraryProcessingCard, BV as LibraryShortcuts, EH as LinkButton, BH as LoadingDots, Rhe as M6, xwe as MEDIA_PROCESSING_KEY, bX as MEDIA_PROCESSING_URL, FY as MEDIA_REPAIR_KEY, PY as MEDIA_REPAIR_URL, _r as MEDIA_SOURCES_KEY, hs as MEDIA_SOURCE_ICONS, mn as MEDIA_SOURCE_OPTIONS, GV as MENU_ITEM, KV as MENU_ITEM_INTERACTIVE, WV as MENU_POPOVER_SURFACE, AH as MenuDialog, EK as MixCard, bV as ModalFrame, wx as MotionConfigContext, fV as NR, SV as Note, lge as OA, CX as ORGANIZE_KEY, p2 as ORGANIZE_PARAMETER_HINT, f2 as ORGANIZE_SCOPE_HINT, d2 as ORGANIZE_TEXT, EX as ORPHAN_RECORDS_KEY, h2 as ORPHAN_RECORDS_TEXT, eV as OV, BB as P7, BX as PERFORMER_DELETE_KEY, Kve as PHASES, dX as PICK_FOLDER_URL, j$ as PLAIN_STAT_STRIP, W$ as PLAYLISTS_KEY, hAe as POLICY_COLUMNS, _Ae as POLICY_COVER_NOTE, gAe as POLICY_MATRIX, J1 as POLICY_SUMMARY, lY as Pagination, V$ as PathLine, ZI as PillTabList, NOe as PlainStat, HH as Progress, BY as QUALITY_GOALS_KEY, N$ as REPAIR_CARD_TEXT, IY as REPAIR_LIBRARIES_KEY, jX as RESOURCE_APPLY_KEY, AX as RESOURCE_SCAN_KEY, m2 as RESOURCE_SYNC_TEXT, zOe as RESULT_PANEL, BOe as RESULT_SECTION, WCe as REVIEW_CATEGORIES, HX as REVIEW_COUNTS_KEY, qCe as REVIEW_DECISION_LABELS, UY as REVIEW_KEY, WY as REVIEW_LABELS, KY as REVIEW_QUEUES, qY as REVIEW_QUEUE_LABELS, ZG as RetryNote, sge as Rf, N_e as Rows, lke as SCRAPING_CHECK_URL, Y$ as SCRAPING_COVER_URL, X$ as SCRAPING_KEY, cke as SCRAPING_SETTINGS_URL, vU as SEGMENT, _U as SEGMENTED_TRACK, gX as SETTINGS_KEY, fX as SETTINGS_URL, ur as SORT_DEFAULT_DIR, cr as SORT_OPTIONS, _n as SOURCE_LABELS, x3 as STATS_KEY, jOe as STAT_STRIP, MOe as STAT_STRIP_SIX, M_e as Section, VOe as SectionHeading, F_e as SectionSkeleton, gU as SegmentedRadioGroup, tve as SegmentedTabList, WG as Segments, cY as Select, tW as Select$1, m1 as SelectField, nW as SelectItem, vY as SelectionActions, jj as SelectionDock, yY as SelectionPopover, qH as SettingsCard, j_e as SettingsRow, JH as SettingsSectionLabel, W_e as SiteLabel, CG as SortDirectionIcon, KG as SortKeys, jQ as SourceAvatar, nU as SourceLabel, $H as SourceMark, P_e as Stack, POe as StatCard, B$ as StatusLabel, $2 as Switch, oL as TASKS_KEY, ePe as TASTE_REFRESH_KEY, tPe as TASTE_WINDOWS, yX as THUMBNAIL_JOBS_KEY, GX as TRASH_KEY, Vfe as TRIGGER_LABELS, QJ as Table, bY as TableColumnControls, xY as TableColumnResizer, CY as TableSelectionHeader, _$ as TagManager, R_e as TaskCenterLink, UH as TaskProgress, gV as TextField, hV as TextFieldContext, QB as Un, hW as WANTS_KEY, m4 as WantMagnets, Ug as WithPromise, WB as Wt, ZB as Xc, dV as Xf, GB as Xt, HB as _8, o as __commonJSMin, s as __exportAll, l as __toESM, oge as aB, wi as addAlias, Ci as addSource, _W as addWant, pS as animate, V as apiGet, H as apiSend, pM as appSettingsStore, lTe as applyConfirmText, zX as applyLeftovers, cTe as applyPlanText, dTe as applyText, _M as applyTheme, _y as asNumber, Zwe as attachOrphan, oi as authorAvatar, ci as authorGroups, ai as authorInitial, ii as authorName, Bq as autoResetPageIndex, ho as avatarInner, D3 as bandRows, Gwe as baseName, NCe as batchOperate, lue as beginPlayerGuidePreview, Lj as boundedPreference, ACe as bulkCloudPreferences, DV as busyProps, age as cB, kMe as cachedMagnetStates, Lg as calcGeneratorVelocity, ewe as canApprove, fg as cancelFrame, nTe as candidateText, zH as cardClass, MM as cardRatio, XB as cc, Ui as checkEvidenceGap, Hi as checkFailures, Ni as checkFeeds, bwe as checkLine, Bi as checkReceipt, Vi as checkSummary, hke as checkText, Wi as checkedText, fK as clickedBlank, X5 as closeDrawerAfterNav, SCe as cloudLocations, k0 as cloudProxySkeleton, ZC as clsx, Xhe as cn, ov as collectMotionValues, oJ as columnVisibilityFeature, qJ as column_getCanSort, UJ as column_getSortFn, QCe as commonReviewSources, Df as configurationSection, aPe as configureTasteBrowser, al as confirmModal, zfe as controlTask, Sq as copyInstancePropertiesWithoutMemos, so as coverUrl, Zq as createColumnHelper, nke as createPlaylist, Ji as credentialDone, T0 as credentialsSkeleton, lwe as currentReviewRow, JI as cx, iV as dZ, owe as decisionPayload, swe as decisionReceipt, awe as defaultChoice, pTe as deletePerformerVideos, ike as deletePlaylist, x as diagnosticHeaders, q1 as diagnosticsSkeleton, TW as discoveryArtwork, CW as discoveryKey, VAe as discoveryScore, s9 as disposeStage, ECe as distinctName, Ri as dropSources, ige as du, jCe as duplicateVictims, pL as elapsedText, en as entityDisplayName, mo as entityFaceImg, Mn as entityPath, $r as errorHeadline, sr as errorMessage, B as esc, zq as expandRowModel, PB as f1, Qr as feedIntervalText, t1 as fetchAmaneBridge, gi as fetchCheckJob, d1 as fetchConfiguration, e1 as fetchCoverJob, hi as fetchCredentials, J$ as fetchCustomSources, VX as fetchDeletePerformers, fTe as fetchDeletePlan, YQ as fetchDiagnostics, wW as fetchDiscoveries, MY as fetchDuplicates, Ffe as fetchEarlier, wwe as fetchFeedSchedule, Ai as fetchFeeds, mi as fetchFollow, Cwe as fetchFollowSchedule, qX as fetchJunkSummary, vH as fetchLibraryProcessing, sX as fetchLinkCheck, cX as fetchLinkPrune, oX as fetchLinkStats, Swe as fetchMediaProcessing, LY as fetchMediaRepair, vr as fetchMediaSources, wX as fetchOrganize, Lwe as fetchOrganizeExample, DX as fetchOrphanRecords, ki as fetchPending, G$ as fetchPlaylists, VY as fetchQualityGoals, RY as fetchRepairLibraries, _i as fetchResolveJob, NX as fetchResourceApply, MX as fetchResourceScan, $Y as fetchReview, KX as fetchReviewCounts, xX as fetchSettings, $$ as fetchSources, S3 as fetchStats, vi as fetchSuggestions, cL as fetchTasks, q3 as fetchTaste, oPe as fetchTasteJob, Twe as fetchThumbnailJobs, JX as fetchTrashSummary, gW as fetchWants, XCe as filterReviewRows, Qn as firstGrapheme, iq as flexRender, xPe as flowGraph, SPe as flowLabel, bNe as fmtCount, Kn as fmtDur, Jn as fmtSize, Pfe as foldByKind, Xfe as foldRoutine, Fi as followFeedByName, Br as followSuggestKey, Qfe as followupDetail, Nfe as followupTally, dg as frame, RB as g4, lJ as getDefaultPaginationState, jM as gridLayout, si as groupByAuthor, Yfe as groupFollowups, XY as groupReviewRows, oTe as hasChanges, PX as hasResourceRoots, uL as hasResultProblems, fPe as historySpan, FB as i2, uPe as importTasteExport, E0 as indexersSkeleton, Ng as interpolate, bW as invalidateWants, fL as isActive, Zr as isBroken, Gr as isLayout, _v as isMotionValue, GY as isReviewCategory, Zfe as isRoutine, D0 as javBrowserSkeleton, L0 as javContentSkeleton, wM as javLayout, I0 as javTagSkeleton, vTe as junkBreakdown, ake as keepPlaylist, Oe as keepPreviousData, di as keepSelected, C3 as known, Nhe as l7, Jfe as latestOfKind, MNe as lengthRows, xr as localTime, Pi as lookupFeedActor, zB as m7, rV as mM, Tn as mapLimit, Oi as markItem, O3 as max, ANe as mediumRows, Ife as mergeFinished, k3 as min, mwe as mirrorText, LCe as missingToolText, NY as mixedCloudPreferences, _L as momentText, mS as motion, cv as motionValue, tn as nameFallback, Ve as notifyManager, qwe as organizeOutcome, $0 as overlayHost, Kr as pageSizeOf, ui as pageWindow, pr as paginationRange, Li as patchSource, G as peachHistory, G as peachHistory$1, iwe as pendingGenres, SNe as percentText, Bwe as pickOrganizeFolder, A$ as plainStatClass, Kwe as planSummary, w3 as playedFor, wNe as playedItemUrl, sL as pollInterval, qs as popCount, tke as posterUrl, Rye as previewLibraryColor, zwe as previewOrganize, BCe as previewUrl, qfe as problemDestination, pH as processingActive, mL as progressText, tU as providerIcon, ywe as pruneText, IX as purgeCount, Qwe as purgeOrphan, oV as pv, rge as qE, U as queryClient, IB as r2, vPe as radarRows, DNe as radialArc, ONe as radialBarSize, ENe as radialCeiling, TNe as radialSlices, JN as randomId, gPe as rankDetail, _Pe as rankShares, E3 as reachedShare, hL as readableErrorHeadline, HAe as recommendationScore, uwe as recordGenre, eTe as recordsText, oke as recreatePlaylist, $Oe as refreshPlaylists, Sl as relayoutCovers, zi as reloadFollowManage, pwe as reloadReview, bAe as rememberShape, Hwe as rememberTemplates, Ti as removeAlias, Mi as removeFeed, Si as removeSource, lPe as removeTasteSource, vW as removeWants, Ei as renameAliasGroup, rke as renamePlaylist, xe as replaceEqualDeep, PNe as replayRows, re as require_jsx_runtime, A as require_react, N as require_react_dom, vq as require_with_selector, yW as resetWants, fr as resolveFollowSort, Bg as resolveStartTime, o_e as restartEffectText, eke as resumeAssetId, YCe as reviewGroupingOptions, YY as reviewQueueData, JY as reviewQueueOf, _Te as reviewSummary, ZCe as reviewWindow, nwe as rowEvidence, QY as rowFieldName, gJ as rowPaginationFeature, LJ as rowSelectionFeature, XJ as rowSortingFeature, ZY as rowSubject, rwe as rowTags, twe as rowTitle, Ahe as s5, Di as saveCredential, sTe as scanLine, Awe as schedulePollInterval, SW as searchNote, $Ce as selectReviewRange, fi as selectionState, ji as setFeedEnabled, xi as setSourceEnabled, jf as settingsPath, fwe as settleReviewRows, TCe as sharedNamePrefix, Tp as shellNavigate, x8 as showToast, Rn as siteMarkUrl, Aq as skipFirstRun, YI as sortCx, Jr as sortLabel, vn as sourceDefaultCost, Ki as sourceIconUrl, uTe as sourceMeta, Rs as spinnerHtml, jg as spring, TV as spriteGlyph, yi as startCheck, _we as startLinkCheck, vwe as startLinkPrune, Vwe as startOrganize, bi as startResolve, iTe as startResourceApply, rTe as startResourceScan, cPe as startTasteRefresh, AOe as statCardClass, Ufe as statusLabel, ICe as statusLine, Xr as statusText, NM as storeJavLayout, cwe as submitDecision, vL as summaryItems, Qq as tableFeatures, jq as tableMemo, li as tableRows, Kfe as taskIssues, J3 as tasteDate, mPe as tasteDimensions, pPe as tasteHours, K3 as tasteKey, rPe as tasteRefetchInterval, iPe as tasteTime, tL as textLang, Qm as time, Uhe as tl, pi as toggleGroup, Y3 as topScores, Khe as uo, DH as useAction, qZ as useBackgroundJob, qU as useClientUpdates, um as useConstant, yL as useEntityNames, TL as useHorizontalScroller, dm as useIsomorphicLayoutEffect, dK as useLibraryTints, Pt as useMutation, QV as useOverlayScrollbar, Nt as useQuery, ae as useQueryClient, nS as useReducedMotion, kwe as useRunSchedule, Dwe as useSaveFollowSchedule, SX as useSaveSettings, jwe as useSaveThumbnailMode, ZJ as useTable, mY as useTablePreferences, ML as useViewGlide, MCe as victimBytes, xW as wantName, CNe as watchNote, T3 as watchedShare, Ec as wireHorizontalScroller, Uwe as withOrganizeJob };
 
-//# debugId=4aee8ded-10e3-41d8-a2ba-803f29bf8781
+//# debugId=e1200430-26d9-4282-be51-72faae4fa96b
