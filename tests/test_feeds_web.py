@@ -1314,6 +1314,37 @@ class JavDiscoveryTest(FeedWebFixture):
         self.assertEqual([row["rank"] for row in result["items"]], [1, 2])
         self.assertTrue(all(row["taste_score"] == row["score"] for row in result["items"]))
 
+    def test_releases_page_by_date_and_facets_come_only_from_unowned_releases(self):
+        from peach import web_jav_discovery
+        self._add()
+        self._check()
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("INSERT INTO feed_discovery(code,release_date,discovered_at) VALUES('OWN-001','2026-09-25','t')")
+            connection.execute("INSERT INTO asset(location,path,name,medium,code) VALUES('local','x.mp4','x.mp4','video','OWN-001')")
+        movies = {"SSIS-950": {"actors": [{"name": "女优甲"}], "tags": [{"name": "中出"}], "maker_name": "厂牌甲"},
+                  "HMN-071": {"actors": [{"name": "女优乙"}], "tags": [], "maker_name": "厂牌乙"},
+                  "OWN-001": {"actors": [{"name": "馆藏女优"}], "tags": [{"name": "巨乳"}], "maker_name": "馆藏厂牌"}}
+
+        def releases(**args):
+            with patch.object(web_jav_discovery, "_cached_movie", side_effect=lambda code, contract: movies.get(code, {})), \
+                    patch("peach.javdb_public.PUBLIC_API.movie") as movie:
+                result = web_jav_discovery.q_jav_releases(self.contract, args)
+            movie.assert_not_called()
+            return result
+
+        every = releases()
+        self.assertEqual(([row["code"] for row in every["items"]], every["total"]), (["SSIS-950", "HMN-071"], 2))
+        self.assertEqual([(ref["name"], ref["count"]) for ref in every["facets"]["performers"]], [("女优乙", 1), ("女优甲", 1)])
+        self.assertEqual([ref["name"] for ref in every["facets"]["studios"]], ["厂牌乙", "厂牌甲"])
+        self.assertEqual(every["facets"]["tags"], [{"name": "中出内射", "count": 1}])
+        one = releases(performer="女优乙")
+        self.assertEqual([row["code"] for row in one["items"]], ["HMN-071"])
+        self.assertEqual(len(one["facets"]["performers"]), 2, "本维度不计，另一位女优照样能点")
+        self.assertEqual(one["facets"]["tags"], [])
+        second = releases(page=2, size=1)
+        self.assertEqual(([row["code"] for row in second["items"]], second["total"], second["page"]), (["HMN-071"], 2, 2))
+        self.assertEqual([row["code"] for row in releases(q="中出")["items"]], ["SSIS-950"])
+
     def _discover(self, scope="external", rankings=None, metadata=None, args=None):
         from peach import web_jav_discovery
         with patch.object(web_jav_discovery, "preference_profile", return_value=self._preference_fixture(rankings or {})), \

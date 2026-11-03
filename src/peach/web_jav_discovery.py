@@ -208,3 +208,84 @@ def q_jav_discoveries(contract, args):
                 "limited": len(candidates) > 4000, "source": "library" if scope == "library" else "known-works"}
     response.update(_metadata_response(contract, args, bounded, picked, limit, scope))
     return response
+
+
+RELEASE_PAGE_SIZE = 24
+#: 新作的三个筛选维度：每部的女优（解析后的规范名）、厂牌（规范名）与标签。
+RELEASE_FACETS = ("performer", "studio", "tag")
+
+
+def _release_values(row, facet):
+    if facet == "performer":
+        return [ref["name"] for ref in row["performer_refs"]]
+    if facet == "studio":
+        return [row["studio"]] if row["studio"] else []
+    return row["tags"]
+
+
+def q_jav_releases(contract, args):
+    """订阅发现的全部未入库新作：按发行日期倒序分页，可按女优、厂牌、标签与文字筛选。
+
+    候选与「发现」同一批（`_external`），只换成时间顺序、不按口味截断。筛选项只取这批新作里
+    出现过的女优、厂牌与标签；每个维度的计数按「文字与其他维度已生效、本维度不计」的行集算，
+    计数为 0 的不列。只读本机缓存的来源资料，不为翻页联网补资料。
+    """
+    try:
+        size = max(1, min(int(args.get("size") or RELEASE_PAGE_SIZE), 100))
+        page = max(1, int(args.get("page") or 1))
+    except (TypeError, ValueError):
+        size, page = RELEASE_PAGE_SIZE, 1
+    chosen = {facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS}
+    query = str(args.get("q") or "").strip().casefold()
+    with contract.read_connection() as connection:
+        unique = {}
+        for row in _external(connection, contract):
+            unique.setdefault(web_catalog.normalise_code_key(row["code"]) or row["id"], row)
+        rows = list(unique.values())
+        refs = web_feeds._discovery_performers(connection, contract, rows)
+        studios = {}
+        for row in rows:
+            row.pop("_source_actors", None)
+            row["performer_refs"] = refs[int(row["id"])]
+            row["performers"] = "、".join(ref["name"] for ref in row["performer_refs"])
+            if row["studio"] and row["studio"] not in studios:
+                studios[row["studio"]] = web_feeds._studio_name(connection, row["studio"])
+            row["studio"] = studios.get(row["studio"], row["studio"])
+            row.pop("entities", None)
+        rows.sort(key=lambda row: (row["release_date"] or row["discovered_at"] or "", row["id"]), reverse=True)
+
+        def matches(row, skip=None):
+            if query and query not in " ".join([row["code"] or "", row["title"] or "", row["performers"], row["studio"] or "",
+                                                *row["tags"]]).casefold():
+                return False
+            return all(not value or facet == skip or value in _release_values(row, facet)
+                       for facet, value in chosen.items())
+
+        facets = {}
+        for facet in RELEASE_FACETS:
+            counts, first = {}, {}
+            for row in rows:
+                if matches(row, skip=facet):
+                    for value in dict.fromkeys(_release_values(row, facet)):
+                        counts[value] = counts.get(value, 0) + 1
+                        first.setdefault(value, row)
+            facets[facet] = sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))
+            if facet == "performer":
+                facets[facet] = [{**next(ref for ref in first[name]["performer_refs"] if ref["name"] == name), "count": count}
+                                 for name, count in facets[facet]]
+            elif facet == "studio":
+                facets[facet] = [{"name": name, "count": count, "has_logo": contract.has_logo(name),
+                                  "logo_version": contract.logo_version(name)} for name, count in facets[facet]]
+            else:
+                facets[facet] = [{"name": name, "count": count} for name, count in facets[facet]]
+        shown = [row for row in rows if matches(row)]
+        picked = shown[(page - 1) * size:page * size]
+        wanted = wants.wanted_keys(connection, (web_catalog.normalise_code_key(row["code"]) for row in picked))
+    for row in picked:
+        row["wanted"] = web_catalog.normalise_code_key(row["code"]) in wanted
+        row["has_cover"] = contract.has_cover(row["code"])
+        row["cover_frame"] = contract.cover_frame(row["code"])
+        row["cover_version"] = contract.cover_version(row["code"])
+        row["poster_box"] = contract.poster_box(row["code"])
+    return {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
+            "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]}}
