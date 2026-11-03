@@ -13,6 +13,12 @@
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who] > span { overflow: hidden; text-overflow: ellipsis; }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who] > svg { display: none; }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who-more] { flex: none; color: var(--muted); }
+/* 数据表给格子里的链接写了 `width: fit-content`，头像是链接时（新作的来源人物）会被压成 0 宽，这里按头像本身的尺寸钉回。 */
+.peach-react [data-catalog-table] [data-list-people] a[data-media-avatar] { width: 38px; }
+.peach-react [data-catalog-table] [data-list-people] > a[data-media-who] { text-decoration: none; }
+.peach-react [data-catalog-table] [data-list-people] > a[data-media-who]:hover { text-decoration: underline; }
+/* JAV 新作列表的厂牌格：16px 方形标识，没装标识时画首字，与媒体库格同一行距。 */
+.peach-react [data-catalog-table] [data-list-studio-mark] { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; overflow: hidden; border-radius: 4px; background: var(--sunk); color: var(--muted); font-size: 10px; line-height: 1; object-fit: cover; }
 .peach-react [data-catalog-table] button[data-list-name] { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .peach-react [data-catalog-table] [data-list-picture] [data-media-group] { top: 4px; right: 4px; min-height: 0; padding: 1px 6px; border-radius: 6px; font-size: 11px; }
 .peach-react [data-catalog-table] [data-list-picture] { position: relative; display: flex; align-items: center; justify-content: center; flex: none; width: 112px; height: 63px; overflow: hidden; border-radius: var(--control-radius); background: var(--sunk); color: var(--muted); font-size: var(--fs-sm); }
@@ -45,8 +51,8 @@
 .peach-react [data-list-skeleton-name] { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
 .peach-react [data-list-skeleton-name] > i { flex: none; width: 112px; height: 63px; margin-right: 4px; border-radius: var(--control-radius); }
 .peach-react [data-list-skeleton-mark] { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.peach-react [data-list-skeleton-mark] > b { flex: none; width: 38px; height: 38px; border-radius: 50%; }
-.peach-react [data-list-skeleton-mark="library"] > b { width: 16px; height: 16px; border-radius: 4px; }
+.peach-react [data-list-skeleton-mark] > b { flex: none; width: 16px; height: 16px; border-radius: 4px; }
+.peach-react [data-list-skeleton-mark="people"] > b { width: 38px; height: 38px; border-radius: 50%; }
 .peach-react [data-list-skeleton-mark] > i { display: block; flex: 1; max-width: 96px; height: 14px; border-radius: 6px; }
 .peach-react [data-list-skeleton-name] > span { display: flex; flex: 1; flex-direction: column; gap: 8px; min-width: 0; }
 .peach-react [data-list-skeleton-name] > span > i { display: block; width: 72%; height: 14px; border-radius: 6px; }

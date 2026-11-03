@@ -133,6 +133,39 @@ it('新作分区的女优、厂牌、标签只列接口给的订阅新作筛选�
   history.replaceState(null, '', before);
 });
 
+it('新作分区切到列表：作品、艺人、厂牌各占一列，表头点时长按时长排序', async () => {
+  const before = location.pathname + location.search;
+  history.replaceState(null, '', '/jav?tab=releases');
+  localStorage.setItem('peach.catalog-view.v1', 'list');
+  const fetcher = vi.fn(async (_url: string) => ({ ok: true, status: 200, json: async () => ({
+    items: [{ id: 1, code: 'ABC-001', title: '示例作品', performers: '女优甲', studio: '厂牌甲', has_cover: false, release_date: '2026-11-10',
+      wanted: false, tags: ['中出内射'], duration: 7200, source_score: 4.5, performer_refs: [{ id: 7, name: '女优甲', has_image: false }] }],
+    total: 1, candidate_total: 1, page: 1, size: 24,
+    facets: { performers: [], studios: [{ name: '厂牌甲', count: 1, has_logo: false }], tags: [] } }) }));
+  vi.stubGlobal('fetch', fetcher);
+  try {
+    const navigate = vi.fn();
+    const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="releases" readOnly navigate={navigate} receipt={vi.fn()} /></QueryClientProvider>);
+    await settle();
+    expect(host.querySelector('[data-jav-card]')).toBeNull();
+    const row = host.querySelector('[data-release-row]')!;
+    expect(row.querySelector('[data-list-identity] [data-media-avatar]')).toBeNull();
+    expect(row.querySelector('[data-list-people] [data-media-avatar]')).not.toBeNull();
+    expect(row.querySelector('[data-list-people]')?.textContent).toContain('女优甲');
+    expect(row.querySelector('[data-list-library]')?.textContent).toBe('厂厂牌甲');
+    await click(host.querySelector('[role="columnheader"][data-key="dur"]'));
+    await settle();
+    const asked = new URL(String(fetcher.mock.calls.at(-1)?.[0]), location.origin).searchParams;
+    expect(asked.get('sort')).toBe('duration');
+    await click(row.querySelector('[data-list-name]'));
+    expect(navigate).toHaveBeenLastCalledWith('/works/ABC-001');
+  } finally {
+    localStorage.removeItem('peach.catalog-view.v1');
+    history.replaceState(null, '', before);
+    vi.unstubAllGlobals();
+  }
+});
+
 it('新作分区默认按发行时间倒序，排序键再点翻方向，换一批按新种子重排且不按下排序键', async () => {
   const before = location.pathname + location.search;
   history.replaceState(null, '', '/jav?tab=releases');

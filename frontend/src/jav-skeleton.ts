@@ -4,6 +4,9 @@ import { cardRatio, gridLayout, javLayout, JAV_LAYOUTS } from './appearance';
 import { DISCOVERY_SORTS, RELEASE_SORTS } from './react/jav/discovery-sorts';
 import { tierPlaceholdersHtml } from './catalog-filter-skeleton';
 import { filterControlsSkeletonHtml } from './filter-controls-skeleton';
+import { listTableSkeletonHtml } from './catalog-content-skeleton';
+import { catalogView } from './react/catalog-grid/catalog-view';
+import { releaseTableSnapshot } from './react/jav/release-table-columns';
 
 const text = (width: string) => `<span data-jav-skeleton-text class="skeleton block rounded-md" style="width:${width}" aria-hidden="true"></span>`;
 const cover = (classes: string) => `<span data-jav-skeleton-cover class="skeleton ${classes}"></span>`;
@@ -36,7 +39,8 @@ const SEARCH_LABELS: Record<string, string> = { releases: '筛选新作', discov
 export function javPageSkeleton(tab: string): string {
   const q = new URLSearchParams(location.search).get('q') || '';
   const body = tab === 'wants' ? `<div class="rounded-2lg bg-background-secondary-default px-6 py-5"><h3 class="mb-4 text-title-2-medium text-text-primary">按番号添加</h3>${text('100%')}</div>${javContentSkeleton(tab)}`
-    : tab === 'releases' ? `<section class="flex min-w-0 flex-col gap-4">${releasesFilterSkeleton()}${javContentSkeleton(tab)}</section>`
+    : tab === 'releases' ? `<section class="flex min-w-0 flex-col gap-4">${releasesFilterSkeleton()}${catalogView() === 'list'
+      ? `<div data-catalog-table>${listTableSkeletonHtml(releaseTableSnapshot())}</div>` : javContentSkeleton(tab)}</section>`
     : `<section class="flex min-w-0 flex-col gap-4">${javFilterSkeleton()}${javContentSkeleton(tab)}</section>`;
   return `<div class="peach-react"><div class="flex w-full flex-col gap-6">
     <div class="flex w-full flex-col gap-4"><div class="flex min-w-0 flex-wrap items-center gap-3 max-board-narrow:gap-x-2"><h2 data-page-title class="text-display-4-medium text-text-primary max-board-narrow:text-title-1-medium">JAV</h2><div data-index-search class="ml-auto min-w-0 max-w-80 flex-1">${islandSearchInput('', q, SEARCH_LABELS[tab] || '筛选')}</div>${islandButton({ variant: 'primary', label: '查找资源', attrs: 'disabled data-skeleton-action' })}</div>
@@ -44,7 +48,7 @@ export function javPageSkeleton(tab: string): string {
     ${body}</div></div>`;
 }
 
-/** 新作分区等数据时的两排头像与筛选条：头像、厂牌、标签用馆藏同一份占位，下排是换一批、卡片版式与
+/** 新作分区等数据时的两排头像与筛选条：头像、厂牌、标签用馆藏同一份占位，下排是换一批、卡片版式、卡片／列表与
  *  排序键（照地址栏里的排序按下），同 `jav-releases.tsx` 取到数据后的样子。 */
 export function releasesFilterSkeleton(): string {
   const params = new URLSearchParams(location.search);
@@ -59,7 +63,7 @@ export function releasesFilterSkeleton(): string {
     </div>
     <div data-filter-row="bottom" aria-busy="true" class="flex min-h-12 min-w-0 items-center gap-3 px-3 py-2">
       <span data-catalog-readout><span data-skeleton="count" class="relative inline-block h-3.5 w-37.5 rounded-md align-middle skeleton-sheen"></span></span>
-      ${filterControlsSkeletonHtml(sorts, { name: 'jav-layout', label: 'JAV 卡片版式', value: javLayout(), options: JAV_LAYOUTS }, { catalog: false })}
+      ${filterControlsSkeletonHtml(sorts, { name: 'jav-layout', label: 'JAV 卡片版式', value: javLayout(), options: JAV_LAYOUTS }, { folders: false })}
     </div>
   </div>`;
 }

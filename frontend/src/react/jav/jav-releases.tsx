@@ -26,9 +26,12 @@ import { addWant, invalidateWants } from '../wants/wants';
 import { useAction } from '../settings/use-action';
 import { useEntityNames } from '../use-entity-names';
 import { DiscoveryCard, resourcePrefill } from './discovery-card';
-import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, type ReleaseFacetPerformer, type ReleaseFacetStudio,
+import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, type Discovery, type ReleaseFacetPerformer, type ReleaseFacetStudio,
   type ReleaseFilters } from './jav';
 import { writeJavQuery } from './jav-navigation';
+import { ReleaseTable } from './jav-release-table';
+import { CatalogViewToggle } from '../catalog-grid/catalog-view-toggle';
+import { useCatalogView } from '../catalog-grid/catalog-view';
 
 type Facet = 'performer' | 'studio' | 'tag';
 /** 等数据时两排头像的占位，与路由骨架（`releasesFilterSkeleton`）同一份。 */
@@ -82,8 +85,10 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
     clearText();
   };
   /* 点选中的那一枚翻方向；换一枚时番号默认正序，其余倒序（同「发现」）。 */
-  const sortBy = (key: ReleaseSort) => {
-    const dir: DiscoveryDirection = key === filters.sort ? (filters.dir === 'asc' ? 'desc' : 'asc') : key === 'code' ? 'asc' : 'desc';
+  const sortBy = (key: ReleaseSort) =>
+    setSort(key, key === filters.sort ? (filters.dir === 'asc' ? 'desc' : 'asc') : key === 'code' ? 'asc' : 'desc');
+  /* 列表模式的表头直接给出方向。 */
+  const setSort = (key: ReleaseSort, dir: DiscoveryDirection) => {
     setFilters(current => ({ ...current, sort: key, dir, seed: '', page: 1 }));
     writeJavQuery({ sort: key === 'release_date' ? '' : key, dir: dir === 'asc' ? 'asc' : '', seed: '', page: '' });
   };
@@ -101,6 +106,8 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
   const settings = appSettingsStore();
   useSyncExternalStore(settings.subscribe, settings.version, settings.version);
   const layout = javLayout();
+  /* 卡片／列表与馆藏同一个开关（`peach.catalog-view.v1`）：JAV 页的馆藏与新作一起切。 */
+  const view = useCatalogView();
   const ratio = cardRatio(gridLayout({ active: true, home: false, portrait: false }));
   /* 还没读过来源资料的那几部由服务端起一轮读取：跑着就按它给的间隔轮询，跑完再取一次，标签与筛选项补全。 */
   const metadataJob = useRef('');
@@ -117,6 +124,9 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
     wasReading.current = reading;
   }, [reading, releases]);
   const action = useAction();
+  const want = (item: Discovery) => { void action.run(String(item.id), signal => addWant({ code: item.code }, signal), () => {
+    receipt('已加入想要'); void invalidateWants(); void releases.refetch();
+  }) };
   const data = releases.data;
   const waiting = releases.isPending;
   const filtered = !!(filters.performer || filters.studio || filters.tag || filters.q);
@@ -152,12 +162,13 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
         {filtered ? <GlassPill onPress={clear}>清除筛选</GlassPill> : null}
         <span data-entity-sorts="">
           <Shuffle onPress={reshuffle} busy={filters.sort === 'random' && releases.isFetching} />
-          <Segments label="JAV 卡片版式" value={layout} options={JAV_LAYOUTS} onChange={storeJavLayout} />
+          {view === 'cards' ? <Segments label="JAV 卡片版式" value={layout} options={JAV_LAYOUTS} onChange={storeJavLayout} /> : null}
+          <CatalogViewToggle />
           <SortKeys sorts={RELEASE_SORTS.map(([key, label, ariaLabel]) => ({ key, label, ariaLabel, pressed: key === filters.sort, dir: filters.dir }))}
             onSort={key => sortBy(key as ReleaseSort)} />
         </span>
       </>} />
-    {waiting ? <div role="status" aria-label="正在读取新作" dangerouslySetInnerHTML={{ __html: javContentSkeleton('discover', layout) }} /> : null}
+    {waiting && view === 'cards' ? <div role="status" aria-label="正在读取新作" dangerouslySetInnerHTML={{ __html: javContentSkeleton('discover', layout) }} /> : null}
     {releases.error ? <Note tone="error" title="新作未取得">{errorMessage(releases.error)}</Note> : null}
     {reading && metadata ? <div data-jav-metadata="" className="min-w-0"><TaskProgress
       label={`正在读取作品资料 · ${metadata.completed} / ${metadata.total} 部`} value={metadata.completed} total={metadata.total} /></div> : null}
@@ -167,15 +178,16 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
       {filtered ? '清除筛选后查看全部新作。' : '订阅女优或厂牌后，还没入库的新作会出现在这里。'}
     </EmptyState> : null}
     {action.error ? <Note tone="error">{action.error}</Note> : null}
-    <div data-media-grid="" className={JAV_RECOMMENDATION_GRID} style={{ '--card-ratio': ratio } as CSSProperties}>
+    {view === 'list' ? waiting || data?.items.length ? <ReleaseTable items={data?.items || []} waiting={waiting} filters={filters}
+      studios={data?.facets.studios || []} javImage={settings.value.javImage} readOnly={readOnly} navigate={navigate}
+      onTag={value => choose('tag', value || filters.tag)} onSort={setSort} wanting={item => action.busy === String(item.id)}
+      onWant={want} onResource={item => resource(resourcePrefill(item))} /> : null
+    : <div data-media-grid="" className={JAV_RECOMMENDATION_GRID} style={{ '--card-ratio': ratio } as CSSProperties}>
       {(data?.items || []).map(item => <DiscoveryCard key={item.id} item={item} layout={layout} javImage={settings.value.javImage}
         readOnly={readOnly} navigate={navigate} tag={filters.tag} onTag={value => choose('tag', value || filters.tag)}
-        wanting={action.busy === String(item.id)}
-        onWant={() => { void action.run(String(item.id), signal => addWant({ code: item.code }, signal), () => {
-          receipt('已加入想要'); void invalidateWants(); void releases.refetch();
-        }) }}
+        wanting={action.busy === String(item.id)} onWant={() => want(item)}
         onResource={() => resource(resourcePrefill(item))} badge={filters.sort === 'taste' ? <TasteChip value={item.taste_score} /> : undefined} />)}
-    </div>
+    </div>}
     <div className="flex justify-center"><Pagination page={filters.page} pages={pages} onPage={goPage} label="新作分页" /></div>
   </section>;
 }

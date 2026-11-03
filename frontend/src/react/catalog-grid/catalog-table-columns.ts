@@ -35,12 +35,20 @@ function stored(key: string): Record<string, unknown> {
   } catch { return {} }
 }
 
+export interface SnapshotColumn { id: string; label: string; width: number; min: number; max: number; flex: boolean; required: boolean; visible: boolean }
+export type TableSnapshot = { id: string; label: string; width: number | null; min: number }[];
+
 /** 首屏骨架按当前列偏好排版：只读存下来的宽度与可见性，与表格的取值规则一致；
  *  `width` 为空的是承接剩余宽度的那一列，`min` 是它不再缩小的宽度。勾选列只在选择模式出现，不画。 */
-export function catalogTableSnapshot(): { id: string; label: string; width: number | null; min: number }[] {
-  const widths = stored(CATALOG_COLUMN_WIDTHS_KEY);
-  const shown = stored(CATALOG_COLUMN_VISIBILITY_KEY);
-  return catalogColumns
+export function catalogTableSnapshot(): TableSnapshot {
+  return tableSnapshot(catalogColumns, CATALOG_COLUMN_WIDTHS_KEY, CATALOG_COLUMN_VISIBILITY_KEY);
+}
+
+/** 同上，给别的表（JAV 新作列表）按它自己的列定义与偏好键取一份。 */
+export function tableSnapshot(columns: readonly SnapshotColumn[], widthsKey: string, visibilityKey: string): TableSnapshot {
+  const widths = stored(widthsKey);
+  const shown = stored(visibilityKey);
+  return columns
     .filter(column => column.id !== 'select'
       && (column.required || (typeof shown[column.id] === 'boolean' ? shown[column.id] === true : column.visible)))
     .map(column => {
