@@ -621,6 +621,26 @@ class ResourceJunkQueueTests(unittest.TestCase):
         checked = junk.isolate(self.contract.database, asset_ids=list(range(1, 11)), protected_ids=[1])
         self.assertEqual(sorted(checked['ids']), [2, 3, 4])
 
+    def test_untracked_folders_under_the_download_root_use_their_own_release_video(self):
+        # 下载根由已有任务确定；没有任务行的旧下载按目录名里的番号认正片。
+        self.add(1, '115', r'B:\S1\SSIS-839\SSIS-839.mp4', 'video', 5 * 1024**3, 7200)
+        self.add_download(1, 'SSIS-839', r'B:\云下载\SSIS-839', 1)
+        base = r'B:\云下载\第一會所新片@SIS001@DDH-454' + '\\'
+        self.add(10, '115', base + 'DDH-454.mp4', 'video', 3271300936, 4221.9)
+        self.add(11, '115', base + '[资源推荐]！下载地址.txt', 'other', 154647)
+        self.add(12, '115', base + '推特新晋约啪大神原创约炮自拍.jpg', 'image', 1410048)
+        self.add(13, '115', base + 'cap_e_3_ddh-454.jpg', 'image', 275947)
+        # 目录名带番号却找不到同番号正片的不算下载包；下载根以外的目录也不算。
+        self.add(20, '115', r'B:\云下载\ABC-123 合集\片段.mp4', 'video', 3 * 1024**3, 7200)
+        self.add(21, '115', r'B:\云下载\ABC-123 合集\说明.txt', 'other', 400)
+        self.add(30, '115', r'B:\日本\DDH-455\DDH-455.mp4', 'video', 3 * 1024**3, 4000)
+        self.add(31, '115', r'B:\日本\DDH-455\推特新晋约啪大神原创约炮自拍.jpg', 'image', 1410048)
+        items = {item['id']: item for item in q_ads(self.contract, limit=200)['items']}
+        self.assertEqual(set(items), {11, 12})
+        self.assertIn('DDH-454 下载包里的附带文件', items[12]['why'])
+        checked = junk.isolate(self.contract.database, asset_ids=[10, 11, 12, 13, 20, 21, 30, 31])
+        self.assertEqual(sorted(checked['ids']), [11, 12])
+
     def test_download_attachment_rules_need_a_bound_main_and_a_long_enough_release(self):
         self.add(1, '115', r'B:\云下载\IPX-867\IPX-867.mp4', 'video', 300 * 1024**2, 1200)
         self.add_download(1, 'IPX-867', r'B:\云下载\IPX-867', 1)

@@ -425,7 +425,7 @@ def _download_folders(connection) -> dict[str, tuple[str, int, float]]:
 
     目录至少在下载根之下一层：这个目录是这一个种子落地的地方，不是共用的下载根。
     """
-    folders = {}
+    folders, roots = {}, set()
     for path, code, main, duration in connection.execute(
             "SELECT t.ledger_path,t.code,t.asset_id,a.duration FROM download_task t "
             "LEFT JOIN asset a ON a.id=t.asset_id WHERE t.state='ingested' "
@@ -433,7 +433,31 @@ def _download_folders(connection) -> dict[str, tuple[str, int, float]]:
         folder = PureWindowsPath(path)
         if len(folder.parts) >= 3:
             folders[str(folder).casefold()] = (code, main, duration or 0)
+            roots.add(str(folder.parent))
+    folders.update(_untracked_download_folders(connection, roots, folders))
     return folders
+
+
+def _untracked_download_folders(connection, roots, tracked) -> dict[str, tuple[str, int, float]]:
+    """下载根下一层、没有任务记录的落地目录 → （番号，正片 id，正片时长）。
+
+    任务表之前就落地的下载、失败后又落地的下载都没有任务行，可目录名带着正片的番号：
+    目录里最长的、自身番号出现在目录名里的视频就是正片（2026-11-03 只读盘点：
+    `第一會所新片@SIS001@DDH-454` 里 12 张推广图与下载地址文本全部漏判）。从视频反查
+    目录名，而不是从目录名取番号：论坛前缀 `SIS001` 自己也长得像番号。
+    """
+    found: dict[str, tuple[str, int, float]] = {}
+    for root in roots:
+        prefix = root.rstrip("\\") + "\\"
+        for asset_id, path, duration in connection.execute(
+                "SELECT id,path,duration FROM asset WHERE disposal IS NULL AND medium='video' "
+                "AND duration>0 AND substr(path,1,?)=? COLLATE NOCASE", (len(prefix), prefix)):
+            name, _, rest = str(path)[len(prefix):].partition("\\")
+            key = (prefix + name).casefold()
+            code = rest and key not in tracked and release_code_from_filename(PureWindowsPath(rest).stem)
+            if code and names_release(name, code) and duration > found.get(key, ("", 0, 0.0))[2]:
+                found[key] = (code, asset_id, duration)
+    return found
 
 
 def _download_attachment_reasons(connection, rows) -> dict[int, tuple[str, bool]]:
