@@ -249,6 +249,13 @@ body[data-density="dense"] .card .meta .size{flex:none;white-space:nowrap}
 /* 连不上图片主机那条 Note 与下面一行隔 12px：横排自己往上收了 8px，这里先垫回来。 */
 .feednetwork{margin-bottom:20px}
 .feednewcard{flex:none;width:168px}
+/* 首页那一行行尾的「查看全部新作」：和卡同宽、只占封面那一格的高，底色同封面格（`.pic`），悬停换 hover 底。 */
+.feednewall{flex:none;align-self:flex-start;width:168px;aspect-ratio:var(--card-ratio);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:6px;border-radius:var(--badge-radius);background:var(--color-background-quaternary-default);
+  color:var(--ink-2);font-size:var(--fs-sm);text-decoration:none;transition:background-color .2s ease-out,color .2s ease-out}
+.feednewall:hover{background:var(--hover);color:var(--ink)}
+.feednewall:focus-visible{outline:2px solid var(--tungsten);outline-offset:2px}
+.feednewall svg{width:20px;height:20px}
 /* 已看过的不移走，只退到背景里：已读是标记，不是关掉。 */
 .feednewcard.isread{opacity:.55}
 /* 通向作品页的点击区，铺满整张卡，是一条外链。

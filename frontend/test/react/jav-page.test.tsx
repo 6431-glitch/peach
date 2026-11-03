@@ -39,16 +39,18 @@ it('想要已有清单立即返回，陈旧数据在后台更新', async () => {
   expect(fetcher).toHaveBeenCalledOnce();
 });
 
-it('JAV 分区导航保留三个入口，馆藏使用目录搜索', async () => {
+it('JAV 分区导航有馆藏、新作、发现、想要四个入口，馆藏使用目录搜索', async () => {
   const navigate = vi.fn(), find = vi.fn();
   const host = await mount(<JavHeader tab="library" navigate={navigate} find={find} />);
   const tabs = [...host.querySelectorAll('[role="tab"]')];
-  expect(tabs.map(tab => tab.textContent?.trim())).toEqual(['馆藏', '发现', '想要']);
+  expect(tabs.map(tab => tab.textContent?.trim())).toEqual(['馆藏', '新作', '发现', '想要']);
   expect(tabs[0]?.getAttribute('aria-selected')).toBe('true');
   expect(host.querySelector('input')).toBeNull();
   await click(tabs[1]);
-  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=discover');
+  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=releases');
   await click(tabs[2]);
+  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=discover');
+  await click(tabs[3]);
   expect(navigate).toHaveBeenLastCalledWith('/jav?tab=wants');
   await click(buttonNamed('查找资源', host));
   expect(find).toHaveBeenCalledOnce();
@@ -93,6 +95,35 @@ it('发现按范围读取，清除文字和标签恢复列表，卡片打开对�
   await click(host.querySelector('[data-jav-card] h3'));
   expect(navigate).toHaveBeenLastCalledWith('/assets/22');
   expect(buttonNamed('已入库', host)?.disabled).toBe(true);
+});
+
+it('新作分区的女优、厂牌、标签只列接口给的订阅新作筛选项，点了在本分区里筛并回到第 1 页', async () => {
+  const before = location.pathname + location.search;
+  history.replaceState(null, '', '/jav?tab=releases&page=2');
+  const facets = { performers: [{ name: '女优甲', count: 2, id: 7, has_image: false }],
+    studios: [{ name: '厂牌甲', count: 1, has_logo: false }], tags: [{ name: '中出内射', count: 1 }] };
+  const fetcher = vi.fn(async (url: string) => ({ ok: true, status: 200, json: async () => ({
+    items: [{ id: 1, code: 'ABC-001', title: '示例作品', performers: '女优甲', studio: '厂牌甲', has_cover: false,
+      release_date: '2026-11-10', wanted: false, tags: ['中出内射'] }],
+    total: 30, candidate_total: 30, page: Number(new URL(url, location.origin).searchParams.get('page')), size: 24, facets }) }));
+  vi.stubGlobal('fetch', fetcher);
+  const navigate = vi.fn();
+  const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="releases" readOnly navigate={navigate} receipt={vi.fn()} /></QueryClientProvider>);
+  await settle();
+  const asked = () => new URL(String(fetcher.mock.calls.at(-1)?.[0]), location.origin).searchParams;
+  expect(asked().get('page')).toBe('2');
+  expect([...host.querySelectorAll('[data-tier-performer]')].map(node => node.textContent)).toEqual(['女女优甲']);
+  expect([...host.querySelectorAll('[data-tier-studio]')].map(node => node.textContent)).toEqual(['厂牌厂牌甲1']);
+  expect([...host.querySelectorAll('[data-catalog-tag]')].map(node => node.textContent)).toEqual(['中出内射1']);
+  expect(host.querySelector('nav[aria-label="新作分页"] [aria-current="page"]')?.textContent).toBe('2');
+  await click(host.querySelector('[data-tier-performer]'));
+  await settle();
+  expect([asked().get('performer'), asked().get('page')]).toEqual(['女优甲', '1']);
+  expect(new URLSearchParams(location.search).get('performer')).toBe('女优甲');
+  expect(host.querySelector('[data-tier-performer]')?.getAttribute('aria-pressed')).toBe('true');
+  await click(host.querySelector('[data-jav-card] h3'));
+  expect(navigate).toHaveBeenLastCalledWith('/works/ABC-001');
+  history.replaceState(null, '', before);
 });
 
 it('没有推荐时空态的查看口味在左，主入口在右', async () => {
