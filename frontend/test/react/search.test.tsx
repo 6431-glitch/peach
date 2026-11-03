@@ -78,6 +78,7 @@ interface Stage {
 /** 壳那一侧：一个静态输入框、一块带 `data-search-menu` 的面，岛挂在面里。 */
 async function stage({ pool = ['剧情'], loadPool = async () => pool,
   recommendations = undefined as (() => Promise<SuggestGroup[]>) | undefined,
+  pendingRecommendations = undefined as (() => SuggestGroup[]) | undefined,
   suggest = async (q: string): Promise<SuggestResponse> => ({ q, groups: [] }) } = {}): Promise<Stage> {
   const posts: unknown[] = [];
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
@@ -111,7 +112,7 @@ async function stage({ pool = ['剧情'], loadPool = async () => pool,
     }),
   };
   const helpers: SearchProps['helpers'] = {
-    pool: loadPool, recommendations, coverHtml: card => `<span class="pic"><img src="/cover?code=${card?.code || ''}" alt=""></span>`,
+    pool: loadPool, recommendations, pendingRecommendations, coverHtml: card => `<span class="pic"><img src="/cover?code=${card?.code || ''}" alt=""></span>`,
     present: (el) => { el.hidden = false }, dismiss: (el) => { el.hidden = true },
     wireScroller: () => {}, typed: () => {}, composing: () => {}, clearField: (el) => { el.value = '' },
   };
@@ -138,6 +139,39 @@ describe('输入框上的时序', () => {
     expect(s.actions.openPath).toHaveBeenCalledWith('/works/ABW-101');
     expect(s.actions.openItem).not.toHaveBeenCalled();
     expect(s.actions.search).not.toHaveBeenCalled();
+  });
+
+  it('推荐没回来先照最终版式占位；开着时取到的下一批留到下次打开再换', async () => {
+    const answers = [pending<SuggestGroup[]>(), pending<SuggestGroup[]>()];
+    let asked = 0;
+    const batch = (value: string): SuggestGroup[] => [{ kind: 'asset', label: '作品推荐', items: [{ value, id: 11 }] }];
+    const s = await stage({ recommendations: () => answers[asked++]!.answer,
+      pendingRecommendations: () => [{ kind: 'asset', label: '作品推荐', items: [], pending: true }] });
+    const shown = () => [...s.menu.querySelectorAll('[data-search-option="work"]:not([data-search-placeholder])')]
+      .map(row => row.textContent);
+    await act(async () => s.input.focus());
+    await settle();
+    expect(s.menu.hidden).toBe(false);
+    expect(s.menu.querySelector('[data-search-recommendations]')).not.toBeNull();
+    expect(s.menu.querySelectorAll('[data-search-placeholder]')).toHaveLength(5);
+    await answers[0]!.release(batch('作品一'));
+    await settle();
+    expect(s.menu.querySelector('[data-search-placeholder]')).toBeNull();
+    expect(shown()).toEqual(['作品一']);
+
+    expect(asked).toBe(1);
+
+    // 收起时才去备下一批；再打开时那批还在路上，栏里照旧，到了也不当场换。
+    await act(async () => { s.api?.close(); s.input.blur(); s.input.focus() });
+    await settle();
+    expect(asked).toBe(2);
+    await answers[1]!.release(batch('作品二'));
+    await settle();
+    expect(shown()).toEqual(['作品一']);
+    await act(async () => { s.api?.close(); s.input.blur(); s.input.focus() });
+    await settle();
+    expect(shown()).toEqual(['作品二']);
+    expect(asked).toBe(2);
   });
 
   it('关闭菜单后到达的图片推荐不会再打开菜单', async () => {

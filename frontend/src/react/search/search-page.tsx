@@ -17,7 +17,7 @@ import { useEntityNames } from '../use-entity-names';
 import { TabCount } from '../components/board-tabs';
 import { PillTabList } from '../components/pill-tabs';
 import {
-  menuModel, shufflePicks, SUGGEST_DEBOUNCE, SUGGEST_EACH, SUGGEST_ONE_KIND, SUGGEST_PROFILE_KINDS, fold,
+  menuModel, shufflePicks, SUGGEST_DEBOUNCE, SUGGEST_EACH, SUGGEST_ONE_KIND, SUGGEST_PROFILE_KINDS, SUGGEST_RIGHT_KINDS, fold,
   type MenuModel, type MenuSection, type SearchApi, type SearchOption, type SearchProps, type SuggestCard,
   type SuggestGroup, type SuggestItem, type SuggestResponse, type SuggestTab,
 } from './search';
@@ -27,7 +27,13 @@ interface Store {
   history: string[];
   pool: string[];
   poolRequest: number;
+  /** 下拉栏画的那一份推荐；还没取到的组带着 `pending` 占位。 */
   recommendations: SuggestGroup[];
+  /** 下拉栏开着时在后台取好的下一份，下次打开再换上：开着的栏不当场换一批封面。 */
+  nextRecommendations: SuggestGroup[] | null;
+  /** 画着的这一份还在填：在路上的那次取到一组就填进来。 */
+  recommendationsFilling: boolean;
+  recommendationLoading: boolean;
   recommendationRequest: number;
   /** 画的那一刻输入框里的词与洗好的推荐。 */
   query: string;
@@ -48,7 +54,7 @@ interface Store {
 }
 
 const emptyStore = (): Store => ({
-  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], recommendationRequest: 0, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
+  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
   suggestRequest: 0, asked: '', timer: 0, kind: '', active: -1, reveal: false, rewind: false,
 });
 
@@ -58,6 +64,9 @@ const modelOf = (s: Store): MenuModel => menuModel({
   recommendations: s.recommendations,
 });
 const hasContent = (m: MenuModel) => !!(m.tabs || m.recent || m.left.length || m.right.length || m.empty);
+
+/** 页面一直不空闲时，推荐最晚在挂上之后这么久开始取。 */
+const PREFETCH_TIMEOUT = 4000;
 
 const Sprite = ({ name }: { name: string }) => (
   <svg viewBox="0 0 24 24" aria-hidden="true"><use href={`#i-${name}`} /></svg>
@@ -92,6 +101,9 @@ export function SearchPage(props: SearchProps) {
     input.addEventListener('click', onClick);
     const api: SearchApi = { close: op.close };
     latest.current.expose(api);
+    // 页面闲下来就先把推荐取好，点开搜索框时直接画；等不到空闲也最多拖几秒。
+    const idle = window.requestIdleCallback?.(op.prefetch, { timeout: PREFETCH_TIMEOUT })
+      ?? window.setTimeout(op.prefetch, PREFETCH_TIMEOUT);
     return () => {
       input.removeEventListener('input', onInput);
       input.removeEventListener('compositionend', onInput);
@@ -100,6 +112,8 @@ export function SearchPage(props: SearchProps) {
       input.removeEventListener('focus', onFocus);
       input.removeEventListener('click', onClick);
       clearTimeout(s.timer);
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      else clearTimeout(idle);
       s.recommendationRequest++;
       latest.current.expose(null);
     };
@@ -127,7 +141,8 @@ export function SearchPage(props: SearchProps) {
           event.preventDefault(); op.openPath(group.href!);
         }}>{group.action || '查看全部'}</a>
       ) : null}</h3>
-      {group.kind ? <div data-search-items="">{group.options.map(option)}</div> : group.options.map(option)}
+      {group.pending ? <div data-search-items="" aria-busy="true">{placeholders(group)}</div>
+        : group.kind ? <div data-search-items="">{group.options.map(option)}</div> : group.options.map(option)}
       {group.more ? option(group.more) : null}
     </section>
   );
@@ -146,6 +161,25 @@ export function SearchPage(props: SearchProps) {
       {model.empty ? <p data-search-empty="" role="status">没有找到</p> : null}
     </div>
   );
+}
+
+/** 占位条里垫一个不换行空格：行高与真字同高，取到时那一行不长高。 */
+const GAP = ' ';
+
+/** 推荐取到之前那一组的占位格：和取到之后的行、封面格同一副外形，只是空的。 */
+function placeholders(group: MenuSection): ReactNode[] {
+  const work = SUGGEST_RIGHT_KINDS.has(group.kind ?? '');
+  return Array.from({ length: group.pending ?? 0 }, (_, index) => work ? (
+    <div key={index} data-search-option="work" data-search-placeholder="" aria-hidden="true">
+      <span data-search-pic=""><span className="pic" /></span>
+      <span data-search-meta=""><span data-search-name="">{GAP}</span><span data-search-sub="">{GAP}</span></span>
+    </div>
+  ) : (
+    <div key={index} data-search-option="person" data-search-placeholder="" aria-hidden="true">
+      <span data-search-face="" />
+      <span data-search-meta=""><span data-search-name="">{GAP}</span><span data-search-sub="">{GAP}</span></span>
+    </div>
+  ));
 }
 
 function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement | null, bump: () => void) {
@@ -187,18 +221,49 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       // 推荐不可用时仍可直接输入搜索。
     }
   };
-  const loadRecommendations = async () => {
-    if (!props().helpers.recommendations) return;
-    const request = ++s.recommendationRequest;
-    try {
-      const groups = await props().helpers.recommendations!();
+  /* 同一时刻只取一份。画着的那份还在填（`recommendationsFilling`）就一组一组填进去；否则这次取的是
+     下一次打开要换上的那份，开着的栏不动。 */
+  const loadRecommendations = () => {
+    const helpers = props().helpers;
+    if (!helpers.recommendations || s.recommendationLoading) return;
+    s.recommendationLoading = true;
+    const request = s.recommendationRequest;
+    const take = (groups: SuggestGroup[], done: boolean) => {
       if (request !== s.recommendationRequest) return;
+      if (!s.recommendationsFilling) {
+        if (done) s.nextRecommendations = groups;
+        return;
+      }
       s.recommendations = groups;
+      if (done) s.recommendationsFilling = false;
       if (focused() && !input().value.trim()) paint();
-    } catch {
-      // 推荐读取失败仍可搜索，保留手上的推荐。
-    }
+    };
+    void helpers.recommendations(groups => take(groups, false))
+      .then(groups => take(groups, true), () => {
+        // 推荐读取失败仍可搜索：占位收掉，退回搜索记录与推荐词。
+        if (request !== s.recommendationRequest || !s.recommendationsFilling) return;
+        s.recommendations = [];
+        s.recommendationsFilling = false;
+        if (focused() && !input().value.trim()) paint();
+      })
+      .finally(() => { s.recommendationLoading = false });
   };
+  /** 打开下拉栏时用哪一份推荐：有后台取好的就换上；手上一份都没有就先画占位，等这次取的填进来。
+   *  下一份不在打开时取：那时人正要打字，五个推荐请求会和按字补全抢服务端。 */
+  const openRecommendations = () => {
+    const helpers = props().helpers;
+    if (!helpers.recommendations) return;
+    if (s.nextRecommendations) {
+      s.recommendations = s.nextRecommendations;
+      s.nextRecommendations = null;
+    }
+    if (s.recommendations.length) return;
+    s.recommendations = helpers.pendingRecommendations?.() ?? [];
+    s.recommendationsFilling = true;
+    loadRecommendations();
+  };
+  /** 收起之后再备下一份：下次打开换一批，且不用等。 */
+  const prepareNext = () => { if (!s.nextRecommendations) loadRecommendations() };
   /* 分组顺序和每组的名字都由 `/api/suggest` 给出，这里照抄。慢的旧响应不许盖掉新的：连敲两个字时
      先发的那次完全可能后回来。 */
   const loadSuggestions = async (query: string, kind = '') => {
@@ -222,10 +287,10 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
   const isOpen = () => { const el = menu(); return !!el && !el.hidden };
   const close = () => {
     s.dismissed = true;
-    s.recommendationRequest++;
     const el = menu();
     if (el) props().helpers.dismiss(el);
     s.active = -1;
+    prepareNext();
     bump();
   };
   /** 按此刻的输入与手上的数据画一遍：有东西就掀开，没有就收起。推荐每画一次洗一次。 */
@@ -353,7 +418,9 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
   };
   const focus = () => {
     s.dismissed = false;
-    void loadRecommendations();
+    openRecommendations();
+    // 推荐栏的版式不等搜索记录：先照占位画出来，记录回来再补在栏底。
+    if (s.recommendations.length && !input().value.trim()) paint();
     void Promise.all([loadHistory(), loadPool()]).then(() => {
       if (!focused()) return;
       // 带着 `?q=` 进来再点回输入框时，框里已经有词，补全该跟着这个词给。这两份数据回来之前
@@ -362,7 +429,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       if (input().value.trim() !== s.asked) refresh();
     });
   };
-  return { input: onInput, key, focus, close, pick, peek, remove, pickKind, openPath };
+  return { input: onInput, key, focus, close, pick, peek, remove, pickKind, openPath, prefetch: loadRecommendations };
 }
 
 function Tabs({ tabs, kind, onPick, wire }: {
@@ -434,7 +501,10 @@ function Row({ entry, active, helpers, onPick, onPeek, onRemove }: {
     return (
       <button type="button" data-search-option="work" data-open-item={kind === 'asset' ? item.id : undefined} {...shared} onMouseDown={keep}>
         <Cover card={item.card} helpers={helpers} />
-        <span data-search-meta=""><span data-search-name=""><span>{item.value}</span></span><span data-search-sub="">{byline}</span></span>
+        <span data-search-meta=""><span data-search-name=""><span>{item.value}</span></span>
+          <span data-search-sub="">{item.whoAvatarHtml && byline
+            ? <span data-search-by="" aria-hidden="true" dangerouslySetInnerHTML={{ __html: item.whoAvatarHtml }} /> : null}
+            {byline}</span></span>
       </button>
     );
   }

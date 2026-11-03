@@ -144,6 +144,25 @@ class WebDataTests(unittest.TestCase):
         rm_web.w_batch(self.contract, {"ids": [1], "operation": "dispose", "disposal_reason": None})
         self.assertIsNone(self.row()["disposal_reason"])
 
+    def test_latest_work_is_the_newest_visible_release_of_each_entity(self):
+        """搜索推荐的「最新作」：发行日最晚的可见作品；进了回收站的、没有发行日的不算。"""
+        with closing(sqlite3.connect(self.db_path)) as con, con:
+            con.executemany(
+                "INSERT INTO asset(id,location,path,name,medium,size,code,release_date,disposal,first_seen) "
+                "VALUES(?,'local',?,?,'video',1,?,?,?,'2026-08-15')",
+                [(21, r"R:\\Media\\new.mp4", "new.mp4", "ABC-009", "2026-05-01", None),
+                 (22, r"R:\\Media\\gone.mp4", "gone.mp4", "ABC-010", "2026-07-01", "trash"),
+                 (23, r"R:\\Media\\bare.mp4", "bare.mp4", "ABC-011", None, None)])
+            con.execute("UPDATE asset SET release_date='2025-01-02' WHERE id=1")
+            con.executemany("INSERT INTO asset_entity(asset_id,entity_id,role,source,confidence) "
+                            "VALUES(?,11,'performer','test',1.0)", [(21,), (22,), (23,)])
+        latest = rm_web.dispatch_api_get(self.contract, "/api/entity/latest", {"ids": "11,12,13,x"})["items"]
+        self.assertEqual(latest["11"], {"id": 21, "code": "ABC-009", "release_date": "2026-05-01"})
+        # 厂牌 13 也挂在 1 号上；没问到的 10 号标签不在结果里。
+        self.assertEqual(latest["13"], {"id": 1, "code": "ABC-001", "release_date": "2025-01-02"})
+        self.assertEqual(sorted(latest), ["11", "12", "13"])
+        self.assertEqual(rm_web.dispatch_api_get(self.contract, "/api/entity/latest", {})["items"], {})
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.db_path = str(fresh_ledger(self.tmp.name))

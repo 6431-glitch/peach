@@ -31,6 +31,8 @@ export interface SuggestItem {
   agency?: string | null;
   href?: string;
   avatarHtml?: string;
+  /** 作品那一类：署名人的头像，画在署名前面。 */
+  whoAvatarHtml?: string;
   subtitle?: string;
   followMedia?: 'videos' | 'images';
   mediaIndex?: number | null;
@@ -44,6 +46,8 @@ export interface SuggestGroup {
   items: SuggestItem[];
   href?: string;
   action?: string;
+  /** 推荐栏里这一组还没取到：照最终版式先占位。 */
+  pending?: boolean;
 }
 
 export interface SuggestTab {
@@ -71,7 +75,10 @@ export interface SearchActions {
 export interface SearchHelpers {
   /** 空输入时的推荐词池：与当前目录同一组筛选，只留真搜得出东西的词（`catalogSuggestions`）。 */
   pool(): Promise<string[]>;
-  recommendations?(): Promise<SuggestGroup[]>;
+  /** 空输入时的推荐栏；每取到一组交一次 `update`。 */
+  recommendations?(update?: (groups: SuggestGroup[]) => void): Promise<SuggestGroup[]>;
+  /** 推荐栏一组都还没取到时的占位，版式与取齐之后相同。 */
+  pendingRecommendations?(): SuggestGroup[];
   /** 小封面那一格（卡片的 `.pic`）连同里面那张图（`coverImage` 与 JAV 默认封面那套取景）；两样都没有是「无预览」。 */
   coverHtml(card: SuggestCard | null | undefined): string;
   present(menu: HTMLElement): void;
@@ -111,6 +118,8 @@ export const SUGGEST_ONE_KIND = 20;
 export const SUGGEST_PROFILE_KINDS = new Set(['performer', 'creator', 'studio', 'agency', 'series']);
 /** 下拉栏按宽度分两栏：左栏是身份和词，右栏是作品封面格。 */
 export const SUGGEST_RIGHT_KINDS = new Set(['asset', 'jav', 'post', 'photo', 'release']);
+/** 推荐栏人物那几组取到之前占几行。 */
+export const PENDING_PEOPLE = 3;
 /** 空输入时推荐几条。 */
 export const PICKS = 5;
 
@@ -130,6 +139,8 @@ export interface MenuSection {
   more?: SearchOption;
   href?: string;
   action?: string;
+  /** 推荐栏里还没取到的一组：画几格占位。 */
+  pending?: number;
 }
 
 export interface MenuModel {
@@ -172,8 +183,10 @@ export function menuModel({ query, history, picks, suggestFor, groups, tabs, kin
   const matching = history.filter((value) => !query || fold(value).includes(fold(query)));
   if (!query) {
     if (recommendations.length) {
-      const sections = recommendations.map(group => ({ ...group,
+      // 还没取到的那组按最终条数占位：人三行、作品一排五格，取到时原地填上，栏不跳。
+      const sections = recommendations.map(({ pending, ...group }) => ({ ...group,
         options: group.items.map(item => add({ type: 'suggest', value: item.value, kind: group.kind, item })),
+        pending: pending ? (SUGGEST_RIGHT_KINDS.has(group.kind) ? SUGGEST_EACH : PENDING_PEOPLE) : undefined,
       }));
       const recent = matching.length ? { label: '搜索记录', options: matching.map(value => add({ type: 'history', value })) } : null;
       return { tabs: null, recent,
