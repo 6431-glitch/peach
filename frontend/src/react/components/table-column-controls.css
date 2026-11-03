@@ -12,7 +12,6 @@
 /* 最后一列（后面只剩承接空白的那一格或没有格）往外伸会把表格撑出横向滚动，收回格内。 */
 .peach-react [data-board-data-table] th:is(:last-child, :has(+ th[data-table-space])) .react-aria-ColumnResizer { right: 0; width: 12px; }
 .peach-react [data-board-data-table] th:is(:last-child, :has(+ th[data-table-space])) .react-aria-ColumnResizer::after { left: 11px; }
-html:has([data-board-data-table] .react-aria-ColumnResizer[data-resizing]),
-html:has([data-board-data-table] .react-aria-ColumnResizer[data-resizing]) * { cursor: ew-resize !important; user-select: none !important; }
+html[data-column-resizing], html[data-column-resizing] * { cursor: ew-resize !important; user-select: none !important; }
 .peach-react [data-board-data-table] .react-aria-ColumnResizer:is([data-hovered],[data-resizing],[data-focus-visible])::after { background: var(--ink); }
 .peach-react [data-board-data-table] .react-aria-ColumnResizer[data-focus-visible] { outline: 2px solid var(--tungsten); outline-offset: -2px; }
