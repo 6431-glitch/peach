@@ -296,6 +296,24 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service.prepare()
         self.assertEqual(upgrade_repairs._read(self.service.receipt), receipt)
 
+    def test_catalog_upgrade_restores_a_registered_short_serial(self):
+        # #296：旧规则把 `mcdv-24.mp4` 补零成 `MCDV-024`，那是另一部有码片。
+        with self.database.write_transaction() as connection:
+            for key, name, code in ((1, 'mcdv-24.mp4', 'MCDV-024'), (2, 'LAF-41.mp4', 'LAF-041')):
+                connection.execute('INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration) '
+                                   "VALUES(?,'local',?,?,'video',?,?,60)",
+                                   (key, name, name, code, json.dumps({'code': 'scan:filename'})))
+            old = upgrade_repairs.CATALOG_REVISION.replace('catalog-v3', 'catalog-v2')
+            connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
+                               (old, '1', json.dumps({'revision': old})))
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            rows = connection.execute('SELECT id,code FROM asset ORDER BY id').fetchall()
+        self.assertEqual([tuple(row) for row in rows], [(1, 'MCDV-24'), (2, 'LAF-041')])
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertIn(1, receipt['media_ids'])
+        self.assertNotIn(2, receipt['media_ids'])
+
     def test_failure_rolls_back_repairs_and_marker_together(self):
         self.asset(1)
         original = upgrade_repairs._catalog_apply
