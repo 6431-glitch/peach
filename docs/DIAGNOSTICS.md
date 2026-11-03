@@ -86,7 +86,7 @@ SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺�
 
 错误事件表示某台机器在某个版本里第一次遇到这个诊断键，发生次数在计数日志里。每日额度、关闭上传、断网和筛选会造成观测缺失；未收到事件不能解释为没有故障。版本统计每日一次且不含安装标识，不能当作独立用户数、日活或故障率分母。错误事件附带的是服务主机环境，不能据此推断访问页面的客户端系统或浏览器。研究快照是普通事件，与错误事件共用组织的事件额度；版本统计与计数日志按日志字节计量，会话汇总不计费（[ADR-0132](adr/0132-diagnostics-counts-via-logs-and-sessions.md)）。
 
-`purpose` 区分 `version-statistics`、`technical-diagnostics` 与独立研究通道的 `population-research`。故障视图使用 `level:error purpose:technical-diagnostics`，生产故障可再加 `environment:production`。版本统计在日志中查询 `purpose:version-statistics`，各版本占比也显示在接收端的 Releases 页；故障次数在日志中查询正文 `Peach diagnostic count`，按 `diagnostic_key`、`occurrence_day` 或 `sentry.release` 分组对 `occurrence_count` 求和。没有用途标签的历史事件须单独审阅，不按缺失字段推断来源；ADR-0132 之前的版本仍以 info 事件 `Peach started` 发送版本统计，应排除在故障视图与告警条件之外。
+`purpose` 区分 `version-statistics`、`technical-diagnostics` 与独立研究通道的 `population-research`。故障视图使用 `level:error purpose:technical-diagnostics`，生产故障可再加 `environment:production`。版本统计在日志中查询 `purpose:version-statistics`，各版本占比也显示在接收端的 Releases 页；故障次数在日志中查询正文 `Peach diagnostic count`，按 `diagnostic_key`、`occurrence_day` 或 `sentry.release` 分组对 `occurrence_count` 求和；它是数值属性，查询与仪表盘里写作 `sum(tags[occurrence_count,number])`。没有用途标签的历史事件须单独审阅，不按缺失字段推断来源；ADR-0132 之前的版本仍以 info 事件 `Peach started` 发送版本统计，应排除在故障视图与告警条件之外。
 
 `environment` 只接受 `production`、`development`、`test`；独立包与普通源码部署默认 `production`，Git 隔离工作树默认 `development`，可用 `PEACH_REPORTING_ENVIRONMENT` 明确指定。`runtime` 为 `packaged` 或 `source`；`dist` 使用构建提交号，不发送本机目录、主机名或自由文本标识。标准测试入口关闭本进程遥测，并向子进程传递 `PEACH_REPORTING_TEST_MODE=1`，在最终 HTTP 请求边界阻止两条通道真实外发；内存接收端仍可验证最终载荷。
 
@@ -100,7 +100,7 @@ SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺�
 
 `diagnostic_key` 由脱敏技术字段计算，包含版本但排除每次 HTTP 错误编号；相同代码故障可跨机器对应，不是安装标识。新的诊断键在额度内立即上传一条错误事件，代表 1 次发生；之后同一台机器上的重复发生只累计在本机，每 6 小时、跨 UTC 日或正常退出时合并成计数日志。计数日志的 `occurrence_count` 是整数增量，例如首次事件代表 1 次，随后又发生 9 次，下一条计数日志记 9，合计 10；`occurrence_day` 是实际发生的 UTC 日期。错误事件数不代表发生频率，接收端的问题趋势图也不是真实触发趋势，频率以计数日志求和为准。
 
-每机每天最多登记 20 个新的诊断键，最多上传 5 条首次错误事件；额度不足的首次事件推迟到后续定时检查或次日补传，统计日期保持实际发生日。托盘与子服务使用同一文件锁及聚合文件 `state/remote-reporting-frequency.json`，保存技术样本、首次事件是否已上传、当日累计数和已提交数；不读取历史日志。诊断键连续 7 个 UTC 日没有再发生即过期，再次发生时重新上传一条错误事件。SDK 接受入队后更新已提交数；计数日志提交失败时，跨日前的旧次数不再保留。连接失败、服务端丢弃、强制退出、锁争用或超过登记与保留上限均可能造成缺口，因此这是尽力交付的故障计数，不是完整运行审计。
+每机每天最多登记 20 个新的诊断键，最多上传 5 条首次错误事件；额度不足的首次事件推迟到后续定时检查或次日补传，统计日期保持实际发生日。托盘与子服务使用同一文件锁及聚合文件 `state/remote-reporting-frequency.json`，保存技术样本、首次事件是否已上传、当日累计数和已提交数；不读取历史日志。诊断键连续 7 个 UTC 日没有再发生即过期，再次发生时重新上传一条错误事件。SDK 接受入队后更新已提交数；计数日志提交失败时，跨日前的旧次数不再保留。连接失败、服务端丢弃、强制退出、锁争用或超过登记与保留上限均可能造成缺口，因此这是尽力交付的故障计数，不是完整运行审计。计数日志交给发送队列即视为已提交，队列已满时只在回执里记为 `failed`，不回滚次数。升级到 ADR-0132 之后的版本时，旧聚合文件的键格式不再有效，每台机器上仍在发生的故障会各自重新上传一次首次事件，接收端可能短暂出现一批回归。
 
 `state/remote-reporting-delivery.json` 保存各技术用途最后一批（错误事件、计数日志或版本统计）的本机回执，配置 API 的 `remote_reporting.delivery` 提供相同的脱敏状态。`queued` 仅表示准备入队；`accepted` 表示传输取得 HTTP 2xx，不保证接收端长期保留；`failed` 表示明确拒绝或本机队列／限流阻断；`unknown` 表示未取得可靠结果，网络异常也可能发生在接收之后。HTTP 2xx 同时带限流头时按未知处理。回执不保存服务端正文、请求网址或载荷；旧事件与旧同意版本的回执不能覆盖当前记录。传输回执不把入队计数改写成接收计数，也不触发补传。
 
@@ -110,7 +110,9 @@ SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺�
 
 回归验收使用临时 Peach 数据目录和 SDK 内存接收端。实际接收与发行制品的验收记录保存在仓库外。技术诊断选择见 [ADR-0110](adr/0110-recommended-diagnostics-choice.md)。安装辅助进程只在本机取证，不初始化远程客户端或发送事件；应用进程按用户选择发送。
 
-`asyncio` 连接清理只在同时满足以下条件时识别为连接重置收尾：`ConnectionResetError` 的 `winerror` 为 `10054`，回调为标准库 `_ProactorBasePipeTransport._call_connection_lost`，调用栈只含该回调与 `asyncio.events._run`，且没有关联异常。处理器核对真实 Proactor transport 处于清理状态，关闭 socket、解除服务端登记并完成关闭状态；不重复通知协议。成功记录 `classification=connection-cleanup` 与 `cleanup_recovered=true`，仅保留本机证据。收尾自身失败则保留原始异常链、上报技术故障并交给默认处理器；不能确认对象状态时也沿用默认处理器。没有全局修改 Python 类或替换事件循环。
+`asyncio` 连接清理只在同时满足以下条件时识别为连接重置收尾：`OSError` 的 `winerror` 为 `10054`（对端已重置连接）或 `10022`（Proactor 收尾时 `shutdown` 报 WSAEINVAL），回调为标准库 `_ProactorBasePipeTransport._call_connection_lost`，调用栈只含该回调与 `asyncio.events._run`，且没有关联异常。处理器核对真实 Proactor transport 处于清理状态，关闭 socket、解除服务端登记并完成关闭状态；不重复通知协议。成功记录 `classification=connection-cleanup` 与 `cleanup_recovered=true`，仅保留本机证据。收尾自身失败则保留原始异常链、上报技术故障并交给默认处理器；不能确认对象状态时也沿用默认处理器。没有全局修改 Python 类或替换事件循环。
+
+Windows Proactor 在 accept 完成前客户端已断开时报 `Accept failed on a socket`（`OSError`，`winerror` 为 `64`）。这一类只写本机记录，`classification=accept-aborted`、`listener_closed=true`，不远程上报，也不交给默认处理器重复写 ERROR。CPython 3.14.7 在处理器返回后会关闭该监听 socket，Peach 目前没有在进程内恢复监听；其他 accept 失败仍按技术故障上报。
 
 本机记录保留异常与标准库帧，并补充回调、协议类、可识别的服务端类别和 TLS 标志；这些上下文字段不进入远程载荷，不访问连接地址、请求内容或对象文本。资源收尾使用 CPython 3.14.7 的私有对象协议，升级需验证实际 socket、`asyncio.Server`、重复关闭与收尾失败。原始竞争时序在 33 次回环实验中未复现；合成故障验证了资源实际关闭与服务端释放，不能据此推断原始客户端来源。
 
