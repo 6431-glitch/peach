@@ -21,6 +21,8 @@ Removed / Fixed / Security。
 
 ## [未发布]
 
+## [0.54.0] - 2026-11-04
+
 ### 新增
 
 - **关注**：JAV 页新增「新作」分区，列出全部订阅到、还没入库的新作，可以翻页；默认按发行时间排，也能按来源评分、时长、番号、口味排序，或点「换一批」随机看一批。女优、厂牌、标签筛选只列这批新作里出现过的，点了在分区内筛选。和馆藏一样可以切成列表，作品、艺人、厂牌、标签、时长、来源评分、发行时间各占一列，表头可排序。还没读过资料的新作会在后台补读，读完标签筛选随之补全。首页新作那一行末尾加了「查看全部新作」。
@@ -913,7 +915,8 @@ Removed / Fixed / Security。
 - **桌面**：独立包使用 UTF-8 启动日志。
 - **配置**：首次设置后的跳转目标取新鲜读到的 mDNS 名。
 
-[未发布]: https://github.com/peach-mitao/peach/compare/v0.53.0...HEAD
+[未发布]: https://github.com/peach-mitao/peach/compare/v0.54.0...HEAD
+[0.54.0]: https://github.com/peach-mitao/peach/compare/v0.53.0...v0.54.0
 [0.53.0]: https://github.com/peach-mitao/peach/compare/v0.52.0...v0.53.0
 [0.52.0]: https://github.com/peach-mitao/peach/compare/v0.51.0...v0.52.0
 [0.51.0]: https://github.com/peach-mitao/peach/compare/v0.50.0...v0.51.0
