@@ -41,6 +41,7 @@ from .web_entity import (
     SUGGEST_GROUP_LIMIT,
     SUGGEST_KIND_LIMIT,
     q_entity,
+    q_entity_latest,
     q_entity_photos,
     q_entity_shapes,
     q_index,
@@ -53,6 +54,7 @@ from .web_entity import (
 from .web_downloads import (q_downloads, w_download_cancel, w_download_postprocess,
                             w_download_submit)
 from .web_resource_search import q_resource_search
+from .web_search import q_search_recommendations
 from .web_jav_detail import q_jav_detail, q_jav_resources, q_jav_reviews, w_jav_cover
 from .web_jav_discovery import q_jav_discoveries
 from .web_feeds import (
@@ -393,6 +395,7 @@ GET_HANDLERS = {
     "/api/performer/delete-plan": q_performer_delete_plan,
     "/api/performer/delete-candidates": q_performer_delete_candidates,
     "/api/entity/shapes": _get_entity_shapes,
+    "/api/entity/latest": q_entity_latest,
     "/api/links": w_links,
     "/api/photos": q_entity_photos,
     "/api/photo-set": q_photo_set,
@@ -411,6 +414,7 @@ GET_HANDLERS = {
     "/api/facets": _get_facets,
     "/api/suggest": _get_suggest,
     "/api/search-history": _get_search_history,
+    "/api/search/recommendations": q_search_recommendations,
     "/api/taste": _get_taste,
     "/api/review": _get_review,
     "/api/post-setup-tutorial": _get_post_setup_tutorial,
