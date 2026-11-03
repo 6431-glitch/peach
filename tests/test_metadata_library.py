@@ -2247,6 +2247,28 @@ class LibraryNfoTests(unittest.TestCase):
         finally:
             session.close()
 
+    def test_a_refused_javdb_tag_request_is_no_issue_when_the_chain_already_gave_tags(self):
+        """MIAB-086：片商官网这一趟已给标签，JavDB 拒绝访问只是换不到更细的类别，不记成问题。"""
+        from peach.library_processing import _MissCache, _RemoteSession, misses_path
+        from peach.scraping_access import SourcePaused
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True)
+        provider = Mock()
+        provider.query.side_effect = SourcePaused('来源拒绝访问，暂停向它请求一段时间')
+        session = _RemoteSession(config, Mock(return_value=provider),
+                                 _MissCache(misses_path(config)), retrying=False)
+        issue = Mock()
+        options = dict(update=Mock(), issue=issue, deadline=time.monotonic() + 60)
+        official = [('makers', {'id': 'MIAB-086', 'genres': ['痴女', '护士']}, None)]
+        try:
+            self.assertEqual(session._preferred_tags({}, 'MIAB-086', ['tags'], ('makers', 'javdb'),
+                                                     official, set(), **options), [])
+            issue.assert_not_called()
+            # 链上没给标签时照旧记成限流问题。
+            session._preferred_tags({}, 'MIAB-086', ['tags'], ('makers', 'javdb'), [], set(), **options)
+            self.assertTrue(issue.call_args.kwargs['paused'])
+        finally:
+            session.close()
+
     @windows_ledger_roots
     def test_a_cached_product_page_still_sends_the_row_to_the_mirror_for_its_cast(self):
         """缓存里只有官方商品页、那一页没有演员栏：这一行缺的演员照样去镜像站要，官方页不再问。"""
