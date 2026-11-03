@@ -4,11 +4,12 @@ import { catalogTableSnapshot } from './react/catalog-grid/catalog-table-columns
 import { esc } from './core';
 import { COMPLETION_ROW_SKELETON_HTML, completionRowRemembered } from './react/library-processing/completion-row';
 
-/** 列表骨架一格的内容，壳与列表岛共用：名称格是缩略图、头像和标题署名两行，其余列一条短条。 */
+/** 列表骨架一格的内容，壳与列表岛共用：名称格是缩略图和两行标题，艺人格是圆头像加一条，媒体库格是
+ *  小图标加一条，其余列一条短条。 */
 export function catalogListSkeletonCellHtml(column: string): string {
-  return column === 'name'
-    ? '<span data-list-skeleton-name><i class="skeleton-sheen"></i><b class="skeleton-sheen"></b><span><i class="skeleton-sheen"></i><i class="skeleton-sheen"></i></span></span>'
-    : '<i data-list-skeleton-bar class="skeleton-sheen"></i>';
+  if (column === 'name') return '<span data-list-skeleton-name><i class="skeleton-sheen"></i><span><i class="skeleton-sheen"></i><i class="skeleton-sheen"></i></span></span>';
+  if (column === 'people' || column === 'library') return `<span data-list-skeleton-mark="${column}"><b class="skeleton-sheen"></b><i class="skeleton-sheen"></i></span>`;
+  return '<i data-list-skeleton-bar class="skeleton-sheen"></i>';
 }
 
 /* 壳的列表骨架直接套真实表格的外框与 `bui-table` 类：工具栏一行、表头写真实列名、列宽按本机列偏好，

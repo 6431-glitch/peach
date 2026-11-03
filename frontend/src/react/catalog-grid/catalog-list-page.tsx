@@ -105,6 +105,8 @@ export function CatalogListPage(props: CatalogGridProps) {
         isSelected={row.getIsSelected()} onChange={on => row.toggleSelected(on)} /> }),
       helper.accessor(item => item.name || '', { id: 'name', header: '作品', enableSorting: true,
         cell: ({ row }) => <ListIdentity item={row.original} props={props} disabled={result.isPlaceholderData} /> }),
+      helper.display({ id: 'library', header: '媒体库', cell: ({ row }) => <ListLibrary item={row.original} /> }),
+      helper.display({ id: 'people', header: '艺人', cell: ({ row }) => <ListPeople item={row.original} props={props} /> }),
       /* 标签与卡片同一套：关注条目的标签不可点，其余点一下按这个标签筛选。 */
       helper.display({ id: 'tags', header: '标签', cell: ({ row }) => {
         const item = row.original;
@@ -222,11 +224,8 @@ function ListIdentity({ item, props, disabled }: { item: MediaItem; props: Catal
   const name = props.helpers.displayName(item, rawName).trim() || '未命名作品';
   const titleHtml = props.helpers.titleHtml(item, rawName).trim() || '未命名作品';
   useEntityNames();
-  const { avatar, who } = identityParts(item);
   const watched = !parts && Number(item.play_seconds) > 0 && Number(item.duration) > 0
     ? Math.min(Number(item.play_seconds) / Number(item.duration), 1) : 0;
-  const tints = useLibraryTints({ names: true });
-  const tint = item.library_id ? tints.get(item.library_id) : undefined;
   const flaggedBy = [Number(item.liked) > 0 ? '喜欢' : '', Number(item.o_count) > 0 ? '有高潮记录' : ''].filter(Boolean);
   const glyph = (name: string) => <svg viewBox="0 0 24 24" aria-hidden="true"><use href={`#i-${name}`} /></svg>;
   const open = (event: MouseEvent<HTMLElement>) => {
@@ -236,15 +235,7 @@ function ListIdentity({ item, props, disabled }: { item: MediaItem; props: Catal
     const opener = props.filters?.state === 'trash' ? props.actions.openResource : props.actions.open;
     opener(item, event.currentTarget);
   };
-  /* 头像与署名和卡片同一套：点头像或人名打开人物、厂牌页，没有署名的那批打开「未归属」。 */
-  const openOwner = (event: MouseEvent<HTMLElement>) => {
-    if (props.selectMode) return;
-    const target = event.target as HTMLElement;
-    const entity = target.closest<HTMLElement>('[data-entity-kind]');
-    if (entity) { props.actions.openEntity(entity.dataset.entityKind || '', entity.dataset.entityName || ''); return }
-    if (target.closest('[data-open-unowned]')) props.actions.openUnowned();
-  };
-  return <div data-list-identity="" onClick={openOwner}>
+  return <div data-list-identity="">
     <button type="button" data-list-open="" disabled={disabled} tabIndex={-1} aria-hidden="true" onClick={open}>
       <span data-list-picture="">{artwork.html
         ? <ArtSlot artwork={artwork} relayout={root => relayoutCovers(root, 'small')} /> : <span>无预览</span>}
@@ -264,16 +255,31 @@ function ListIdentity({ item, props, disabled }: { item: MediaItem; props: Catal
           </span>
           : null}</span>
     </button>
-    {avatar}
     <span data-list-text="">
       <button type="button" data-list-name="" disabled={disabled} title={name} aria-label={`打开 ${name}`} onClick={open}
         dangerouslySetInnerHTML={{ __html: titleHtml }} />
-      <span data-list-byline="">
-        {tint?.name ? <span data-list-library="" title={`媒体库：${tint.name}`}>
-          <SourceMark mark={tint.icon} />{tint.name}
-        </span> : null}
-        {who}
-      </span>
     </span>
   </div>;
+}
+
+/** 媒体库那一列：标识加名字，与侧栏媒体库切换同一套。没有归属媒体库的写「—」。 */
+function ListLibrary({ item }: { item: MediaItem }) {
+  const tints = useLibraryTints({ names: true });
+  const tint = item.library_id ? tints.get(item.library_id) : undefined;
+  return tint?.name ? <span data-list-library="" title={`媒体库：${tint.name}`}><SourceMark mark={tint.icon} />{tint.name}</span> : '—';
+}
+
+/** 艺人那一列：头像与署名和卡片同一套（`identityParts`）。点头像或人名打开人物、厂牌页，没有署名的那批
+ *  打开「未归属」；选择模式下不跳。 */
+function ListPeople({ item, props }: { item: MediaItem; props: CatalogGridProps }) {
+  useEntityNames();
+  const { avatar, who } = identityParts(item);
+  const openOwner = (event: MouseEvent<HTMLElement>) => {
+    if (props.selectMode) return;
+    const target = event.target as HTMLElement;
+    const entity = target.closest<HTMLElement>('[data-entity-kind]');
+    if (entity) { props.actions.openEntity(entity.dataset.entityKind || '', entity.dataset.entityName || ''); return }
+    if (target.closest('[data-open-unowned]')) props.actions.openUnowned();
+  };
+  return <div data-list-people="" onClick={openOwner}>{avatar}{who}</div>;
 }
