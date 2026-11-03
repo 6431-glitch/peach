@@ -76,7 +76,7 @@
 
 | 类别 | 发送内容与筛选 |
 | --- | --- |
-| 版本统计 | Peach 版本、分发方式（`windows-app`、`macos-app`、`docker`、`wheel`、`source`）、操作系统类型与版本、CPU 架构与逻辑核数、内存档位、Python 版本、运行环境、源码／独立包形态与公开构建提交号，每机 UTC 自然日最多一次；在进程启动时尝试，没有安装标识，不能据此统计独立用户。内存取最近的常见容量档；Docker 内的系统版本是宿主内核，Docker Desktop 的宿主系统由内核名称区分 |
+| 版本统计 | Peach 版本、分发方式（`windows-app`、`macos-app`、`docker`、`wheel`、`source`）、操作系统类型与版本、CPU 架构与逻辑核数、内存档位、Python 版本、运行环境、源码／独立包形态与公开构建提交号，每机 UTC 自然日最多一次，以一条日志和一条会话汇总发送；在进程启动时尝试，没有安装标识，不能据此统计独立用户。内存取最近的常见容量档；Docker 内的系统版本是宿主内核，Docker Desktop 的宿主系统由内核名称区分 |
 | Python 错误 | 版本、分发方式、平台、Python、CPU 架构、故障环节、分层异常链、Peach 与白名单框架文件名／函数名／行号、结构化错误码；错误文本、变量、源码上下文与用户目录不发送 |
 | HTTP 5xx | 追加方法、路由模板与关联错误编号；不含实例参数、查询参数、正文、鉴权头或用户网址 |
 | 媒体工具 | 退出码，以及确定匹配的 AV1 解码器缺失、非法媒体、权限、磁盘空间或未知解码器类别；stderr 与媒体名称留在本机 |
@@ -84,9 +84,9 @@
 
 SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺表、缺列、锁定、只读、损坏或无法打开的固定类别，不发送表名、列名或 SQL。媒体故障在路径脱敏前提取固定类别，子进程异常本身携带的 stderr 也参与分类。系统不支持文件夹对话框时保留本机状态；支持的平台上对话框启动失败仍进入技术诊断。
 
-远程事件数表示接收端存储的上报批次，`occurrence_count` 表示该批代表的发生次数。每日预算、关闭上传、断网和筛选会造成观测缺失；未收到事件不能解释为没有故障。版本统计每日一次且不含安装标识，不能当作独立用户数、日活或故障率分母。错误事件附带的是服务主机环境，不能据此推断访问页面的客户端系统或浏览器。研究快照与版本统计均是普通事件，仍占用接收平台的事件配额；分项目不隔离组织配额。
+错误事件表示某台机器在某个版本里第一次遇到这个诊断键，发生次数在计数日志里。每日额度、关闭上传、断网和筛选会造成观测缺失；未收到事件不能解释为没有故障。版本统计每日一次且不含安装标识，不能当作独立用户数、日活或故障率分母。错误事件附带的是服务主机环境，不能据此推断访问页面的客户端系统或浏览器。研究快照是普通事件，与错误事件共用组织的事件额度；版本统计与计数日志按日志字节计量，会话汇总不计费（[ADR-0132](adr/0132-diagnostics-counts-via-logs-and-sessions.md)）。
 
-事件的 `purpose` 区分 `version-statistics`、`technical-diagnostics` 与独立研究通道的 `population-research`。故障视图使用 `level:error purpose:technical-diagnostics`，生产故障可再加 `environment:production`。没有用途标签的历史事件须单独审阅，不按缺失字段推断来源。启动统计是普通 info 事件，应排除在故障视图与告警条件之外。
+`purpose` 区分 `version-statistics`、`technical-diagnostics` 与独立研究通道的 `population-research`。故障视图使用 `level:error purpose:technical-diagnostics`，生产故障可再加 `environment:production`。版本统计在日志中查询 `purpose:version-statistics`，各版本占比也显示在接收端的 Releases 页；故障次数在日志中查询正文 `Peach diagnostic count`，按 `diagnostic_key`、`occurrence_day` 或 `sentry.release` 分组对 `occurrence_count` 求和。没有用途标签的历史事件须单独审阅，不按缺失字段推断来源；ADR-0132 之前的版本仍以 info 事件 `Peach started` 发送版本统计，应排除在故障视图与告警条件之外。
 
 `environment` 只接受 `production`、`development`、`test`；独立包与普通源码部署默认 `production`，Git 隔离工作树默认 `development`，可用 `PEACH_REPORTING_ENVIRONMENT` 明确指定。`runtime` 为 `packaged` 或 `source`；`dist` 使用构建提交号，不发送本机目录、主机名或自由文本标识。标准测试入口关闭本进程遥测，并向子进程传递 `PEACH_REPORTING_TEST_MODE=1`，在最终 HTTP 请求边界阻止两条通道真实外发；内存接收端仍可验证最终载荷。
 
@@ -98,15 +98,15 @@ SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺�
 
 正常取消、来源未命中／暂不可用、HTTP 4xx、互斥、普通 warning 和无堆栈的泛化日志不发送，也不计入故障次数。后台任务的纯文本失败回执仍保留在本机；有异常链的意外失败可发送。SDK 内部日志不进入远程钩子。
 
-同类故障首次在额度内立即上传，重复次数每小时或正常退出时合并提交。`occurrence_count` 是本批增量次数；例如先上传 1 次，随后又发生 9 次，下一批上传 9，合计 10。`occurrence_day` 是实际发生的 UTC 日期，`diagnostic_key` 由脱敏技术字段计算，包含版本但排除每次 HTTP 错误编号；相同代码故障可跨机器对应，不是安装标识。Sentry 的事件数代表上传批次，频率需按统计日期汇总 `occurrence_count`，不能把最新一批当累计总数。普通标签不提供 Sentry 原生的数值求和；汇总需读取事件字段后计算，不能把原生事件趋势图当成真实触发趋势。
+`diagnostic_key` 由脱敏技术字段计算，包含版本但排除每次 HTTP 错误编号；相同代码故障可跨机器对应，不是安装标识。新的诊断键在额度内立即上传一条错误事件，代表 1 次发生；之后同一台机器上的重复发生只累计在本机，每 6 小时、跨 UTC 日或正常退出时合并成计数日志。计数日志的 `occurrence_count` 是整数增量，例如首次事件代表 1 次，随后又发生 9 次，下一条计数日志记 9，合计 10；`occurrence_day` 是实际发生的 UTC 日期。错误事件数不代表发生频率，接收端的问题趋势图也不是真实触发趋势，频率以计数日志求和为准。
 
-每机每天最多接收 20 类故障的本机计数，远程每天最多提交 20 批，重复补报与首次诊断共用批次上限。托盘与子服务使用同一文件锁及聚合文件 `state/remote-reporting-frequency.json`，保留至多 7 个 UTC 日期的技术样本、累计数和已入队数；不读取历史日志。额度不足的待提交次数可在后续启动或定时检查时继续提交，超过保留期失效。SDK 接受入队后更新已入队数；连接失败、服务端丢弃、强制退出、锁争用或超过种类及保留上限均可能造成缺口，因此这是尽力交付的故障计数，不是完整运行审计。SDK 尚未接受的次数保留在聚合文件中。
+每机每天最多登记 20 个新的诊断键，最多上传 5 条首次错误事件；额度不足的首次事件推迟到后续定时检查或次日补传，统计日期保持实际发生日。托盘与子服务使用同一文件锁及聚合文件 `state/remote-reporting-frequency.json`，保存技术样本、首次事件是否已上传、当日累计数和已提交数；不读取历史日志。诊断键连续 7 个 UTC 日没有再发生即过期，再次发生时重新上传一条错误事件。SDK 接受入队后更新已提交数；计数日志提交失败时，跨日前的旧次数不再保留。连接失败、服务端丢弃、强制退出、锁争用或超过登记与保留上限均可能造成缺口，因此这是尽力交付的故障计数，不是完整运行审计。
 
-`state/remote-reporting-delivery.json` 保存各技术用途最后一批的本机回执，配置 API 的 `remote_reporting.delivery` 提供相同的脱敏状态。`queued` 仅表示准备入队；`accepted` 表示传输取得 HTTP 2xx，不保证接收端长期保留；`failed` 表示明确拒绝或本机队列／限流阻断；`unknown` 表示未取得可靠结果，网络异常也可能发生在接收之后。HTTP 2xx 同时带限流头时按未知处理。回执不保存服务端正文、请求网址或载荷；旧事件与旧同意版本的回执不能覆盖当前记录。传输回执不把入队计数改写成接收计数，也不触发补传。
+`state/remote-reporting-delivery.json` 保存各技术用途最后一批（错误事件、计数日志或版本统计）的本机回执，配置 API 的 `remote_reporting.delivery` 提供相同的脱敏状态。`queued` 仅表示准备入队；`accepted` 表示传输取得 HTTP 2xx，不保证接收端长期保留；`failed` 表示明确拒绝或本机队列／限流阻断；`unknown` 表示未取得可靠结果，网络异常也可能发生在接收之后。HTTP 2xx 同时带限流头时按未知处理。回执不保存服务端正文、请求网址或载荷；旧事件与旧同意版本的回执不能覆盖当前记录。传输回执不把入队计数改写成接收计数，也不触发补传。
 
-两项均通过公开 DSN 发送到 Sentry 托管服务，接收服务会接触连接 IP。客户端不发送 IP 字段、用户身份、设备标识、观看记录、媒体信息、凭据、完整日志或诊断 ZIP。SDK 发送队列不落盘，本机聚合文件仅存技术投影和次数；后台发送前复查本机同意版本。关闭或重新选择会清除未提交聚合，并让排队旧事件失效；已在途或已接收的请求无法撤回。本机 ZIP 导出独立可用。
+两项均通过公开 DSN 发送到 Sentry 托管服务，接收服务会接触连接 IP。客户端不发送 IP 字段、用户身份、设备标识、观看记录、媒体信息、凭据、完整日志或诊断 ZIP。日志与会话条目由 Peach 自行组装，不经过 SDK 的日志与会话通道，主机名、SDK 名称与追踪上下文不进入载荷；传输闸门只放行带当前同意凭据的这两类条目。SDK 发送队列不落盘，本机聚合文件仅存技术投影和次数；后台发送前复查本机同意版本。关闭或重新选择会清除未提交聚合，并让排队旧事件失效；已在途或已接收的请求无法撤回。本机 ZIP 导出独立可用。
 
-接收端由维护者配置：源码运行使用 `PEACH_SENTRY_DSN` 或检出根的 `sentry.json`；Windows、macOS 打包与 Docker 镜像由 `scripts/write_reporting_config.py` 从同名环境变量（Docker 为同名构建参数）写入包根 `sentry.json`，镜像里位于 wheel 的 `peach/_resources/`，容器运行时设置的同名环境变量优先。发行流水线从 GitGud 项目 CI/CD 变量 `PEACH_SENTRY_DSN` 与 `PEACH_LIBRARY_SENTRY_DSN` 读取，两者为受保护变量、环境作用域 `release`；缺失或不合法时发行构建失败，本地构建写空值，安装后显示上传服务未配置。只接受 Sentry 的公开 HTTPS DSN（含 US / DE 区域），不需要 API token。没有 DSN 时不会创建 SDK 客户端。SDK 自动框架集成、日志、性能追踪和指标均关闭；版本统计作为普通事件计入 Sentry 错误事件额度。账号套餐和总量以 [Sentry 订阅页](https://sentry.io/settings/) 为准。
+接收端由维护者配置：源码运行使用 `PEACH_SENTRY_DSN` 或检出根的 `sentry.json`；Windows、macOS 打包与 Docker 镜像由 `scripts/write_reporting_config.py` 从同名环境变量（Docker 为同名构建参数）写入包根 `sentry.json`，镜像里位于 wheel 的 `peach/_resources/`，容器运行时设置的同名环境变量优先。发行流水线从 GitGud 项目 CI/CD 变量 `PEACH_SENTRY_DSN` 与 `PEACH_LIBRARY_SENTRY_DSN` 读取，两者为受保护变量、环境作用域 `release`；缺失或不合法时发行构建失败，本地构建写空值，安装后显示上传服务未配置。只接受 Sentry 的公开 HTTPS DSN（含 US / DE 区域），不需要 API token。没有 DSN 时不会创建 SDK 客户端。SDK 自动框架集成、自带的日志与会话采集、性能追踪和指标均关闭。账号套餐和总量以 [Sentry 订阅页](https://sentry.io/settings/) 为准。
 
 回归验收使用临时 Peach 数据目录和 SDK 内存接收端。实际接收与发行制品的验收记录保存在仓库外。技术诊断选择见 [ADR-0110](adr/0110-recommended-diagnostics-choice.md)。安装辅助进程只在本机取证，不初始化远程客户端或发送事件；应用进程按用户选择发送。
 
