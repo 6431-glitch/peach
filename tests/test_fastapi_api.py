@@ -1358,7 +1358,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
                     marker.unlink()
                 asked = []
 
-                def broken(request, failure=failure):
+                def broken(request, failure=failure, asked=asked):
                     asked.append(str(request.url))
                     raise failure
                 self._swap_http_client(broken)
