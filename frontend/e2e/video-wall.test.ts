@@ -439,6 +439,12 @@ describe('播放墙的浏览与详情', () => {
       await enter(page);
       const ids = await page.locator('[data-wall-id]').evaluateAll(nodes => nodes.map(node => (node as HTMLElement).dataset.wallId));
       assert.equal(new Set(ids).size, ids.length);
+      const wallUrl = page.url();
+      await page.getByRole('button', { name:'打开搜索', exact:true }).click();
+      await page.getByRole('button', { name:'搜索', exact:true }).click();
+      assert.equal(page.url(), wallUrl, '关键词没变时再点放大镜只收起，不重进墙面');
+      assert.equal(await page.locator('[data-wall-search][data-open]').count(), 0);
+      assert.ok(await page.locator('[data-wall-tile]').count() > 0);
       await page.getByRole('button', { name:'打开搜索', exact:true }).click();
       assert.equal(await page.evaluate(() => document.activeElement?.getAttribute('aria-label')), '搜索播放墙', '展开后直接可输入');
       const searched = page.waitForRequest(request => {

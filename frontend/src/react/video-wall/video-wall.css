@@ -76,34 +76,38 @@ body[data-wall-open] :is(body>header,[data-network-banner],#drawer,#main,#catalo
 .peach-react [data-wall-duration] { right:12px; }
 .peach-react [data-wall-progress] { position:absolute; bottom:0; left:0; height:2px; width:var(--wall-progress); background:var(--ink); }
 .peach-react [data-wall-no-art] { position:absolute; inset:0; display:grid; place-items:center; color:var(--muted); font-size:var(--fs-sm); }
+/* 左上角一排：返回、换一批、图片切换、搜索，筛选提示接在后面，一行放不下就换行。
+   整条横跨顶部，自己不接指针，免得挡住下面那一排磁贴。 */
+.peach-react [data-wall-bar] {
+  position:absolute; z-index:30; left:24px; right:24px; top:calc(24px + env(safe-area-inset-top));
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px; pointer-events:none;
+}
+.peach-react [data-wall-bar] > * { flex:none; pointer-events:auto; }
 .peach-react :is([data-wall-back],[data-wall-round],[data-wall-refresh] button) {
-  position:absolute; z-index:12; display:grid; place-items:center; width:44px; height:44px; padding:0;
+  display:grid; place-items:center; width:44px; height:44px; padding:0;
   border:0; border-radius:50%; background:rgba(40,40,40,.78); color:var(--ink); backdrop-filter:blur(14px); cursor:pointer;
 }
 .peach-react :is([data-wall-back],[data-wall-round],[data-wall-refresh] button):hover { background:rgba(70,70,70,.88); }
 .peach-react :is([data-wall-back],[data-wall-round],[data-wall-refresh] button):focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
 .peach-react :is([data-wall-back],[data-wall-round],[data-wall-refresh] button) svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
-.peach-react [data-wall-back] { left:24px; top:calc(24px + env(safe-area-inset-top)); }
-.peach-react [data-wall-filter-notice] { position:absolute; z-index:30; left:80px; right:24px; top:calc(24px + env(safe-area-inset-top)); }
-.peach-react [data-wall-refresh] { position:absolute; left:76px; top:calc(24px + env(safe-area-inset-top)); z-index:12; }
-/* 右下角两枚圆键：图片切换贴边，搜索在它左边，点开后整枚向左伸成输入框，右端的放大镜变成提交键。 */
-.peach-react [data-wall-image] { right:24px; bottom:calc(24px + env(safe-area-inset-bottom)); }
+.peach-react [data-wall-bar] > [data-wall-filter-notice] { flex:1 1 260px; min-width:0; }
 .peach-react [data-wall-image][aria-pressed="true"] { background:var(--ink); color:var(--ground); }
 .peach-react [data-wall-image][aria-pressed="true"]:hover { background:#fff; }
-.peach-react [data-wall-search] {
-  position:absolute; z-index:12; right:80px; bottom:calc(24px + env(safe-area-inset-bottom));
-  display:flex; justify-content:flex-end; width:44px; height:44px; overflow:hidden;
+/* 搜索点开后在本行内向右伸成输入框（最宽 320px，窄屏占满剩余），放大镜留在原位变成提交键。 */
+.peach-react [data-wall-bar] > [data-wall-search] {
+  display:flex; flex:0 0 44px; min-width:44px; max-width:320px; height:44px; overflow:hidden;
   border-radius:22px; background:rgba(40,40,40,.78); color:var(--ink); backdrop-filter:blur(14px);
-  transition:width 220ms cubic-bezier(.22,1,.36,1);
+  transition:flex-grow 220ms cubic-bezier(.22,1,.36,1);
 }
-.peach-react [data-wall-search][data-open] { width:min(320px,calc(100% - 104px)); }
-.peach-react [data-wall-search] [data-wall-round] { position:relative; flex:none; z-index:auto; background:transparent; backdrop-filter:none; }
+.peach-react [data-wall-bar] > [data-wall-search][data-open] { flex-grow:1; }
+.peach-react [data-wall-search] [data-wall-round] { flex:none; background:transparent; backdrop-filter:none; }
 .peach-react [data-wall-search] input {
-  flex:1; min-width:0; height:100%; padding:0 0 0 18px; border:0; border-radius:0; outline:0; background:transparent; color:var(--ink); font:inherit; font-size:14px;
+  flex:1; min-width:0; height:100%; padding:0 18px 0 2px; border:0; border-radius:0; outline:0; background:transparent; color:var(--ink); font:inherit; font-size:14px;
 }
 .peach-react [data-wall-search] input::placeholder { color:var(--muted); }
+.peach-react [data-wall-search] input::-webkit-search-cancel-button { appearance:none; }
 .peach-react [data-wall-search]:has(input:focus-visible) { outline:2px solid var(--ink); outline-offset:3px; }
-@media (prefers-reduced-motion:reduce) { .peach-react [data-wall-search] { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .peach-react [data-wall-bar] > [data-wall-search] { transition:none; } }
 .peach-react [data-wall-footer] { position:absolute; left:24px; bottom:calc(24px + env(safe-area-inset-bottom)); z-index:5; }
 .peach-react [data-wall-focus] {
   display:flex; flex-direction:column; z-index:20; cursor:default;
@@ -162,12 +166,8 @@ body[data-wall-open] :is(body>header,[data-network-banner],#drawer,#main,#catalo
 .peach-react [data-wall-focus-actions] button:disabled { opacity:.5; cursor:default; }
 .peach-react [data-wall-footer] button { background:rgba(40,40,40,.78); color:var(--ink); border-color:var(--line-soft); }
 @media (max-width:640px) {
-  .peach-react [data-wall-back] { left:16px; top:calc(16px + env(safe-area-inset-top)); }
-  .peach-react [data-wall-filter-notice] { left:72px; right:16px; top:calc(16px + env(safe-area-inset-top)); padding-inline:12px; }
-  .peach-react [data-wall-refresh] { left:68px; top:calc(16px + env(safe-area-inset-top)); }
-  .peach-react [data-wall-image] { right:16px; bottom:calc(16px + env(safe-area-inset-bottom)); }
-  .peach-react [data-wall-search] { right:72px; bottom:calc(16px + env(safe-area-inset-bottom)); }
-  .peach-react [data-wall-search][data-open] { width:calc(100% - 88px); }
+  .peach-react [data-wall-bar] { left:16px; right:16px; top:calc(16px + env(safe-area-inset-top)); }
+  .peach-react [data-wall-filter-notice] { padding-inline:12px; }
   .peach-react [data-wall-search] input { font-size:16px; }
   .peach-react [data-wall-focus-head] { left:16px; right:16px; bottom:104px; }
   .peach-react [data-wall-focus-head] b { --wall-code-size:34px; }
