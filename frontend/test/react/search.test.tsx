@@ -63,6 +63,18 @@ describe('下拉栏里摆什么', () => {
     expect(picks).toHaveLength(PICKS);
     expect(picks).not.toContain('高画质');
   });
+
+  it('空输入有推荐时搜索记录排在左栏最下面，键盘先走完左栏再到右栏', () => {
+    const recommendations = [
+      { kind: 'performer', label: '艺人与新作', items: [{ value: '七海ひな' }] },
+      { kind: 'asset', label: '作品推荐', items: [{ value: 'ABW-101', id: 7 }] },
+    ];
+    const model = menuModel({ ...base, query: '', history: ['剧情'], recommendations });
+    expect(model.recent).toBeNull();
+    expect(model.left.map(section => section.label)).toEqual(['艺人与新作', '搜索记录']);
+    expect(model.right.map(section => section.label)).toEqual(['作品推荐']);
+    expect(model.options.map(option => option.value)).toEqual(['七海ひな', '剧情', 'ABW-101']);
+  });
 });
 
 interface Stage {

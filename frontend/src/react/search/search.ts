@@ -184,14 +184,16 @@ export function menuModel({ query, history, picks, suggestFor, groups, tabs, kin
   if (!query) {
     if (recommendations.length) {
       // 还没取到的那组按最终条数占位：人三行、作品一排五格，取到时原地填上，栏不跳。
-      const sections = recommendations.map(({ pending, ...group }) => ({ ...group,
+      const section = ({ pending, ...group }: SuggestGroup): MenuSection => ({ ...group,
         options: group.items.map(item => add({ type: 'suggest', value: item.value, kind: group.kind, item })),
         pending: pending ? (SUGGEST_RIGHT_KINDS.has(group.kind) ? SUGGEST_EACH : PENDING_PEOPLE) : undefined,
-      }));
-      const recent = matching.length ? { label: '搜索记录', options: matching.map(value => add({ type: 'history', value })) } : null;
-      return { tabs: null, recent,
-        left: sections.filter(group => !SUGGEST_RIGHT_KINDS.has(group.kind)),
-        right: sections.filter(group => SUGGEST_RIGHT_KINDS.has(group.kind)), empty: false, options };
+      });
+      // 搜索记录排在左栏最下面：它比推荐晚到，排在末尾到了也不把上面的往下推。键盘上下按画出来的
+      // 次序走，左栏走完再到右栏，所以编号也按这个次序给。
+      const left = recommendations.filter(group => !SUGGEST_RIGHT_KINDS.has(group.kind)).map(section);
+      if (matching.length) left.push({ label: '搜索记录', options: matching.map(value => add({ type: 'history', value })) });
+      const right = recommendations.filter(group => SUGGEST_RIGHT_KINDS.has(group.kind)).map(section);
+      return { tabs: null, recent: null, left, right, empty: false, options };
     }
     const recent = matching.length ? { label: '搜索记录', options: matching.map((value) => add({ type: 'history', value })) } : null;
     const suggested = picks.length ? { label: '推荐', options: picks.map((value) => add({ type: 'pick', value })) } : null;

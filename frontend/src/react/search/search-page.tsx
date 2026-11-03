@@ -165,9 +165,8 @@ export function SearchPage(props: SearchProps) {
   return (
     <div ref={root} data-search-root="" data-search-recommendations={!s.query && s.recommendations.length ? '' : undefined} data-history-limit={limit}>
       {model.tabs ? <Tabs tabs={model.tabs} kind={s.kind} onPick={op.pickKind} wire={props.helpers.wireScroller} /> : null}
-      {s.query && model.recent ? section(model.recent) : null}
+      {model.recent ? section(model.recent) : null}
       {columns(model.left, model.right)}
-      {!s.query && model.recent ? section(model.recent) : null}
       {model.empty ? <p data-search-empty="" role="status">没有找到</p> : null}
     </div>
   );
