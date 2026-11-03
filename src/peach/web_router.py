@@ -56,7 +56,7 @@ from .web_downloads import (q_downloads, w_download_cancel, w_download_postproce
 from .web_resource_search import q_resource_search
 from .web_search import q_search_recommendations
 from .web_jav_detail import q_jav_detail, q_jav_resources, q_jav_reviews, w_jav_cover
-from .web_jav_discovery import q_jav_discoveries
+from .web_jav_discovery import q_jav_discoveries, q_jav_releases
 from .web_feeds import (
     q_feed_check,
     q_feed_discoveries,
@@ -357,6 +357,7 @@ GET_HANDLERS = {
     "/api/jav/reviews": q_jav_reviews,
     "/api/jav/resources": q_jav_resources,
     "/api/jav/discoveries": q_jav_discoveries,
+    "/api/jav/releases": q_jav_releases,
     "/api/library-processing": q_library_processing,
     "/api/library-processing/issues": q_library_processing_issues,
     "/api/thumbnail-jobs": q_thumbnail_jobs,
