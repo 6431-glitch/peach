@@ -428,7 +428,7 @@ minnano-av 也在 Cloudflare 后面，但对 HTTP 客户端是间歇拦截：202
 ### 库内采集的节奏
 
 - javdb 的主机间隔由用户定：`library_processing.SOURCE_INTERVALS` 里 `javdb.com` 与 `jdbstatic.com` 都是 3 秒，
-  两个主机要一起改。这份间隔由 `SOURCE_LIMITER` 整个进程共用：资料处理、取想要的资料、取新作资料与订阅检查
+  两个主机要一起改。这份间隔由 `SOURCE_LIMITER` 整个进程共用：资料处理、想要作品资料采集、新作资料采集与订阅检查
   同时跑时，问同一主机仍按一条队排。
 - **FC2 的商品号在三家里只问 javdb**（`community_catalog.community_sources_for`）。本机来源证据里 AVBase 与 JavBus
   对 FC2 一份都没给过；javdb 能补约一半的演员与发行日，厂牌、标签、封面不给，所以它问得慢却砍不掉。
@@ -706,7 +706,7 @@ Instagram 的独立用户登录会话未取得，自动适配器不进正式依�
   文件名前缀，用 EUC-JP 页名直取两站（取页层是补别名后继的 `WikiSitePages`，页缓存、404 记忆与来源冷却与服务共用）。
   同名页是 3 位以上出演者的作品一览就记 `identity=release` 的 observed 并否掉 `unknown`；都不存在时 unknown 候选写明
   问过哪几页；没有页以外的取页失败是未取得，不进清单。清单交 `apply_entity_identity_research.py` 冻结预览、备份写入。
-  处理任务结束时「查创作者身份」后继按同一判据自动问新登记和存量的创作者，命中直接落批次来源的 observed（ADR-0098）。
+  处理任务结束时「创作者身份查找」后继按同一判据自动问新登记和存量的创作者，命中直接落批次来源的 observed（ADR-0098）。
   改实体类型仍是用户复核。裏DVD村（uradvd-mura.com）是带会员登录的 DVD／下载商店，没有按页名寻址的系列页，
   未接入，只作人工查证线索。
 
@@ -1399,7 +1399,7 @@ FANZA／DMM、MGStage、一本道同族、Tokyo-Hot、AVBase、javtrailers、One
 ## 番号样张
 
 女优页照片档里按番号摆的官方样张（ADR-0068）。读写与取页在 `peach.sample_images`，补齐在 `peach.sample_followup`（任务中心
-「补番号样张」）。
+「番号样张采集」）。
 
 - 只认发行方自己那几站：
   - 有码是 DMM / FANZA 的 `jp-N`。GraphQL 给的 `awsimgsrc…/pics_dig/…/<cid>-N.jpg` 是 120×90 小图，同目录 `<cid>jp-N.jpg` 才是

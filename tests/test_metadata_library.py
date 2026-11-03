@@ -1557,7 +1557,7 @@ class LibraryNfoTests(unittest.TestCase):
         self.assertEqual(SOURCE_INTERVALS, {'javdb.com': 3.0, 'jdbstatic.com': 3.0})
 
     def test_every_provider_waits_on_one_shared_host_interval(self):
-        """取想要的资料、取新作资料与资料处理各起一个 provider；同时跑时问 javdb 也要排同一条队。"""
+        """想要作品资料采集、新作资料采集与资料处理各起一个 provider；同时跑时问 javdb 也要排同一条队。"""
         from peach.library_processing import SOURCE_LIMITER, LibraryMetadataProvider
         from peach.web_feeds import _transport
         with tempfile.TemporaryDirectory() as root:
