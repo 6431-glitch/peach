@@ -9,6 +9,7 @@ import math
 import re
 import secrets
 import threading
+import time
 from functools import lru_cache
 from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit
@@ -18,8 +19,9 @@ from .catalog_rules import (
 )
 from .config import PROJECT_ROOT
 from .downloads import (
-    CLOUDDRIVE_CREDENTIAL, INGESTED, POSTPROCESS_LABELS, REMOTE_RUNNING, RESUBMITTABLE_STATES,
-    STATE_LABELS, never_seen, submit_offline_download, parse_magnet,
+    CLOUDDRIVE_CREDENTIAL, INGESTED, POSTPROCESS_LABELS, POSTPROCESS_PENDING, POSTPROCESS_QUEUED,
+    POSTPROCESS_RUNNING, REMOTE_RUNNING, RESUBMITTABLE_STATES, STATE_LABELS, TRACKED_STATES, iso,
+    never_seen, submit_offline_download, parse_magnet,
 )
 from .follow_secrets import CredentialError
 from .feeds import scan_code
@@ -29,6 +31,9 @@ from .sources.dmm import code_from_cid
 LOGGER = logging.getLogger(__name__)
 CREDENTIAL = "jav-browser"
 ACTIVE = {"queued", "searching"}
+#: 共享进度列表的上限，与持久队列同为 200；结束的任务保留 10 分钟，供各窗口看到完成。
+ACTIVE_LIMIT = 200
+RECENT_SECONDS = 600
 MESSAGES = {
     "idle": "可以加入 Peach 馆藏", "queued": "等待搜索磁力", "searching": "正在搜索磁力",
     "submitted": "云下载进行中", "ingested": "已加入 Peach 馆藏", "owned": "馆藏已有该番号影片",
@@ -291,6 +296,34 @@ class JavBrowser:
             return {"ok": True, "code": code, **row, **detail, "state": state,
                     "stage": "submitting" if code in self._submitting else state,
                     "message": row.get("message") or MESSAGES[state]}
+
+    def active(self) -> dict:
+        """进行中与最近结束的任务，供用户脚本的各个窗口共享同一份进度。
+
+        进行中与脚本 `tracking()` 同一判据：排队、搜索、云下载，或已入库但整理未结束。
+        最近 `RECENT_SECONDS` 内结束的任务带着终态留在列表里，脚本据此看到「进行中 → 完成」。
+        """
+        cutoff = iso(time.time() - RECENT_SECONDS)
+        tracked = sorted(TRACKED_STATES)
+        organizing = (POSTPROCESS_PENDING, POSTPROCESS_QUEUED, POSTPROCESS_RUNNING)
+        with self.contract.database.read_connection() as connection:
+            codes = [row[0] for row in connection.execute(
+                "SELECT normalise_code_key(code) AS key FROM download_task WHERE code IS NOT NULL AND code<>'' AND ("
+                f"state IN ({','.join('?' * len(tracked))}) OR (state=? AND postprocess_state IN (?,?,?)) "
+                "OR max(updated_at, coalesce(postprocessed_at,''), coalesce(finished_at,''))>=?) "
+                "GROUP BY key ORDER BY max(id) DESC LIMIT ?",
+                (*tracked, INGESTED, *organizing, cutoff, ACTIVE_LIMIT))]
+        with self._lock:
+            queued = [code for code, row in self.rows.items() if row["state"] in ACTIVE or code in self._submitting]
+        items = []
+        for code in dict.fromkeys([*queued, *codes]):
+            try:
+                status = self.status(code)
+            except ValueError:
+                continue
+            if status["state"] != "idle":
+                items.append(status)
+        return {"ok": True, "items": items[:ACTIVE_LIMIT]}
 
     def add(self, body: dict) -> dict:
         code = code_key(body.get("code"))

@@ -9,6 +9,7 @@ import shutil
 import subprocess
 import tempfile
 import threading
+import time
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -353,6 +354,35 @@ class BrowserTests(unittest.TestCase):
         task.state, task.remote_done_at = dl.FAILED, "2026-10-24T13:25:00+00:00"
         self.downloads.store.save(task)
         self.assertEqual(self.status().json()["download"]["phase"], "ingest")
+
+    def test_active_lists_running_and_recently_finished_tasks_for_every_window(self):
+        def listed():
+            response = self.client.get("/api/jav-browser/active", headers=self.script_headers)
+            self.assertEqual(response.status_code, 200, response.text)
+            self.assertEqual(response.headers["cache-control"], "no-store")
+            return {item["code"]: item for item in response.json()["items"]}
+
+        self.assertEqual(listed(), {})
+        self.add()
+        self.assertEqual(listed()["ABC-123"]["state"], "queued")
+        self.service.process_one()
+        task = self.downloads.store.get(self.status().json()["task_id"])
+        task.state, task.progress = dl.REMOTE_RUNNING, .5
+        self.downloads.store.save(task)
+        # 不经浏览器队列的同番号云下载也列出：清掉队列行后按下载任务找到。
+        self.service.rows.clear()
+        self.assertEqual(listed()["ABC-123"]["download"]["progress"], .5)
+        task.state, task.postprocess_state = dl.INGESTED, dl.POSTPROCESS_RUNNING
+        self.downloads.store.save(task)
+        self.assertEqual(listed()["ABC-123"]["download"]["postprocess_state"], dl.POSTPROCESS_RUNNING)
+        task.postprocess_state, task.postprocessed_at = dl.POSTPROCESS_COMPLETE, dl.iso(time.time())
+        self.downloads.store.save(task)
+        self.assertEqual(listed()["ABC-123"]["state"], "ingested")
+        old = "2026-01-01T00:00:00+00:00"
+        task.updated_at = task.finished_at = task.postprocessed_at = old
+        self.downloads.store.save(task)
+        self.assertEqual(listed(), {})
+        self.assertEqual(self.client.get("/api/jav-browser/active").status_code, 401)
 
     def test_disable_and_rotation_revoke_tokens(self):
         rotated = self.configure("rotate").json()["token"]

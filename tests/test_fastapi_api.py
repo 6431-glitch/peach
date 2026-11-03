@@ -4179,6 +4179,7 @@ class RouteAuthContractTests(unittest.TestCase):
         cls.guards = {getattr(routes_auth, name) for name in cls.GUARD_NAMES}
         cls.special_guards = {
             ("GET", "/api/jav-browser"): routes_jav_browser.browser_client,
+            ("GET", "/api/jav-browser/active"): routes_jav_browser.browser_client,
             ("GET", "/api/jav-browser/identify"): routes_jav_browser.browser_client,
             ("GET", "/api/jav-browser/updates"): routes_jav_browser.browser_client,
             ("GET", "/api/jav-browser/people"): routes_jav_browser.browser_client,
