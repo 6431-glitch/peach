@@ -8,13 +8,17 @@
 /* 艺人列：头像在前、署名在后，与卡片同一套，点得开人物与厂牌页；头像已表明是人，署名前不再画人形图标。 */
 .peach-react [data-catalog-table] [data-list-people] { display: flex; align-items: center; gap: 8px; min-width: 0; color: var(--ink-2); font-size: var(--fs-sm); }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-avatar] { flex: none; margin-top: 0; }
-.peach-react [data-catalog-table] [data-list-people] > [data-media-avatars] { flex: none; }
+/* 共演叠放与首页卡片同一套几何；卡片里上限按所在行宽的 30% 算，艺人列只有一百多像素，照算会把几张头像
+ * 压成完全重叠，这里直接用卡片满员时的上限。 */
+.peach-react [data-catalog-table] [data-list-people] > [data-media-avatars] { flex: none; max-width: 109px; }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who] { display: inline-flex; flex: 0 1 auto; align-items: center; min-width: 0; overflow: hidden; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-overflow: ellipsis; white-space: nowrap; cursor: pointer; }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who] > span { overflow: hidden; text-overflow: ellipsis; }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who] > svg { display: none; }
 .peach-react [data-catalog-table] [data-list-people] > [data-media-who-more] { flex: none; color: var(--muted); }
-/* 数据表给格子里的链接写了 `width: fit-content`，头像是链接时（新作的来源人物）会被压成 0 宽，这里按头像本身的尺寸钉回。 */
+/* 数据表给格子里的链接写了 `width: fit-content` 与 `align-self: flex-start`：头像是链接时（新作的来源人物）会被
+ * 压成 0 宽，署名是链接时贴在格子上沿、和头像与「等 N 人」对不齐。这里按头像尺寸钉回、署名居中。 */
 .peach-react [data-catalog-table] [data-list-people] a[data-media-avatar] { width: 38px; }
+.peach-react [data-catalog-table] [data-list-people] > a { align-self: center; }
 .peach-react [data-catalog-table] [data-list-people] > a[data-media-who] { text-decoration: none; }
 .peach-react [data-catalog-table] [data-list-people] > a[data-media-who]:hover { text-decoration: underline; }
 /* JAV 新作列表的厂牌格：16px 方形标识，没装标识时画首字，与媒体库格同一行距。 */

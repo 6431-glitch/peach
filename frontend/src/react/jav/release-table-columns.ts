@@ -7,13 +7,13 @@ export const RELEASE_COLUMN_VISIBILITY_KEY = 'peach.table.jav-releases.visibilit
 
 const sizes: Record<string, { width: number; min: number; max: number }> = {
   name: { width: 300, min: 280, max: 2000 },
-  people: { width: 180, min: 144, max: 400 },
+  people: { width: 210, min: 160, max: 400 },
   studio: { width: 144, min: 120, max: 320 },
   tags: { width: 160, min: 144, max: 560 },
   code: { width: 128, min: 112, max: 320 },
   dur: { width: 96, min: 80, max: 200 },
-  score: { width: 112, min: 96, max: 200 },
-  release: { width: 128, min: 112, max: 240 },
+  score: { width: 100, min: 96, max: 200 },
+  release: { width: 120, min: 112, max: 240 },
   actions: { width: 184, min: 184, max: 320 },
 };
 const labels: Record<string, string> = { name: '作品', people: '艺人', studio: '厂牌', tags: '标签', code: '番号',

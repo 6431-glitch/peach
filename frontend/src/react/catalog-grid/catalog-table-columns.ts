@@ -5,9 +5,9 @@ export const CATALOG_COLUMN_VISIBILITY_KEY = 'peach.catalog-column-visibility.v1
 
 export const columnSizes: Record<string, { width: number; min: number; max: number }> = {
   select: { width: 48, min: 48, max: 48 },
-  name: { width: 320, min: 280, max: 2000 },
-  library: { width: 132, min: 112, max: 320 },
-  people: { width: 180, min: 144, max: 400 },
+  name: { width: 260, min: 240, max: 2000 },
+  library: { width: 120, min: 104, max: 320 },
+  people: { width: 190, min: 160, max: 400 },
   dur: { width: 96, min: 80, max: 240 },
   size: { width: 96, min: 88, max: 240 },
   resolution: { width: 120, min: 112, max: 320 },
@@ -18,7 +18,7 @@ export const columnSizes: Record<string, { width: number; min: number; max: numb
   played: { width: 184, min: 144, max: 320 },
   release: { width: 144, min: 128, max: 320 },
   code: { width: 144, min: 112, max: 400 },
-  tags: { width: 180, min: 144, max: 560 },
+  tags: { width: 172, min: 144, max: 560 },
 };
 
 export const defaultColumnVisibility: Record<string, boolean> = { code: false, o: false, new: false, played: false, release: false };

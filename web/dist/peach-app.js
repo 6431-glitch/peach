@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "fa36f9e2-c3c4-4fb5-b605-6193c2aaaa4c", e._sentryDebugIdIdentifier = "sentry-dbid-fa36f9e2-c3c4-4fb5-b605-6193c2aaaa4c");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "92590eb9-e301-4f55-8e5a-6e1cabed553c", e._sentryDebugIdIdentifier = "sentry-dbid-92590eb9-e301-4f55-8e5a-6e1cabed553c");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, n) => {
@@ -13496,14 +13496,14 @@ function Dc(e, { drag: t = !1, fade: n = !0, wheel: r = !0, elastic: i = !0, dra
 		d = 0, !s.drag || t.button !== 0 || e.scrollWidth - e.clientWidth <= 1 || s.dragIgnore && (t.shiftKey || t.ctrlKey || t.metaKey || t.altKey || t.target.closest?.(s.dragIgnore)) || (t.stopPropagation(), D(), u = {
 			x: t.pageX,
 			left: e.scrollLeft
-		}, d = 0, e.style.cursor = "grabbing");
+		}, d = 0, document.documentElement.dataset.dragScrolling = "");
 	}), T(window, "mousemove", (t) => {
 		if (!u) return;
 		let n = t.pageX - u.x, r = u.left - n, i = e.scrollWidth - e.clientWidth;
 		d = Math.max(d, Math.abs(n)), e.scrollLeft = r, s.elastic && l.drag(r < 0 ? r : r > i ? r - i : 0), t.preventDefault();
 	});
 	let k = () => {
-		u && s.elastic && l.release(), u = null, e.style.cursor = "";
+		u && s.elastic && l.release(), u && delete document.documentElement.dataset.dragScrolling, u = null;
 	};
 	T(window, "mouseup", k), T(window, "blur", k), T(e, "keydown", () => {
 		d = 0;
@@ -13529,7 +13529,7 @@ function Dc(e, { drag: t = !1, fade: n = !0, wheel: r = !0, elastic: i = !0, dra
 			b = "", S();
 		},
 		destroy() {
-			c.abort(), D(), cancelAnimationFrame(C), C = 0, A.disconnect(), M.disconnect(), _c.delete(e), delete e.dataset.scrollGesture, e.style.cursor = "", _c.size || (vc?.disconnect(), vc = null);
+			c.abort(), D(), cancelAnimationFrame(C), C = 0, A.disconnect(), M.disconnect(), _c.delete(e), delete e.dataset.scrollGesture, u && delete document.documentElement.dataset.dragScrolling, _c.size || (vc?.disconnect(), vc = null);
 		}
 	};
 	return _c.set(e, ee), vc || (vc = new MutationObserver(() => {
@@ -60387,18 +60387,18 @@ var UJ = "peach.catalog-column-widths.v1", WJ = "peach.catalog-column-visibility
 		max: 48
 	},
 	name: {
-		width: 320,
-		min: 280,
+		width: 260,
+		min: 240,
 		max: 2e3
 	},
 	library: {
-		width: 132,
-		min: 112,
+		width: 120,
+		min: 104,
 		max: 320
 	},
 	people: {
-		width: 180,
-		min: 144,
+		width: 190,
+		min: 160,
 		max: 400
 	},
 	dur: {
@@ -60452,7 +60452,7 @@ var UJ = "peach.catalog-column-widths.v1", WJ = "peach.catalog-column-visibility
 		max: 400
 	},
 	tags: {
-		width: 180,
+		width: 172,
 		min: 144,
 		max: 560
 	}
@@ -72269,8 +72269,8 @@ var F0 = "peach.table.jav-releases.widths.v1", I0 = "peach.table.jav-releases.vi
 		max: 2e3
 	},
 	people: {
-		width: 180,
-		min: 144,
+		width: 210,
+		min: 160,
 		max: 400
 	},
 	studio: {
@@ -72294,12 +72294,12 @@ var F0 = "peach.table.jav-releases.widths.v1", I0 = "peach.table.jav-releases.vi
 		max: 200
 	},
 	score: {
-		width: 112,
+		width: 100,
 		min: 96,
 		max: 200
 	},
 	release: {
-		width: 128,
+		width: 120,
 		min: 112,
 		max: 240
 	},
@@ -83826,4 +83826,4 @@ if (!$9) throw Error("主界面宿主缺失");
 dze($9);
 export { $L as $2ec61d1d4f780267$export$a8a3e93435678ff9, sR as $3a442827418ebe87$export$eb2fcfdbd7ba97d4, wz as $542a13ca2fa5b484$export$5b6b19405a83ff9d, kD as $72abaeab4d80592f$export$78efe591171d7d45, gB as $76d00c5a4edb230a$export$76ccd210b9029917, pB as $76d00c5a4edb230a$export$816b5d811295e6bc, yB as $76d00c5a4edb230a$export$b59bdbef9ce70de2, xB as $76d00c5a4edb230a$export$f6f0c3fe4ec306ea, fB as $76d00c5a4edb230a$export$f850895b287ef28e, mhe as $b4f18e3395fe64d7$export$3d96ec278d3efce4, phe as $b4f18e3395fe64d7$export$3e41faf802a29e71, uhe as $b4f18e3395fe64d7$export$b2539bed5023c21c, TB as $b4f18e3395fe64d7$export$e51a686c67fdaa2d, _he as $bd263d78e9bf3c56$export$f5c9f3c2c4054eec, pE as $ea3928288112382f$export$439d29a4e110a164, Lz as $f2ff30fde7b014be$export$3ddf2d174ce01153, Wz as $fe21c36db05242bb$export$a98f0dcb43a68a25, Gz as $fe21c36db05242bb$export$d7b12c4107be0d61, Zhe as $l, Qj as ACCENTS, zke as AMANE_BRIDGE_CHECK_URL, q$ as AMANE_BRIDGE_KEY, Bke as AMANE_BRIDGE_REBUILD_URL, or as ApiError, iW as ArtSlot, b2 as BATCH_DELETE_TEXT, J as Button, jL as ButtonLink, nV as Bx, S$ as CLEANUP_ENTRY, x$ as CLEANUP_ENTRY_GRID, Yf as CLEANUP_HASH_REDIRECTS, qf as CLEANUP_TOOLS, _n as CLOUD_LOCATIONS, q1 as CLOUD_PROXY_HELP, Gr as COLUMN_SORT, a1 as CONFIGURATION_KEY, nX as CONFIGURATION_URL, Vke as COOKIE_TEXT_LIMIT, K$ as COVER_JOB_KEY, Ji as CREDENTIAL_STATE, H$ as CUSTOM_SOURCES_KEY, V$ as CUSTOM_SOURCES_URL, dG as CatalogViewToggle, XV as Checkbox, YV as CheckboxGlyph, BV as ChevronSortDown, rW as Chip, fW as CloudDownloadDialog, GH as CollapseChevron, WH as CollapseRegion, h$ as CollectionSummary, vwe as DEFAULT_CATEGORY, ur as DEFAULT_SORT, VQ as DIAGNOSTICS_KEY, _Te as DIRECTORY_TEMPLATE_ERROR, yW as DISCOVERY_SORTS, oW as DOWNLOADS_KEY, aW as DOWNLOADS_URL, SY as DUPLICATES_KEY, rY as DataTableFooter, $J as DataTableFrame, nY as DataTableSort, ZH as Disclosure, Kve as DownloadsPanel, Hhe as E3, ywe as ENTITY_REVIEW_KINDS, G1 as ENTRY_LINKS_HELP, K1 as ENTRY_LINKS_HINT, JB as Ea, Sge as EmptyFocusButton, SV as EmptyState, YH as ErrorText, G_e as ExternalLink, Br as FEEDS_KEY, uX as FEED_SCHEDULE_KEY, y$ as FIELDSET_FOOT, $Pe as FLOW_LABEL_X, e6 as FLOW_VIEWBOX, Rr as FOLLOW_CHECK_KEY, Lr as FOLLOW_CREDENTIALS_KEY, L8 as FOLLOW_INITIAL_RANGE_OPTIONS, Ir as FOLLOW_MANAGE_KEY, WZ as FOLLOW_MANAGE_NAV, zr as FOLLOW_RESOLVE_KEY, lX as FOLLOW_SCHEDULE_KEY, J_e as Fact, q_e as FactList, XH as FieldLabel, M$ as Fieldset, j$ as FieldsetTitle, dpe as FilterGlass, wL as FilterGlassRows, CL as FilterIconButton, TL as FilterPill, W_e as Footer, $B as Gg, EL as GlassPill, oV as HN, JH as Help, pV as HintText, GPe as IDLE_POLL_MS, swe as IDLE_REPAIR, yL as IconButton, UQ as IndexSearch, vV as Input, _V as InputBase, P$ as IssueRow, gM as JAV_LAYOUTS, z0 as JAV_RECOMMENDATION_GRID, FX as JUNK_KEY, MW as JavHeader, twe as KEEP_LABELS, Hr as LAYOUTS, W1 as LIBRARY_FOLDER_HELP, lH as LIBRARY_PROCESSING_KEY, JY as LINKS_KEY, YY as LINK_CHECK_KEY, Uwe as LINK_KINDS, XY as LINK_PRUNE_KEY, tr as LOC, fV as Label, L$ as LibraryProcessingCard, zV as LibraryShortcuts, TH as LinkButton, $he as Lo, zH as LoadingDots, Uhe as M6, Jwe as MEDIA_PROCESSING_KEY, fX as MEDIA_PROCESSING_URL, DY as MEDIA_REPAIR_KEY, EY as MEDIA_REPAIR_URL, vr as MEDIA_SOURCES_KEY, gs as MEDIA_SOURCE_ICONS, hn as MEDIA_SOURCE_OPTIONS, WV as MENU_ITEM, GV as MENU_ITEM_INTERACTIVE, UV as MENU_POPOVER_SURFACE, tge as Ma, kH as MenuDialog, gK as MixCard, yV as ModalFrame, xx as MotionConfigContext, uV as NR, N$ as NameLink, xV as Note, vge as OA, hX as ORGANIZE_KEY, _2 as ORGANIZE_PARAMETER_HINT, g2 as ORGANIZE_SCOPE_HINT, h2 as ORGANIZE_TEXT, vX as ORPHAN_RECORDS_KEY, y2 as ORPHAN_RECORDS_TEXT, ZB as OV, IB as P7, MX as PERFORMER_DELETE_KEY, tye as PHASES, rX as PICK_FOLDER_URL, w$ as PLAIN_STAT_STRIP, z$ as PLAYLISTS_KEY, UAe as POLICY_COLUMNS, GAe as POLICY_COVER_NOTE, WAe as POLICY_MATRIX, U1 as POLICY_SUMMARY, tY as Pagination, I$ as PathLine, cV as Pf, JI as PillTabList, ske as PlainStat, VH as Progress, MY as QUALITY_GOALS_KEY, sV as RB, I0 as RELEASE_COLUMN_VISIBILITY_KEY, F0 as RELEASE_COLUMN_WIDTHS_KEY, bW as RELEASE_SORTS, yje as RELEASE_SORT_COLUMNS, E$ as REPAIR_CARD_TEXT, OY as REPAIR_LIBRARIES_KEY, CX as RESOURCE_APPLY_KEY, SX as RESOURCE_SCAN_KEY, v2 as RESOURCE_SYNC_TEXT, pke as RESULT_PANEL, mke as RESULT_SECTION, _we as REVIEW_CATEGORIES, PX as REVIEW_COUNTS_KEY, bwe as REVIEW_DECISION_LABELS, FY as REVIEW_KEY, IY as REVIEW_LABELS, RY as REVIEW_QUEUES, zY as REVIEW_QUEUE_LABELS, VG as RetryNote, _ge as Rf, dV as Rk, V_e as Rows, Lke as SCRAPING_CHECK_URL, W$ as SCRAPING_COVER_URL, G$ as SCRAPING_KEY, Ike as SCRAPING_SETTINGS_URL, _U as SEGMENT, gU as SEGMENTED_TRACK, cX as SETTINGS_KEY, iX as SETTINGS_URL, dr as SORT_DEFAULT_DIR, lr as SORT_OPTIONS, vn as SOURCE_LABELS, T3 as STATS_KEY, ake as STAT_STRIP, oke as STAT_STRIP_SIX, B_e as Section, hke as SectionHeading, U_e as SectionSkeleton, hU as SegmentedRadioGroup, lve as SegmentedTabList, PG as Segments, eY as Select, eW as Select$1, l1 as SelectField, tW as SelectItem, uY as SelectionActions, Aj as SelectionDock, dY as SelectionPopover, KH as SettingsCard, z_e as SettingsRow, qH as SettingsSectionLabel, FG as Shuffle, Q_e as SiteLabel, pG as SortDirectionIcon, IG as SortKeys, wQ as SourceAvatar, tU as SourceLabel, QH as SourceMark, H_e as Stack, cke as StatCard, F$ as StatusLabel, mge as Su, r4 as Switch, rL as TASKS_KEY, PPe as TASTE_REFRESH_KEY, FPe as TASTE_WINDOWS, dX as THUMBNAIL_JOBS_KEY, LX as TRASH_KEY, Wfe as TRIGGER_LABELS, HJ as Table, fY as TableColumnControls, pY as TableColumnResizer, hY as TableSelectionHeader, u$ as TagManager, K_e as TaskCenterLink, HH as TaskProgress, hV as TextField, mV as TextFieldContext, YB as Un, mW as WANTS_KEY, v4 as WantMagnets, Ug as WithPromise, BB as Wt, qB as Xc, lV as Xf, HB as Xl, VB as Xt, RB as _8, o as __commonJSMin, s as __exportAll, l as __toESM, gge as aB, Ti as addAlias, wi as addSource, gW as addWant, uS as animate, B as apiGet, V as apiSend, uM as appSettingsStore, ITe as applyConfirmText, jX as applyLeftovers, FTe as applyPlanText, RTe as applyText, mM as applyTheme, gy as asNumber, wTe as attachOrphan, si as authorAvatar, li as authorGroups, oi as authorInitial, ai as authorName, Aq as autoResetPageIndex, go as avatarInner, j3 as bandRows, vTe as baseName, owe as batchOperate, pue as beginPlayerGuidePreview, Fj as boundedPreference, rwe as bulkCloudPreferences, EV as busyProps, hge as cB, lNe as cachedMagnetStates, Lg as calcGeneratorVelocity, Dwe as canApprove, fg as cancelFrame, kTe as candidateText, RH as cardClass, kM as cardRatio, XJ as catalogListSkeletonCellHtml, KB as cc, Wi as checkEvidenceGap, Ui as checkFailures, Pi as checkFeeds, qwe as checkLine, Vi as checkReceipt, Hi as checkSummary, Uke as checkText, Gi as checkedText, nK as clickedBlank, X5 as closeDrawerAfterNav, YCe as cloudLocations, w0 as cloudProxySkeleton, UC as clsx, ige as cn, av as collectMotionValues, Xq as columnVisibilityFeature, LJ as column_getCanSort, NJ as column_getSortFn, Twe as commonReviewSources, Of as configurationSection, zPe as configureTasteBrowser, ol as confirmModal, Hfe as controlTask, fq as copyInstancePropertiesWithoutMemos, co as coverUrl, Vq as createColumnHelper, Ake as createPlaylist, Yi as credentialDone, b0 as credentialsSkeleton, Iwe as currentReviewRow, q as cx, tV as dZ, Nwe as decisionPayload, Pwe as decisionReceipt, Mwe as defaultChoice, BTe as deletePerformerVideos, Mke as deletePlaylist, x as diagnosticHeaders, H1 as diagnosticsSkeleton, DW as discoveryArtwork, SW as discoveryKey, sye as discoveryScore, a9 as disposeStage, $Ce as distinctName, zi as dropSources, pge as du, iwe as duplicateVictims, uL as elapsedText, tn as entityDisplayName, ho as entityFaceImg, Nn as entityPath, ei as errorHeadline, cr as errorMessage, z as esc, kq as expandRowModel, AB as f1, yo as facePos, $r as feedIntervalText, X$ as fetchAmaneBridge, _i as fetchCheckJob, o1 as fetchConfiguration, Y$ as fetchCoverJob, gi as fetchCredentials, U$ as fetchCustomSources, NX as fetchDeletePerformers, zTe as fetchDeletePlan, HQ as fetchDiagnostics, CW as fetchDiscoveries, wY as fetchDuplicates, Rfe as fetchEarlier, Zwe as fetchFeedSchedule, ji as fetchFeeds, hi as fetchFollow, Xwe as fetchFollowSchedule, zX as fetchJunkSummary, _H as fetchLibraryProcessing, $Y as fetchLinkCheck, eX as fetchLinkPrune, QY as fetchLinkStats, Ywe as fetchMediaProcessing, kY as fetchMediaRepair, yr as fetchMediaSources, gX as fetchOrganize, uTe as fetchOrganizeExample, yX as fetchOrphanRecords, Ai as fetchPending, B$ as fetchPlaylists, NY as fetchQualityGoals, EW as fetchReleases, AY as fetchRepairLibraries, vi as fetchResolveJob, TX as fetchResourceApply, wX as fetchResourceScan, GY as fetchReview, RX as fetchReviewCounts, pX as fetchSettings, J$ as fetchSources, E3 as fetchStats, yi as fetchSuggestions, aL as fetchTasks, Z3 as fetchTaste, BPe as fetchTasteJob, Qwe as fetchThumbnailJobs, BX as fetchTrashSummary, hW as fetchWants, Cwe as filterReviewRows, $n as firstGrapheme, JK as flexRender, tFe as flowGraph, nFe as flowLabel, ePe as fmtCount, qn as fmtDur, Yn as fmtSize, Lfe as foldByKind, epe as foldRoutine, Ii as followFeedByName, Vr as followSuggestKey, npe as followupDetail, Ife as followupTally, dg as frame, PB as g4, $q as getDefaultPaginationState, OM as gridLayout, ci as groupByAuthor, $fe as groupFollowups, HY as groupReviewRows, NTe as hasChanges, EX as hasResourceRoots, sL as hasResultProblems, KPe as historySpan, jB as i2, WPe as importTasteExport, x0 as indexersSkeleton, Ng as interpolate, vW as invalidateWants, lL as isActive, Qr as isBroken, Kr as isLayout, gv as isMotionValue, LY as isReviewCategory, tpe as isRoutine, S0 as javBrowserSkeleton, V0 as javContentSkeleton, xM as javLayout, B0 as javTagSkeleton, GTe as junkBreakdown, Nke as keepPlaylist, ke as keepPreviousData, fi as keepSelected, D3 as known, Rhe as l7, Qfe as latestOfKind, Qn as leadingGraphemes, fPe as lengthRows, Sr as localTime, fo as logoUrl, Fi as lookupFeedActor, FB as m7, eV as mM, En as mapLimit, ki as markItem, M3 as max, uPe as mediumRows, zfe as mergeFinished, N3 as min, Vwe as mirrorText, uwe as missingToolText, TY as mixedCloudPreferences, mL as momentText, dS as motion, sv as motionValue, nn as nameFallback, He as notifyManager, Whe as oe, bTe as organizeOutcome, r2 as overlayHost, qr as pageSizeOf, di as pageWindow, mr as paginationRange, Ri as patchSource, W as peachHistory, W as peachHistory$1, jwe as pendingGenres, nPe as percentText, pTe as pickOrganizeFolder, C$ as plainStatClass, yTe as planSummary, O3 as playedFor, iPe as playedItemUrl, iL as pollInterval, Js as popCount, kke as posterUrl, lbe as previewLibraryColor, fTe as previewOrganize, pwe as previewUrl, Xfe as problemDestination, fH as processingActive, dL as progressText, eU as providerIcon, Kwe as pruneText, OX as purgeCount, TTe as purgeOrphan, rV as pv, fge as qE, H as queryClient, MB as r2, QPe as radarRows, sPe as radialArc, cPe as radialBarSize, oPe as radialCeiling, aPe as radialSlices, GN as randomId, XPe as rankDetail, ZPe as rankShares, A3 as reachedShare, fL as readableErrorHeadline, xW as recommendationScore, Lwe as recordGenre, DTe as recordsText, Pke as recreatePlaylist, Dke as refreshPlaylists, Cl as relayoutCovers, L0 as releaseColumns, wW as releaseFilters, TW as releaseKey, Bi as reloadFollowManage, Bwe as reloadReview, JAe as rememberShape, hTe as rememberTemplates, Ei as removeAlias, Ni as removeFeed, Ci as removeSource, UPe as removeTasteSource, _W as removeWants, Di as renameAliasGroup, jke as renamePlaylist, Se as replaceEqualDeep, mPe as replayRows, re as require_jsx_runtime, A as require_react, N as require_react_dom, cq as require_with_selector, iye as resetWants, pr as resolveFollowSort, Bg as resolveStartTime, m_e as restartEffectText, Oke as resumeAssetId, Swe as reviewGroupingOptions, VY as reviewQueueData, BY as reviewQueueOf, WTe as reviewSummary, wwe as reviewWindow, kwe as rowEvidence, WY as rowFieldName, oJ as rowPaginationFeature, DJ as rowSelectionFeature, BJ as rowSortingFeature, UY as rowSubject, Awe as rowTags, Owe as rowTitle, Fhe as s5, Oi as saveCredential, PTe as scanLine, rTe as schedulePollInterval, oye as searchNote, Ewe as selectReviewRange, pi as selectionState, Mi as setFeedEnabled, Si as setSourceEnabled, Mf as settingsPath, zwe as settleReviewRows, QCe as sharedNamePrefix, Ep as shellNavigate, T8 as showToast, zn as siteMarkUrl, bq as skipFirstRun, KI as sortCx, Yr as sortLabel, yn as sourceDefaultCost, qi as sourceIconUrl, LTe as sourceMeta, zs as spinnerHtml, jg as spring, wV as spriteGlyph, bi as startCheck, Wwe as startLinkCheck, Gwe as startLinkPrune, mTe as startOrganize, xi as startResolve, jTe as startResourceApply, ATe as startResourceScan, HPe as startTasteRefresh, ike as statCardClass, Kfe as statusLabel, lwe as statusLine, Zr as statusText, AM as storeJavLayout, Fwe as submitDecision, hL as summaryItems, Hq as tableFeatures, xq as tableMemo, ui as tableRows, Yfe as taskIssues, Zfe as taskSubject, Q3 as tasteDate, JPe as tasteDimensions, qPe as tasteHours, X3 as tasteKey, LPe as tasteRefetchInterval, RPe as tasteTime, QI as textLang, P0 as tierPlaceholdersHtml, $m as time, Yhe as tl, mi as toggleGroup, $3 as topScores, oge as um, ege as uo, EH as useAction, zZ as useBackgroundJob, uG as useCatalogView, KU as useClientUpdates, dm as useConstant, gL as useEntityNames, SL as useHorizontalScroller, fm as useIsomorphicLayoutEffect, tK as useLibraryTints, Ft as useMutation, ZV as useOverlayScrollbar, Pt as useQuery, ae as useQueryClient, $x as useReducedMotion, nTe as useRunSchedule, eTe as useSaveFollowSchedule, mX as useSaveSettings, iTe as useSaveThumbnailMode, VJ as useTable, oY as useTablePreferences, kL as useViewGlide, awe as victimBytes, Xhe as vl, aye as wantName, rPe as watchNote, k3 as watchedShare, Dc as wireHorizontalScroller, gTe as withOrganizeJob, fve as writeJavQuery };
 
-//# debugId=fa36f9e2-c3c4-4fb5-b605-6193c2aaaa4c
+//# debugId=92590eb9-e301-4f55-8e5a-6e1cabed553c
