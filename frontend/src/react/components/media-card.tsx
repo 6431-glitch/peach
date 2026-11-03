@@ -19,8 +19,6 @@
  * 点击的分流：多选与修饰键优先，然后是打开、实体链接、未归属、
  * 标签，其余落到整张卡上就是打开。 */
 import { memo, useCallback, useRef, useState, type CSSProperties, type MouseEvent, type ReactNode } from 'react';
-import { Dialog, Popover } from 'react-aria-components';
-import { MENU_POPOVER_SURFACE } from '@/components/base/dropdown/menu-styles';
 import { cardRatio as layoutRatio } from '@peach/appearance';
 import {
   cardArtwork, cardIdentity, entityAvatar, frameArtwork, performerLabel, relayoutCovers, releaseHover, wireHover,
@@ -32,6 +30,7 @@ import { useEntityNames } from '../use-entity-names';
 
 import type { MediaCardActions, MediaCardHelpers, MediaCardLayout, MediaItem } from '../catalog-grid/types';
 import { ArtSlot } from './art-slot';
+import { RecommendationReason } from './recommendation-reason';
 import { useLibraryTints } from './library-tint';
 import { suppressShiftTextSelection } from './row-click';
 
@@ -188,24 +187,6 @@ function LaterButton({ item, actions, on, onChange }: {
   );
 }
 
-/** 推荐理由独占内容行，完整文本可由键盘或触屏打开。 */
-function RecommendationReason({ reason }: { reason: string }) {
-  const trigger = useRef<HTMLButtonElement>(null);
-  const [open, setOpen] = useState(false);
-  return <>
-    <button ref={trigger} type="button" data-media-next-reason="" title={reason}
-      aria-label={`查看推荐理由：${reason}`} aria-haspopup="dialog" aria-expanded={open}
-      onClick={event => { event.stopPropagation(); setOpen(true) }}>{reason}</button>
-    <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen} placement="top" offset={8}
-      containerPadding={12} className={MENU_POPOVER_SURFACE}>
-      <Dialog data-media-reason-dialog="" aria-label="推荐理由"
-        className="w-64 max-w-full p-2 text-body-regular whitespace-normal break-words text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring">
-        {reason}
-      </Dialog>
-    </Popover>
-  </>;
-}
-
 /** 快退、快进跳的是悬停预览那段视频本身，不打开详情。 */
 function seekPreview(card: HTMLElement | null, delta: number) {
   const video = card?.querySelector<HTMLVideoElement & { _hop?: ReturnType<typeof setInterval> | null }>('video.hv');
@@ -360,7 +341,8 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
               <span data-media-size=""><Icon name="hard-drive" />{Number(shownSize) > 0 ? fmtSize(Number(shownSize)) : '大小未知'}</span>
             </span>
           </div>
-          {variant === 'next' ? (item.why ? <RecommendationReason reason={item.why} /> : null) : tags.length || item.disposal === 'trash'
+          {variant === 'next' ? <RecommendationReason reasons={item.why ? item.why.split(' · ') : []}
+            tags={(item.why_tags || []).map(helpers.tagLabel)} /> : tags.length || item.disposal === 'trash'
             ? (
               <div data-media-tags="">
                 {tags.map((tag) => (

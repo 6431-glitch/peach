@@ -92,7 +92,24 @@ describe('关注与馆藏共用卡片交互', () => {
       await creator.focus();
       assert.notEqual(await creator.evaluate(node => getComputedStyle(node).outlineStyle), 'none');
       await page.locator('[data-follow-related] [data-follow-item]').first().waitFor({ timeout: 15_000 });
-      const geometry = await page.locator('[data-follow-detail-actions]').evaluate(node => {
+      await page.locator('[data-follow-related] [data-follow-item]').first().hover();
+      const hovered = await page.locator('[data-follow-related]').evaluate(section => {
+        const row = section.querySelector('[data-related-row]')!.getBoundingClientRect();
+        const card = section.querySelector('[data-follow-item]')!;
+        const box = card.getBoundingClientRect();
+        const inside = [...card.querySelectorAll('*')].every(node => {
+          const rect = node.getBoundingClientRect();
+          return !rect.height || rect.bottom <= box.bottom + 0.5;
+        });
+        return {
+          inside, top: box.top - 8 >= row.top - 0.5, bottom: box.bottom + 8 <= row.bottom + 0.5,
+          fill: getComputedStyle(card, '::before').backgroundColor, ground: getComputedStyle(section).backgroundColor,
+        };
+      });
+      assert.deepEqual([hovered.inside, hovered.top, hovered.bottom], [true, true, true],
+        '接着看的卡片内容与悬停面不越过横排的裁切边');
+      assert.notEqual(hovered.fill, hovered.ground, '悬停面和接着看底色同色，浅色主题下看不出悬停');
+      const geometry =await page.locator('[data-follow-detail-actions]').evaluate(node => {
         const styles = [...node.querySelectorAll('button, a')].map(button => {
           const style = getComputedStyle(button);
           return [style.width, style.height, style.borderRadius];
