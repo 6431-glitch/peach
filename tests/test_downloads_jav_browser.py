@@ -315,6 +315,25 @@ class BrowserTests(unittest.TestCase):
         self.downloads.store.save(task)
         self.assertEqual(self.status().json()["cause"], "magnet")
 
+    def test_script_can_retry_a_failed_organization_but_nothing_else(self):
+        self.add()
+        self.service.process_one()
+        task = self.downloads.store.get(self.status().json()["task_id"])
+        task.state, task.asset_id = dl.INGESTED, 42
+        self.downloads.store.save(task)
+        retry = lambda headers=None: self.client.post("/api/jav-browser/postprocess", json={"code": "ABC-123"},
+                                                      headers=self.script_headers if headers is None else headers)
+        self.assertEqual(retry().status_code, 400)
+        self.downloads.store.postprocess(task.id, dl.POSTPROCESS_FAILED, detail="文件整理未完成")
+        self.assertEqual(retry({}).status_code, 401)
+        # 派发后继由任务中心同一入口负责，这里只核对交给了它。
+        with patch.object(self.downloads, "_dispatch_postprocess") as dispatch:
+            response = retry()
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(response.json()["state"], "ingested")
+        self.assertEqual(response.json()["download"]["postprocess_state"], dl.POSTPROCESS_PENDING)
+        self.assertEqual(dispatch.call_args.args[0].id, task.id)
+
     def test_cloud_failure_is_visible_and_a_manual_retry_uses_existing_task(self):
         self.remote.submit.side_effect = dl.DownloadError("config", "请更新网盘账号")
         self.add()

@@ -1754,12 +1754,16 @@ class _RemoteSession:
             payload = self.provider().query(code, source, deadline=deadline)
         except Exception as error:
             _raise_task_failure(error)
+            # 链上官方来源这一趟已经给了标签时，JavDB 只是换一批更细的类别；取不到就先用官方标签，
+            # 和其他已有标签、不再问 JavDB 的作品一样，不算这部片的问题。
+            settled = 'tags' in _given_fields(entries)
             if isinstance(error, DeadlineExceeded):
                 self.reset()
-                issue(row, 'JavDB 标签在预算时间内未取得', action='querying_metadata', retryable=True)
+                if not settled:
+                    issue(row, 'JavDB 标签在预算时间内未取得', action='querying_metadata', retryable=True)
             elif is_missing(error):
                 self._record_miss(source, code)
-            else:
+            elif not settled:
                 issue(row, 'JavDB 标签未取得：' + describe_failure(error),
                       action='querying_metadata', retryable=True, paused=source_paused(error),
                       diagnostics=_source_failure_details(error, code, 'querying_metadata', source=source))

@@ -297,6 +297,15 @@ class JavBrowser:
                     "stage": "submitting" if code in self._submitting else state,
                     "message": row.get("message") or MESSAGES[state]}
 
+    def retry_postprocess(self, value: object) -> dict:
+        """重试这个番号入库后失败的整理，与任务中心的「重试整理」同一入口。"""
+        status = self.status(value)
+        task_id = status.get("task_id")
+        if not task_id or status["state"] != "ingested" or status.get("download", {}).get("postprocess_state") != "failed":
+            raise ValueError("这个番号没有失败的整理可以重试")
+        self.downloads.retry_postprocess(int(task_id))
+        return self.status(value)
+
     def active(self) -> dict:
         """进行中与最近结束的任务，供用户脚本的各个窗口共享同一份进度。
 
