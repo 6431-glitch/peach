@@ -1,6 +1,7 @@
 """只读 JAV 发现：库外已知作品与少看的馆藏共用口味和展示契约。"""
 from __future__ import annotations
 
+import hashlib
 import re
 
 from . import entities, feeds, web_catalog, web_feeds, web_settings, wants
@@ -216,6 +217,10 @@ RELEASE_PAGE_SIZE = 24
 RELEASE_FACETS = ("performer", "studio", "tag")
 
 
+#: 新作的排序：发行时间（默认）、来源评分、时长、番号、口味，`random` 是「换一批」。
+RELEASE_SORTS = ("release_date", "source_score", "duration", "code", "taste", "random")
+
+
 def _release_values(row, facet):
     if facet == "performer":
         return [ref["name"] for ref in row["performer_refs"]]
@@ -224,8 +229,25 @@ def _release_values(row, facet):
     return row["tags"]
 
 
+def _release_order(rows, sort, descending, seed):
+    """按发行日期倒序打底，再按所选字段稳定排序；取不到值的排在末尾，不随方向翻转。
+
+    `random` 按 `seed` 与番号的摘要排：同一个种子翻页时顺序不变，换种子就是换一批。
+    """
+    rows = sorted(rows, key=lambda row: (row["release_date"] or row["discovered_at"] or "", row["id"]), reverse=True)
+    if sort == "random":
+        return sorted(rows, key=lambda row: hashlib.sha1(f"{seed}\0{row['code']}".encode("utf-8")).hexdigest())
+    if sort == "release_date":
+        return rows if descending else rows[::-1]
+    field = "taste_score" if sort == "taste" else sort
+    known = [row for row in rows if row.get(field) not in (None, "")]
+    known.sort(key=lambda row: row[field], reverse=descending)
+    return known + [row for row in rows if row.get(field) in (None, "")]
+
+
 def q_jav_releases(contract, args):
-    """订阅发现的全部未入库新作：按发行日期倒序分页，可按女优、厂牌、标签与文字筛选。
+    """订阅发现的全部未入库新作：默认按发行日期倒序分页，可按女优、厂牌、标签与文字筛选，
+    排序见 `RELEASE_SORTS`（口味分只在按口味排时现算）。
 
     候选与「发现」同一批（`_external`），只换成时间顺序、不按口味截断。筛选项只取这批新作里
     出现过的女优、厂牌与标签；每个维度的计数按「文字与其他维度已生效、本维度不计」的行集算，
@@ -241,11 +263,17 @@ def q_jav_releases(contract, args):
         size, page = RELEASE_PAGE_SIZE, 1
     chosen = {facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS}
     query = str(args.get("q") or "").strip().casefold()
+    sort = args.get("sort") if args.get("sort") in RELEASE_SORTS else "release_date"
+    descending = args.get("direction") != "asc"
     with contract.read_connection() as connection:
         unique = {}
         for row in _external(connection, contract):
             unique.setdefault(web_catalog.normalise_code_key(row["code"]) or row["id"], row)
         rows = list(unique.values())
+        if sort == "taste":
+            strengths, names, evidence = preference_profile(connection, contract.taste_history_store)
+            for row in rows:
+                row["taste_score"], row["reasons"] = preference_score(row, strengths, names, evidence)
         refs = web_feeds._discovery_performers(connection, contract, rows)
         studios = {}
         for row in rows:
@@ -256,7 +284,7 @@ def q_jav_releases(contract, args):
                 studios[row["studio"]] = web_feeds._studio_name(connection, row["studio"])
             row["studio"] = studios.get(row["studio"], row["studio"])
             row.pop("entities", None)
-        rows.sort(key=lambda row: (row["release_date"] or row["discovered_at"] or "", row["id"]), reverse=True)
+        rows = _release_order(rows, sort, descending, str(args.get("seed") or ""))
 
         def matches(row, skip=None):
             if query and query not in " ".join([row["code"] or "", row["title"] or "", row["performers"], row["studio"] or "",
@@ -292,6 +320,7 @@ def q_jav_releases(contract, args):
         row["cover_version"] = contract.cover_version(row["code"])
         row["poster_box"] = contract.poster_box(row["code"])
     response = {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
+                "sort": sort, "direction": "desc" if descending else "asc",
                 "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]}}
     unread = [row["code"] for row in shown if row.get("metadata_state") == "pending"]
     if unread or args.get("metadata_job_id"):

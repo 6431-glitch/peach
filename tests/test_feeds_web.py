@@ -1321,8 +1321,9 @@ class JavDiscoveryTest(FeedWebFixture):
         with self.contract.database.write_transaction() as connection:
             connection.execute("INSERT INTO feed_discovery(code,release_date,discovered_at) VALUES('OWN-001','2026-09-25','t')")
             connection.execute("INSERT INTO asset(location,path,name,medium,code) VALUES('local','x.mp4','x.mp4','video','OWN-001')")
-        movies = {"SSIS-950": {"actors": [{"name": "女优甲"}], "tags": [{"name": "中出"}], "maker_name": "厂牌甲"},
-                  "HMN-071": {"actors": [{"name": "女优乙"}], "tags": [], "maker_name": "厂牌乙"},
+        movies = {"SSIS-950": {"actors": [{"name": "女优甲"}], "tags": [{"name": "中出"}], "maker_name": "厂牌甲",
+                               "score": "3.5", "duration": 120},
+                  "HMN-071": {"actors": [{"name": "女优乙"}], "tags": [], "maker_name": "厂牌乙", "score": "4.5"},
                   "OWN-001": {"actors": [{"name": "馆藏女优"}], "tags": [{"name": "巨乳"}], "maker_name": "馆藏厂牌"}}
 
         reads = []
@@ -1347,6 +1348,16 @@ class JavDiscoveryTest(FeedWebFixture):
         second = releases(page=2, size=1)
         self.assertEqual(([row["code"] for row in second["items"]], second["total"], second["page"]), (["HMN-071"], 2, 2))
         self.assertEqual([row["code"] for row in releases(q="中出")["items"]], ["SSIS-950"])
+
+        def order(**args):
+            return [row["code"] for row in releases(**args)["items"]]
+
+        self.assertEqual(order(sort="release_date", direction="asc"), ["HMN-071", "SSIS-950"])
+        self.assertEqual(order(sort="source_score"), ["HMN-071", "SSIS-950"])
+        self.assertEqual(order(sort="source_score", direction="asc"), ["SSIS-950", "HMN-071"])
+        self.assertEqual(order(sort="duration", direction="asc"), ["SSIS-950", "HMN-071"], "没有时长的排在末尾，不随方向翻转")
+        self.assertEqual(order(sort="duration"), ["SSIS-950", "HMN-071"])
+        self.assertEqual(order(sort="random", seed="a"), order(sort="random", seed="a"), "同一个种子翻页时顺序不变")
 
     def _discover(self, scope="external", rankings=None, metadata=None, args=None):
         from peach import web_jav_discovery
