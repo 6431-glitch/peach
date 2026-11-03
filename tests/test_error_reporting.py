@@ -560,6 +560,36 @@ class ErrorReportingTests(unittest.TestCase):
         for private in ('private-cookie', 'private-token', 'private.example', 'movie.mp4'):
             self.assertNotIn(private, exported)
 
+    def test_origin_evidence_and_windows_browsing_reach_the_exported_report(self):
+        """来源检查对不上的形态与系统代理、默认浏览器进 report.json；代理地址不出现。"""
+        from peach import diagnostic_context
+        from peach.settings_file import PeachConfig
+        registry = {'ProxyEnable': 1, 'ProxyServer': '127.0.0.1:7897', 'ProxyOverride': 'localhost;<local>',
+                    'AutoConfigURL': None, 'AutoDetect': 0, 'ProgId': '360SE6.HTML'}
+        with mock.patch.object(diagnostic_context.os, 'name', 'nt'), \
+                mock.patch.object(diagnostic_context, '_registry_values',
+                                  lambda path, names: {name: registry[name] for name in names}):
+            browsing = diagnostic_context.windows_browsing()
+        self.assertEqual(browsing['default_browser'], '360SE6.HTML')
+        self.assertEqual(browsing['system_proxy'], {'enabled': True, 'server_configured': True, 'auto_config': False,
+                                                    'auto_detect': False, 'bypass_local': True, 'bypass_loopback': True})
+        self.assertNotIn('7897', json.dumps(browsing))
+        with mock.patch.object(diagnostic_context, '_registry_values', side_effect=PermissionError), \
+                mock.patch.object(diagnostic_context.os, 'name', 'nt'):
+            self.assertEqual(diagnostic_context.windows_browsing()['system_proxy'],
+                             {'status': 'unavailable', 'reason': 'PermissionError'})
+        error_reporting.local_event('origin-mismatch', guard='setup', accepted=False, origin_class='null',
+                                    origin={}, server={'scheme': 'http', 'host_kind': 'loopback', 'port': 8900},
+                                    fetch_site='absent', user_agent='UnitBrowser/1', unrelated='dropped')
+        payload = support_bundle.bundle_bytes(config=PeachConfig(self.root, self.root / 'config.toml'))
+        with zipfile.ZipFile(io.BytesIO(payload)) as archive:
+            report = json.loads(archive.read('report.json'))
+        [row] = report['recent_origin_mismatches']
+        self.assertEqual((row['guard'], row['accepted'], row['origin_class'], row['user_agent']),
+                         ('setup', False, 'null', 'UnitBrowser/1'))
+        self.assertNotIn('unrelated', row)
+        self.assertIn('windows_browsing', report['runtime'])
+
     def test_browser_header_handles_unicode_invalid_encoding_and_unknown_fields(self):
         import base64
         from peach.diagnostic_context import browser_header
