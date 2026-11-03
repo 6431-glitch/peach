@@ -4,9 +4,18 @@ import { fetchWants, WANTS_KEY } from '../wants/wants';
 import type { FaceRef, CoverItem } from '@peach/card-art';
 import { coverImage, javArtwork, remoteCoverUrl } from '@peach/card-art';
 import { esc } from '@peach/legacy/core';
+import { peachHistory, shellNavigate } from '@peach/history';
 import { RELEASE_SORTS, type DiscoveryDirection, type DiscoverySort, type ReleaseSort } from './discovery-sorts';
 
 export { JAV_TABS, javTab, javPath, javLibraryPath } from './jav-navigation';
+
+/** 分区里的筛选写进地址栏：替换当前记录，不多压一条历史。 */
+export function writeJavQuery(patch: Record<string, string>): void {
+  const params = new URLSearchParams(location.search);
+  for (const [key, value] of Object.entries(patch)) { if (value) params.set(key, value); else params.delete(key) }
+  shellNavigate(location.pathname + (params.size ? `?${params}` : ''), { replace: true, state: peachHistory.navigation.location.state });
+}
+
 export interface Discovery extends CoverItem {
   id: number; code: string; title: string; performers: string; release_date: string;
   studio: string; link: string; cover_url: string; has_cover: boolean; wanted: boolean;
