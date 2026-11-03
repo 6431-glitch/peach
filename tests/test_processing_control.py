@@ -797,6 +797,23 @@ class ProcessingControlTests(unittest.TestCase):
         self.assertEqual((result.scanned, result.scanned_bytes), (4, 60))
         self.assertEqual(result.junk_isolated, 2)
 
+    def test_incremental_scan_probes_rows_moved_onto_new_files(self):
+        """按番号改指到新文件的旧行不算新行，但文件换了，增量扫描照样要探它。"""
+        from peach.library_processing import _scan_sources
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True, locations={'local': ('R:\\Media',)})
+        scanned = SimpleNamespace(files=2, total_bytes=30, new_ids=(5,), relocated_ids=(7,), junk_isolated=0)
+        with patch('peach.library_processing.scan_location', return_value=scanned), \
+                patch('peach.library_processing._online_source_root', return_value=self.root), \
+                patch('peach.library_processing._ffprobe_path', return_value=None), \
+                patch('peach.library_processing.probe_unmeasured', return_value=0) as probe, \
+                patch('peach.library_processing.reattach_in') as reattach:
+            result = _scan_sources(config, self.db, locations=config.locations, asset_ids=None,
+                                   stage='scan', guard=Mock(), update=lambda **values: None,
+                                   issue=lambda *_args, **_kwargs: None, incremental=True)
+        self.assertEqual(probe.call_args.kwargs['asset_ids'], [5, 7])
+        self.assertEqual(result.new_ids, (5,), "改指的旧行不进新影片范围")
+        reattach.assert_called_once_with(self.db, (5,))
+
     def test_library_scan_reports_conflicting_records_and_processes_both_roots(self):
         import sqlite3
         from peach.library_processing import _scan_sources
