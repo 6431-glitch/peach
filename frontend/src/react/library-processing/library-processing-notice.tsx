@@ -39,8 +39,9 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false, on
      腾出空间后按原来的开合显示。这时用户再点展开就照办，直到装不下的情形过去又重来。 */
   const [crowded, setCrowded] = useState(false);
   const override = useRef(false);
-  const bodyHeight = useRef(0);
+  const fullHeight = useRef(0);
   const open = expanded && !crowded;
+  const openRef = useRef(open); openRef.current = open;
   const bodyId = useId();
   const [trafficExpanded, setTrafficExpanded] = useState(false);
   const panel = useRef<HTMLElement>(null);
@@ -49,7 +50,8 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false, on
   const active = processingActive(state);
   useEffect(() => { setExpanded(expandedFor(state?.job_id)); setTrafficExpanded(false) }, [state?.job_id]);
   const toggle = () => {
-    if (expanded && crowded) { override.current = true; setCrowded(false); return }
+    // 腾空间时暂收的卡，用户点展开就照办；自己收起过的卡展开时同样越过这次暂收。
+    if (crowded) { override.current = true; setCrowded(false); if (expanded) return }
     try {
       if (expanded && state?.job_id) sessionStorage.setItem(COLLAPSE_KEY, state.job_id);
       else sessionStorage.removeItem(COLLAPSE_KEY);
@@ -68,11 +70,9 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false, on
       const height = node.getBoundingClientRect().height;
       const space = `${height + 12}px`;
       if (root.style.getPropertyValue('--processing-toast-space') !== space) root.style.setProperty('--processing-toast-space', space);
-      /* 展开时的高度按明细区上次展开的实高算：收起后它是 0，量不到。 */
-      const region = node.querySelector<HTMLElement>('[data-processing-body]');
-      const shown = region && !region.hidden ? region.getBoundingClientRect().height : 0;
-      if (region && !region.hidden) bodyHeight.current = region.scrollHeight;
-      const full = height - shown + bodyHeight.current;
+      /* 展开时的高度按上次展开时量到的实高算：收起后折叠区是 0，量不到。 */
+      if (openRef.current) fullHeight.current = height;
+      const full = Math.max(height, fullHeight.current);
       // 与 `../toaster.tsx` 的底边同一算法：默认边距、多选条、下角小窗取最高的那个。
       const floor = Math.max(innerWidth <= 600 ? 16 : 24, px('--selection-dock-space'), px('--miniplayer-space'));
       const receipts = Math.max(0, ...[...document.querySelectorAll('#toasts [data-sonner-toast]:not(.processing-task-toast)')]
@@ -121,7 +121,8 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false, on
       {onHide ? <Button size="small" variant="secondary" iconOnly leadingIcon={RiCloseLine}
         aria-label="隐藏任务提示" onClick={onHide} /> : null}
     </div>
-    <TrafficProgress traffic={state?.traffic} detailsOpen={trafficExpanded} onDetailsChange={setTrafficExpanded} />
+    {/* 收起时只留标题与文件计数；预估、步骤、原因与入口都在折叠区里。 */}
+    <TrafficProgress traffic={state?.traffic} compact={!open} detailsOpen={trafficExpanded} onDetailsChange={setTrafficExpanded} />
     {/* 收起时也露在外面：要人当场拿主意的事不能藏进折叠区。 */}
     {slow ? <SlowItemInline state={state!} slow={slow} /> : null}
     </div>
@@ -142,14 +143,14 @@ export function ProcessingNoticePanel({ state, problem = '', measure = false, on
       {partial ? <p className="text-body-2-regular wrap-anywhere">{PARTIAL_RESULT_TEXT}</p> : null}
       {active && state?.stage && !state.steps?.length ? <p className="text-caption-1-regular text-text-tertiary">当前阶段 · {state.stage}</p> : null}
       {state?.stalled && !problem && !slow ? <p className="text-caption-1-regular">当前步骤耗时较长，正在等待进展</p> : null}
-    </div></div></CollapseRegion>
+    </div>
     <div className="flex flex-wrap items-center justify-between gap-2 pt-3">
       <LinkButton href="/data-cleanup#libraryProcessing" variant="secondary" size="small" trailingIcon={RiArrowRightLine}>
         {problem || failed || partial ? '打开扫描与采集' : '任务详情'}
       </LinkButton>
       {partial ? <LinkButton href={ALL_CONTENT_URL} size="small" trailingIcon={RiArrowRightLine}>查看全部内容</LinkButton> : null}
       {active ? <ProcessingControls state={state!} disabled={!!problem} /> : null}
-    </div>
+    </div></div></CollapseRegion>
   </aside>;
 }
 

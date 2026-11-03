@@ -3,6 +3,7 @@ import { useId, useState } from 'react';
 import { RiArrowDownSLine, RiArrowUpSLine, RiGlobalLine, RiHardDrive3Line } from '@remixicon/react';
 import { Button } from '@/components/base/buttons/button';
 import type { ProcessingTraffic } from './library-processing';
+import { CollapseRegion } from '../components/collapse-region';
 import { useOverlayScrollbar } from '../components/overlay-scrollbar';
 import { SourceLabel } from '../components/source-label';
 import { SourceMark } from '../settings/section';
@@ -19,9 +20,10 @@ const range = (low: number, high: number) => {
 const forecast = (expected: number | undefined, low: number, high: number) => expected === undefined
   ? range(low, high) : `${expected > 0 ? '约 ' : ''}${size(expected)}`;
 
-/** 确认弹窗、任务卡和管理页共用逐目录分账。 */
-export function TrafficProgress({ traffic, initial = false, detailsOpen, onDetailsChange }: {
-  traffic?: ProcessingTraffic; initial?: boolean; detailsOpen?: boolean; onDetailsChange?(open: boolean): void;
+/** 确认弹窗、任务卡和管理页共用逐目录分账。`compact` 时只留文件计数与完整性提示，
+ *  流量、占用与逐目录明细随任务卡一起收起。 */
+export function TrafficProgress({ traffic, initial = false, compact = false, detailsOpen, onDetailsChange }: {
+  traffic?: ProcessingTraffic; initial?: boolean; compact?: boolean; detailsOpen?: boolean; onDetailsChange?(open: boolean): void;
 }) {
   const list = useOverlayScrollbar<HTMLUListElement>();
   const [expanded, setExpanded] = useState(false);
@@ -37,6 +39,7 @@ export function TrafficProgress({ traffic, initial = false, detailsOpen, onDetai
     {traffic.inventory && !traffic.inventory.complete ? <p role="status">正在发现新增文件，数量和预估仍会变化…</p> : null}
     {traffic.unknown_files && traffic.inventory?.complete !== false ? <p role="status">尚有文件未确认，当前数量和预估不完整</p> : null}
     {traffic.inventory?.errors ? <p role="status">部分目录无法读取，数量和预估不完整</p> : null}
+    <CollapseRegion open={!compact} data-processing-estimate=""><div className="flex min-w-0 flex-col gap-2">
     <div className="inline-grid grid-cols-2 gap-6 py-2">
       <section aria-label="流量预估" className="flex min-w-0 flex-col gap-1">
         <p className="inline-flex items-center gap-1.5"><RiGlobalLine aria-hidden className="size-(--icon-inline) shrink-0" />
@@ -81,5 +84,6 @@ export function TrafficProgress({ traffic, initial = false, detailsOpen, onDetai
       </ul>
       </div>
     </div>
+    </div></CollapseRegion>
   </div>;
 }

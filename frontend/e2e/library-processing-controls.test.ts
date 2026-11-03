@@ -384,7 +384,10 @@ describe('扫描与采集控制', () => {
         assert.equal(noticeMotion.arrow, 'transform');
         assert.notEqual(noticeMotion.arrowDuration, '0s');
         await dock.getByRole('button', { name: '收起任务详情' }).click();
-        assert.equal(await dock.getByRole('button', { name: '查看明细', exact: true }).getAttribute('aria-expanded'), 'false');
+        // 收起后只留标题与文件计数：预估、明细键、速度与入口都收进折叠区。
+        await dock.getByText('查看明细', { exact: true }).waitFor({ state: 'hidden' });
+        await dock.getByRole('link', { name: '任务详情' }).waitFor({ state: 'hidden' });
+        assert.equal(await dock.locator('[data-processing-traffic] section').first().isVisible(), false);
         assert.ok((await dock.boundingBox())!.height < expandedHeight);
         await dock.getByRole('button', { name: '展开任务详情' }).click();
         assert.equal(await dock.getByRole('button', { name: '查看明细', exact: true }).getAttribute('aria-expanded'), 'false');
@@ -408,6 +411,7 @@ describe('扫描与采集控制', () => {
         assert.ok(fixed && hovered && unhovered);
         assert.ok(Math.abs(fixed.y - hovered.y) < 1 && Math.abs(fixed.y - unhovered.y) < 1,
           '收起详情后滚动与悬停保持任务卡位置');
+        await dock.getByRole('button', { name: '展开任务详情' }).click();
         await dock.getByRole('button', { name: '处理速度：标准' }).click();
         const speed = page.getByRole('dialog', { name: '处理速度', exact: true });
         await speed.getByRole('slider').press('End');
@@ -462,9 +466,8 @@ describe('扫描与采集控制', () => {
         await speed.press('Escape');
         await settle(page, '#toasts [data-processing-dock]');
         await dock.getByRole('link', { name: '任务详情' }).click();
-        await dock.getByRole('button', { name: '展开任务详情' }).waitFor();
+        await dock.getByRole('button', { name: '收起任务详情' }).waitFor();
         assert.equal(await dock.count(), 1, '换页保留同一张任务卡');
-        await dock.getByRole('button', { name: '展开任务详情' }).click();
         assert.equal(await dock.locator('[data-processing-step="complete"] s').innerText(), '扫描文件');
         assert.equal(await dock.locator('[aria-current="step"] s').count(), 0);
         await page.evaluate(async () => {
