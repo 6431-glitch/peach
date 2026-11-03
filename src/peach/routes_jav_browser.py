@@ -40,6 +40,10 @@ def status(code: str, service=Depends(browser_client)):
         raise HTTPException(400, str(error)) from None
 
 
+def active(service=Depends(browser_client)):
+    return JSONResponse(service.active(), headers={"Cache-Control": "no-store"})
+
+
 def identify(source_url: str, code: str = "", service=Depends(browser_client)):
     try:
         return JSONResponse(service.status(identify_source(source_url, code)), headers={"Cache-Control": "no-store"})
@@ -98,6 +102,7 @@ def create_router(local_only) -> APIRouter:
     router.add_api_route("/integrations/peach-userscript-bridge", userscript_bridge, methods=["GET"],
                         dependencies=[Depends(require_auth)])
     router.add_api_route("/api/jav-browser", status, methods=["GET"])
+    router.add_api_route("/api/jav-browser/active", active, methods=["GET"])
     router.add_api_route("/api/jav-browser/identify", identify, methods=["GET"])
     router.add_api_route("/api/jav-browser/updates", updates, methods=["GET"])
     router.add_api_route("/api/jav-browser/people", people, methods=["GET"])
