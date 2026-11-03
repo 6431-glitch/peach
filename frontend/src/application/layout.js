@@ -226,7 +226,16 @@ export function paintListTitle(){
   const path=decodeURIComponent(location.pathname);
   const label=!manageSection()&&isCatalogPath(path)?STATE_LABELS[state.state]||'':'';
   el.hidden=!label;if(label)el.textContent=label;
-  $('#catalogPageHeading').hidden=!!manageSection()||!isCatalogPath(path)||!!label||state.jav==='1';
+  const heading=$('#catalogPageHeading');
+  heading.hidden=!!manageSection()||!isCatalogPath(path)||!!label||state.jav==='1';
+  paintCatalogPageTitle(heading,state.q);
+}
+
+/* 首页标题跟着搜索词走：搜出来的这一屏是这个词的结果，不再是首页。清掉搜索词回到「首页」。 */
+export function paintCatalogPageTitle(heading,query){
+  const title=heading?.querySelector('[data-page-title]');if(!title)return;
+  const next=String(query||'').trim()||'首页';
+  if(title.textContent!==next)title.textContent=next;
 }
 
 export function openManage(section='stats'){

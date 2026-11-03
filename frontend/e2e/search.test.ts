@@ -303,6 +303,26 @@ describe('顶栏搜索', () => {
     }
   });
 
+  it('搜索结果页的标题写搜索词；点侧栏「首页」回到不带词的首页', { timeout: 60_000 }, async () => {
+    const opened = await openSearch(browser);
+    try {
+      const { page } = opened;
+      const title = page.locator('#catalogPageHeading [data-page-title]');
+      await typeQuery(opened);
+      await page.keyboard.press('Enter');
+      await page.waitForFunction(() => new URLSearchParams(location.search).has('q'), undefined, { timeout: 5_000 });
+      const searched = query(page)!;
+      await page.waitForFunction(text => document.querySelector('#catalogPageHeading [data-page-title]')?.textContent === text,
+        searched, { timeout: 5_000 });
+      await page.locator('[data-nav][aria-label="首页"]').first().click();
+      await page.waitForFunction(() => !new URLSearchParams(location.search).has('q'), undefined, { timeout: 5_000 });
+      assert.equal(await title.textContent(), '首页');
+      assert.equal(await page.locator('#q').inputValue(), '', '回到首页后搜索框里还留着词');
+    } finally {
+      await opened.close();
+    }
+  });
+
   it('回车选中一位女优：打开她的资料页，不绕一趟搜索', { timeout: 60_000 }, async () => {
     const opened = await openSearch(browser);
     try {

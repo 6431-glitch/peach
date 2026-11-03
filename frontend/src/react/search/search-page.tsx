@@ -259,10 +259,11 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     if (roll) s.cancelRoll = roll(field, next);
     else { field.placeholder = next; s.cancelRoll = () => {} }
   };
-  /** 隔几秒换一句：框空着、页面看得见、池里不止一个词时才换。 */
+  /** 隔几秒换一句：框空着、没聚焦、页面看得见、池里不止一个词时才换。聚焦时人正对着这一句，
+   *  换掉了回车搜的就不是刚看见的那个词。 */
   const rotatePlaceholder = () => {
     const field = input();
-    if (document.hidden || field.value || s.pool.length < 2) return;
+    if (document.hidden || focused() || field.value || s.pool.length < 2) return;
     const choices = s.pool.filter(name => name !== field.dataset.suggestion);
     suggest(choices[Math.floor(Math.random() * choices.length)]!);
   };
@@ -273,6 +274,8 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       const names = await props().helpers.pool();
       if (request !== s.poolRequest) return;
       s.pool = names;
+      // 聚焦时重取的池里还有框里这一句就留着它；不在了（筛选变了）才换。
+      if (focused() && names.includes(input().dataset.suggestion || '')) return;
       suggest(names[Math.floor(Math.random() * names.length)] || '');
     } catch {
       // 推荐不可用时仍可直接输入搜索。

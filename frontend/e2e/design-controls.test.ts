@@ -805,7 +805,7 @@ describe('设计决定：控件、状态与首页顶部', () => {
     }
   });
 
-  it('搜索框空着时占位推荐词隔几秒换一句，开始打字或组字就收掉', { timeout: 60_000 }, async () => {
+  it('搜索框空着且没聚焦时占位推荐词隔几秒换一句，聚焦、打字或组字就停', { timeout: 60_000 }, async () => {
     const opened = await openCatalog(browser);
     try {
       await opened.page.emulateMedia({ reducedMotion: 'no-preference' });
@@ -828,7 +828,11 @@ describe('设计决定：控件、状态与首页顶部', () => {
       await ghost.waitFor({ timeout: 8_000 });
       await input.type('新');
       assert.equal(await ghost.count(), 0, '开始打字后换句的那一层仍盖在输入框上');
+      // 聚焦时不换句：人正对着这一句，换掉了回车搜的就不是刚看见的词。
       await input.fill('');
+      await opened.page.waitForTimeout(6_000);
+      assert.equal(await ghost.count(), 0, '聚焦在搜索框上时占位字仍在换句');
+      await input.blur();
       await ghost.waitFor({ timeout: 8_000 });
       await input.evaluate((element) => element.dispatchEvent(new CompositionEvent('compositionstart', {
         bubbles: true, data: '候',

@@ -195,7 +195,7 @@ describe('输入框上的时序', () => {
     expect(asked).toBe(2);
   });
 
-  it('框空着时占位推荐词隔几秒换一句；框里有字时不换', async () => {
+  it('框空着、没聚焦时占位推荐词隔几秒换一句；聚焦或框里有字时不换', async () => {
     vi.useFakeTimers();
     const s = await stage({ pool: ['剧情', '单体作品', '高画质'] });
     await act(async () => s.input.focus());
@@ -203,10 +203,20 @@ describe('输入框上的时序', () => {
     const first = s.input.placeholder;
     expect(['剧情', '单体作品', '高画质']).toContain(first);
     expect(s.input.dataset.suggestion).toBe(first);
+    await act(async () => { vi.advanceTimersByTime(15000) });
+    expect(s.input.placeholder).toBe(first);
+
+    // 再聚焦时重取的池里还有这一句，就不换。
+    await act(async () => { s.input.blur(); s.input.focus() });
+    await settle();
+    expect(s.input.placeholder).toBe(first);
+
+    await act(async () => s.input.blur());
     await act(async () => { vi.advanceTimersByTime(5000) });
     expect(s.input.placeholder).not.toBe(first);
     expect(s.input.dataset.suggestion).toBe(s.input.placeholder);
-    await s.typeInto('七');
+
+    s.input.value = '七';
     const typed = s.input.placeholder;
     await act(async () => { vi.advanceTimersByTime(15000) });
     expect(s.input.placeholder).toBe(typed);
