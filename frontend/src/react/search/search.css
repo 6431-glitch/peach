@@ -198,6 +198,8 @@
 }
 /* 推荐还没取到的那几格：外形与真行、真封面格相同，条与圆片用全站骨架那一道微光（`skeleton-sweep`）。 */
 .peach-react [data-search-placeholder] { pointer-events: none; }
+/* 封面格的比例与圆角同真封面那一格（遗留层 `.pic`：`aspect-ratio: var(--card-ratio)`），占位不借那个类。 */
+.peach-react [data-search-placeholder] [data-search-pic] > span { display: block; aspect-ratio: var(--card-ratio); border-radius: var(--badge-radius); }
 .peach-react [data-search-placeholder] :is([data-search-name], [data-search-sub], [data-search-face], [data-search-pic] > span) {
   position: relative;
   overflow: hidden;

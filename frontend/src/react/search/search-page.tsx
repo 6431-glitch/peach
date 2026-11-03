@@ -216,7 +216,7 @@ function placeholders(group: MenuSection): ReactNode[] {
   const work = SUGGEST_RIGHT_KINDS.has(group.kind ?? '');
   return Array.from({ length: group.pending ?? 0 }, (_, index) => work ? (
     <div key={index} data-search-option="work" data-search-placeholder="" aria-hidden="true">
-      <span data-search-pic=""><span className="pic" /></span>
+      <span data-search-pic=""><span /></span>
       <span data-search-meta=""><span data-search-name="">{GAP}</span><span data-search-sub="">{GAP}</span></span>
     </div>
   ) : (
