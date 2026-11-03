@@ -18,6 +18,7 @@ import { apiSend, errorMessage } from '../../api';
 import { SCAN_CARD_TEXT } from '../../management';
 import type { LibraryProcessingProps } from '../bundle';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
+import { NameLink } from '../components/name-link';
 import { Note } from '../components/note';
 import { StatusLabel } from '../components/status-label';
 import { useOverlayScrollbar } from '../components/overlay-scrollbar';
@@ -144,7 +145,7 @@ function Outcome(
                           <li key={item.key}
                             className="flex flex-col gap-1 border-b border-current/15 py-2 pr-6 wrap-anywhere first:pt-0 last:border-b-0 last:pb-0">
                             {item.href
-                              ? <a href={item.href} className="text-body-2-medium underline-offset-4 hover:underline">{item.label}</a>
+                              ? <NameLink href={item.href}>{item.label}</NameLink>
                               : <span className="text-body-2-medium">{item.label}</span>}
                             <span className="text-caption-1-regular">{item.note}</span>
                             {item.hint ? <code className="text-caption-1-regular break-all">{item.hint}</code> : null}

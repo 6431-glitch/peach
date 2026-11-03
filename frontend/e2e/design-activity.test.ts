@@ -83,7 +83,8 @@ describe('任务页云下载布局', () => {
           resources: {
             cpu: { state: 'ready', percent: 61.6, high: true },
             gpu: { state: 'ready', percent: 0, high: false },
-            network: { state: 'unavailable', bytes_per_second: null, high: false, reason: '挂载或 SMB 的缓存与预读无法按任务取得实际网速' },
+            network: { state: 'unavailable', bytes_per_second: null, high: false, via: 'cloud',
+              reason: '网盘挂载的缓存与预读无法按任务取得实际网速' },
             sampled_at: '2026-11-03T08:02:20Z',
           },
         }],
@@ -96,6 +97,7 @@ describe('任务页云下载布局', () => {
       const idle = await chips.locator('[data-task-resource]').evaluateAll(nodes =>
         Object.fromEntries(nodes.map(node => [(node as HTMLElement).dataset.taskResource, 'resourceIdle' in (node as HTMLElement).dataset])));
       assert.deepEqual(idle, { cpu: false, gpu: true, network: false });
+      assert.equal(await chips.locator('[data-task-resource="network"]').getAttribute('data-resource-via'), 'cloud');
       const link = page.locator('[data-task-subject="7"]');
       assert.equal(await link.getAttribute('href'), '/assets/6297');
       assert.equal(await link.getAttribute('title'), name);
@@ -127,6 +129,13 @@ describe('任务页云下载布局', () => {
       const disclosure = card.locator('summary').filter({ hasText: '问题详情 · 51 项' });
       assert.equal(await disclosure.getAttribute('aria-expanded'), 'false');
       assert.equal(await card.locator('[data-task-issues]').isVisible(), false);
+      // 问题详情与技术详情同为卡片底部的一行：同一层级、同一左边，问题详情在前。
+      const rows = await card.locator('details').evaluateAll((nodes) => nodes.map((node) => ({
+        footer: node.parentElement!.parentElement === node.closest('li'), left: Math.round(node.getBoundingClientRect().left),
+        issues: Boolean(node.querySelector('[data-task-issues]')) })));
+      assert.equal(rows.length, 2);
+      assert.deepEqual(rows.map((row) => [row.footer, row.issues]), [[true, true], [true, false]]);
+      assert.equal(rows[0].left, rows[1].left);
       await disclosure.click();
       const errors = card.getByRole('region', { name: '任务问题详情' });
       await errors.waitFor();

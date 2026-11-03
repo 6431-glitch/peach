@@ -14,7 +14,7 @@
  * 轮询只管第一页，翻过的那些不会被下一次刷新冲掉。 */
 import { useId, useState } from 'react';
 import type { ReactNode } from 'react';
-import { RiArrowDownSLine, RiArrowRightLine, RiFileVideoLine, RiHistoryLine } from '@remixicon/react';
+import { RiArrowDownSLine, RiArrowRightLine, RiHistoryLine } from '@remixicon/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 import { Chip } from '@/components/base/badges/chip';
@@ -26,6 +26,7 @@ import { cardClass } from '../components/card';
 import { CodeBlock } from '../components/code-block';
 import { EmptyState } from '../components/empty-state';
 import { LoadingDots } from '../components/loading-dots';
+import { NameLink } from '../components/name-link';
 import { Note } from '../components/note';
 import { Page } from '../components/page';
 import { Progress } from '../components/progress';
@@ -35,6 +36,7 @@ import { BackgroundIssues } from './background-issues';
 import { DownloadsPanel } from './downloads-panel';
 import { ErrorDetails, ErrorExcerpt } from './error-excerpt';
 import { TaskControlFeedback, TaskControls } from './task-controls';
+import { TaskIcon } from './task-icon';
 import { TaskResources } from './task-resources';
 import {
   elapsedText, fetchEarlier, fetchTasks, foldByKind, foldRoutine, followupDetail, followupTally, groupFollowups, isActive,
@@ -88,6 +90,7 @@ function FollowupList({ rows }: { rows: TaskRunPayload[] }) {
             className="flex min-w-0 flex-col gap-1 border-t border-separator-border py-2.5 pr-10 pl-5">
             <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                <TaskIcon taskKey={row.task_key} className="size-4 shrink-0 text-text-secondary" />
                 <span className="min-w-0 break-words text-caption-1-regular text-text-primary">
                   {row.task_label}
                 </span>
@@ -118,8 +121,8 @@ function FollowupList({ rows }: { rows: TaskRunPayload[] }) {
 /** 一轮任务一张卡。失败时整张卡的框线换成 danger 色，不给结束原因那行字上色——
  *  一屏十几行里逐行读红字，比看一眼哪张卡的框是红的慢得多。 */
 function RunCard(
-  { run, meta, children, footer, followups, followupTotal = 0, badge, resourceActive }:
-  { run: TaskRunPayload; meta: string; children?: ReactNode; footer?: string;
+  { run, meta, children, footer, issues, followups, followupTotal = 0, badge, resourceActive }:
+  { run: TaskRunPayload; meta: string; children?: ReactNode; footer?: string; issues?: ReactNode;
     followups?: TaskRunPayload[]; followupTotal?: number; badge?: ReactNode; resourceActive?: boolean },
 ) {
   /* 一轮派出上千条后继时只下发最近几十条，合并的几批又可能各带几十条：标题写全数，
@@ -142,6 +145,7 @@ function RunCard(
       <div className="flex flex-col gap-2 px-5 py-4">
         <div className="flex min-w-0 items-start justify-between gap-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
+            <TaskIcon taskKey={run.task_key} className="size-5 shrink-0 text-text-secondary" />
             <strong className="min-w-0 break-words text-title-3-medium text-text-primary">{run.task_label}</strong>
             {badge ?? <StatusBadge run={run} />}
           </div>
@@ -151,12 +155,14 @@ function RunCard(
         <TaskResources run={run} active={resourceActive} />
         {/* 文件名常有上百字：单行末尾省略，番号在开头，完整名称在悬停提示里。不用 data-middle-truncate：
             它按 Canvas 量宽，不计中西文自动间距，中日文夹英文的名字会被裁掉末尾几个像素。 */}
-        {subject ? <LinkButton href={subject.href} size="xs" leadingIcon={RiFileVideoLine} data-task-subject={run.id}
-          title={subject.label} className="min-w-0 max-w-full self-start justify-start [&>span]:min-w-0 [&>span]:truncate">
+        {subject ? <NameLink href={subject.href} data-task-subject={run.id} title={subject.label}
+          className="min-w-0 max-w-full self-start truncate text-text-primary">
           {subject.label}
-        </LinkButton> : null}
+        </NameLink> : null}
         {children}
       </div>
+      {/* 问题详情、任务明细、技术详情都是可展开的明细，同样排成卡片底部带分隔线的一行，按这个顺序。 */}
+      {issues ? <div className="border-t border-separator-border px-5 py-2.5">{issues}</div> : null}
       {shown ? <div className="border-t border-separator-border px-5 py-2.5">
         <Disclosure summary={`任务明细 · ${total.toLocaleString()} 项`}
           contentClassName="pb-2.5"
@@ -235,6 +241,16 @@ function SettledRun(
        elapsed && `用时 ${elapsed}`]).filter(Boolean).join(' · ');
   return (
     <RunCard run={run} meta={meta} footer={run.error} followups={followups} followupTotal={followupTotal}
+      issues={issues.length ? <Disclosure summary={`问题详情 · ${issues.length} 项`} contentClassName="pb-2.5">
+        <ErrorDetails label="任务问题详情">
+        <ul className="flex min-w-0 flex-col gap-3" data-task-issues="">
+          {issues.map((issue, index) => <li key={`${issue.source}-${index}`} className="flex min-w-0 flex-col gap-1 text-body-2-regular wrap-anywhere">
+            <p className="text-body-regular text-text-primary">{[issue.label, issue.provider, issue.kind].filter(Boolean).join(' · ')}</p>
+            <ErrorExcerpt text={issue.error} className="text-text-primary" />
+          </li>)}
+        </ul>
+        </ErrorDetails>
+      </Disclosure> : undefined}
       badge={followupCancelled && run.status === 'succeeded'
         ? <Chip color="rose"><span data-copy-key={`tasks.followups.cancelled.${followupCancelled === followupTotal ? 'all' : 'partial'}`}>
             {followupCancelled === followupTotal ? '后续任务已取消' : '部分后续任务已取消'}
@@ -249,16 +265,7 @@ function SettledRun(
         : summary.length ? <ul className="flex list-disc flex-col gap-1 pl-5 text-caption-1-regular text-text-secondary wrap-anywhere">
             {summary.map((line, index) => <li key={index}>{line}</li>)}
           </ul> : null}
-      {issues.length ? <Disclosure summary={`问题详情 · ${issues.length} 项`} contentClassName="pt-2">
-        <ErrorDetails label="任务问题详情">
-        <ul className="flex min-w-0 flex-col gap-3" data-task-issues="">
-          {issues.map((issue, index) => <li key={`${issue.source}-${index}`} className="flex min-w-0 flex-col gap-1 text-body-2-regular wrap-anywhere">
-            <p className="text-body-regular text-text-primary">{[issue.label, issue.provider, issue.kind].filter(Boolean).join(' · ')}</p>
-            <ErrorExcerpt text={issue.error} className="text-text-primary" />
-          </li>)}
-        </ul>
-        </ErrorDetails>
-      </Disclosure> : hasResultProblems(run) && ['follow-check', 'feed-check'].includes(run.task_key)
+      {!issues.length && hasResultProblems(run) && ['follow-check', 'feed-check'].includes(run.task_key)
         ? <p className="text-body-2-regular text-text-secondary">未取得本轮逐项详情，可到来源列表查看检查结果。</p> : null}
       {destination
         ? <LinkButton href={destination.href} size="small" trailingIcon={RiArrowRightLine}
