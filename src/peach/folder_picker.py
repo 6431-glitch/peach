@@ -9,13 +9,14 @@
 调用方只在回环地址上开放这条路：否则局域网里任何人都能让这台电脑弹窗。
 
 Windows 这里刻意用 `powershell.exe`（Windows PowerShell 5.1）：它在每台 Windows 上都有，
-pwsh 7 是另装的。它自带的 `FolderBrowserDialog` 是 XP 时代的树形面板、没有地址栏，所以
+pwsh 7 是另装的。它按 `%SystemRoot%` 下的绝对路径启动，不依赖服务进程的 PATH。它自带的 `FolderBrowserDialog` 是 XP 时代的树形面板、没有地址栏，所以
 用 `Add-Type` 编一段 COM 互操作直接调 `IFileOpenDialog`。脚本以 `-EncodedCommand` 传入，
 避开引号与中文的转义。
 """
 from __future__ import annotations
 
 import base64
+import ntpath
 import os
 import subprocess
 import sys
@@ -158,11 +159,19 @@ def _applescript_string(text: str) -> str:
     return text.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def _windows_powershell() -> str:
+    """系统目录里的 Windows PowerShell；服务进程的 PATH 可能缺了它，按名字查找会找不到。"""
+    root = os.environ.get("SystemRoot")
+    if not root:
+        return "powershell.exe"
+    return ntpath.join(root, "System32", "WindowsPowerShell", "v1.0", "powershell.exe")
+
+
 def command(initial: str | None, platform: str = sys.platform) -> tuple[list[str], dict[str, str]]:
     """这个平台弹对话框的命令行，以及要附加的环境变量。"""
     if platform == "win32":
         encoded = base64.b64encode(_WINDOWS_SCRIPT.encode("utf-16-le")).decode("ascii")
-        argv = ["powershell.exe", "-NoProfile", "-NonInteractive", "-STA", "-EncodedCommand", encoded]
+        argv = [_windows_powershell(), "-NoProfile", "-NonInteractive", "-STA", "-EncodedCommand", encoded]
         return argv, {"PEACH_PICK_INITIAL": initial or ""}
     if platform == "darwin":
         script = f'choose folder with prompt "{_applescript_string(PROMPT)}"'
@@ -185,6 +194,9 @@ def pick_folder(initial: str | None = None, *, platform: str = sys.platform,
                          timeout=DIALOG_TIMEOUT_SECONDS, creationflags=flags)
         except subprocess.TimeoutExpired:
             return None
+        except OSError as exc:
+            # 对话框程序不存在或起不来，与不支持的平台同样处理：这台机器不提供对话框。
+            raise PickerUnsupported("这台电脑上打不开系统文件夹对话框") from exc
     finally:
         _LOCK.release()
     stderr = (result.stderr or b"").decode("utf-8", "replace")
