@@ -57,6 +57,8 @@ it('填充卡之上另加的那条描边不换底', () => {
   expect(fieldset).toContain('bg-background-secondary-default');
   expect(fieldset).toContain('border-border-button-default');
   expect(classes({ bordered: 'soft' })).toContain('border-separator-border');
+  // 失败卡的框线要有宽度：只给 danger 色而没有 `border` 时，那条线不会画出来。
+  expect([...classes({ bordered: 'error' })].filter((name) => name.startsWith('border'))).toEqual(['border', 'border-border-error-default']);
 });
 
 /* 环画在 `::after` 覆盖层上：inset 的 box-shadow 画在子元素底下，脚注带一铺底色就盖掉环的下半截。 */

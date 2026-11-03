@@ -74,7 +74,12 @@ describe('任务页云下载布局', () => {
     const opened = await visit(browser, '/tasks', viewport, async page => {
       await page.route('**/api/downloads?*', route => route.fulfill({ json: { available: false, tasks: [], providers: [] } }));
       await page.route('**/api/tasks*', route => route.fulfill({ json: {
-        available: true, skipped: [], finished: [], running: [{
+        available: true, skipped: [], finished: [{
+          id: 8, task_key: 'amane-bridge', task_label: '重建 amane 桥', trigger: 'manual', status: 'failed',
+          host: 'desk', started_at: '2026-11-03T07:00:00Z', finished_at: '2026-11-03T07:00:01Z', elapsed_seconds: 1,
+          progress_current: 0, progress_total: null, progress_label: '', result_summary: { ok: false },
+          error: 'uv sync 失败（exit 1）：× Failed to fetch amane\n…\n  fatal: missing object', parent_run_id: null, followup_key: '',
+        }], running: [{
           id: 7, task_key: 'mp4-header-repair', task_label: '播放文件头修复', trigger: 'manual', status: 'running',
           host: 'desk', started_at: '2026-11-03T08:00:00Z', finished_at: null, elapsed_seconds: 140,
           progress_current: 0, progress_total: null, progress_label: '读取帧时间戳',
@@ -108,6 +113,13 @@ describe('任务页云下载布局', () => {
         return { fits: document.documentElement.scrollWidth <= innerWidth, inside: link.right <= box.right };
       });
       assert.deepEqual(geometry, { fits: true, inside: true });
+      // 失败卡：框线是 danger 色且有宽度；结束原因在正文，全文收在底部那一行可展开的明细里。
+      const failed = page.locator('#run-8');
+      const frame = await failed.evaluate((node) => ({ width: getComputedStyle(node).borderTopWidth, color: getComputedStyle(node).borderTopColor }));
+      assert.deepEqual(frame, { width: '1px', color: await tokenColor(page, '#run-8', '--color-border-error-default') });
+      assert.equal(await failed.locator('[data-task-error]').count(), 1);
+      assert.equal(await failed.locator('details [data-error-details]').count(), 1);
+      assert.equal(await failed.locator('[data-error-excerpt]').count(), 0);
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close() }
   });

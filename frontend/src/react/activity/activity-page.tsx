@@ -41,7 +41,7 @@ import { TaskResources } from './task-resources';
 import {
   elapsedText, fetchEarlier, fetchTasks, foldByKind, foldRoutine, followupDetail, followupTally, groupFollowups, isActive,
   hasResultProblems, isRoutine, latestOfKind, mergeFinished, momentText, pollInterval, problemDestination, progressText,
-  statusLabel, summaryItems, taskIssues, taskSubject, TASKS_KEY, TRIGGER_LABELS, type FollowupCounts, type TaskControlState, type TaskRunPayload,
+  readableErrorHeadline, statusLabel, summaryItems, taskIssues, taskSubject, TASKS_KEY, TRIGGER_LABELS, type FollowupCounts, type TaskControlState, type TaskRunPayload,
 } from './tasks';
 
 /** 一张卡里最多列多少条后继。几批合成一张卡时会有上千条，全画出来一屏都是同一句。 */
@@ -121,8 +121,8 @@ function FollowupList({ rows }: { rows: TaskRunPayload[] }) {
 /** 一轮任务一张卡。失败时整张卡的框线换成 danger 色，不给结束原因那行字上色——
  *  一屏十几行里逐行读红字，比看一眼哪张卡的框是红的慢得多。 */
 function RunCard(
-  { run, meta, children, footer, issues, followups, followupTotal = 0, badge, resourceActive }:
-  { run: TaskRunPayload; meta: string; children?: ReactNode; footer?: string; issues?: ReactNode;
+  { run, meta, children, error, issues, followups, followupTotal = 0, badge, resourceActive }:
+  { run: TaskRunPayload; meta: string; children?: ReactNode; error?: string; issues?: ReactNode;
     followups?: TaskRunPayload[]; followupTotal?: number; badge?: ReactNode; resourceActive?: boolean },
 ) {
   /* 一轮派出上千条后继时只下发最近几十条，合并的几批又可能各带几十条：标题写全数，
@@ -134,12 +134,13 @@ function RunCard(
   const shown = listed.length;
   const total = Math.max(followups?.length || 0, followupTotal);
   const subject = taskSubject(run);
+  const errorFull = String(error || '').trim();
+  const errorHead = readableErrorHeadline(errorFull);
   return (
     // `id` 让「需要处理」那一行的「查看失败记录」能直接滚到这张卡。
     <li id={`run-${run.id}`} data-status={run.status} data-task-key={run.task_key} data-run-id={run.id}
       className={cardClass({
-        padding: 'none',
-        className: run.status === 'failed' ? 'flex flex-col border-border-error-default' : 'flex flex-col',
+        padding: 'none', bordered: run.status === 'failed' ? 'error' : undefined, className: 'flex flex-col',
       })}>
       {/* 卡片标题比分段标题（「正在进行」）低一档，标题、时间与摘要之间同一个行距。 */}
       <div className="flex flex-col gap-2 px-5 py-4">
@@ -159,10 +160,17 @@ function RunCard(
           className="min-w-0 max-w-full self-start truncate text-text-primary">
           {subject.label}
         </NameLink> : null}
+        {/* 结束原因是这一轮的结论，和摘要一样写在正文里；全文是明细，收进下面的「错误详情」。 */}
+        {errorHead ? <p data-task-error="" className="text-caption-1-regular text-text-secondary wrap-anywhere">{errorHead}</p> : null}
         {children}
       </div>
-      {/* 问题详情、任务明细、技术详情都是可展开的明细，同样排成卡片底部带分隔线的一行，按这个顺序。 */}
+      {/* 问题详情、错误详情、任务明细、技术详情都是可展开的明细，同样排成卡片底部带分隔线的一行，按这个顺序。 */}
       {issues ? <div className="border-t border-separator-border px-5 py-2.5">{issues}</div> : null}
+      {errorHead && errorFull !== errorHead ? <div className="border-t border-separator-border px-5 py-2.5">
+        <Disclosure summary="错误详情" contentClassName="pb-2.5">
+          <ErrorDetails label={`${run.task_label}错误详情`}>{errorFull}</ErrorDetails>
+        </Disclosure>
+      </div> : null}
       {shown ? <div className="border-t border-separator-border px-5 py-2.5">
         <Disclosure summary={`任务明细 · ${total.toLocaleString()} 项`}
           contentClassName="pb-2.5"
@@ -181,11 +189,6 @@ function RunCard(
             label={`${run.task_label}技术详情`} />
         </Disclosure>
       </div> : null}
-      {footer
-        ? <div className="flex min-h-14 flex-col justify-center rounded-b-2xl border-t border-separator-border bg-card-footer px-5 py-3">
-            <ErrorExcerpt text={footer} className="text-caption-1-regular text-text-secondary" />
-          </div>
-        : null}
     </li>
   );
 }
@@ -229,7 +232,8 @@ function SettledRun(
         .filter(Boolean)
     // 作品链接已写出文件名，摘要不再列「名称」。
     : summaryItems(taskSubject(run) ? { ...run.result_summary, name: '' } : run.result_summary)
-        .filter((line) => line !== run.error);
+        // 结束原因由卡片单独写一行，摘要里同一句不再重复。
+        .filter((line) => line !== run.error && line !== readableErrorHeadline(run.error));
   const issues = taskIssues(run);
   const destination = problemDestination(run, latest);
   const elapsed = elapsedText(run.elapsed_seconds);
@@ -240,7 +244,7 @@ function SettledRun(
     : [TRIGGER_LABELS[run.trigger] || run.trigger, momentText(run.finished_at),
        elapsed && `用时 ${elapsed}`]).filter(Boolean).join(' · ');
   return (
-    <RunCard run={run} meta={meta} footer={run.error} followups={followups} followupTotal={followupTotal}
+    <RunCard run={run} meta={meta} error={run.error} followups={followups} followupTotal={followupTotal}
       issues={issues.length ? <Disclosure summary={`问题详情 · ${issues.length} 项`} contentClassName="pb-2.5">
         <ErrorDetails label="任务问题详情">
         <ul className="flex min-w-0 flex-col gap-3" data-task-issues="">
