@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "741553d7-c4e5-4c9d-9073-92d513b2e9d7", e._sentryDebugIdIdentifier = "sentry-dbid-741553d7-c4e5-4c9d-9073-92d513b2e9d7");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b9023e5d-852f-4399-a477-5c76e96c699e", e._sentryDebugIdIdentifier = "sentry-dbid-b9023e5d-852f-4399-a477-5c76e96c699e");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, n) => {
@@ -46341,181 +46341,183 @@ var rU = (e) => Yn(e).replace(/\s/g, ""), iU = (e) => e >= 1024 ** 2 && e < 1024
 function oU({ traffic: e, initial: t = !1, compact: n = !1, detailsOpen: r, onDetailsChange: i }) {
 	let a = QV(), [o, s] = (0, F.useState)(!1), c = (0, F.useId)(), l = r ?? o;
 	if (!e) return null;
-	let u = (e) => e.toLocaleString("zh-CN");
+	let u = (e) => e.toLocaleString("zh-CN"), d = !!e.workload || !(!e.inventory || e.inventory.complete) || !!(e.unknown_files && e.inventory?.complete !== !1) || !!e.inventory?.errors;
 	return /* @__PURE__ */ (0, I.jsxs)("div", {
 		"data-processing-traffic": "",
-		className: "flex min-w-0 flex-col gap-2 text-caption-1-regular text-text-secondary tabular-nums wrap-anywhere",
-		children: [
-			e.workload ? /* @__PURE__ */ (0, I.jsxs)("p", {
-				className: "flex flex-wrap gap-x-3 gap-y-1",
-				children: [/* @__PURE__ */ (0, I.jsxs)("span", { children: [
-					e.unknown_files ? "已发现视频" : "范围内视频",
-					" ",
-					u(e.workload.video_files),
-					" 个"
-				] }), /* @__PURE__ */ (0, I.jsxs)("span", { children: [
-					"JAV 文件 ",
-					u(e.workload.jav_files),
-					" 个 · 不同番号 ",
-					u(e.workload.jav_titles),
-					" 个"
-				] })]
-			}) : null,
-			e.inventory && !e.inventory.complete ? /* @__PURE__ */ (0, I.jsx)("p", {
-				role: "status",
-				children: "正在发现新增文件，数量和预估仍会变化…"
-			}) : null,
-			e.unknown_files && e.inventory?.complete !== !1 ? /* @__PURE__ */ (0, I.jsx)("p", {
-				role: "status",
-				children: "尚有文件未确认，当前数量和预估不完整"
-			}) : null,
-			e.inventory?.errors ? /* @__PURE__ */ (0, I.jsx)("p", {
-				role: "status",
-				children: "部分目录无法读取，数量和预估不完整"
-			}) : null,
-			/* @__PURE__ */ (0, I.jsx)(GH, {
-				open: !n,
-				"data-processing-estimate": "",
-				children: /* @__PURE__ */ (0, I.jsxs)("div", {
-					className: "flex min-w-0 flex-col gap-2",
-					children: [
-						/* @__PURE__ */ (0, I.jsxs)("div", {
-							className: "inline-grid grid-cols-2 gap-6 py-2",
-							children: [/* @__PURE__ */ (0, I.jsxs)("section", {
-								"aria-label": "流量预估",
-								className: "flex min-w-0 flex-col gap-1",
-								children: [
-									/* @__PURE__ */ (0, I.jsxs)("p", {
-										className: "inline-flex items-center gap-1.5",
-										children: [/* @__PURE__ */ (0, I.jsx)(XB, {
-											"aria-hidden": !0,
-											className: "size-(--icon-inline) shrink-0"
-										}), e.inventory && !e.inventory.complete ? "已识别流量" : "预计流量"]
-									}),
-									/* @__PURE__ */ (0, I.jsx)("p", {
-										className: "text-title-3-semibold text-text-primary",
-										children: aU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)
-									}),
-									/* @__PURE__ */ (0, I.jsxs)("p", { children: [
-										e.unknown_route_estimated_bytes ? "已确认代理" : "代理",
-										" ",
-										aU(e.metered_estimated_bytes, e.metered_estimated_min_bytes, e.metered_estimated_max_bytes)
-									] }),
-									t ? null : /* @__PURE__ */ (0, I.jsxs)("p", { children: [
-										"已用 ",
-										/* @__PURE__ */ (0, I.jsxs)("span", { children: [e.partial ? "约 " : "", rU(e.used_bytes)] }),
-										" · 代理 ",
-										rU(e.metered_used_bytes)
-									] })
-								]
-							}), e.disk ? /* @__PURE__ */ (0, I.jsxs)("section", {
-								"aria-label": "磁盘预估",
-								className: "flex min-w-0 flex-col gap-1",
-								children: [
-									/* @__PURE__ */ (0, I.jsxs)("p", {
-										className: "inline-flex items-center gap-1.5",
-										children: [/* @__PURE__ */ (0, I.jsx)(uge, {
-											"aria-hidden": !0,
-											className: "size-(--icon-inline) shrink-0"
-										}), e.inventory && !e.inventory.complete ? "已识别占用" : "预计占用"]
-									}),
-									/* @__PURE__ */ (0, I.jsxs)("p", {
-										className: "text-title-3-semibold text-text-primary",
-										children: ["约 ", rU(e.disk.estimated_bytes)]
-									}),
-									e.disk.temporary_bytes > 0 ? /* @__PURE__ */ (0, I.jsxs)("p", { children: ["抽帧临时文件约 ", iU(e.disk.temporary_bytes)] }) : null,
-									e.disk.volumes.map((e) => /* @__PURE__ */ (0, I.jsxs)("div", {
-										className: "flex min-w-0 flex-col gap-1",
-										children: [/* @__PURE__ */ (0, I.jsxs)("p", { children: [
-											e.path,
-											" 剩余 ",
-											e.free_bytes == null ? "未取得" : rU(e.free_bytes)
-										] }), e.can_fit === !1 ? /* @__PURE__ */ (0, I.jsxs)("p", {
-											role: "status",
-											children: ["空间不足，还差 ", rU(e.shortfall_bytes || 0)]
-										}) : null]
-									}, e.path)),
-									e.disk.cache_unknown ? /* @__PURE__ */ (0, I.jsx)("p", {
+		className: "flex min-w-0 flex-col text-caption-1-regular text-text-secondary tabular-nums wrap-anywhere",
+		children: [/* @__PURE__ */ (0, I.jsxs)("div", {
+			className: "flex min-w-0 flex-col gap-2 empty:hidden",
+			children: [
+				e.workload ? /* @__PURE__ */ (0, I.jsxs)("p", {
+					className: "flex flex-wrap gap-x-3 gap-y-1",
+					children: [/* @__PURE__ */ (0, I.jsxs)("span", { children: [
+						e.unknown_files ? "已发现视频" : "范围内视频",
+						" ",
+						u(e.workload.video_files),
+						" 个"
+					] }), /* @__PURE__ */ (0, I.jsxs)("span", { children: [
+						"JAV 文件 ",
+						u(e.workload.jav_files),
+						" 个 · 不同番号 ",
+						u(e.workload.jav_titles),
+						" 个"
+					] })]
+				}) : null,
+				e.inventory && !e.inventory.complete ? /* @__PURE__ */ (0, I.jsx)("p", {
+					role: "status",
+					children: "正在发现新增文件，数量和预估仍会变化…"
+				}) : null,
+				e.unknown_files && e.inventory?.complete !== !1 ? /* @__PURE__ */ (0, I.jsx)("p", {
+					role: "status",
+					children: "尚有文件未确认，当前数量和预估不完整"
+				}) : null,
+				e.inventory?.errors ? /* @__PURE__ */ (0, I.jsx)("p", {
+					role: "status",
+					children: "部分目录无法读取，数量和预估不完整"
+				}) : null
+			]
+		}), /* @__PURE__ */ (0, I.jsx)(GH, {
+			open: !n,
+			"data-processing-estimate": "",
+			children: /* @__PURE__ */ (0, I.jsxs)("div", {
+				className: q("flex min-w-0 flex-col gap-2", d && "pt-2"),
+				children: [
+					/* @__PURE__ */ (0, I.jsxs)("div", {
+						className: "inline-grid grid-cols-2 gap-6 py-2",
+						children: [/* @__PURE__ */ (0, I.jsxs)("section", {
+							"aria-label": "流量预估",
+							className: "flex min-w-0 flex-col gap-1",
+							children: [
+								/* @__PURE__ */ (0, I.jsxs)("p", {
+									className: "inline-flex items-center gap-1.5",
+									children: [/* @__PURE__ */ (0, I.jsx)(XB, {
+										"aria-hidden": !0,
+										className: "size-(--icon-inline) shrink-0"
+									}), e.inventory && !e.inventory.complete ? "已识别流量" : "预计流量"]
+								}),
+								/* @__PURE__ */ (0, I.jsx)("p", {
+									className: "text-title-3-semibold text-text-primary",
+									children: aU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)
+								}),
+								/* @__PURE__ */ (0, I.jsxs)("p", { children: [
+									e.unknown_route_estimated_bytes ? "已确认代理" : "代理",
+									" ",
+									aU(e.metered_estimated_bytes, e.metered_estimated_min_bytes, e.metered_estimated_max_bytes)
+								] }),
+								t ? null : /* @__PURE__ */ (0, I.jsxs)("p", { children: [
+									"已用 ",
+									/* @__PURE__ */ (0, I.jsxs)("span", { children: [e.partial ? "约 " : "", rU(e.used_bytes)] }),
+									" · 代理 ",
+									rU(e.metered_used_bytes)
+								] })
+							]
+						}), e.disk ? /* @__PURE__ */ (0, I.jsxs)("section", {
+							"aria-label": "磁盘预估",
+							className: "flex min-w-0 flex-col gap-1",
+							children: [
+								/* @__PURE__ */ (0, I.jsxs)("p", {
+									className: "inline-flex items-center gap-1.5",
+									children: [/* @__PURE__ */ (0, I.jsx)(uge, {
+										"aria-hidden": !0,
+										className: "size-(--icon-inline) shrink-0"
+									}), e.inventory && !e.inventory.complete ? "已识别占用" : "预计占用"]
+								}),
+								/* @__PURE__ */ (0, I.jsxs)("p", {
+									className: "text-title-3-semibold text-text-primary",
+									children: ["约 ", rU(e.disk.estimated_bytes)]
+								}),
+								e.disk.temporary_bytes > 0 ? /* @__PURE__ */ (0, I.jsxs)("p", { children: ["抽帧临时文件约 ", iU(e.disk.temporary_bytes)] }) : null,
+								e.disk.volumes.map((e) => /* @__PURE__ */ (0, I.jsxs)("div", {
+									className: "flex min-w-0 flex-col gap-1",
+									children: [/* @__PURE__ */ (0, I.jsxs)("p", { children: [
+										e.path,
+										" 剩余 ",
+										e.free_bytes == null ? "未取得" : rU(e.free_bytes)
+									] }), e.can_fit === !1 ? /* @__PURE__ */ (0, I.jsxs)("p", {
 										role: "status",
-										children: "网盘缓存占用待确认"
-									}) : null
-								]
-							}) : null]
-						}),
-						/* @__PURE__ */ (0, I.jsx)(J, {
-							variant: "secondary",
-							size: "small",
-							className: "self-start",
-							"aria-expanded": l,
-							"aria-controls": c,
-							trailingIcon: l ? khe : PB,
-							onClick: () => {
-								s(!l), i?.(!l);
-							},
-							children: l ? "收起明细" : "查看明细"
-						}),
-						/* @__PURE__ */ (0, I.jsx)("div", {
-							id: c,
-							hidden: !l,
-							children: /* @__PURE__ */ (0, I.jsx)("div", {
-								className: "relative min-w-0",
-								children: /* @__PURE__ */ (0, I.jsx)("ul", {
-									ref: t ? void 0 : a,
-									className: `flex flex-col pr-2${t ? "" : " max-h-48 overflow-y-auto overscroll-contain"}`,
-									children: e.sources.map((e) => /* @__PURE__ */ (0, I.jsxs)("li", {
-										className: "flex min-w-0 flex-col gap-1 border-b border-separator-border py-2 last:border-b-0",
-										children: [
-											/* @__PURE__ */ (0, I.jsxs)("div", {
-												className: "flex min-w-0 items-start justify-between gap-2",
-												children: [e.root ? /* @__PURE__ */ (0, I.jsx)(nU, {
-													source: e.location,
-													label: e.label
-												}) : /* @__PURE__ */ (0, I.jsxs)("span", {
-													className: "inline-flex min-w-0 items-center gap-1.5",
-													children: [/* @__PURE__ */ (0, I.jsx)($H, { mark: "globe" }), e.label]
-												}), /* @__PURE__ */ (0, I.jsx)("span", {
-													className: "shrink-0",
-													children: e.connection === "system" ? "跟随系统" : e.connection === "unknown" ? "连接待确认" : e.metered ? "代理" : "直连"
-												})]
-											}),
-											e.workload?.video_files ? /* @__PURE__ */ (0, I.jsxs)("p", {
-												className: "text-text-tertiary",
-												children: [
-													"视频 ",
-													u(e.workload.video_files),
-													" 个 · JAV ",
-													u(e.workload.jav_files),
-													" 个"
-												]
-											}) : null,
-											e.workload?.pending_jav_titles ? /* @__PURE__ */ (0, I.jsxs)("p", {
-												className: "text-text-tertiary",
-												children: [
-													"待补资料 ",
-													u(e.workload.pending_jav_titles),
-													" 部 · 平均约 ",
-													iU(e.workload.metadata_average_bytes || 0),
-													"/部"
-												]
-											}) : null,
-											/* @__PURE__ */ (0, I.jsxs)("div", {
-												className: "flex flex-wrap justify-between gap-x-4 text-text-tertiary",
-												children: [t ? null : /* @__PURE__ */ (0, I.jsxs)("span", { children: [
-													"已用",
-													e.unobserved.length ? "约" : "",
-													" ",
-													rU(e.used_bytes)
-												] }), /* @__PURE__ */ (0, I.jsxs)("span", { children: ["预计 ", aU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)] })]
-											})
-										]
-									}, e.key))
-								})
+										children: ["空间不足，还差 ", rU(e.shortfall_bytes || 0)]
+									}) : null]
+								}, e.path)),
+								e.disk.cache_unknown ? /* @__PURE__ */ (0, I.jsx)("p", {
+									role: "status",
+									children: "网盘缓存占用待确认"
+								}) : null
+							]
+						}) : null]
+					}),
+					/* @__PURE__ */ (0, I.jsx)(J, {
+						variant: "secondary",
+						size: "small",
+						className: "self-start",
+						"aria-expanded": l,
+						"aria-controls": c,
+						trailingIcon: l ? khe : PB,
+						onClick: () => {
+							s(!l), i?.(!l);
+						},
+						children: l ? "收起明细" : "查看明细"
+					}),
+					/* @__PURE__ */ (0, I.jsx)("div", {
+						id: c,
+						hidden: !l,
+						children: /* @__PURE__ */ (0, I.jsx)("div", {
+							className: "relative min-w-0",
+							children: /* @__PURE__ */ (0, I.jsx)("ul", {
+								ref: t ? void 0 : a,
+								className: `flex flex-col pr-2${t ? "" : " max-h-48 overflow-y-auto overscroll-contain"}`,
+								children: e.sources.map((e) => /* @__PURE__ */ (0, I.jsxs)("li", {
+									className: "flex min-w-0 flex-col gap-1 border-b border-separator-border py-2 last:border-b-0",
+									children: [
+										/* @__PURE__ */ (0, I.jsxs)("div", {
+											className: "flex min-w-0 items-start justify-between gap-2",
+											children: [e.root ? /* @__PURE__ */ (0, I.jsx)(nU, {
+												source: e.location,
+												label: e.label
+											}) : /* @__PURE__ */ (0, I.jsxs)("span", {
+												className: "inline-flex min-w-0 items-center gap-1.5",
+												children: [/* @__PURE__ */ (0, I.jsx)($H, { mark: "globe" }), e.label]
+											}), /* @__PURE__ */ (0, I.jsx)("span", {
+												className: "shrink-0",
+												children: e.connection === "system" ? "跟随系统" : e.connection === "unknown" ? "连接待确认" : e.metered ? "代理" : "直连"
+											})]
+										}),
+										e.workload?.video_files ? /* @__PURE__ */ (0, I.jsxs)("p", {
+											className: "text-text-tertiary",
+											children: [
+												"视频 ",
+												u(e.workload.video_files),
+												" 个 · JAV ",
+												u(e.workload.jav_files),
+												" 个"
+											]
+										}) : null,
+										e.workload?.pending_jav_titles ? /* @__PURE__ */ (0, I.jsxs)("p", {
+											className: "text-text-tertiary",
+											children: [
+												"待补资料 ",
+												u(e.workload.pending_jav_titles),
+												" 部 · 平均约 ",
+												iU(e.workload.metadata_average_bytes || 0),
+												"/部"
+											]
+										}) : null,
+										/* @__PURE__ */ (0, I.jsxs)("div", {
+											className: "flex flex-wrap justify-between gap-x-4 text-text-tertiary",
+											children: [t ? null : /* @__PURE__ */ (0, I.jsxs)("span", { children: [
+												"已用",
+												e.unobserved.length ? "约" : "",
+												" ",
+												rU(e.used_bytes)
+											] }), /* @__PURE__ */ (0, I.jsxs)("span", { children: ["预计 ", aU(e.estimated_bytes, e.estimated_min_bytes, e.estimated_max_bytes)] })]
+										})
+									]
+								}, e.key))
 							})
 						})
-					]
-				})
+					})
+				]
 			})
-		]
+		})]
 	});
 }
 // src/react/library-processing/library-processing-notice.tsx
@@ -83410,4 +83412,4 @@ if (!$9) throw Error("主界面宿主缺失");
 yRe($9);
 export { rR as $2ec61d1d4f780267$export$a8a3e93435678ff9, dR as $3a442827418ebe87$export$eb2fcfdbd7ba97d4, Oz as $542a13ca2fa5b484$export$5b6b19405a83ff9d, ND as $72abaeab4d80592f$export$78efe591171d7d45, bB as $76d00c5a4edb230a$export$76ccd210b9029917, _B as $76d00c5a4edb230a$export$816b5d811295e6bc, CB as $76d00c5a4edb230a$export$b59bdbef9ce70de2, TB as $76d00c5a4edb230a$export$f6f0c3fe4ec306ea, gB as $76d00c5a4edb230a$export$f850895b287ef28e, lhe as $b4f18e3395fe64d7$export$3d96ec278d3efce4, che as $b4f18e3395fe64d7$export$3e41faf802a29e71, ahe as $b4f18e3395fe64d7$export$b2539bed5023c21c, kB as $b4f18e3395fe64d7$export$e51a686c67fdaa2d, fhe as $bd263d78e9bf3c56$export$f5c9f3c2c4054eec, bE as $ea3928288112382f$export$439d29a4e110a164, Vz as $f2ff30fde7b014be$export$3ddf2d174ce01153, Jz as $fe21c36db05242bb$export$a98f0dcb43a68a25, Yz as $fe21c36db05242bb$export$d7b12c4107be0d61, Whe as $l, rM as ACCENTS, dke as AMANE_BRIDGE_CHECK_URL, Q$ as AMANE_BRIDGE_KEY, fke as AMANE_BRIDGE_REBUILD_URL, or as ApiError, aW as ArtSlot, g2 as BATCH_DELETE_TEXT, J as Button, FL as ButtonLink, aV as Bx, k$ as CLEANUP_ENTRY, O$ as CLEANUP_ENTRY_GRID, Yf as CLEANUP_HASH_REDIRECTS, qf as CLEANUP_TOOLS, _n as CLOUD_LOCATIONS, Q1 as CLOUD_PROXY_HELP, Gr as COLUMN_SORT, u1 as CONFIGURATION_KEY, uX as CONFIGURATION_URL, pke as COOKIE_TEXT_LIMIT, Z$ as COVER_JOB_KEY, Ji as CREDENTIAL_STATE, q$ as CUSTOM_SOURCES_KEY, K$ as CUSTOM_SOURCES_URL, ZV as Checkbox, XV as CheckboxGlyph, VV as ChevronSortDown, iW as Chip, pW as CloudDownloadDialog, KH as CollapseChevron, GH as CollapseRegion, S$ as CollectionSummary, GCe as DEFAULT_CATEGORY, ur as DEFAULT_SORT, JQ as DIAGNOSTICS_KEY, Wwe as DIRECTORY_TEMPLATE_ERROR, N0 as DISCOVERY_SORTS, sW as DOWNLOADS_KEY, oW as DOWNLOADS_URL, AY as DUPLICATES_KEY, dY as DataTableFooter, sY as DataTableFrame, uY as DataTableSort, QH as Disclosure, Lve as DownloadsPanel, Lhe as E3, KCe as ENTITY_REVIEW_KINDS, X1 as ENTRY_LINKS_HELP, Z1 as ENTRY_LINKS_HINT, qhe as Ea, mge as EmptyFocusButton, CV as EmptyState, XH as ErrorText, L_e as ExternalLink, Br as FEEDS_KEY, vX as FEED_SCHEDULE_KEY, E$ as FIELDSET_FOOT, yPe as FLOW_LABEL_X, X3 as FLOW_VIEWBOX, Rr as FOLLOW_CHECK_KEY, Lr as FOLLOW_CREDENTIALS_KEY, N8 as FOLLOW_INITIAL_RANGE_OPTIONS, Ir as FOLLOW_MANAGE_KEY, QZ as FOLLOW_MANAGE_NAV, zr as FOLLOW_RESOLVE_KEY, _X as FOLLOW_SCHEDULE_KEY, B_e as Fact, z_e as FactList, ZH as FieldLabel, z$ as Fieldset, R$ as FieldsetTitle, ope as FilterGlass, OL as FilterGlassRows, DL as FilterIconButton, kL as FilterPill, I_e as Footer, nV as Gg, AL as GlassPill, lV as HN, YH as Help, mV as HintText, dPe as IDLE_POLL_MS, PCe as IDLE_REPAIR, CL as IconButton, XQ as IndexSearch, yV as Input, vV as InputBase, xM as JAV_LAYOUTS, F0 as JAV_RECOMMENDATION_GRID, UX as JUNK_KEY, AW as JavHeader, OCe as KEEP_LABELS, Hr as LAYOUTS, Y1 as LIBRARY_FOLDER_HELP, uH as LIBRARY_PROCESSING_KEY, nX as LINKS_KEY, rX as LINK_CHECK_KEY, gwe as LINK_KINDS, iX as LINK_PRUNE_KEY, tr as LOC, pV as Label, H$ as LibraryProcessingCard, BV as LibraryShortcuts, EH as LinkButton, BH as LoadingDots, Rhe as M6, xwe as MEDIA_PROCESSING_KEY, bX as MEDIA_PROCESSING_URL, FY as MEDIA_REPAIR_KEY, PY as MEDIA_REPAIR_URL, vr as MEDIA_SOURCES_KEY, gs as MEDIA_SOURCE_ICONS, hn as MEDIA_SOURCE_OPTIONS, GV as MENU_ITEM, KV as MENU_ITEM_INTERACTIVE, WV as MENU_POPOVER_SURFACE, AH as MenuDialog, EK as MixCard, bV as ModalFrame, Dx as MotionConfigContext, fV as NR, SV as Note, lge as OA, CX as ORGANIZE_KEY, p2 as ORGANIZE_PARAMETER_HINT, f2 as ORGANIZE_SCOPE_HINT, d2 as ORGANIZE_TEXT, EX as ORPHAN_RECORDS_KEY, h2 as ORPHAN_RECORDS_TEXT, eV as OV, BB as P7, BX as PERFORMER_DELETE_KEY, Kve as PHASES, dX as PICK_FOLDER_URL, j$ as PLAIN_STAT_STRIP, W$ as PLAYLISTS_KEY, hAe as POLICY_COLUMNS, _Ae as POLICY_COVER_NOTE, gAe as POLICY_MATRIX, J1 as POLICY_SUMMARY, lY as Pagination, V$ as PathLine, QI as PillTabList, NOe as PlainStat, HH as Progress, BY as QUALITY_GOALS_KEY, N$ as REPAIR_CARD_TEXT, IY as REPAIR_LIBRARIES_KEY, jX as RESOURCE_APPLY_KEY, AX as RESOURCE_SCAN_KEY, m2 as RESOURCE_SYNC_TEXT, zOe as RESULT_PANEL, BOe as RESULT_SECTION, WCe as REVIEW_CATEGORIES, HX as REVIEW_COUNTS_KEY, qCe as REVIEW_DECISION_LABELS, UY as REVIEW_KEY, WY as REVIEW_LABELS, KY as REVIEW_QUEUES, qY as REVIEW_QUEUE_LABELS, ZG as RetryNote, sge as Rf, N_e as Rows, lke as SCRAPING_CHECK_URL, Y$ as SCRAPING_COVER_URL, X$ as SCRAPING_KEY, cke as SCRAPING_SETTINGS_URL, vU as SEGMENT, _U as SEGMENTED_TRACK, gX as SETTINGS_KEY, fX as SETTINGS_URL, dr as SORT_DEFAULT_DIR, lr as SORT_OPTIONS, vn as SOURCE_LABELS, x3 as STATS_KEY, jOe as STAT_STRIP, MOe as STAT_STRIP_SIX, M_e as Section, VOe as SectionHeading, F_e as SectionSkeleton, gU as SegmentedRadioGroup, tve as SegmentedTabList, WG as Segments, cY as Select, tW as Select$1, m1 as SelectField, nW as SelectItem, vY as SelectionActions, Fj as SelectionDock, yY as SelectionPopover, qH as SettingsCard, j_e as SettingsRow, JH as SettingsSectionLabel, W_e as SiteLabel, CG as SortDirectionIcon, KG as SortKeys, jQ as SourceAvatar, nU as SourceLabel, $H as SourceMark, P_e as Stack, POe as StatCard, B$ as StatusLabel, $2 as Switch, sL as TASKS_KEY, ePe as TASTE_REFRESH_KEY, tPe as TASTE_WINDOWS, yX as THUMBNAIL_JOBS_KEY, GX as TRASH_KEY, Bfe as TRIGGER_LABELS, QJ as Table, bY as TableColumnControls, xY as TableColumnResizer, CY as TableSelectionHeader, _$ as TagManager, R_e as TaskCenterLink, UH as TaskProgress, gV as TextField, hV as TextFieldContext, QB as Un, hW as WANTS_KEY, m4 as WantMagnets, Gg as WithPromise, WB as Wt, ZB as Xc, dV as Xf, GB as Xt, HB as _8, o as __commonJSMin, s as __exportAll, l as __toESM, oge as aB, Ti as addAlias, wi as addSource, _W as addWant, gS as animate, B as apiGet, V as apiSend, hM as appSettingsStore, lTe as applyConfirmText, zX as applyLeftovers, cTe as applyPlanText, dTe as applyText, yM as applyTheme, by as asNumber, Zwe as attachOrphan, si as authorAvatar, li as authorGroups, oi as authorInitial, ai as authorName, Bq as autoResetPageIndex, go as avatarInner, D3 as bandRows, Gwe as baseName, NCe as batchOperate, cue as beginPlayerGuidePreview, Bj as boundedPreference, ACe as bulkCloudPreferences, DV as busyProps, age as cB, kMe as cachedMagnetStates, zg as calcGeneratorVelocity, ewe as canApprove, mg as cancelFrame, nTe as candidateText, zH as cardClass, PM as cardRatio, XB as cc, Wi as checkEvidenceGap, Ui as checkFailures, Pi as checkFeeds, bwe as checkLine, Vi as checkReceipt, Hi as checkSummary, hke as checkText, Gi as checkedText, fK as clickedBlank, X5 as closeDrawerAfterNav, SCe as cloudLocations, k0 as cloudProxySkeleton, $C as clsx, Xhe as cn, lv as collectMotionValues, oJ as columnVisibilityFeature, qJ as column_getCanSort, UJ as column_getSortFn, QCe as commonReviewSources, Of as configurationSection, aPe as configureTasteBrowser, ol as confirmModal, Rfe as controlTask, Sq as copyInstancePropertiesWithoutMemos, co as coverUrl, Zq as createColumnHelper, nke as createPlaylist, Yi as credentialDone, T0 as credentialsSkeleton, lwe as currentReviewRow, q as cx, iV as dZ, owe as decisionPayload, swe as decisionReceipt, awe as defaultChoice, pTe as deletePerformerVideos, ike as deletePlaylist, x as diagnosticHeaders, q1 as diagnosticsSkeleton, TW as discoveryArtwork, CW as discoveryKey, VAe as discoveryScore, s9 as disposeStage, ECe as distinctName, zi as dropSources, ige as du, jCe as duplicateVictims, mL as elapsedText, tn as entityDisplayName, ho as entityFaceImg, Nn as entityPath, ei as errorHeadline, cr as errorMessage, z as esc, zq as expandRowModel, PB as f1, $r as feedIntervalText, t1 as fetchAmaneBridge, _i as fetchCheckJob, d1 as fetchConfiguration, e1 as fetchCoverJob, gi as fetchCredentials, J$ as fetchCustomSources, VX as fetchDeletePerformers, fTe as fetchDeletePlan, YQ as fetchDiagnostics, wW as fetchDiscoveries, MY as fetchDuplicates, Pfe as fetchEarlier, wwe as fetchFeedSchedule, ji as fetchFeeds, hi as fetchFollow, Cwe as fetchFollowSchedule, qX as fetchJunkSummary, vH as fetchLibraryProcessing, sX as fetchLinkCheck, cX as fetchLinkPrune, oX as fetchLinkStats, Swe as fetchMediaProcessing, LY as fetchMediaRepair, yr as fetchMediaSources, wX as fetchOrganize, Lwe as fetchOrganizeExample, DX as fetchOrphanRecords, Ai as fetchPending, G$ as fetchPlaylists, VY as fetchQualityGoals, RY as fetchRepairLibraries, vi as fetchResolveJob, NX as fetchResourceApply, MX as fetchResourceScan, $Y as fetchReview, KX as fetchReviewCounts, xX as fetchSettings, $$ as fetchSources, S3 as fetchStats, yi as fetchSuggestions, lL as fetchTasks, q3 as fetchTaste, oPe as fetchTasteJob, Twe as fetchThumbnailJobs, JX as fetchTrashSummary, gW as fetchWants, XCe as filterReviewRows, $n as firstGrapheme, iq as flexRender, xPe as flowGraph, SPe as flowLabel, bNe as fmtCount, qn as fmtDur, Yn as fmtSize, Nfe as foldByKind, Yfe as foldRoutine, Ii as followFeedByName, Vr as followSuggestKey, Zfe as followupDetail, Mfe as followupTally, pg as frame, RB as g4, lJ as getDefaultPaginationState, NM as gridLayout, ci as groupByAuthor, Jfe as groupFollowups, XY as groupReviewRows, oTe as hasChanges, PX as hasResourceRoots, dL as hasResultProblems, fPe as historySpan, FB as i2, uPe as importTasteExport, E0 as indexersSkeleton, Fg as interpolate, bW as invalidateWants, pL as isActive, Qr as isBroken, Kr as isLayout, bv as isMotionValue, GY as isReviewCategory, Xfe as isRoutine, D0 as javBrowserSkeleton, L0 as javContentSkeleton, EM as javLayout, I0 as javTagSkeleton, vTe as junkBreakdown, ake as keepPlaylist, ke as keepPreviousData, fi as keepSelected, C3 as known, Nhe as l7, qfe as latestOfKind, MNe as lengthRows, Sr as localTime, Fi as lookupFeedActor, zB as m7, rV as mM, En as mapLimit, ki as markItem, O3 as max, ANe as mediumRows, Ffe as mergeFinished, k3 as min, mwe as mirrorText, LCe as missingToolText, NY as mixedCloudPreferences, vL as momentText, _S as motion, dv as motionValue, nn as nameFallback, He as notifyManager, qwe as organizeOutcome, $0 as overlayHost, qr as pageSizeOf, di as pageWindow, mr as paginationRange, Ri as patchSource, W as peachHistory, W as peachHistory$1, iwe as pendingGenres, SNe as percentText, Bwe as pickOrganizeFolder, A$ as plainStatClass, Kwe as planSummary, w3 as playedFor, wNe as playedItemUrl, cL as pollInterval, Js as popCount, tke as posterUrl, Rye as previewLibraryColor, zwe as previewOrganize, BCe as previewUrl, Kfe as problemDestination, pH as processingActive, hL as progressText, tU as providerIcon, ywe as pruneText, IX as purgeCount, Qwe as purgeOrphan, oV as pv, rge as qE, H as queryClient, IB as r2, vPe as radarRows, DNe as radialArc, ONe as radialBarSize, ENe as radialCeiling, TNe as radialSlices, XN as randomId, gPe as rankDetail, _Pe as rankShares, E3 as reachedShare, gL as readableErrorHeadline, HAe as recommendationScore, uwe as recordGenre, eTe as recordsText, oke as recreatePlaylist, $Oe as refreshPlaylists, Cl as relayoutCovers, Bi as reloadFollowManage, pwe as reloadReview, bAe as rememberShape, Hwe as rememberTemplates, Ei as removeAlias, Ni as removeFeed, Ci as removeSource, lPe as removeTasteSource, vW as removeWants, Di as renameAliasGroup, rke as renamePlaylist, Se as replaceEqualDeep, PNe as replayRows, re as require_jsx_runtime, A as require_react, N as require_react_dom, vq as require_with_selector, yW as resetWants, pr as resolveFollowSort, Hg as resolveStartTime, o_e as restartEffectText, eke as resumeAssetId, YCe as reviewGroupingOptions, YY as reviewQueueData, JY as reviewQueueOf, _Te as reviewSummary, ZCe as reviewWindow, nwe as rowEvidence, QY as rowFieldName, gJ as rowPaginationFeature, LJ as rowSelectionFeature, XJ as rowSortingFeature, ZY as rowSubject, rwe as rowTags, twe as rowTitle, Ahe as s5, Oi as saveCredential, sTe as scanLine, Awe as schedulePollInterval, SW as searchNote, $Ce as selectReviewRange, pi as selectionState, Mi as setFeedEnabled, Si as setSourceEnabled, Mf as settingsPath, fwe as settleReviewRows, TCe as sharedNamePrefix, Ep as shellNavigate, x8 as showToast, zn as siteMarkUrl, Aq as skipFirstRun, XI as sortCx, Yr as sortLabel, yn as sourceDefaultCost, qi as sourceIconUrl, uTe as sourceMeta, zs as spinnerHtml, Ng as spring, TV as spriteGlyph, bi as startCheck, _we as startLinkCheck, vwe as startLinkPrune, Vwe as startOrganize, xi as startResolve, iTe as startResourceApply, rTe as startResourceScan, cPe as startTasteRefresh, AOe as statCardClass, Hfe as statusLabel, ICe as statusLine, Zr as statusText, FM as storeJavLayout, cwe as submitDecision, yL as summaryItems, Qq as tableFeatures, jq as tableMemo, ui as tableRows, Gfe as taskIssues, J3 as tasteDate, mPe as tasteDimensions, pPe as tasteHours, K3 as tasteKey, rPe as tasteRefetchInterval, iPe as tasteTime, nL as textLang, $m as time, Uhe as tl, mi as toggleGroup, Y3 as topScores, Khe as uo, DH as useAction, qZ as useBackgroundJob, qU as useClientUpdates, dm as useConstant, bL as useEntityNames, EL as useHorizontalScroller, fm as useIsomorphicLayoutEffect, dK as useLibraryTints, Ft as useMutation, QV as useOverlayScrollbar, Pt as useQuery, ae as useQueryClient, aS as useReducedMotion, kwe as useRunSchedule, Dwe as useSaveFollowSchedule, SX as useSaveSettings, jwe as useSaveThumbnailMode, ZJ as useTable, mY as useTablePreferences, NL as useViewGlide, MCe as victimBytes, xW as wantName, CNe as watchNote, T3 as watchedShare, Dc as wireHorizontalScroller, Uwe as withOrganizeJob };
 
-//# debugId=741553d7-c4e5-4c9d-9073-92d513b2e9d7
+//# debugId=b9023e5d-852f-4399-a477-5c76e96c699e

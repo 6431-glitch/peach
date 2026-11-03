@@ -54,7 +54,8 @@ describe('扫描与采集控制', () => {
       error: '115 挂载读取超时，3 个文件未完成扫描',
       steps: [{ id: 'scan', label: '扫描文件', status: 'complete' }, { id: 'metadata', label: '采集影片资料', status: 'current' },
         { id: 'preview', label: '生成预览与封面', status: 'pending' }] };
-    const opened = await visit(browser, '/', viewport, async page => {
+    // 小窗挂在舞台里：进一次详情，那块节点才在。
+    const opened = await visit(browser, `/assets/${itemId}`, viewport, async page => {
       await page.route('**/api/library-processing{,?*}', route => route.fulfill({ json: state }));
     });
     const { page } = opened;
@@ -63,7 +64,10 @@ describe('扫描与采集控制', () => {
       const toggle = dock.locator('[data-processing-toggle]');
       await dock.waitFor();
       assert.equal(await toggle.getAttribute('aria-expanded'), 'true');
-      await page.locator('#miniplayer').evaluate(node => { (node as HTMLElement).hidden = false });
+      // 没在播的小窗没有画面撑高度，这里按真实小窗在手机上的高度定死，让三层确实装不下。
+      await page.locator('#miniplayer').evaluate(node => {
+        (node as HTMLElement).style.height = '460px'; (node as HTMLElement).hidden = false;
+      });
       await page.evaluate(async () => {
         const entry = '/dist/peach-app.js';
         const ui = await import(entry);
@@ -74,7 +78,7 @@ describe('扫描与采集控制', () => {
       await settle(page, '#toasts [data-processing-dock]');
       const boxes = await page.evaluate(() => [...document.querySelectorAll('#toasts [data-sonner-toast], #miniplayer')]
         .map(node => node.getBoundingClientRect().toJSON()));
-      for (const box of boxes) assert.ok(box.top >= 0 && box.bottom <= innerHeight, JSON.stringify(boxes));
+      for (const box of boxes) assert.ok(box.top >= 0 && box.bottom <= viewport.height, JSON.stringify(boxes));
       // 明细只是腾空间时暂收，不写进会话里的收起记录。
       assert.equal(await page.evaluate(() => sessionStorage.getItem('peach.library-processing.collapsed')), null);
       await toggle.click();
@@ -399,6 +403,8 @@ describe('扫描与采集控制', () => {
         await page.emulateMedia({ reducedMotion: 'reduce' });
         assert.equal(await dock.locator('[data-processing-body]').evaluate(el => getComputedStyle(el).transitionProperty), 'none');
         assert.equal(await dock.locator('[data-processing-traffic]').isVisible(), true);
+        // 明细区与预估区两段一起收，等收起过渡走完再量。
+        await settle(page, '#toasts [data-processing-dock]');
         const fixed = await dock.boundingBox();
         await dock.hover();
         await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
@@ -410,7 +416,7 @@ describe('扫描与采集控制', () => {
         const unhovered = await dock.boundingBox();
         assert.ok(fixed && hovered && unhovered);
         assert.ok(Math.abs(fixed.y - hovered.y) < 1 && Math.abs(fixed.y - unhovered.y) < 1,
-          '收起详情后滚动与悬停保持任务卡位置');
+          `收起详情后滚动与悬停保持任务卡位置：${JSON.stringify({ fixed, hovered, unhovered })}`);
         await dock.getByRole('button', { name: '展开任务详情' }).click();
         await dock.getByRole('button', { name: '处理速度：标准' }).click();
         const speed = page.getByRole('dialog', { name: '处理速度', exact: true });

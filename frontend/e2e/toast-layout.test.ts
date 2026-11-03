@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { it } from 'node:test';
 import type { Browser } from 'playwright-core';
 import { installDesignBrowser } from './design-fixture.ts';
-import { visit, VIEWPORTS } from './harness.ts';
+import { requiredEnv, visit, VIEWPORTS } from './harness.ts';
 
 let browser: Browser;
 installDesignBrowser((value) => { browser = value });
@@ -73,7 +73,8 @@ for (const viewport of [...VIEWPORTS, { name: 'narrow', width: 320, height: 844,
 
 for (const viewport of VIEWPORTS) {
   it(`${viewport.name} 的失败回执自己是红框，停在右下角小窗之上不压住它`, { timeout: 60_000 }, async () => {
-    const opened = await visit(browser, '/', viewport);
+    // 小窗挂在舞台里：进一次详情，那块节点才在。
+    const opened = await visit(browser, `/assets/${requiredEnv('PEACH_E2E_ITEM')}`, viewport);
     try {
       const mini = opened.page.locator('#miniplayer');
       await mini.waitFor({ state: 'attached' });
