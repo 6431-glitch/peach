@@ -93,13 +93,15 @@ body[data-wall-open] :is(body>header,[data-network-banner],#drawer,#main,#catalo
 .peach-react [data-wall-bar] > [data-wall-filter-notice] { flex:1 1 260px; min-width:0; }
 .peach-react [data-wall-image][aria-pressed="true"] { background:var(--ink); color:var(--ground); }
 .peach-react [data-wall-image][aria-pressed="true"]:hover { background:#fff; }
-/* 搜索点开后在本行内向右伸成输入框（最宽 320px，窄屏占满剩余），放大镜留在原位变成提交键。 */
+/* 搜索点开后在本行内向右伸成输入框（最宽 320px，窄屏占满剩余），放大镜留在原位变成提交键。
+   宽度靠 `max-width` 过渡：Chrome 不给从 0 起的 `flex-grow` 插值，那样写会一下子跳开。
+   基准宽度为 0、常驻伸展，换行判断只按 44px 算，窄屏不会被挤到第二行。 */
 .peach-react [data-wall-bar] > [data-wall-search] {
-  display:flex; flex:0 0 44px; min-width:44px; max-width:320px; height:44px; overflow:hidden;
+  display:flex; flex:1 1 0; min-width:44px; max-width:44px; height:44px; overflow:hidden;
   border-radius:22px; background:rgba(40,40,40,.78); color:var(--ink); backdrop-filter:blur(14px);
-  transition:flex-grow 220ms cubic-bezier(.22,1,.36,1);
+  transition:max-width 260ms cubic-bezier(.22,1,.36,1);
 }
-.peach-react [data-wall-bar] > [data-wall-search][data-open] { flex-grow:1; }
+.peach-react [data-wall-bar] > [data-wall-search][data-open] { max-width:320px; }
 .peach-react [data-wall-search] [data-wall-round] { flex:none; background:transparent; backdrop-filter:none; }
 .peach-react [data-wall-search] input {
   flex:1; min-width:0; height:100%; padding:0 18px 0 2px; border:0; border-radius:0; outline:0; background:transparent; color:var(--ink); font:inherit; font-size:14px;
