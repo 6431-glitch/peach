@@ -3,6 +3,8 @@ main{position:relative;z-index:1;padding:14px 16px 90px}
 #catalogPageHeading,#javLibraryHeader,#listTitle{padding:20px 16px 0;margin:0 0 20px}
 #catalogPageHeading[hidden],#javLibraryHeader[hidden]{display:none}
 #catalogPageHeading h2{margin:0;font:var(--board-title)}
+/* 搜索结果的标题带着搜索词，长词只占一行、末尾省略，全文在悬停与搜索框里。 */
+#catalogPageHeading h2{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 h2[data-page-title]{margin:0;font:var(--board-title);letter-spacing:0}
 @media(max-width:760px){#catalogPageHeading h2,h2[data-page-title]{font:var(--board-figure)}}
 .count{position:sticky;top:calc(var(--topH) + var(--filterH));z-index:60;

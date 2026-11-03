@@ -311,7 +311,7 @@ describe('顶栏搜索', () => {
       await typeQuery(opened);
       await page.keyboard.press('Enter');
       await page.waitForFunction(() => new URLSearchParams(location.search).has('q'), undefined, { timeout: 5_000 });
-      const searched = query(page)!;
+      const searched = `搜索结果：「${query(page)!}」`;
       await page.waitForFunction(text => document.querySelector('#catalogPageHeading [data-page-title]')?.textContent === text,
         searched, { timeout: 5_000 });
       await page.locator('[data-nav][aria-label="首页"]').first().click();

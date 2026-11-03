@@ -234,8 +234,10 @@ export function paintListTitle(){
 /* 首页标题跟着搜索词走：搜出来的这一屏是这个词的结果，不再是首页。清掉搜索词回到「首页」。 */
 export function paintCatalogPageTitle(heading,query){
   const title=heading?.querySelector('[data-page-title]');if(!title)return;
-  const next=String(query||'').trim()||'首页';
+  const words=String(query||'').trim();
+  const next=words?`搜索结果：「${words}」`:'首页';
   if(title.textContent!==next)title.textContent=next;
+  if(words)title.title=next;else title.removeAttribute('title');
 }
 
 export function openManage(section='stats'){
