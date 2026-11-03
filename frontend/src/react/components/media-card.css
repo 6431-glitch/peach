@@ -751,9 +751,9 @@ body[data-peach-copy-mode] .peach-react [data-media-card] [data-media-duration][
   cursor: pointer;
 }
 .peach-react [data-media-tag]:hover { background: var(--hover); color: var(--ink); }
-/* 只读的标签（关注卡、关注来的作品）照样是这张脸，只是不接筛选：不给手形，也不给「禁止」光标。 */
-.peach-react [data-media-tag]:disabled { cursor: default; }
-.peach-react [data-media-tag]:disabled:hover { background: var(--tag-fill); color: var(--ink-2); }
+/* 只读的标签（关注卡、关注来的作品）是同一张脸的文字，不接筛选：不给手形，悬停也不变色。 */
+.peach-react span[data-media-tag] { cursor: default; }
+.peach-react span[data-media-tag]:hover { background: var(--tag-fill); color: var(--ink-2); }
 @media (max-width: 760px) {
   .peach-react [data-media-tags] > :nth-child(n+3) { display: none; }
 }
