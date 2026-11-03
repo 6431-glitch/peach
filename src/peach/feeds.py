@@ -30,6 +30,13 @@ KIND_LABELS = {KIND_JAVDB_ACTOR: "JAV 订阅"}
 #: 拉取间隔。JavDB 按出口 IP 计配额，一张一天才更新几条的页面拉得再密也只是花配额。
 DEFAULT_INTERVAL_MINUTES = 360
 
+#: 定时拉取多久看一次有没有到期的源（ADR-0132）。每个源仍按自己的间隔拉，这一档只决定
+#: 到期之后最多再等多久；源在间隔窗口里各占一个相位，一跳只拉落在这半小时里的那几个。
+TICK_MINUTES = 30
+
+#: 相位散列用的黄金比例小数部分：连续的 id 落在窗口里也是均匀铺开的，几个源时也不扎堆。
+_GOLDEN = 0.6180339887498949
+
 #: 一次拉取最多解析多少条。源正常一页几十条，异常的那种（被替换成别的页面、
 #: 被镜像站塞进整站索引）会给出几千条，那不该变成几千个壳。
 MAX_ENTRIES = 200
@@ -328,29 +335,54 @@ def sources(connection: sqlite3.Connection) -> list[dict]:
 
 
 def due_sources(connection: sqlite3.Connection, now: str | None = None) -> list[sqlite3.Row]:
-    """到期该拉的源。从没拉过的（`next_fetch_at` 为空）总是到期。"""
+    """到期该拉的源，等得最久的在前。从没拉过的（`next_fetch_at` 为空）总是到期，排最前。"""
     moment = now or stamp()
     return list(connection.execute(
         "SELECT * FROM feed_source WHERE enabled=1"
-        " AND (next_fetch_at IS NULL OR next_fetch_at<=?) ORDER BY id", (moment,)))
+        " AND (next_fetch_at IS NULL OR next_fetch_at<=?) ORDER BY next_fetch_at, id", (moment,)))
+
+
+def next_fetch(source_id: int, moment: datetime, interval_minutes: int) -> datetime:
+    """这个源下一次该拉的时刻：「现在 + 间隔」附近、落在它自己相位上的那一刻（ADR-0132）。
+
+    不直接取「现在 + 间隔」：调度每跳之间隔着 `TICK_MINUTES`，拉完那一刻总比到期晚一点，
+    按它往后排会一轮轮漂，同一时刻加的源也永远在同一跳一起到期。相位由 id 定，过渡那一轮
+    间隔落在半个到一个半间隔之间，之后每次都回到同一个相位。
+    """
+    period = max(1, int(interval_minutes)) * 60
+    phase = (int(source_id) * _GOLDEN) % 1 * period
+    base = moment + timedelta(seconds=period)
+    offset = (phase - base.timestamp()) % period
+    if offset > period / 2:
+        offset -= period
+    return base + timedelta(seconds=offset)
 
 
 def settle(connection: sqlite3.Connection, source_id: int, *, error: str | None = None,
            etag: str | None = None, last_modified: str | None = None,
            interval_minutes: int, seen: int = 0, new: int = 0,
-           page_name: str | None = None, now: datetime | None = None) -> None:
+           page_name: str | None = None, now: datetime | None = None,
+           retry_at: datetime | None = None) -> None:
     """结算一次拉取。`page_name` 是这一页在站上挂的名字，解不出时留着上次的。
 
     失败也按同一间隔排下一次，不做指数退避——退避要么在这里写第二套判据，要么让一个
     临时挡回来的源沉默半天。下次时间在所有返回路径上都写，任何一种结局都不会让源卡住。
+    `retry_at` 是来源冷却的结束时刻：被整站挡回来的不是这个源的错，冷却一过就该再拉。
     """
     moment = now or datetime.now(timezone.utc)
+    upcoming = retry_at or next_fetch(source_id, moment, interval_minutes)
     connection.execute(
         "UPDATE feed_source SET last_error=?,last_fetched_at=?,next_fetch_at=?,"
         "etag=COALESCE(?,etag),last_modified=COALESCE(?,last_modified),"
         "name=COALESCE(?,name),last_seen_count=?,last_new_count=? WHERE id=?",
-        (error, stamp(moment), stamp(moment + timedelta(minutes=interval_minutes)),
+        (error, stamp(moment), stamp(upcoming),
          etag, last_modified, page_name or None, int(seen), int(new), int(source_id)))
+
+
+def defer(connection: sqlite3.Connection, source_id: int, until: datetime) -> None:
+    """这一轮没轮到问就撞上了来源冷却：只把下次时间挪到冷却结束，上次的结论原样留着。"""
+    connection.execute("UPDATE feed_source SET next_fetch_at=? WHERE id=?",
+                       (stamp(until), int(source_id)))
 
 
 # -- 条目与壳 --------------------------------------------------------------

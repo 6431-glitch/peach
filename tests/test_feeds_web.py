@@ -9,7 +9,7 @@ import tempfile
 import threading
 import time
 import unittest
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -80,6 +80,8 @@ class FeedWebFixture(unittest.TestCase):
         # assert 之后才写完，也可能在临时目录删掉之后才醒。这里关掉自动领取，
         # 要跑后继的用例自己 `drain()`。
         self.contract.followups.stop()
+        # 来源冷却记录读写这里：每轮拉取前都要看 JavDB 是否在冷却，不能读到本机真实的那份。
+        self.contract.follow_secrets_root = Path(self.temporary.name) / "secrets"
         self.url = "https://javdb.com/actors/Smp1"
         sample = Path(self.temporary.name) / "feed-sample.html"
         sample.write_text(SAMPLE, encoding="utf-8")
@@ -140,6 +142,10 @@ class FeedWebFixture(unittest.TestCase):
             headers["If-Modified-Since"] = last_modified
         from peach.http import HttpRequest
         return transport(HttpRequest("GET", url, headers), 30.0, 1 << 21)
+
+    def _stock_window_passes(self):
+        """定时拉取派存量后继的窗口（`web_feeds.STOCK_INTERVAL`）已经过去。"""
+        self.contract.feed_stock_planned_at = None
 
     def _add(self, entity_id=None):
         with self.contract.database.write_transaction() as connection:
@@ -422,6 +428,66 @@ class FeedWebTest(FeedWebFixture):
         row = dispatch_api_get(self.contract, "/api/feeds", {})["sources"][0]
         self.assertEqual(row["last_error"], "来源回了 HTTP 503")
         self.assertIsNotNone(row["next_fetch_at"])
+
+    def _sources_named(self, *names):
+        """再加几个演员页源，各回一份同样的样本页。返回全部源 id，第一个是 `_add` 那个。"""
+        ids = [self._add()]
+        for name in names:
+            url = f"https://javdb.com/actors/{name}"
+            self.transport.responses[url] = self.transport.responses[self.url]
+            with self.contract.database.write_transaction() as connection:
+                ids.append(feeds.add_source(connection, url=url, name=name))
+        return ids
+
+    def _rows(self):
+        with self.contract.database.read_connection() as connection:
+            return {int(row["id"]): dict(row) for row in connection.execute("SELECT * FROM feed_source")}
+
+    def test_a_refused_round_records_one_failure_and_defers_the_rest_to_the_cooldown_end(self):
+        """一轮里撞上 403：只记撞上的那一条，其余源不再问、顺延到冷却结束（ADR-0132）。"""
+        from peach import scraping_access
+        first, *rest = self._sources_named("Smp2", "Smp3")
+        served = self.transport
+
+        def refused(request, timeout, max_bytes):
+            served.requests.append(request)
+            scraping_access.pause_source(self.contract.follow_secrets_root, "javdb", refused=True)
+            raise scraping_access.SourcePaused("来源拒绝访问，暂停向它请求一段时间")
+
+        self.transport = refused
+        result = self._check()
+        self.assertEqual(len(served.requests), 1)
+        self.assertEqual(result["deferred"], 2)
+        [row] = result["results"]
+        self.assertFalse(row["ok"])
+        self.assertIn("其余 2 个源顺延到冷却结束后再拉", row["error"])
+        until = scraping_access.paused_until(self.contract.follow_secrets_root, "javdb")
+        expected = feeds.stamp(datetime.fromtimestamp(until, timezone.utc))
+        rows = self._rows()
+        self.assertEqual({rows[source]["next_fetch_at"] for source in (first, *rest)}, {expected})
+        self.assertTrue(all(rows[source]["last_fetched_at"] is None for source in rest))
+
+    def test_a_round_that_starts_in_cooldown_asks_nothing(self):
+        """别的任务撞出来的冷却还没过：这一轮一个请求都不发，整轮只说一句。"""
+        from peach import scraping_access
+        self._sources_named("Smp2")
+        scraping_access.pause_source(self.contract.follow_secrets_root, "javdb", refused=True)
+        result = self._check()
+        self.assertEqual(self.transport.requests, [])
+        [row] = result["results"]
+        self.assertEqual(row["error"], "JavDB 正在冷却，这一轮没有拉；其余 1 个源顺延到冷却结束后再拉")
+        self.assertTrue(all(row["last_fetched_at"] is None and row["last_error"] is None
+                            for row in self._rows().values()))
+
+    def test_a_scheduled_tick_without_due_sources_starts_nothing(self):
+        """定时每半小时一跳；没有到期的源时不起任务，任务中心里不留空跑的一行。"""
+        self._add()
+        self._check()
+        runs = len(self.contract.task_runs.query(task_key="feed-check", limit=50))
+        result = web_feeds.w_feed_check(self.contract, {"automatic": True})
+        self.assertTrue(result["idle"])
+        self.assertEqual(len(self.contract.task_runs.query(task_key="feed-check", limit=50)), runs)
+        self.assertEqual(len(self.transport.requests), 1)
 
     def test_an_empty_alias_page_settles_quietly_and_names_its_row(self):
         """同一个人的第二页挂在旧艺名下、一部作品都没有：不算失败，行上说出是哪个名字。"""
@@ -906,8 +972,10 @@ class FeedWebTest(FeedWebFixture):
         self._drain(1)
         self.transport.responses[self.url] = HttpResponse(304, {}, b"", self.url)
         # 定时那一轮：刚试过的不再排；已经有封面、资料也齐的那部永远不再排。
+        self._stock_window_passes()
         self.assertEqual(self._check(automatic=True)["followups"], [])
         self._attempted("HMN-071", feed_followup.RETRY_AFTER.total_seconds() + 60)
+        self._stock_window_passes()
         self.assertEqual([item["key"] for item in self._check(automatic=True)["followups"]],
                          ["feed-cover:HMN-071"])
         # 人说了不想看的，不再替它花配额。
@@ -956,9 +1024,29 @@ class FeedWebTest(FeedWebFixture):
         with self.contract.database.read_connection() as connection:
             current = avatar_followup.fingerprint(connection, entity_id, providers_root)
         Attempts(attempts_root(self.contract.candidate_root)).record(key, current, "图库 6 张认不准")
+        self._stock_window_passes()
         self.assertNotIn(key, [item["key"] for item in self._check(automatic=True)["followups"]])
         index_path.write_text(json.dumps({"Content": {"1-S1": {"二の宮すずか.jpg": "二の宮すずか.jpg"}}}), encoding="utf-8")
+        self._stock_window_passes()
         self.assertIn(key, [item["key"] for item in self._check(automatic=True)["followups"]])
+
+    def test_scheduled_rounds_carry_the_stock_only_once_per_window(self):
+        """定时每半小时一跳：新番号每跳都派，存量（旧壳、封面、头像、想要）一个窗口只派一次。"""
+        self.cover_misses.add("HMN-071")
+        self._add()
+        first = self._check(automatic=True)
+        self.assertTrue(first["stock"])
+        self.assertEqual([item["key"] for item in first["followups"]],
+                         ["feed-scrape:SSIS-950,HMN-071"])
+        self._drain(1)
+        self._attempted("HMN-071", feed_followup.RETRY_AFTER.total_seconds() + 60)
+        self.transport.responses[self.url] = HttpResponse(304, {}, b"", self.url)
+        quiet = self._check(automatic=True)
+        self.assertFalse(quiet["stock"])
+        self.assertEqual(quiet["followups"], [])
+        self._stock_window_passes()
+        self.assertEqual([item["key"] for item in self._check(automatic=True)["followups"]],
+                         ["feed-cover:HMN-071"])
 
     def test_an_unknown_action_is_refused(self):
         with self.assertRaises(ValueError):

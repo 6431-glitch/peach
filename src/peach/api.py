@@ -458,7 +458,8 @@ def create_app(
     contract.follow_scheduler = follow_scheduler
     # 订阅源拉取（ADR-0042）用同一个调度实现，只换 job id、状态文件与默认间隔。
     # 默认 6 小时：一位女优的 JavDB 演员页一天更新几条，比这更密只是把 JavDB 的配额
-    # 花在一张没变的页面上。
+    # 花在一张没变的页面上。6 小时是每个源的周期；调度每半小时看一次谁到期，各源按
+    # 自己的相位错开（ADR-0132）。
     feed_scheduler = FollowUpdateScheduler(
         settings.follow_state_root,
         lambda: web_feeds.w_feed_check(contract, {"automatic": True}),
@@ -467,6 +468,7 @@ def create_app(
         filename="feed-schedule.json",
         default=FollowScheduleConfig(enabled=True,
                                      interval_minutes=feeds.DEFAULT_INTERVAL_MINUTES),
+        tick_minutes=feeds.TICK_MINUTES,
         unavailable_message="订阅源拉取只在写入端可用",
     )
     contract.feed_scheduler = feed_scheduler
