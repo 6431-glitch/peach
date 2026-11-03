@@ -37,6 +37,12 @@ interface Store {
   recommendationRequest: number;
   /** 排在空闲时的那次推荐预取；卸载时撤掉。 */
   cancelIdle: () => void;
+  /** 点了「换一批」、手上没有备好的那份：这一次取到就换上。 */
+  reshuffling: boolean;
+  /** 「换一批」那枚图标的描线至少走完一圈，到这一刻为止。 */
+  shuffleUntil: number;
+  /** 正在换的那句占位字；开始打字就收掉。 */
+  cancelRoll: () => void;
   /** 画的那一刻输入框里的词与洗好的推荐。 */
   query: string;
   picks: string[];
@@ -56,7 +62,7 @@ interface Store {
 }
 
 const emptyStore = (): Store => ({
-  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
+  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, reshuffling: false, shuffleUntil: 0, cancelRoll: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
   suggestRequest: 0, asked: '', timer: 0, kind: '', active: -1, reveal: false, rewind: false,
 });
 
@@ -69,6 +75,10 @@ const hasContent = (m: MenuModel) => !!(m.tabs || m.recent || m.left.length || m
 
 /** 页面一直不空闲时，推荐最晚这么久之后开始取。 */
 const PREFETCH_TIMEOUT = 4000;
+/** 输入框空着时，占位里的推荐词隔这么久换一句。 */
+const PLACEHOLDER_ROTATE = 5000;
+/** 「换一批」那枚图标的描线一圈，同 `search.css` 里的 `--strand-cycle`。 */
+const SHUFFLE_SPIN = 1200;
 
 /** 等页面闲下来再做；返回撤销函数。不支持 `requestIdleCallback` 的浏览器退回定时器。 */
 function whenIdle(task: () => void): () => void {
@@ -101,7 +111,7 @@ export function SearchPage(props: SearchProps) {
   useLayoutEffect(() => {
     const { input } = latest.current;
     const onInput = (event: Event) => op.input(event as InputEvent);
-    const onStart = () => latest.current.helpers.composing();
+    const onStart = () => { s.cancelRoll(); latest.current.helpers.composing() };
     const onKey = (event: KeyboardEvent) => op.key(event);
     const onFocus = () => op.focus();
     const onClick = () => { if (s.dismissed) op.focus() };
@@ -113,8 +123,9 @@ export function SearchPage(props: SearchProps) {
     input.addEventListener('click', onClick);
     const api: SearchApi = { close: op.close };
     latest.current.expose(api);
-    // 页面闲下来就先把推荐取好，点开搜索框时直接画；等不到空闲也最多拖几秒。
-    op.prefetch();
+    // 页面闲下来就先把推荐与推荐词取好：点开搜索框时直接画，没点开时占位字也照样轮换。
+    op.warm();
+    const rotation = window.setInterval(op.rotatePlaceholder, PLACEHOLDER_ROTATE);
     return () => {
       input.removeEventListener('input', onInput);
       input.removeEventListener('compositionend', onInput);
@@ -124,6 +135,8 @@ export function SearchPage(props: SearchProps) {
       input.removeEventListener('click', onClick);
       clearTimeout(s.timer);
       s.cancelIdle();
+      window.clearInterval(rotation);
+      s.cancelRoll();
       s.recommendationRequest++;
       latest.current.expose(null);
     };
@@ -143,14 +156,23 @@ export function SearchPage(props: SearchProps) {
     <Row key={`${entry.type}:${entry.value}:${entry.index}`} entry={entry} active={entry.index === s.active}
       helpers={props.helpers} onPick={op.pick} onPeek={op.peek} onRemove={op.remove} />
   );
+  const link = (group: MenuSection) => group.href ? (
+    <a href={group.href} onMouseDown={keep} onClick={event => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+      event.preventDefault(); op.openPath(group.href!);
+    }}>{group.action || '查看全部'}</a>
+  ) : null;
+  // 「换一批」只是一枚图标：等新的一批时、以及每点一次，图标的两股线各描一圈（首页换批键那一副）。
+  const shuffling = s.reshuffling || Date.now() < s.shuffleUntil;
   const section = (group: MenuSection) => (
     <section key={group.kind ?? group.label} data-search-group="" data-kind={group.kind}>
-      <h3>{group.label}{group.href ? (
-        <a href={group.href} onMouseDown={keep} onClick={event => {
-          if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
-          event.preventDefault(); op.openPath(group.href!);
-        }}>{group.action || '查看全部'}</a>
-      ) : null}</h3>
+      <h3>{group.label}{group.shuffle ? (
+        <span data-search-head="">
+          <button type="button" data-search-shuffle="" aria-label="换一批" title="换一批"
+            aria-busy={shuffling || undefined} onMouseDown={keep} onClick={op.reshuffle}><Sprite name="shuffle" /></button>
+          {link(group)}
+        </span>
+      ) : link(group)}</h3>
       {group.pending ? <div data-search-items="" aria-busy="true">{placeholders(group)}</div>
         : group.kind ? <div data-search-items="">{group.options.map(option)}</div> : group.options.map(option)}
       {group.more ? option(group.more) : null}
@@ -170,6 +192,19 @@ export function SearchPage(props: SearchProps) {
       {model.empty ? <p data-search-empty="" role="status">没有找到</p> : null}
     </div>
   );
+}
+
+/** 备好的下一批先把封面和头像拉进浏览器缓存：换上去的那一刻图是现成的，不先空一下灰格。 */
+function preloadImages(groups: SuggestGroup[], helpers: SearchProps['helpers']): void {
+  const html = groups.flatMap(group => group.items.flatMap(item => [
+    item.card ? helpers.coverHtml(item.card) : '', item.avatarHtml || '', item.whoAvatarHtml || '',
+  ])).join('');
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  for (const image of template.content.querySelectorAll('img')) {
+    const src = image.getAttribute('src');
+    if (src) new Image().src = src;
+  }
 }
 
 /** 占位条里垫一个不换行空格：行高与真字同高，取到时那一行不长高。 */
@@ -213,19 +248,32 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     writeHistory([query, ...readHistory().filter((value) => fold(value) !== fold(query))]);
     void apiSend('/api/search-history', { query }).catch(() => null);
   };
+  /* 占位字是推荐词：框空着回车就搜它（`data-suggestion`）。新的一句由壳的动效换上去，旧的往上糊掉。
+     池还在取时框里留着上一句，不先清成「搜索馆藏」再跳回来。 */
+  const suggest = (pick: string) => {
+    const field = input();
+    field.dataset.suggestion = pick;
+    s.cancelRoll();
+    const next = pick || '搜索馆藏';
+    const roll = props().helpers.rollPlaceholder;
+    if (roll) s.cancelRoll = roll(field, next);
+    else { field.placeholder = next; s.cancelRoll = () => {} }
+  };
+  /** 隔几秒换一句：框空着、页面看得见、池里不止一个词时才换。 */
+  const rotatePlaceholder = () => {
+    const field = input();
+    if (document.hidden || field.value || s.pool.length < 2) return;
+    const choices = s.pool.filter(name => name !== field.dataset.suggestion);
+    suggest(choices[Math.floor(Math.random() * choices.length)]!);
+  };
   const loadPool = async () => {
     const request = ++s.poolRequest;
     s.pool = [];
-    const field = input();
-    field.dataset.suggestion = '';
-    field.placeholder = '搜索馆藏';
     try {
       const names = await props().helpers.pool();
       if (request !== s.poolRequest) return;
       s.pool = names;
-      const pick = names[Math.floor(Math.random() * names.length)] || '';
-      field.dataset.suggestion = pick;
-      field.placeholder = pick || '搜索馆藏';
+      suggest(names[Math.floor(Math.random() * names.length)] || '');
     } catch {
       // 推荐不可用时仍可直接输入搜索。
     }
@@ -239,8 +287,16 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     const request = s.recommendationRequest;
     const take = (groups: SuggestGroup[], done: boolean) => {
       if (request !== s.recommendationRequest) return;
+      if (done && s.reshuffling) {
+        s.reshuffling = false;
+        s.recommendations = groups;
+        if (focused() && !input().value.trim()) paint();
+        else bump();
+        prefetch();
+        return;
+      }
       if (!s.recommendationsFilling) {
-        if (done) s.nextRecommendations = groups;
+        if (done) { s.nextRecommendations = groups; preloadImages(groups, props().helpers) }
         return;
       }
       s.recommendations = groups;
@@ -249,6 +305,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     };
     void helpers.recommendations(groups => take(groups, false))
       .then(groups => take(groups, true), () => {
+        if (request === s.recommendationRequest && s.reshuffling) { s.reshuffling = false; bump() }
         // 推荐读取失败仍可搜索：占位收掉，退回搜索记录与推荐词。
         if (request !== s.recommendationRequest || !s.recommendationsFilling) return;
         s.recommendations = [];
@@ -271,10 +328,33 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     s.recommendationsFilling = true;
     loadRecommendations();
   };
-  /** 空闲时备好下一份：下次打开换一批，且不用等。收起往往紧跟着打开详情，不跟它抢请求。 */
+  /** 空闲时备好下一份：下次打开或点「换一批」直接换上。收起往往紧跟着打开详情，不跟它抢请求。 */
   const prefetch = () => {
     s.cancelIdle();
     s.cancelIdle = whenIdle(() => { if (!s.nextRecommendations) loadRecommendations() });
+  };
+  /** 挂上之后：空闲时取好推荐与占位推荐词。 */
+  const warm = () => {
+    s.cancelIdle();
+    s.cancelIdle = whenIdle(() => {
+      if (!s.nextRecommendations) loadRecommendations();
+      if (!s.pool.length) void loadPool();
+    });
+  };
+  /** 「换一批」：备好了就当场换，没备好就等这次取到再换，栏里先留着旧的这批。 */
+  const reshuffle = () => {
+    s.shuffleUntil = Date.now() + SHUFFLE_SPIN;
+    window.setTimeout(bump, SHUFFLE_SPIN);
+    if (s.nextRecommendations) {
+      s.recommendations = s.nextRecommendations;
+      s.nextRecommendations = null;
+      paint();
+      prefetch();
+      return;
+    }
+    s.reshuffling = true;
+    bump();
+    loadRecommendations();
   };
   /* 分组顺序和每组的名字都由 `/api/suggest` 给出，这里照抄。慢的旧响应不许盖掉新的：连敲两个字时
      先发的那次完全可能后回来。 */
@@ -423,6 +503,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     field.blur();
   };
   const onInput = (event: InputEvent) => {
+    s.cancelRoll();
     if (event.isComposing) return;
     s.dismissed = false;
     props().helpers.typed(input());
@@ -441,7 +522,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       if (input().value.trim() !== s.asked) refresh();
     });
   };
-  return { input: onInput, key, focus, close, pick, peek, remove, pickKind, openPath, prefetch };
+  return { input: onInput, key, focus, close, pick, peek, remove, pickKind, openPath, prefetch, warm, reshuffle, rotatePlaceholder };
 }
 
 function Tabs({ tabs, kind, onPick, wire }: {

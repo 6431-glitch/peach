@@ -195,6 +195,61 @@ describe('输入框上的时序', () => {
     expect(asked).toBe(2);
   });
 
+  it('框空着时占位推荐词隔几秒换一句；框里有字时不换', async () => {
+    vi.useFakeTimers();
+    const s = await stage({ pool: ['剧情', '单体作品', '高画质'] });
+    await act(async () => s.input.focus());
+    await settle();
+    const first = s.input.placeholder;
+    expect(['剧情', '单体作品', '高画质']).toContain(first);
+    expect(s.input.dataset.suggestion).toBe(first);
+    await act(async () => { vi.advanceTimersByTime(5000) });
+    expect(s.input.placeholder).not.toBe(first);
+    expect(s.input.dataset.suggestion).toBe(s.input.placeholder);
+    await s.typeInto('七');
+    const typed = s.input.placeholder;
+    await act(async () => { vi.advanceTimersByTime(15000) });
+    expect(s.input.placeholder).toBe(typed);
+  });
+
+  it('「换一批」有备好的就当场换，没备好就留着旧的等新的一批', async () => {
+    const answers = [pending<SuggestGroup[]>(), pending<SuggestGroup[]>(), pending<SuggestGroup[]>()];
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (task: () => void) => idle.push(task));
+    vi.stubGlobal('cancelIdleCallback', (id: number) => { idle[id - 1] = () => {} });
+    onTestFinished(() => { vi.unstubAllGlobals() });
+    const flushIdle = () => act(async () => { idle.splice(0).forEach(task => task()) });
+    let asked = 0;
+    const batch = (value: string): SuggestGroup[] => [{ kind: 'asset', label: '作品推荐', items: [{ value, id: 11 }] }];
+    const s = await stage({ recommendations: () => answers[asked++]!.answer,
+      pendingRecommendations: () => [{ kind: 'asset', label: '作品推荐', items: [], pending: true }] });
+    const shown = () => [...s.menu.querySelectorAll('[data-search-option="work"]:not([data-search-placeholder])')]
+      .map(row => row.textContent);
+    const shuffle = () => s.menu.querySelector<HTMLButtonElement>('[data-search-shuffle]')!;
+    await act(async () => s.input.focus());
+    await answers[0]!.release(batch('作品一'));
+    await settle();
+    expect(shuffle().getAttribute('aria-label')).toBe('换一批');
+
+    await act(async () => shuffle().click());
+    expect(asked).toBe(2);
+    expect(shown()).toEqual(['作品一']);
+    expect(shuffle().getAttribute('aria-busy')).toBe('true');
+    await answers[1]!.release(batch('作品二'));
+    await settle();
+    expect(shown()).toEqual(['作品二']);
+
+    // 换上之后空闲时备好下一批，再点就不用等。
+    await flushIdle();
+    expect(asked).toBe(3);
+    await answers[2]!.release(batch('作品三'));
+    await settle();
+    expect(shown()).toEqual(['作品二']);
+    await act(async () => shuffle().click());
+    expect(shown()).toEqual(['作品三']);
+    expect(s.menu.hidden).toBe(false);
+  });
+
   it('关闭菜单后到达的图片推荐不会再打开菜单', async () => {
     const answer = pending<SuggestGroup[]>();
     const s = await stage({ recommendations: () => answer.answer });

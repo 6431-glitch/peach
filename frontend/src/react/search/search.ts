@@ -79,6 +79,8 @@ export interface SearchHelpers {
   recommendations?(update?: (groups: SuggestGroup[]) => void): Promise<SuggestGroup[]>;
   /** 推荐栏一组都还没取到时的占位，版式与取齐之后相同。 */
   pendingRecommendations?(): SuggestGroup[];
+  /** 输入框的占位字换一句，带动效（`rollPlaceholder`）；返回撤销函数。缺省时直接改。 */
+  rollPlaceholder?(input: HTMLInputElement, next: string): () => void;
   /** 小封面那一格（卡片的 `.pic`）连同里面那张图（`coverImage` 与 JAV 默认封面那套取景）；两样都没有是「无预览」。 */
   coverHtml(card: SuggestCard | null | undefined): string;
   present(menu: HTMLElement): void;
@@ -141,6 +143,8 @@ export interface MenuSection {
   action?: string;
   /** 推荐栏里还没取到的一组：画几格占位。 */
   pending?: number;
+  /** 标题上带「换一批」。 */
+  shuffle?: boolean;
 }
 
 export interface MenuModel {
@@ -193,6 +197,8 @@ export function menuModel({ query, history, picks, suggestFor, groups, tabs, kin
       const left = recommendations.filter(group => !SUGGEST_RIGHT_KINDS.has(group.kind)).map(section);
       if (matching.length) left.push({ label: '搜索记录', options: matching.map(value => add({ type: 'history', value })) });
       const right = recommendations.filter(group => SUGGEST_RIGHT_KINDS.has(group.kind)).map(section);
+      // 「换一批」换的是整栏，挂在右栏第一组的标题上，和「全部作品」并排。
+      if (right[0]) right[0] = { ...right[0], shuffle: true };
       return { tabs: null, recent: null, left, right, empty: false, options };
     }
     const recent = matching.length ? { label: '搜索记录', options: matching.map((value) => add({ type: 'history', value })) } : null;
