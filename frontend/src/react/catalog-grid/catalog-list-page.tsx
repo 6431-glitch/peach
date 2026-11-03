@@ -64,7 +64,7 @@ export function CatalogListPage(props: CatalogGridProps) {
   const result = useQuery({
     queryKey: ['catalog-grid', 'table', scope, params, props.revision, pagination, sorting],
     placeholderData: keepPreviousData,
-    queryFn: async ({ signal }): Promise<MediaPage> => {
+    queryFn: async ({ signal }): Promise<MediaPage & { libraryEmpty?: boolean }> => {
       const options = { limit: pagination.pageSize, sort: sort?.id, dir: sort ? sort.desc ? 'desc' : 'asc' : undefined };
       if (props.mode === 'entity') return props.fetchPage?.(offset, signal, options) || { items: [], total: 0 };
       const query = new URLSearchParams(params);
@@ -73,7 +73,10 @@ export function CatalogListPage(props: CatalogGridProps) {
       query.delete('count');
       if (options.sort) query.set('sort', options.sort);
       if (options.dir) query.set('dir', options.dir);
-      return apiGet<MediaPage>(`/api/items?${query}`, signal);
+      const page = await apiGet<MediaPage>(`/api/items?${query}`, signal);
+      /* 与卡片网格同一判据（`fetchCatalogPage`）：第一页为空、又不是回收站，再问整个馆藏有没有东西，空态据此分「还没有作品」与「没有符合的」。 */
+      if (offset || page.items?.length || props.filters?.state === 'trash') return page;
+      return { ...page, libraryEmpty: (await apiGet<MediaPage>('/api/items?limit=1&thumb=0', signal)).total === 0 };
     },
   });
   const items = result.data?.items || [];
@@ -166,6 +169,13 @@ export function CatalogListPage(props: CatalogGridProps) {
       }
     },
   });
+  /* 一部都没有时与卡片网格同一份空态（壳给的 `emptyHtml`：回收站、馆藏全空、筛选无结果各一种），
+     不画空表格与列设置；资料页不给空态，它自己在作品区外说「还没有视频」。 */
+  if (result.data && !result.isPlaceholderData && !result.isError && total === 0) {
+    const html = props.emptyHtml?.({ trash: props.mode !== 'entity' && props.filters?.state === 'trash',
+      libraryEmpty: !!(result.data as { libraryEmpty?: boolean }).libraryEmpty }) || '';
+    return <div data-catalog-view-mode="list" data-media-empty="" dangerouslySetInnerHTML={{ __html: html }} />;
+  }
   return <div data-catalog-view-mode="list" data-catalog-table="" aria-busy={result.isFetching || undefined} className="flex min-w-0 flex-col gap-4">
     <div className="flex flex-wrap justify-end gap-2" role="toolbar" aria-label="作品列表工具栏">
       <div data-toolbar-actions="">
