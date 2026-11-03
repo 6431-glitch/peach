@@ -1086,6 +1086,40 @@ class ErrorReportingTests(unittest.TestCase):
         loop.diagnostic_socket.close.assert_called_once()
         loop.default_exception_handler.assert_not_called()
 
+    def accept_failure(self, error):
+        """按标准库 `_start_serving` 的形状调处理器：监听套接字仍有效时先报告，随后它会关掉监听。"""
+        import socket
+        from asyncio import trsock
+        from peach import remote_reporting
+        listener = socket.create_server(('127.0.0.1', 0))
+        self.addCleanup(listener.close)
+        loop = mock.Mock()
+        with mock.patch.object(remote_reporting, 'send') as send:
+            error_reporting.asyncio_handler(loop, {'message': 'Accept failed on a socket', 'exception': error,
+                                                   'socket': trsock.TransportSocket(listener)})
+        return loop, send
+
+    def test_a_client_gone_before_accept_completes_is_recorded_locally_with_the_closed_listener(self):
+        """WinError 64：客户端在 AcceptEx 完成前断开。处理器返回后标准库会关掉监听套接字，记录要写明。"""
+        error = OSError(22, 'The specified network name is no longer available')
+        error.winerror = 64
+        loop, send = self.accept_failure(error)
+        send.assert_not_called()
+        loop.default_exception_handler.assert_not_called()
+        record = self.records()[-1]
+        self.assertEqual(record['stage'], 'unhandled-asyncio')
+        self.assertEqual(record['classification'], 'accept-aborted')
+        self.assertTrue(record['listener_closed'])
+        self.assertEqual(record['exception'][0]['winerror'], 64)
+
+    def test_other_accept_failures_keep_remote_evidence_and_the_default_handler(self):
+        error = OSError(24, 'too many open files')
+        error.winerror = 10024
+        loop, send = self.accept_failure(error)
+        send.assert_called_once()
+        self.assertNotIn('classification', self.records()[-1])
+        loop.default_exception_handler.assert_called_once()
+
     def test_asyncio_tls_cleanup_keeps_protocol_class_after_application_detaches(self):
         from peach import remote_reporting
         error = ConnectionResetError(10054, 'connection reset')
