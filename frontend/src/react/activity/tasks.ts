@@ -295,7 +295,7 @@ export const isRoutine = (run: TaskRunPayload) => run.trigger === 'scheduled'
 export const isActive = (run: TaskRunPayload) => run.status === 'pending' || run.status === 'running';
 
 /** 后继那一行的说明：它在做哪一件（标签去掉与任务名重复的前缀）、做到第几项或结果如何。
- *  标题已经是任务名，这里再写一遍「取新作资料：」读起来就是同一句话说了两次。 */
+ *  标题已经是任务名，这里再写一遍「新作资料采集：」读起来就是同一句话说了两次。 */
 export function followupDetail(row: TaskRunPayload): string {
   const prefix = `${row.task_label}：`;
   const label = row.progress_label || '';

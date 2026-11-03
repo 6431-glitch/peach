@@ -75,7 +75,7 @@ describe('任务页云下载布局', () => {
       await page.route('**/api/downloads?*', route => route.fulfill({ json: { available: false, tasks: [], providers: [] } }));
       await page.route('**/api/tasks*', route => route.fulfill({ json: {
         available: true, skipped: [], finished: [{
-          id: 8, task_key: 'amane-bridge', task_label: '重建 amane 桥', trigger: 'manual', status: 'failed',
+          id: 8, task_key: 'amane-bridge', task_label: 'amane 桥重建', trigger: 'manual', status: 'failed',
           host: 'desk', started_at: '2026-11-03T07:00:00Z', finished_at: '2026-11-03T07:00:01Z', elapsed_seconds: 1,
           progress_current: 0, progress_total: null, progress_label: '', result_summary: { ok: false },
           error: 'uv sync 失败（exit 1）：× Failed to fetch amane\n…\n  fatal: missing object', parent_run_id: null, followup_key: '',
