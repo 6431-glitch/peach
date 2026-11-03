@@ -156,6 +156,21 @@ class BrowserTests(unittest.TestCase):
                                              headers=self.script_headers).status_code, 400)
         self.assertEqual(self.service.rows, {})
 
+    def test_people_of_an_owned_title_ignore_a_different_stage_name_on_the_detail_page(self):
+        # 素人作品入库后账本按资料站认出真名，详情页仍写店铺艺名；不能把艺名再算成第二个人。
+        from peach.entities import upsert_asset_entity
+        contract = self.app.state.web_contract
+        with contract.database.write_transaction() as connection:
+            asset_id = connection.execute(
+                'INSERT INTO asset(path,name,location,medium,code) VALUES(?,?,?,?,?)',
+                ('R:\\Media\\390JAC-059.mp4', '390JAC-059.mp4', 'local', 'video', '390JAC-059')).lastrowid
+            person = upsert_asset_entity(connection, asset_id=asset_id, kind='performer', name='夏希栗',
+                                         role='performer', source='user:test')
+        response = self.client.get('/api/jav-browser/people', headers=self.script_headers,
+                                   params={'codes': '390JAC-059', 'performers': ['れいか']})
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual([(row['id'], row['name']) for row in response.json()['items']['390JAC-059']], [(person, '夏希栗')])
+
     def test_people_avatar_is_framed_on_the_recorded_face(self):
         from PIL import Image
         from peach.entities import upsert_asset_entity
