@@ -328,10 +328,14 @@ def _asyncio_fields(context) -> dict:
     return fields
 
 
+#: 清理回调里 `shutdown` 会报的 Winsock 错误：10054 对端已重置连接，10022 套接字已失效（WSAEINVAL）。
+_CLEANUP_WINERRORS = frozenset({10054, 10022})
+
+
 def is_asyncio_connection_cleanup(error, fields) -> bool:
-    """识别 Winsock 重置连接时、纯标准库清理回调中的异常。"""
+    """识别对端断开后、纯标准库清理回调中 `shutdown` 抛出的 Winsock 异常。"""
     callback = "asyncio.proactor_events._ProactorBasePipeTransport._call_connection_lost"
-    if (not isinstance(error, ConnectionResetError) or getattr(error, "winerror", None) != 10054
+    if (not isinstance(error, OSError) or getattr(error, "winerror", None) not in _CLEANUP_WINERRORS
             or fields.get("asyncio_callback") != callback
             or error.__cause__ is not None or error.__context__ is not None):
         return False
@@ -362,8 +366,25 @@ def _finish_asyncio_connection_cleanup(context) -> bool:
     return True
 
 
+def is_asyncio_accept_abort(error, context) -> bool:
+    """识别客户端在 AcceptEx 完成前断开（WinError 64，ERROR_NETNAME_DELETED）的 accept 失败。
+
+    这是对端行为，不是 Peach 故障；但 CPython 3.14 的 Proactor `_start_serving` 在处理器
+    返回后会关掉监听套接字，这之后该端口不再接受连接。处理器拿不到重新挂 accept 所需的
+    Server 与协议工厂，所以只识别和本机记录，不尝试恢复。
+    """
+    return (context.get("message") == "Accept failed on a socket"
+            and isinstance(error, OSError) and getattr(error, "winerror", None) == 64
+            and context.get("socket") is not None)
+
+
 def asyncio_handler(loop, context) -> None:
     error = context.get("exception")
+    if is_asyncio_accept_abort(error, context):
+        # 默认处理器会经 asyncio 记录器写 ERROR 日志并远程上报，这里只留本机证据。
+        local_event("unhandled-asyncio", error, message=context.get("message", ""),
+                    classification="accept-aborted", listener_closed=True)
+        return
     fields = _asyncio_fields(context)
     if is_asyncio_connection_cleanup(error, fields):
         fields["classification"] = "connection-cleanup"
