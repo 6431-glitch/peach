@@ -18,6 +18,7 @@ import threading
 import uuid
 import urllib.parse
 
+from datetime import timedelta
 from pathlib import Path
 from typing import NamedTuple
 
@@ -2319,6 +2320,9 @@ def _check_payload(result) -> dict:
     if not result.ok:
         payload.update({"status": result.status, "error": result.error})
         return payload
+    if result.status == "skipped":
+        payload.update({"deferred": True, "message": result.message})
+        return payload
     if result.exhausted:
         payload.update({"exhausted": True, "message": result.message})
         return payload
@@ -2352,12 +2356,19 @@ class _FollowCheckSession:
         self.writer = _check_writer(contract)
         self.initial_days = follow_initial_days(contract.database)
         self.cooldown = getattr(contract, 'follow_media_resolver', None)
+        #: 站点限流冷却中、这一轮没问的来源数。它们不进结果：没问就谈不上成败，
+        #: 下一跳照常到期（ADR-0132）。
+        self.deferred = 0
 
     def checkpoint(self, **fields):
         if self.job_id and not self.contract.follow_job.checkpoint(self.job_id, **fields):
             raise InterruptedError('关注检查已停止')
 
     def remember(self, row, result, *, finished):
+        if result.get('deferred'):
+            self.deferred += 1
+            self.checkpoint(deferred=self.deferred)
+            return
         if result.get('ok') and isinstance(result.get('page'), int):
             self.pages[str(row['id'])] = result['page']
         if finished:
@@ -2408,10 +2419,17 @@ def _run_follow_check(contract, body, job_id=None) -> dict:
     # 不会因为重走而倒退。补齐标记缺键的行在重走时各自重探一次详情。
     rewind = bool(body.get("rewind"))
     credentials = _credential_store(contract)
+    # 定时那一跳只查到期的来源，久没更新的按档放慢（ADR-0132）；点名的、往回翻的、
+    # 手动「检查全部」和续跑冻结下来的那一批都不按到期筛。
+    scheduled = None
+    if (body.get("automatic") and source_id is None and "sources" not in body and not older
+            and 'source_ids' not in previous):
+        scheduler = getattr(contract, "follow_scheduler", None)
+        scheduled = timedelta(minutes=scheduler.config.interval_minutes if scheduler else 60)
     with contract.database.read_connection() as connection:
         rows = plan_check(_store(contract, connection), credentials,
                           source_id=source_id, older=older,
-                          backfill_providers=_BACKFILL_PROVIDERS)
+                          backfill_providers=_BACKFILL_PROVIDERS, scheduled=scheduled)
     if "sources" in body:
         rows = [row for row in rows if row["id"] in body["sources"]]
     if 'source_ids' in previous:
@@ -2433,7 +2451,8 @@ def _run_follow_check(contract, body, job_id=None) -> dict:
             followups = follow_creators.declare(connection)
     except sqlite3.Error:
         followups = []
-    return {"ok": True, "checked": len(session.results), "results": session.results, "followups": followups}
+    return {"ok": True, "checked": len(session.results), "results": session.results,
+            "deferred": session.deferred, "followups": followups}
 
 
 def q_follow_schedule(contract, _args) -> dict:

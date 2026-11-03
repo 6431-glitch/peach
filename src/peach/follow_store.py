@@ -617,6 +617,16 @@ class FollowStore:
             links.append({"service": service, "handle": handle, "url": source})
         self.merge_source_metadata(source_id, {"official_links": links}, moment=moment)
 
+    def latest_item_stamps(self) -> list[tuple[int, str]]:
+        """每条来源最近一条条目的时间文本：发布时间，没有就用第一次见到的时间。
+
+        定时检查按它判来源活不活跃（`follow_check.check_interval`）。一条都没有的来源不在结果里。
+        """
+        return [(int(row[0]), str(row[1])) for row in self._connect().execute(
+            "SELECT source_id, max(COALESCE(NULLIF(published_at,''), first_seen_at))"
+            " FROM follow_item GROUP BY source_id HAVING max(COALESCE(NULLIF(published_at,''),"
+            " first_seen_at)) IS NOT NULL")]
+
     def enriched_external_ids(self, source_id: int, mark: str) -> frozenset[str]:
         """这条来源里细节已经补齐、不必再打详情页的条目 id。
 
