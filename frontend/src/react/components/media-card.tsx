@@ -30,6 +30,7 @@ import { useEntityNames } from '../use-entity-names';
 
 import type { MediaCardActions, MediaCardHelpers, MediaCardLayout, MediaItem } from '../catalog-grid/types';
 import { ArtSlot } from './art-slot';
+import { CardDate, CardTags, Icon, WhoLabel } from './card-meta';
 import { RecommendationReason } from './recommendation-reason';
 import { useLibraryTints } from './library-tint';
 import { suppressShiftTextSelection } from './row-click';
@@ -42,10 +43,6 @@ export type MediaCardVariant = 'grid' | 'short' | 'next' | 'resource';
 /** 片名空着时卡片标题与读屏名的兜底，资源卡那一档是「未命名资源」。 */
 const UNNAMED = '未命名视频';
 
-/** 雪碧图里的一枚字形，写法同遗留层 `icon()`：尺寸与描边由 `./media-card.css` 按位置给。 */
-function Icon({ name }: { name: string }) {
-  return <svg viewBox="0 0 24 24" aria-hidden="true"><use href={`#i-${name}`} /></svg>;
-}
 
 const RESOURCE_LABELS: Record<string, string> = { image: '图片', audio: '音频', archive: '压缩包', other: '其它文件' };
 const DISPOSAL_LABELS = { manual: '手动', junk: '垃圾', duplicate: '重复', missing: '文件缺失' };
@@ -144,14 +141,14 @@ export function identityParts(item: MediaItem): { avatar: ReactNode; who: ReactN
   const who = coStarred
     ? (
       <>
-        <button type="button" data-media-who="" data-entity-kind="performer" data-entity-name={performer} title={entityDisplayName('performer', performer)}><Icon name="user-round" /><span>{entityDisplayName('performer', performer)}</span></button>
+        <button type="button" data-media-who="" data-entity-kind="performer" data-entity-name={performer} title={entityDisplayName('performer', performer)}><WhoLabel name={entityDisplayName('performer', performer)} /></button>
         <span data-media-who-more="">{`等 ${total} 人`}</span>
       </>
     )
     : kind
-      ? <button type="button" data-media-who="" data-entity-kind={kind} data-entity-name={name} title={entityDisplayName(kind, name)}><Icon name="user-round" /><span>{entityDisplayName(kind, name)}</span></button>
+      ? <button type="button" data-media-who="" data-entity-kind={kind} data-entity-name={name} title={entityDisplayName(kind, name)}><WhoLabel name={entityDisplayName(kind, name)} /></button>
       /* 没有署名人的那批是馆藏里的一类，点得开，和女优名、厂牌名一样。 */
-      : <button type="button" data-media-who="" data-open-unowned=""><Icon name="user-round" /><span>{name}</span></button>;
+      : <button type="button" data-media-who="" data-open-unowned=""><WhoLabel name={name} /></button>;
   return { avatar, who };
 }
 
@@ -337,20 +334,13 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
             {who}
             {item.why && variant !== 'next' ? <span data-media-why="" title={item.why}>{item.why}</span> : null}
             <span data-media-facts="">
-              {item.is_jav && item.release_date ? <time data-media-release="" dateTime={item.release_date} title={item.release_date}><Icon name="calendar" />{item.release_date}</time> : null}
+              {item.is_jav && item.release_date ? <CardDate value={item.release_date} label={item.release_date} /> : null}
               <span data-media-size=""><Icon name="hard-drive" />{Number(shownSize) > 0 ? fmtSize(Number(shownSize)) : '大小未知'}</span>
             </span>
           </div>
           {variant === 'next' ? <RecommendationReason reasons={item.why ? item.why.split(' · ') : []}
             tags={(item.why_tags || []).map(helpers.tagLabel)} /> : tags.length || item.disposal === 'trash'
-            ? (
-              <div data-media-tags="">
-                {tags.map((tag) => (
-                  <button key={tag} type="button" data-media-tag="" disabled={!!item.follow_item_id}
-                    data-tag={item.follow_item_id ? undefined : tag}>{helpers.tagLabel(tag)}</button>
-                ))}
-              </div>
-            )
+            ? <CardTags tags={tags} label={helpers.tagLabel} readOnly={!!item.follow_item_id} />
             : null}
           <DisposalReason item={item} />
         </div>

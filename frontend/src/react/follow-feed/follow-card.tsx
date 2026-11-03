@@ -14,6 +14,7 @@
 import { memo, useCallback, useEffect, useRef, useState, type ComponentPropsWithoutRef, type MouseEvent } from 'react';
 import { esc, fmtDur, icon, entityPath } from '@peach/legacy/core';
 import { tagLabel } from '@peach/legacy/tags';
+import { CardDate, CardTags, WhoLabel } from '../components/card-meta';
 import { RecommendationReason } from '../components/recommendation-reason';
 
 import { suppressShiftTextSelection } from '../components/row-click';
@@ -232,27 +233,25 @@ function FollowCardView(props: FollowCardProps) {
         <div data-media-text="">
           <button type="button" data-media-title=""
             dangerouslySetInnerHTML={{ __html: followTitleMarks(group, item) + esc(title) }} />
-          <div data-follow-byline="">
+          {/* 署名、日期与标签行用作品卡的同一份零件（`../components/card-meta.tsx`）；名字外面是作者页链接，
+              标签只读（卡上不筛选），另外记下来源类型。 */}
+          <div data-media-byline="" data-follow-byline="">
             {identity.entityName ? (
-              <FollowAuthorLink name={identity.entityName} actions={actions} data-follow-author="" title={identity.author}>
-                {identity.author}
+              <FollowAuthorLink name={identity.entityName} actions={actions} data-media-who="" data-follow-author="" title={identity.author}>
+                <WhoLabel name={identity.author} />
               </FollowAuthorLink>
-            ) : <span data-follow-author="" title={identity.author}>{identity.author}</span>}
-            <time dateTime={item.published_at || ''} title={followWhen(item)}>{followCompactWhen(item)}</time>
+            ) : <span data-media-who="" data-follow-author="" title={identity.author}><WhoLabel name={identity.author} /></span>}
+            <span data-media-facts="">
+              <CardDate value={item.published_at || ''} label={followCompactWhen(item)} title={followWhen(item)} />
+            </span>
             {identity.credited ? <span data-follow-credit="" title={`署名含 ${identity.credited}`}>{`署名含 ${identity.credited}`}</span> : null}
           </div>
+          {props.variant === 'next'
+            ? props.reason ? <RecommendationReason reasons={props.reason.reasons} tags={props.reason.tags.map(tag => tagLabel(tag))} /> : null
+            : <CardTags data-follow-labels="" tags={tags} label={tagLabel} readOnly
+              attrs={(tag) => ({ 'data-tag-cat': `r34-${item.tag_types?.[tag] || 'unknown'}`, 'data-follow-tag': tag })} />}
           {issue ? <span data-follow-issue="">{issue}</span> : null}
-          {props.variant === 'next' && props.reason
-            ? <RecommendationReason reasons={props.reason.reasons} tags={props.reason.tags.map(tag => tagLabel(tag))} /> : null}
         </div>
-        {props.variant === 'next' ? null : <div data-media-tags="" data-follow-labels="">
-          {tags.map((tag) => (
-            <span key={tag} data-media-tag="" data-tag-cat={`r34-${item.tag_types?.[tag] || 'unknown'}`}
-              data-follow-tag={tag}>
-              {tagLabel(tag)}
-            </span>
-          ))}
-        </div>}
       </div>
       <span data-follow-state="" aria-live="polite">{failure}</span>
     </article>

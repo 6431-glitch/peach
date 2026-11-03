@@ -35,6 +35,11 @@ describe('关注与馆藏共用卡片交互', () => {
       // 标签和首页卡一样排在文字那一栏：左缘对齐标题，不从头像底下起头。
       assert.ok(boxes.every(box => Math.abs(box.labels - box.left) <= 1), JSON.stringify(boxes));
       assert.ok(Math.max(...boxes.map(box => box.height)) - Math.min(...boxes.map(box => box.height)) <= 1, JSON.stringify(boxes));
+      // 署名行和作品卡同一份零件：作者名前是人像字形，日期前是日历字形。
+      const glyphs = await opened.page.locator('[data-follow-list] > [data-follow-item]').first().evaluate(node =>
+        ['[data-media-who]', '[data-media-release]'].map(selector =>
+          node.querySelector(`[data-media-byline] ${selector} svg use`)?.getAttribute('href')));
+      assert.deepEqual(glyphs, ['#i-user-round', '#i-calendar']);
     } finally { await opened.stub.release(); await opened.close() }
   });
 

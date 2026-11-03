@@ -101,8 +101,6 @@ body[data-detail-open] [class~=glowlayer]::before{animation-play-state:paused,pa
 /* 这一排的卡高按封面、两行标题、一行署名和一行推荐理由定死，馆藏卡与关注卡同一份预算：关注卡
    以前多一行标签，伸出卡底和横排的裁切边，悬停面跟着被切掉一条。 */
 .peach-react [data-detail-continuation] [data-media-card][data-variant="next"] [data-media-meta]{height:var(--detail-card-meta-height);flex:none}
-/* 关注卡的署名行在列表里留 21px 给头像描边，这一排没有那一枚，照馆藏卡的署名行收成 18px。 */
-.peach-react [data-detail-continuation] [data-media-card][data-variant="next"] [data-follow-byline]{min-height:0;line-height:18px}
 [data-detail-continuation] [data-media-card][data-variant="next"] [data-media-text]{gap:4px}
 /* 理由只占一行：按行数裁的话，下划线连起来的长标签整枚折到第二行，第一行只剩半句；不折行、在行尾省略。 */
 .peach-react [data-detail-continuation] [data-media-card][data-variant="next"] [data-media-next-reason]{display:block;min-height:1.45em;max-height:1.45em;
