@@ -7,7 +7,7 @@ export function TaskProgress({ label, value = 0, total, embedded = false }: {
   label: string; value?: number; total?: number | null; embedded?: boolean;
 }) {
   return (
-    <div data-task-progress className={embedded ? 'flex flex-col gap-1.5' : cardClass({
+    <div data-task-progress={embedded ? 'embedded' : 'framed'} className={embedded ? 'flex flex-col gap-1.5' : cardClass({
       variant: 'outlined', padding: 'none', className: 'flex flex-col gap-1.5 px-4 py-3.5',
     })}>
       {total && total > 0 ? <>
