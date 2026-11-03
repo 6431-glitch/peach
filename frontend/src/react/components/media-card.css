@@ -761,11 +761,14 @@ body[data-peach-copy-mode] .peach-react [data-media-card] [data-media-duration][
  * 不跟密度走，卡是有边的面，这一套不套给它。 */
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-grid] > :is([data-media-card], [data-mix-card]) { padding-top: 7px; }
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-card] [data-media-meta] { --card-meta-block: calc(2.7em + 36px); }
+/* 署名那一行按内容定高：宽卡一行（下面那条把它钉成 1.35em），窄卡日期另起一行就是两行。
+   不能靠 `@container media-meta` 改这一格：文字栏自己就是那个容器，查询只作用于它的后代，
+   写在它身上的那条从来没生效，窄卡的日期于是压在标签上。同一网格里卡片等宽，折行一致，整行仍等高。 */
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-card] [data-media-text] {
   display: grid;
-  grid-template-rows: 1.35em 1.35em 30px;
+  grid-template-rows: 1.35em auto 30px;
   gap: 3px;
-  height: calc(var(--card-meta-block) + 8px);
+  height: auto;
   margin: -4px;
   padding: 4px;
   overflow: hidden;
@@ -796,10 +799,6 @@ body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-text] > [data-media-tags] { margin-top: -4px; }
 body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-card] [data-media-tag]:nth-child(n+2) { display: none; }
 @container media-meta (width < 360px) {
-  body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-card]:not([data-variant="next"]) [data-media-text] {
-    grid-template-rows: 1.35em auto 30px;
-    height: auto;
-  }
   body[data-density="dense"]:not([data-surface="/trash"]) .peach-react [data-media-card]:not([data-variant="next"]) [data-media-byline] {
     flex-wrap: wrap;
     height: auto;
