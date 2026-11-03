@@ -39,8 +39,11 @@ LOCAL_EXCEPTION_TYPES = frozenset({
     ("peach.transcodes", "TranscodeCancelled"), ("peach.segments", "SegmentCancelled"),
     ("peach.browser_transport", "BrowserUnavailable"), ("peach.browser_transport", "ChallengeUnsolved"),
     ("peach.face_detect", "FaceModelUnavailable"), ("peach.avatar_watermark", "WatermarkModelUnavailable"),
-    ("starlette.requests", "ClientDisconnect"),
+    ("starlette.requests", "ClientDisconnect"), ("filelock._error", "Timeout"),
+    ("httpx", "TimeoutException"),
 })
+# 磁盘与文件系统层的 SQLite 错误，以及下一轮会重试的锁争用。
+LOCAL_SQLITE_ERRORS = ("SQLITE_IOERR", "SQLITE_FULL", "SQLITE_BUSY", "SQLITE_LOCKED")
 
 
 def _config(config=None):
@@ -377,10 +380,18 @@ def _expected_failure(stage, error, fields):
     unsupported = ('peach.folder_picker', 'PickerUnsupported')
     if unsupported in kinds:
         return True
-    if ('starlette.exceptions', 'HTTPException') in kinds and _http_status(error) == 501:
-        cause = getattr(error, '__cause__', None)
-        if unsupported in {(cls.__module__, cls.__name__) for cls in type(cause).__mro__}:
+    if ('starlette.exceptions', 'HTTPException') in kinds:
+        status = _http_status(error)
+        if status == 501:
+            cause = getattr(error, '__cause__', None)
+            if unsupported in {(cls.__module__, cls.__name__) for cls in type(cause).__mro__}:
+                return True
+        if status in {502, 503, 504}:
+            # 路由主动报告上游不可用；未处理异常走 500，仍然上报。
             return True
+    name = getattr(error, "sqlite_errorname", "")
+    if isinstance(name, str) and name.startswith(LOCAL_SQLITE_ERRORS):
+        return True
     if stage == "logging" and fields.get("level", "ERROR") not in {"ERROR", "CRITICAL"}:
         return True
     if stage == "browser" and fields.get("error_name") == "AbortError":
@@ -394,9 +405,10 @@ def _expected_failure(stage, error, fields):
         return error.kind in {"auth", "not_found"} or error.retryable is True or error.temporary is True
     if _media_failure(stage, error):
         detail = getattr(error, "diagnostics", {})
-        if isinstance(error, subprocess.TimeoutExpired) or isinstance(detail, dict) and detail.get("reason") == "timeout":
+        if (isinstance(error, (subprocess.TimeoutExpired, TimeoutError))
+                or isinstance(detail, dict) and detail.get("reason") == "timeout"):
             return True
-        if isinstance(error, OSError) and error.errno == errno.ENOSPC:
+        if isinstance(error, OSError) and error.errno in (errno.ENOSPC, errno.EIO):
             return True
         if isinstance(error, (FileNotFoundError, PermissionError, IsADirectoryError, NotADirectoryError)):
             filename = getattr(error, "filename", None)
@@ -464,7 +476,7 @@ def _technical_projection(stage, error, fields):
     reason = ""
     if media_stage:
         reason = media_details(error, fields, codes)
-        if reason in {"invalid_media", "permission_denied", "disk_full", "missing_media"}:
+        if reason in {"invalid_media", "permission_denied", "disk_full", "missing_media", "io_error"}:
             return
         if not reason and not codes and error is None:
             return

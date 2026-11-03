@@ -494,8 +494,36 @@ class RemoteReportingTests(unittest.TestCase):
                 reporting.capture('logging', error, level='ERROR', logger='peach.fixture')
                 send.assert_called_once()
 
+    def test_lock_contention_disk_and_upstream_conditions_stay_local(self):
+        import errno
+        import sqlite3
+        import httpx
+        from fastapi import HTTPException
+        from filelock import Timeout
+        timeout = httpx.ConnectTimeout('private', request=httpx.Request('GET', 'https://example.test/'))
+        local = [('background-job', Timeout('private.lock'), {}), ('background-job', timeout, {}),
+                 ('media-probe', TimeoutError(errno.ETIMEDOUT, 'private'), {'tool': 'ffprobe'}),
+                 ('library-preview', OSError(errno.EIO, 'private'), {}),
+                 ('http-request', HTTPException(502, 'private'), {'status_code': 502})]
+        for name in ('SQLITE_IOERR_SHMSIZE', 'SQLITE_FULL', 'SQLITE_BUSY', 'SQLITE_LOCKED'):
+            error = sqlite3.OperationalError('private')
+            error.sqlite_errorname = name
+            local.append(('background-job', error, {}))
+        for stage, error, fields in local:
+            with self.subTest(error=type(error).__name__, stage=stage), mock.patch.object(reporting, 'send') as send:
+                reporting.capture(stage, error, level='ERROR', **fields)
+                send.assert_not_called()
+        reported = sqlite3.OperationalError('private')
+        reported.sqlite_errorname = 'SQLITE_ERROR'
+        for stage, error, fields in (('background-job', reported, {}),
+                                     ('http-request', RuntimeError('private'), {'status_code': 500})):
+            with self.subTest(error=type(error).__name__), mock.patch.object(reporting, 'send') as send:
+                reporting.capture(stage, error, level='ERROR', **fields)
+                send.assert_called_once()
+
     def test_expected_media_input_conditions_are_local_and_decoder_faults_are_reported(self):
-        for marker in ('Invalid data found', 'Permission denied', 'No space left', 'No such file or directory'):
+        for marker in ('Invalid data found', 'Permission denied', 'No space left', 'No such file or directory',
+                       'Invalid argument', 'Input/output error'):
             with self.subTest(marker=marker), mock.patch.object(reporting, 'send') as send:
                 reporting.capture('frame-capture', returncode=1, stderr=marker)
                 send.assert_not_called()
