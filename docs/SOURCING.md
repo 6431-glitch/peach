@@ -671,7 +671,8 @@ Instagram 的独立用户登录会话未取得，自动适配器不进正式依�
   规则名记 `adr-0035-official-replaces-*`；community 来源仍然只补空（ADR-0035）。
 - 韩国 MIB 的编号（`catalog_rules.KOREAN_MIB_PREFIXES`）资料与封面都不问 JAV 来源。`HA-101`、`MY-102` 撞上番号
   完全相同的日本作品，番号核验照样通过，只能按编号前缀整体不问。刮削、扫描与采集、页面取封面、封面批次和
-  按日志恢复五个入口都按 `is_korean_mib_code()` 拦。封面的跨作品判据同时比字母段和数字段：`YUJ-101 → yuj00011`、
+  按日志恢复五个入口都按 `is_korean_mib_code()` 拦。前缀表的来源分批写在代码注释里；`YUJ` 是 Attackers 的系列，
+  已移出（ADR-0133）。封面的跨作品判据同时比字母段和数字段：`YUJ-101 → yuj00011`、
   `435MFC-135 → h_1711mfcc00027` 字母对上、数字不对，都是别的片。
 - `catalog_rules.code_query_variants()` 只扩展搜索词，每次返回都以账本原始编号校验，缓存和网络结果同样受检。
 

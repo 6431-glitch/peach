@@ -898,7 +898,7 @@ class KoreanMibCoverTests(unittest.TestCase):
             connection.execute("CREATE TABLE asset(code TEXT, medium TEXT, location TEXT)")
             connection.executemany(
                 "INSERT INTO asset(code,medium,location) VALUES(?, 'video', '115')",
-                [("ABW-232",), ("HA-101",), ("YUJ-101",)],
+                [("ABW-232",), ("HA-101",), ("AIN-101",)],
             )
             connection.commit(); connection.close()
             for only_shaped in (True, False):

@@ -445,18 +445,25 @@ RELEASE_EVIDENCE_KINDS = frozenset({"performer", "studio", "series"})
 #:
 #: 其余前缀取自官网 k-mib.com 的自有作品目录（2026-09-10 快照 368 部，合作厂牌的
 #: JS、STRC、SFL 等不在此列）。它们在账本里 MIB 目录外同样零条。
+#:
+#: 前两批来自本机文件名，其中 `AR`、`JA`、`MH`、`SIA`、`SY`、`WX` 在官网目录里一部都没有：
+#: 官网给同一演员用别的写法（`SY-101` 的 Soyeong 在官网是 `SOY-101`），或者根本不列。
+#: 它们仍留在表里，因为文件都在 MIB 目录下、片长 20～62 分钟、片名带 MIB 演员名。
+#: 代价是同号的日本片会被一起拦下：`SY` 也是 Plum「素人四畳半生中出し」的番号。
+#: `YUJ` 已于 2026-11-03 移出（ADR-0133）：`YUJ-101`、`YUJ-102` 是官网 `AIN-101`、
+#: `AIN-102` 的错名文件，而 `YUJ` 是 Attackers 的系列，`YUJ-072` 被这张表拦得刮不到资料。
 KOREAN_MIB_PREFIXES = frozenset({
     "WX", "AR", "JH", "CA", "IY", "JA", "MY", "SH", "HA", "MH", "DB", "JI",
     "ES", "SR", "SY", "CD", "YH", "UY", "NN", "SA", "JE", "YR",
     "CHU", "ENS", "ERI", "HAL", "HNL", "MIJ", "MIN", "SAR", "SEY", "SIA",
-    "SOY", "SRN", "SUY", "SYN", "YUJ",
+    "SOY", "SRN", "SUY", "SYN",
     "CY", "DK", "JM", "JW", "RA", "RI", "SJ", "UB", "YL",
     "AIN", "GUL", "HRI", "JIE", "KJI", "MGL", "MOI", "MOR", "SEI", "SEO",
     "XIA", "YEL", "YJI", "YNS", "YWN",
     "MOSA", "MOSY", "NOAH", "SJSK",
 })
 _KOREAN_MIB_CODE = re.compile(r"^([A-Z]{2,4})-\d+$")
-#: MIB 文件名常带站名方括号（`[K-MIB]NOAH-101(NOAH)(1)`）或用 `_` 分隔（`YUJ_103 片名`）。
+#: MIB 文件名常带站名方括号（`[K-MIB]NOAH-101(NOAH)(1)`）或用 `_` 分隔（`AIN_203 片名`）。
 #: `_titled_release_code` 只看第一段、只认 `-`，第一段又是 `K-MIB`，两种都接不住，
 #: 所以 MIB 前缀单独开这条路，前缀之外的仍走通用规则。
 _KOREAN_MIB_FILENAME = re.compile(

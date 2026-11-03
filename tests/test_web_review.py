@@ -2325,13 +2325,13 @@ class ReviewQueueTests(unittest.TestCase):
 
         三字母前缀同属这套命名，`MIN-102`、`SUY-101` 和两字母的一样不能问 JAV 来源。
         """
-        for index, code in enumerate(("AR-101", "MIN-102", "SUY-101", "YUJ-103")):
+        for index, code in enumerate(("AR-101", "MIN-102", "SUY-101", "AIN-203")):
             self._asset(140 + index, code, f"{code} MIB.mp4")
         self._asset(150, "ARM-123", "ARM-123.mp4")
         self.write_metadata_rows([
             {"item_key": f"{code}:studio", "field": "studio", "current": "",
              "candidates": ["某厂牌"], "code": code}
-            for code in ("AR-101", "MIN-102", "SUY-101", "YUJ-103")
+            for code in ("AR-101", "MIN-102", "SUY-101", "AIN-203")
         ] + [{"item_key": "ARM-123:studio", "field": "studio", "current": "",
               "candidates": ["Faleno"], "code": "ARM-123"}])
         self.assertEqual(self._auto()["applied"], 1)
@@ -2356,10 +2356,10 @@ class ReviewQueueTests(unittest.TestCase):
         self.assertEqual(self.queue_keys("metadata_fields"), ["AR-101:title:kmib"])
 
     def test_mib_official_candidates_fill_empty_fields_automatically(self):
-        self._asset(160, "YUJ-103", "YUJ-103 Ain Do you wanna be my slave.mp4")
+        self._asset(160, "AIN-203", "AIN-203 Ain Training medical college girl.mp4")
         self.write_metadata_rows([
-            {"item_key": "YUJ-103:release_date:kmib", "field": "release_date",
-             "current": "", "candidates": ["2024-11-20"], "code": "YUJ-103",
+            {"item_key": "AIN-203:release_date:kmib", "field": "release_date",
+             "current": "", "candidates": ["2024-11-20"], "code": "AIN-203",
              "source": "kmib"}])
         self.assertEqual(self._auto()["applied"], 1)
         con = sqlite3.connect(self.db_path)
