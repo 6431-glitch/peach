@@ -46,6 +46,8 @@ import {
 const FOLLOWUP_ROWS = 50;
 /** 自己只负责派发后继的任务：一轮只是「安排了几项」，要看的是那几项的结果。 */
 const DISPATCHERS = new Set(['upgrade-repairs']);
+/** 开跑时写进摘要、指明这一轮处理哪部作品的两项（`taskSubject`）。 */
+const SUBJECT_KEYS = new Set(['asset_id', 'name']);
 
 /* 完成绿、失败与已取消红、进行中蓝、意外中断黄，排队为中性。 */
 const BADGE_COLORS: Record<string, 'lime' | 'rose' | 'yellow' | 'blue' | 'neutral'> = {
@@ -165,8 +167,9 @@ function RunCard(
           <FollowupList rows={listed} />
         </Disclosure>
       </div> : null}
-      {/* 在跑的那一轮只有开跑时写下的作品，已经链接在卡片上，结算后才有可看的详情。 */}
-      {!isActive(run) && Object.keys(run.result_summary || {}).length ? <div className="border-t border-separator-border px-5 py-2.5">
+      {/* 摘要里只有开跑时写下的作品时，它已经链接在卡片上，不再单列一块技术详情。 */}
+      {Object.keys(run.result_summary || {}).some((key) => !(subject && SUBJECT_KEYS.has(key)))
+        ? <div className="border-t border-separator-border px-5 py-2.5">
         <Disclosure summary="技术详情" contentClassName="pb-2.5">
           <CodeBlock code={JSON.stringify(run.result_summary, null, 2)} language="json"
             label={`${run.task_label}技术详情`} />

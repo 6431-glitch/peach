@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "48b79bb1-910b-4cfe-8539-3cba30e0c65b", e._sentryDebugIdIdentifier = "sentry-dbid-48b79bb1-910b-4cfe-8539-3cba30e0c65b");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b643d46f-2d7d-491d-b76c-a8a4ea13ff09", e._sentryDebugIdIdentifier = "sentry-dbid-b643d46f-2d7d-491d-b76c-a8a4ea13ff09");
 	} catch {}
 })();
 import { BP as e, Button as t, Chip as n, Disclosure as r, DownloadsPanel as i, EmptyState as a, Gg as o, HN as s, LinkButton as c, LoadingDots as l, Note as u, OV as d, Progress as f, TASKS_KEY as p, TRIGGER_LABELS as m, __toESM as h, apiGet as g, apiSend as _, busyProps as v, cardClass as y, confirmModal as b, controlTask as x, cx as S, elapsedText as C, errorMessage as w, f1 as ee, fetchEarlier as te, fetchTasks as ne, fmtSize as T, foldByKind as re, foldRoutine as ie, followupDetail as E, followupTally as D, groupFollowups as ae, hasResultProblems as O, i2 as k, isActive as A, isRoutine as oe, latestOfKind as se, mergeFinished as j, momentText as M, notifyManager as N, pollInterval as ce, problemDestination as P, progressText as F, replaceEqualDeep as I, require_jsx_runtime as L, require_react as R, statusLabel as z, summaryItems as B, taskIssues as V, taskSubject as H, uo as le, useMutation as U, useQuery as W, useQueryClient as G } from "./peach-app.js";
@@ -274,14 +274,14 @@ function Oe({ run: e, active: t = A(e) || !!e.control }) {
 	});
 }
 // src/react/activity/activity-page.tsx
-var ke = 50, Ae = /* @__PURE__ */ new Set(["upgrade-repairs"]), je = {
+var ke = 50, Ae = /* @__PURE__ */ new Set(["upgrade-repairs"]), je = /* @__PURE__ */ new Set(["asset_id", "name"]), Me = {
 	succeeded: "lime",
 	failed: "rose",
 	cancelled: "rose",
 	interrupted: "yellow",
 	running: "blue",
 	pending: "neutral"
-}, Me = {
+}, Ne = {
 	running: "进行中",
 	pausing: "正在暂停",
 	paused: "已暂停",
@@ -293,16 +293,16 @@ function X({ run: e }) {
 		color: t === "running" ? "blue" : "neutral",
 		children: /* @__PURE__ */ (0, J.jsx)("span", {
 			"data-copy-key": `tasks.control.state.${t}`,
-			children: Me[t]
+			children: Ne[t]
 		})
 	});
 	let r = e.status === "failed" && e.task_key === "library-processing" && e.result_summary?.outcome === "partial", i = r || e.status === "succeeded" && O(e);
 	return /* @__PURE__ */ (0, J.jsx)(n, {
-		color: i ? "yellow" : je[e.status] ?? "neutral",
+		color: i ? "yellow" : Me[e.status] ?? "neutral",
 		children: r ? "部分项目需处理" : i ? "发现问题" : z(e.status)
 	});
 }
-function Ne({ rows: e }) {
+function Pe({ rows: e }) {
 	return /* @__PURE__ */ (0, J.jsx)("ul", {
 		className: "-mr-5 flex min-w-0 flex-col",
 		children: e.map((e) => {
@@ -405,10 +405,10 @@ function Z({ run: t, meta: n, children: i, footer: a, followups: o, followupTota
 							p.toLocaleString(),
 							" 项，正在处理的排在前面"
 						]
-					}) : null, /* @__PURE__ */ (0, J.jsx)(Ne, { rows: f })]
+					}) : null, /* @__PURE__ */ (0, J.jsx)(Pe, { rows: f })]
 				})
 			}) : null,
-			!A(t) && Object.keys(t.result_summary || {}).length ? /* @__PURE__ */ (0, J.jsx)("div", {
+			Object.keys(t.result_summary || {}).some((e) => !(h && je.has(e))) ? /* @__PURE__ */ (0, J.jsx)("div", {
 				className: "border-t border-separator-border px-5 py-2.5",
 				children: /* @__PURE__ */ (0, J.jsx)(r, {
 					summary: "技术详情",
@@ -430,8 +430,8 @@ function Z({ run: t, meta: n, children: i, footer: a, followups: o, followupTota
 		]
 	});
 }
-function Pe({ run: e, followups: t }) {
-	let n = e.progress_total || 0, r = e.progress_current || 0, i = e.control?.state, a = i && i !== "running", o = a ? Me[i] : e.progress_label || "正在进行", s = C(e.elapsed_seconds), c = [m[e.trigger] || e.trigger, s && `已跑 ${s}`].filter(Boolean).join(" · ");
+function Fe({ run: e, followups: t }) {
+	let n = e.progress_total || 0, r = e.progress_current || 0, i = e.control?.state, a = i && i !== "running", o = a ? Ne[i] : e.progress_label || "正在进行", s = C(e.elapsed_seconds), c = [m[e.trigger] || e.trigger, s && `已跑 ${s}`].filter(Boolean).join(" · ");
 	return /* @__PURE__ */ (0, J.jsx)(Z, {
 		run: e,
 		meta: c,
@@ -458,7 +458,7 @@ function Pe({ run: e, followups: t }) {
 		}) : /* @__PURE__ */ (0, J.jsx)(l, { label: o })
 	});
 }
-function Fe({ run: e, followups: t, runs: i, latest: a, followupTotal: o, followupFailed: s = 0, followupCancelled: l = 0 }) {
+function Ie({ run: e, followups: t, runs: i, latest: a, followupTotal: o, followupFailed: s = 0, followupCancelled: l = 0 }) {
 	let u = !!(i && i.length > 1 && o), d = u ? [`共处理 ${o.toLocaleString()} 项`, s ? `其中 ${s.toLocaleString()} 项失败` : ""].filter(Boolean) : B(H(e) ? {
 		...e.result_summary,
 		name: ""
@@ -541,7 +541,7 @@ function Fe({ run: e, followups: t, runs: i, latest: a, followupTotal: o, follow
 		]
 	});
 }
-function Ie({ runs: e, followups: t, counts: r }) {
+function Le({ runs: e, followups: t, counts: r }) {
 	let i = e[0], a = e[e.length - 1], o = D(r, e), s = Math.max(o.total, t.length), c = o.total ? o.settled : t.filter((e) => !A(e)).length, l = o.total ? o.failed : t.filter((e) => e.status === "failed" || e.status === "interrupted").length, u = [
 		m[i.trigger] || i.trigger,
 		e.length > 1 ? `${e.length} 批` : "",
@@ -594,7 +594,7 @@ function $({ live: e = !1, children: t }) {
 		children: t
 	});
 }
-function Le() {
+function Re() {
 	let e = W({
 		queryKey: p,
 		queryFn: ({ signal: e }) => ne(e),
@@ -651,10 +651,10 @@ function Le() {
 				title: "正在进行",
 				children: L.length || I.length ? /* @__PURE__ */ (0, J.jsxs)($, {
 					live: !0,
-					children: [L.map((e) => /* @__PURE__ */ (0, J.jsx)(Pe, {
+					children: [L.map((e) => /* @__PURE__ */ (0, J.jsx)(Fe, {
 						run: e,
 						followups: S.get(e.id)
-					}, e.id)), H.map(({ run: e, runs: t }) => /* @__PURE__ */ (0, J.jsx)(Ie, {
+					}, e.id)), H.map(({ run: e, runs: t }) => /* @__PURE__ */ (0, J.jsx)(Le, {
 						runs: t,
 						followups: F(t),
 						counts: P
@@ -666,7 +666,7 @@ function Le() {
 			}),
 			R.length ? /* @__PURE__ */ (0, J.jsx)(Q, {
 				title: "本次未执行",
-				children: /* @__PURE__ */ (0, J.jsx)($, { children: R.map((e) => /* @__PURE__ */ (0, J.jsx)(Fe, {
+				children: /* @__PURE__ */ (0, J.jsx)($, { children: R.map((e) => /* @__PURE__ */ (0, J.jsx)(Ie, {
 					run: e,
 					latest: G.has(e.id),
 					followups: S.get(e.id)
@@ -677,7 +677,7 @@ function Le() {
 				children: [
 					z.length ? /* @__PURE__ */ (0, J.jsx)($, { children: V.map(({ run: e, runs: t }) => {
 						let n = D(P, t);
-						return /* @__PURE__ */ (0, J.jsx)(Fe, {
+						return /* @__PURE__ */ (0, J.jsx)(Ie, {
 							run: e,
 							runs: t,
 							latest: G.has(e.id),
@@ -706,6 +706,6 @@ function Le() {
 		/* @__PURE__ */ (0, J.jsx)(i, {})
 	] });
 }
-export { Le as ActivityPage };
+export { Re as ActivityPage };
 
-//# debugId=48b79bb1-910b-4cfe-8539-3cba30e0c65b
+//# debugId=b643d46f-2d7d-491d-b76c-a8a4ea13ff09

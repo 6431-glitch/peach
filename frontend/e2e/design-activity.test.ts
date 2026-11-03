@@ -99,7 +99,7 @@ describe('任务页云下载布局', () => {
       const link = page.locator('[data-task-subject="7"]');
       assert.equal(await link.getAttribute('href'), '/assets/6297');
       assert.equal(await link.getAttribute('title'), name);
-      assert.equal(await page.locator('#run-7').getByText('技术详情').count(), 0);
+      assert.equal(await page.locator('#run-7 details').count(), 0);
       const geometry = await page.locator('#run-7').evaluate(card => {
         const box = card.getBoundingClientRect();
         const link = card.querySelector('[data-task-subject]')!.getBoundingClientRect();
