@@ -19,7 +19,7 @@ import { PillTabList } from '../components/pill-tabs';
 import {
   menuModel, nextPage, shufflePicks, SUGGEST_DEBOUNCE, SUGGEST_EACH, SUGGEST_ONE_KIND, SUGGEST_PROFILE_KINDS, SUGGEST_RIGHT_KINDS, fold,
   type MenuModel, type MenuSection, type SearchApi, type SearchOption, type SearchProps, type SuggestCard,
-  type SuggestGroup, type SuggestItem, type SuggestResponse, type SuggestTab,
+  type Recommendations, type SuggestGroup, type SuggestItem, type SuggestResponse, type SuggestTab,
 } from './search';
 
 interface Store {
@@ -27,6 +27,8 @@ interface Store {
   history: string[];
   pool: string[];
   poolRequest: number;
+  /** 推荐栏一起带回的推荐词：还没聚焦、按筛选核过的 `pool` 还没取时，占位里轮换它。 */
+  words: string[];
   /** 下拉栏画的那一份推荐；还没取到的组带着 `pending` 占位。 */
   recommendations: SuggestGroup[];
   /** 下拉栏开着时在后台取好的下一份，下次打开再换上：开着的栏不当场换一批封面。 */
@@ -60,7 +62,7 @@ interface Store {
 }
 
 const emptyStore = (): Store => ({
-  dismissed: false, history: [], pool: [], poolRequest: 0, recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, shuffled: {}, cancelRoll: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
+  dismissed: false, history: [], pool: [], poolRequest: 0, words: [], recommendations: [], nextRecommendations: null, recommendationsFilling: false, recommendationLoading: false, recommendationRequest: 0, cancelIdle: () => {}, shuffled: {}, cancelRoll: () => {}, query: '', picks: [], suggestFor: '', groups: [], tabs: [],
   suggestRequest: 0, asked: '', timer: 0, kind: '', active: -1, reveal: false, rewind: false,
 });
 
@@ -262,8 +264,10 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
    *  换掉了回车搜的就不是刚看见的那个词。 */
   const rotatePlaceholder = () => {
     const field = input();
-    if (document.hidden || focused() || field.value || s.pool.length < 2) return;
-    const choices = s.pool.filter(name => name !== field.dataset.suggestion);
+    // 聚焦过就用按当前筛选核过命中的词池；还没聚焦时用推荐栏一起带回的那份词。
+    const words = s.pool.length ? s.pool : s.words;
+    if (document.hidden || focused() || field.value || words.length < 2) return;
+    const choices = words.filter(name => name !== field.dataset.suggestion);
     suggest(choices[Math.floor(Math.random() * choices.length)]!);
   };
   const loadPool = async () => {
@@ -280,25 +284,29 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       // 推荐不可用时仍可直接输入搜索。
     }
   };
-  /* 同一时刻只取一份。画着的那份还在填（`recommendationsFilling`）就一组一组填进去；否则这次取的是
-     下一次打开要换上的那份，开着的栏不动。 */
+  /* 同一时刻只取一份。画着的那份还在等（`recommendationsFilling`）就当场画上；否则这次取的是
+     下一次打开要换上的那份，开着的栏不动。还没有占位词时顺手用这一份带回的词。 */
   const loadRecommendations = () => {
     const helpers = props().helpers;
     if (!helpers.recommendations || s.recommendationLoading) return;
     s.recommendationLoading = true;
     const request = s.recommendationRequest;
-    const take = (groups: SuggestGroup[], done: boolean) => {
+    const take = ({ groups, words }: Recommendations) => {
       if (request !== s.recommendationRequest) return;
+      s.words = words;
+      if (!input().dataset.suggestion && !focused() && words.length) suggest(words[Math.floor(Math.random() * words.length)]!);
       if (!s.recommendationsFilling) {
-        if (done) { s.nextRecommendations = groups; preloadImages(groups, props().helpers) }
+        s.nextRecommendations = groups;
+        preloadImages(groups, props().helpers);
         return;
       }
       s.recommendations = groups;
-      if (done) { s.recommendationsFilling = false; preloadImages(groups.map(nextPage), props().helpers) }
+      s.recommendationsFilling = false;
+      preloadImages(groups.map(nextPage), props().helpers);
       if (focused() && !input().value.trim()) paint();
     };
-    void helpers.recommendations(groups => take(groups, false))
-      .then(groups => take(groups, true), () => {
+    void helpers.recommendations()
+      .then(take, () => {
         // 推荐读取失败仍可搜索：占位收掉，退回搜索记录与推荐词。
         if (request !== s.recommendationRequest || !s.recommendationsFilling) return;
         s.recommendations = [];
@@ -308,7 +316,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
       .finally(() => { s.recommendationLoading = false });
   };
   /** 打开下拉栏时用哪一份推荐：有后台取好的就换上；手上一份都没有就先画占位，等这次取的填进来。
-   *  下一份不在打开时取：那时人正要打字，五个推荐请求会和按字补全抢服务端。 */
+   *  下一份不在打开时取：那时人正要打字，推荐请求会和按字补全抢服务端。 */
   const openRecommendations = () => {
     const helpers = props().helpers;
     if (!helpers.recommendations) return;
@@ -327,14 +335,9 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
     s.cancelIdle();
     s.cancelIdle = whenIdle(() => { if (!s.nextRecommendations) loadRecommendations() });
   };
-  /** 挂上之后：空闲时取好推荐与占位推荐词。 */
-  const warm = () => {
-    s.cancelIdle();
-    s.cancelIdle = whenIdle(() => {
-      if (!s.nextRecommendations) loadRecommendations();
-      if (!s.pool.length) void loadPool();
-    });
-  };
+  /** 挂上之后：空闲时取好推荐，占位推荐词随它一起带回。按当前筛选核过命中的词池要十几个请求，
+   *  留到聚焦时再取，不在每开一页时都打一遍。 */
+  const warm = prefetch;
   /** 一组「换一批」：在这一组取到的池里翻下一页，当场换，不发请求；再下一页的图顺手先拉进缓存。 */
   const reshuffle = (kind: string) => {
     s.recommendations = s.recommendations.map(group => group.kind === kind ? nextPage(group) : group);

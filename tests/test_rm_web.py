@@ -163,6 +163,17 @@ class WebDataTests(unittest.TestCase):
         self.assertEqual(sorted(latest), ["11", "12", "13"])
         self.assertEqual(rm_web.dispatch_api_get(self.contract, "/api/entity/latest", {})["items"], {})
 
+    def test_search_recommendations_bundle_every_group_in_one_read(self):
+        """搜索推荐一个请求取齐五份：作品照 `/api/items` 的口径，关注那份不带推荐栏用不上的筛选项，
+        占位推荐词取自馆藏作品的番号与署名。"""
+        bundle = rm_web.dispatch_api_get(self.contract, "/api/search/recommendations", {})
+        self.assertEqual(set(bundle), {"items", "jav", "follow", "feeds", "authors", "latest", "words"})
+        self.assertEqual({row["id"] for row in bundle["items"]["items"]}, {1, 2})
+        if bundle["follow"] is not None:
+            self.assertNotIn("facets", bundle["follow"])
+        self.assertIn("ABC-001", bundle["words"])
+        self.assertTrue(all(len(word) > 1 for word in bundle["words"]))
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.db_path = str(fresh_ledger(self.tmp.name))
@@ -1535,11 +1546,11 @@ class WebDataTests(unittest.TestCase):
             "/api/media-processing",
             "/api/thumbnail-jobs", "/api/timeline", "/api/media-repair",
             "/api/scraping", "/api/scraping/cover", "/api/scraping/amane-bridge",
-            "/api/items", "/api/item", "/api/entity", "/api/entity/shapes", "/api/photos", "/api/photo-set",
+            "/api/items", "/api/item", "/api/entity", "/api/entity/shapes", "/api/entity/latest", "/api/photos", "/api/photo-set",
             "/api/index", "/api/parts", "/api/editions", "/api/duplicates", "/api/quality-goals",
             "/api/stats", "/api/tops", "/api/ads", "/api/related", "/api/facets",
             "/api/suggest",
-            "/api/search-history", "/api/review", "/api/playlists", "/api/playlist",
+            "/api/search-history", "/api/search/recommendations", "/api/review", "/api/playlists", "/api/playlist",
             "/api/post-setup-tutorial",
             "/api/tutorial-progress", "/api/performer/delete-candidates", "/api/performer/delete-plan",
             "/api/library-shortcuts", "/api/folders",

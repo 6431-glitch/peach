@@ -54,6 +54,12 @@ export interface SuggestGroup {
   size?: number;
 }
 
+/** 一栏推荐：各组，以及还没聚焦时占位里轮换的推荐词（聚焦时另按当前筛选取 `pool`）。 */
+export interface Recommendations {
+  groups: SuggestGroup[];
+  words: string[];
+}
+
 export interface SuggestTab {
   kind: string;
   label: string;
@@ -79,8 +85,8 @@ export interface SearchActions {
 export interface SearchHelpers {
   /** 空输入时的推荐词池：与当前目录同一组筛选，只留真搜得出东西的词（`catalogSuggestions`）。 */
   pool(): Promise<string[]>;
-  /** 空输入时的推荐栏；每取到一组交一次 `update`。 */
-  recommendations?(update?: (groups: SuggestGroup[]) => void): Promise<SuggestGroup[]>;
+  /** 空输入时的推荐栏，一次取齐（`/api/search/recommendations`）。 */
+  recommendations?(): Promise<Recommendations>;
   /** 推荐栏一组都还没取到时的占位，版式与取齐之后相同。 */
   pendingRecommendations?(): SuggestGroup[];
   /** 输入框的占位字换一句，带动效（`rollPlaceholder`）；返回撤销函数。缺省时直接改。 */

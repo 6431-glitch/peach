@@ -93,7 +93,7 @@
    占位字取。换的这段时间框里自己的占位字收起，见 `web/css/25-motion.css`。 */
 .placeholderroll{position:absolute;z-index:2;display:flex;align-items:center;overflow:hidden;
   white-space:nowrap;pointer-events:none}
-.placeholderroll>.textswap{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.placeholderroll>span{min-width:0;overflow:hidden;text-overflow:ellipsis}
 
 /* ── 计数徽标弹出来 ──
    从零长到原大小，同时从模糊里清晰起来。整枚一起弹，不按位拆：这一枚说的是「这里有

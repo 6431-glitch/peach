@@ -190,7 +190,7 @@ describe('设计决定：人物与厂牌资料页', () => {
     }
   });
 
-  it('空搜索的头像与封面分栏，搜索记录位于推荐之后，分隔线覆盖两栏', { timeout: 60_000 }, async () => {
+  it('空搜索的头像与封面分栏，搜索记录排在左栏最下面，分隔线覆盖两栏', { timeout: 60_000 }, async () => {
     const opened = await visit(browser, '/', WIDE);
     try {
       const page = opened.page;
@@ -201,21 +201,28 @@ describe('设计决定：人物与厂牌资料页', () => {
       await settle(page);
       await page.locator('#q').click();
       await page.locator('#searchMenu [data-search-recommendations] [data-search-results][data-split]').waitFor({ state: 'visible', timeout: 5_000 });
+      // 推荐是预取好的、打开就在；搜索记录随后才到，排进左栏末尾。
+      await page.waitForFunction(() => [...document.querySelectorAll('#searchMenu [data-search-col]:first-child > [data-search-group] > h3')]
+        .some((title) => title.textContent === '搜索记录'), undefined, { timeout: 5_000 });
       const split = await page.evaluate(() => {
         const results = document.querySelector('#searchMenu [data-search-results]')!;
         const [left, right] = [...results.querySelectorAll(':scope > [data-search-col]')].map((col) => col.getBoundingClientRect());
         const box = results.getBoundingClientRect();
         const line = getComputedStyle(results, '::before');
-        const history = document.querySelector('#searchMenu [data-search-root] > [data-search-group]')!;
+        // 搜索记录比推荐晚到，排在左栏末尾，到了也不把上面的往下推。
+        const groups = [...results.querySelectorAll(':scope > [data-search-col]:first-child > [data-search-group]')];
+        const history = groups.at(-1)!;
         return {
           box: box.height, leftWidth: left.width, rightWidth: right.width, line: parseFloat(line.height),
-          historyAfter: history.getBoundingClientRect().top >= box.bottom,
+          historyLabel: history.querySelector('h3')?.textContent,
+          historyAfter: history.getBoundingClientRect().top >= groups.at(-2)!.getBoundingClientRect().bottom,
           historyCount: history.querySelectorAll('[data-search-option]').length,
           offset: parseFloat(line.left) + parseFloat(line.width) / 2 - ((left.right + right.left) / 2 - box.left),
         };
       });
       assert.ok(split.rightWidth > split.leftWidth, '封面栏应比头像栏宽');
-      assert.equal(split.historyAfter, true, '搜索记录应在推荐之后');
+      assert.equal(split.historyLabel, '搜索记录', '左栏最后一组应是搜索记录');
+      assert.equal(split.historyAfter, true, '搜索记录应排在左栏推荐之后');
       assert.equal(split.historyCount, 10);
       assert.ok(Math.abs(split.line - split.box) <= 1, `分隔线高 ${split.line}px，两栏高 ${split.box}px`);
       assert.ok(Math.abs(split.offset) <= 1, `分隔线偏离两栏之间的缝 ${split.offset}px`);

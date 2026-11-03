@@ -5,7 +5,7 @@ import { groupMediaKinds, itemForMedia, type FollowItem, type FollowPage } from 
 import type { OnlineAuthor } from '../follow/online-vocab';
 import { onlineAuthorRingHtml } from '../index/index-controller';
 import type { Discovery } from '../jav/jav';
-import type { SuggestCard, SuggestGroup, SuggestItem } from './search';
+import type { Recommendations, SuggestCard, SuggestGroup, SuggestItem } from './search';
 
 type Request = (url: string) => Promise<any>;
 type Latest = { id: number; code: string; release_date: string };
@@ -22,11 +22,8 @@ const GROUPS = [
   { kind: 'release', label: '订阅新作', href: '/subscriptions', action: '管理订阅', size: 5 },
 ] as const;
 
-/* 每组一次多取一池，「换一批」在池里翻页，不再发请求。JAV 推荐按口味分排、订阅新作按发行日排，
-   同一个请求每次回同样的几部：只取一页的话这两组换不出东西。多取到二十条，耗时与取五条相当。 */
-const POOL = 20;
-/** 作者名册有缓存，多取几位不加成本；头一页是条目最多的三位。 */
-const AUTHOR_POOL = 24;
+/* 每组一次取一池（池的大小由 `/api/search/recommendations` 定），「换一批」在池里翻页，不再发请求。
+   JAV 推荐按口味分排、订阅新作按发行日排，同一个请求每次回同样的几部：只取一页的话这两组换不出东西。 */
 
 /** 一组都还没取到时的推荐栏：版式与取齐之后相同。 */
 export function pendingRecommendations(): SuggestGroup[] {
@@ -39,20 +36,14 @@ const day = (date: string) => date.startsWith(String(new Date().getFullYear())) 
 /** 署名只写第一位，共演再给总人数，同作品卡。 */
 const byline = (names: string[], total = names.length) => total > 1 ? `${names[0]} 等 ${total} 人` : names[0] || '';
 
-/** 搜索入口复用馆藏、口味推荐、关注和新作的本机读接口。每个接口回来就交一次 `update`，
- *  慢的那个不拖住已经到手的几组。 */
-export async function searchRecommendations(request: Request,
-  update?: (groups: SuggestGroup[]) => void): Promise<SuggestGroup[]> {
-  const filled = new Map<string, SuggestItem[]>();
-  const build = (): SuggestGroup[] => GROUPS.map(group => {
-    const pool = filled.get(group.kind);
-    return pool ? { ...group, items: pool.slice(0, group.size), pool, offset: 0 } : { ...group, items: [], pending: true };
-  });
-  const fill = (groups: Record<string, SuggestItem[]>) => {
-    for (const [kind, items] of Object.entries(groups)) filled.set(kind, items);
-    update?.(build());
+/** 空搜索那一栏：一个请求取齐（`/api/search/recommendations`），在这里照各组的口径拼。某一份服务端
+ *  没取到就是 null，只缺那一组。 */
+export async function searchRecommendations(request: Request): Promise<Recommendations> {
+  const bundle = await request('/api/search/recommendations') as {
+    items?: { items?: SuggestCard[] } | null; jav?: { items?: Discovery[] } | null; follow?: FollowPage | null;
+    feeds?: { items?: Discovery[] } | null; authors?: { items?: OnlineAuthor[] } | null;
+    latest?: Record<string, Latest>; words?: string[];
   };
-  const settle = (url: string): Promise<any> => request(url).then(value => value, () => null);
   const work = (card: SuggestCard, href: string | undefined, who: string, whoAvatarHtml = ''): SuggestItem => ({
     value: String(card.code || card.display_title || card.title || card.name || '未命名作品'),
     id: card.id, code: card.code, title: String(card.display_title || card.title || ''),
@@ -72,66 +63,61 @@ export async function searchRecommendations(request: Request,
     const avatar = names[0] ? entityAvatar(names[0], (refs[0] as FaceRef | undefined) ?? null, 'performer') : '';
     return work(card as unknown as SuggestCard, href, byline(names), avatar);
   };
+  const pools: Record<string, SuggestItem[] | null> = {};
+  pools.asset = bundle.items ? (bundle.items.items || []).map(library) : null;
 
-  await Promise.all([
-    settle(`/api/items?sort=rand&limit=${POOL}`).then(data => fill({
-      asset: ((data?.items || []) as SuggestCard[]).map(library),
-    })),
-    settle(`/api/jav/discoveries?scope=library&limit=${POOL}`).then(async data => {
-      const jav: Discovery[] = data?.items || [];
-      fill({ jav: jav.map(card => discovered(card, `/assets/${card.asset_id || card.id}`)) });
-      const people = new Map<string, SuggestItem>();
-      for (const card of jav) {
-        for (const ref of card.performer_refs || []) {
-          if (!ref.id || people.has(ref.name)) continue;
-          people.set(ref.name, { value: ref.name, entity_id: ref.id, has_image: ref.has_image,
-            href: `/performers/${ref.id}`,
-            image_version: ref.image_version, avatar_focus: ref.avatar_focus, rep: ref.has_avatar ? ref.rep : null,
-            works: [card as unknown as SuggestCard],
-          });
-        }
+  const jav: Discovery[] | null = bundle.jav ? bundle.jav.items || [] : null;
+  pools.jav = jav && jav.map(card => discovered(card, `/assets/${card.asset_id || card.id}`));
+  const people = new Map<string, SuggestItem>();
+  for (const card of jav || []) {
+    for (const ref of card.performer_refs || []) {
+      if (!ref.id || people.has(ref.name)) continue;
+      const found = bundle.latest?.[String(ref.id)];
+      people.set(ref.name, { value: ref.name, entity_id: ref.id, has_image: ref.has_image,
+        href: `/performers/${ref.id}`,
+        image_version: ref.image_version, avatar_focus: ref.avatar_focus, rep: ref.has_avatar ? ref.rep : null,
+        works: [card as unknown as SuggestCard],
+        subtitle: found ? `最新作 ${found.code || '无番号'} · ${day(found.release_date)}` : '最新作未取得',
+      });
+    }
+  }
+  pools.performer = jav && [...people.values()];
+
+  const follow = bundle.follow;
+  if (follow) {
+    const posts: SuggestItem[] = [];
+    const photos: SuggestItem[] = [];
+    const context = { sources: follow.sources || [], aliases: follow.author_aliases || [], credentials: new Set<string>() };
+    for (const group of follow.groups || []) {
+      const kinds = groupMediaKinds(group);
+      for (const media of ['videos', 'images'] as const) {
+        if (media === 'images' ? !kinds.has('image') : kinds.size && !kinds.has('video')) continue;
+        const item = itemForMedia(group, media);
+        const source = context.sources.find(source => source.id === item.source_id);
+        const sources = source?.author_key ? context.sources.filter(row => row.author_key === source.author_key) : source ? [source] : [];
+        const identity = followIdentity(item, sources, context);
+        const image = media === 'images' ? item.media_items?.find(entry => entry.media_kind === 'image') : undefined;
+        (media === 'images' ? photos : posts).push({ value: followTitle(item), id: item.id, who: identity.author,
+          whoAvatarHtml: identity.avatar, href: `/posts/${item.id}`, followMedia: media, mediaIndex: image?.index ?? null,
+          card: { id: item.id, thumb_url: image?.thumb_url || item.thumb_url },
+        });
       }
-      const picked = [...people.values()].slice(0, POOL);
-      const latest: Record<string, Latest> = picked.length
-        ? (await settle(`/api/entity/latest?ids=${picked.map(item => item.entity_id).join(',')}`))?.items || {} : {};
-      fill({ performer: picked.map(item => {
-        const found = latest[String(item.entity_id)];
-        return { ...item, subtitle: found ? `最新作 ${found.code || '无番号'} · ${day(found.release_date)}` : '最新作未取得' };
-      }) });
-    }),
-    settle(`/api/follow?limit=20&sort=rand&seed=${Date.now() >>> 0}`).then((follow: FollowPage | null) => {
-      const posts: SuggestItem[] = [];
-      const photos: SuggestItem[] = [];
-      const context = { sources: follow?.sources || [], aliases: follow?.author_aliases || [], credentials: new Set<string>() };
-      for (const group of follow?.groups || []) {
-        const kinds = groupMediaKinds(group);
-        for (const media of ['videos', 'images'] as const) {
-          if (media === 'images' ? !kinds.has('image') : kinds.size && !kinds.has('video')) continue;
-          const item = itemForMedia(group, media);
-          const source = context.sources.find(source => source.id === item.source_id);
-          const sources = source?.author_key ? context.sources.filter(row => row.author_key === source.author_key) : source ? [source] : [];
-          const identity = followIdentity(item, sources, context);
-          const image = media === 'images' ? item.media_items?.find(entry => entry.media_kind === 'image') : undefined;
-          (media === 'images' ? photos : posts).push({ value: followTitle(item), id: item.id, who: identity.author,
-            whoAvatarHtml: identity.avatar, href: `/posts/${item.id}`, followMedia: media, mediaIndex: image?.index ?? null,
-            card: { id: item.id, thumb_url: image?.thumb_url || item.thumb_url },
-          });
-        }
-      }
-      fill({ post: posts, photo: photos });
-    }),
-    settle(`/api/feeds/discoveries?limit=${POOL}`).then(data => fill({
-      release: ((data?.items || []) as Discovery[]).filter(card => card.code)
-        .map(card => discovered({ ...card, sourceWork: true } as Discovery, `/works/${encodeURIComponent(card.code)}`)),
-    })),
-    // 头像与更新时间都用名册那一行自己的：头像官方优先、归档兜底，同艺人页「在线」那一档。
-    settle(`/api/follow/authors?limit=${AUTHOR_POOL}`).then(data => fill({
-      author: ((data?.items || []) as OnlineAuthor[]).map(row => ({
-        value: row.k, href: row.entity_id ? `/creators/${row.entity_id}` : `/follow?author=${encodeURIComponent(row.key)}`,
-        avatarHtml: onlineAuthorRingHtml(row),
-        subtitle: row.latest ? `最新更新于 ${followCompactWhen({ published_at: row.latest } as FollowItem)}` : '更新时间未取得',
-      })),
-    })),
-  ]);
-  return build();
+    }
+    pools.post = posts;
+    pools.photo = photos;
+  }
+  pools.release = bundle.feeds ? (bundle.feeds.items || []).filter(card => card.code)
+    .map(card => discovered({ ...card, sourceWork: true } as Discovery, `/works/${encodeURIComponent(card.code)}`)) : null;
+  // 头像与更新时间都用名册那一行自己的：头像官方优先、归档兜底，同艺人页「在线」那一档。
+  pools.author = bundle.authors ? (bundle.authors.items || []).map(row => ({
+    value: row.k, href: row.entity_id ? `/creators/${row.entity_id}` : `/follow?author=${encodeURIComponent(row.key)}`,
+    avatarHtml: onlineAuthorRingHtml(row),
+    subtitle: row.latest ? `最新更新于 ${followCompactWhen({ published_at: row.latest } as FollowItem)}` : '更新时间未取得',
+  })) : null;
+
+  const groups = GROUPS.map(group => {
+    const pool = pools[group.kind] ?? [];
+    return { ...group, items: pool.slice(0, group.size), pool, offset: 0 };
+  });
+  return { groups, words: (bundle.words || []).map(String) };
 }

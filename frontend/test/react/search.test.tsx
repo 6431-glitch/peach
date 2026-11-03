@@ -6,7 +6,7 @@ import { describe, expect, it, onTestFinished, vi, type Mock } from 'vitest';
 
 import { SearchPage } from '../../src/react/search/search-page';
 import {
-  PICKS, SUGGEST_DEBOUNCE, menuModel, shufflePicks, type SearchApi, type SearchProps, type SuggestResponse, type SuggestGroup,
+  PICKS, SUGGEST_DEBOUNCE, menuModel, shufflePicks, type Recommendations, type SearchApi, type SearchProps, type SuggestResponse, type SuggestGroup,
 } from '../../src/react/search/search';
 
 import { mount, pending, settle } from './render';
@@ -89,7 +89,7 @@ interface Stage {
 
 /** 壳那一侧：一个静态输入框、一块带 `data-search-menu` 的面，岛挂在面里。 */
 async function stage({ pool = ['剧情'], loadPool = async () => pool,
-  recommendations = undefined as (() => Promise<SuggestGroup[]>) | undefined,
+  recommendations = undefined as (() => Promise<SuggestGroup[] | Recommendations>) | undefined,
   pendingRecommendations = undefined as (() => SuggestGroup[]) | undefined,
   suggest = async (q: string): Promise<SuggestResponse> => ({ q, groups: [] }) } = {}): Promise<Stage> {
   const posts: unknown[] = [];
@@ -124,7 +124,12 @@ async function stage({ pool = ['剧情'], loadPool = async () => pool,
     }),
   };
   const helpers: SearchProps['helpers'] = {
-    pool: loadPool, recommendations, pendingRecommendations, coverHtml: card => `<span class="pic"><img src="/cover?code=${card?.code || ''}" alt=""></span>`,
+    // 多数用例只关心分组，直接给数组；要测占位推荐词的用例给整份。
+    recommendations: recommendations && (async () => {
+      const answer = await recommendations();
+      return Array.isArray(answer) ? { groups: answer, words: [] } : answer;
+    }),
+    pool: loadPool, pendingRecommendations, coverHtml: card => `<span class="pic"><img src="/cover?code=${card?.code || ''}" alt=""></span>`,
     present: (el) => { el.hidden = false }, dismiss: (el) => { el.hidden = true },
     wireScroller: () => {}, typed: () => {}, composing: () => {}, clearField: (el) => { el.value = '' },
   };
@@ -193,6 +198,26 @@ describe('输入框上的时序', () => {
     await settle();
     expect(shown()).toEqual(['作品二']);
     expect(asked).toBe(2);
+  });
+
+  it('还没聚焦时占位推荐词用推荐栏一起带回的词轮换；按筛选核命中的词池留到聚焦再取', async () => {
+    vi.useFakeTimers();
+    const idle: (() => void)[] = [];
+    vi.stubGlobal('requestIdleCallback', (task: () => void) => idle.push(task));
+    vi.stubGlobal('cancelIdleCallback', (id: number) => { idle[id - 1] = () => {} });
+    onTestFinished(() => { vi.unstubAllGlobals() });
+    const words = ['甲作品', '乙作品', '丙作品'];
+    const loadPool = vi.fn(async () => ['剧情']);
+    const s = await stage({ loadPool, recommendations: async () => ({ groups: [], words }) });
+    await act(async () => { idle.splice(0).forEach(task => task()) });
+    await settle();
+    const first = s.input.placeholder;
+    expect(words).toContain(first);
+    expect(s.input.dataset.suggestion).toBe(first);
+    await act(async () => { vi.advanceTimersByTime(5000) });
+    expect(words).toContain(s.input.placeholder);
+    expect(s.input.placeholder).not.toBe(first);
+    expect(loadPool).not.toHaveBeenCalled();
   });
 
   it('框空着、没聚焦时占位推荐词隔几秒换一句；聚焦或框里有字时不换', async () => {

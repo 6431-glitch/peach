@@ -198,7 +198,7 @@
 }
 /* 推荐还没取到的那几格：外形与真行、真封面格相同，条与圆片用全站骨架那一道微光（`skeleton-sweep`）。 */
 .peach-react [data-search-placeholder] { pointer-events: none; }
-.peach-react [data-search-placeholder] :is([data-search-name], [data-search-sub], [data-search-face], .pic) {
+.peach-react [data-search-placeholder] :is([data-search-name], [data-search-sub], [data-search-face], [data-search-pic] > span) {
   position: relative;
   overflow: hidden;
   color: transparent;
@@ -207,7 +207,7 @@
 .peach-react [data-search-placeholder] :is([data-search-name], [data-search-sub]) { border-radius: var(--control-radius); }
 .peach-react [data-search-placeholder] [data-search-name] { width: 64%; }
 .peach-react [data-search-placeholder] [data-search-sub] { width: 40%; }
-.peach-react [data-search-placeholder] :is([data-search-name], [data-search-sub], [data-search-face], .pic)::after {
+.peach-react [data-search-placeholder] :is([data-search-name], [data-search-sub], [data-search-face], [data-search-pic] > span)::after {
   content: '';
   position: absolute;
   inset: 0;

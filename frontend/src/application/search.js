@@ -85,7 +85,7 @@ searchState.searchActions = {
 };
 searchState.searchHelpers = {
   pool:()=>catalogSuggestions(state,api),
-  recommendations:update=>searchRecommendations(api,update),
+  recommendations:()=>searchRecommendations(api),
   pendingRecommendations,
   rollPlaceholder:(input,next)=>rollPlaceholder(input,next),
   /* `.pic` 是卡片封面那一格（比例、底色、圆角与模糊垫底都认它），和里面那张图一起由壳给。 */

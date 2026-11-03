@@ -170,25 +170,28 @@ describe('顶栏搜索', () => {
       const opened = await openSearch(browser, { viewport, history: ['最近搜索'] });
       try {
         const { page } = opened;
-        await page.route(/\/api\/jav\/discoveries\?/, route => route.fulfill({ json: { items: [
-          { id: 11, asset_id: 11, code: 'ABW-101', title: 'JAV 作品', is_jav: true, has_cover: true,
-            performer_refs: [{ id: 90001, name: '七海ひな', has_image: true }] },
-        ] } }));
-        await page.route(/\/api\/follow\?/, route => route.fulfill({ json: {
-          sources: [{ id: 1, author_key: 'name:作者', label: '作者', ref: '作者', provider: 'pixiv', official_avatar_url: '/poster?id=11' }],
-          groups: [{ primary: { id: 901, source_id: 1, title: '关注作品', thumb_url: '/poster?id=11', media_kind: 'video', status: 'saved' },
-            variants: [{ id: 902, source_id: 1, title: '图片作品', thumb_url: '/poster?id=12', media_kind: 'image', status: 'seen',
-              media_items: [{ index: 2, media_kind: 'image', thumb_url: '/poster?id=13' }] }], duplicates: [] }],
-        } }));
-        await page.route(/\/api\/follow\/authors\?/, route => route.fulfill({ json: {
-          items: [{ k: '作者', key: 'name:作者', entity_id: 90002 }],
-        } }));
-        await page.route(/\/api\/feeds\/discoveries\?/, route => route.fulfill({ json: { items: [
-          { id: 91, code: 'ABW-102', title: '订阅新作', has_cover: true },
-        ] } }));
+        // 推荐栏一个请求取齐：作品那份用演示库的真结果，其余几份换成能覆盖每一组的夹具。
+        await page.route(/\/api\/search\/recommendations/, async route => {
+          const bundle = await (await route.fetch()).json();
+          await route.fulfill({ json: { ...bundle,
+            jav: { items: [{ id: 11, asset_id: 11, code: 'ABW-101', title: 'JAV 作品', is_jav: true, has_cover: true,
+              performer_refs: [{ id: 90001, name: '七海ひな', has_image: true }] }] },
+            follow: {
+              sources: [{ id: 1, author_key: 'name:作者', label: '作者', ref: '作者', provider: 'pixiv', official_avatar_url: '/poster?id=11' }],
+              groups: [{ primary: { id: 901, source_id: 1, title: '关注作品', thumb_url: '/poster?id=11', media_kind: 'video', status: 'saved' },
+                variants: [{ id: 902, source_id: 1, title: '图片作品', thumb_url: '/poster?id=12', media_kind: 'image', status: 'seen',
+                  media_items: [{ index: 2, media_kind: 'image', thumb_url: '/poster?id=13' }] }], duplicates: [] }],
+            },
+            // 作者头像读名册那一行自己的地址（官方优先、归档兜底）。
+            authors: { items: [{ k: '作者', key: 'name:作者', entity_id: 90002, avatar: '/poster?id=11', avatar_fallback: '' }] },
+            feeds: { items: [{ id: 91, code: 'ABW-102', title: '订阅新作', has_cover: true }] },
+          } });
+        });
         if (viewport.mobile) await page.locator('#searchBtn').click();
         await page.locator('#q').click();
         await page.locator(`${MENU} [data-search-recommendations]`).waitFor();
+        // 推荐没到之前栏里先是按最终版式摆的占位，等占位都换成真行再数。
+        await page.waitForFunction(() => !document.querySelector('#searchMenu [data-search-placeholder]'), undefined, { timeout: 10_000 });
         assert.equal(await page.locator(`${MENU} [data-kind="author"] [data-search-face] img`).count(), 1);
         for (const kind of ['asset', 'jav', 'post', 'photo', 'release']) {
           const cover = page.locator(`${MENU} [data-kind="${kind}"] [data-search-pic] img`).first();
