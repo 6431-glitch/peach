@@ -113,10 +113,14 @@ describe('任务页云下载布局', () => {
         return { fits: document.documentElement.scrollWidth <= innerWidth, inside: link.right <= box.right };
       });
       assert.deepEqual(geometry, { fits: true, inside: true });
-      // 失败卡：框线是 danger 色且有宽度；结束原因在正文，全文收在底部那一行可展开的明细里。
+      // 失败卡：框线是 danger 色且有宽度，画成不占盒子的 outline；结束原因在正文，全文收在底部那一行可展开的明细里。
       const failed = page.locator('#run-8');
-      const frame = await failed.evaluate((node) => ({ width: getComputedStyle(node).borderTopWidth, color: getComputedStyle(node).borderTopColor }));
-      assert.deepEqual(frame, { width: '1px', color: await tokenColor(page, '#run-8', '--color-border-error-default') });
+      const frame = await failed.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return { style: style.outlineStyle, width: style.outlineWidth, color: style.outlineColor, border: style.borderTopWidth };
+      });
+      assert.deepEqual(frame, { style: 'solid', width: '1px',
+        color: await tokenColor(page, '#run-8', '--color-border-error-default'), border: '0px' });
       assert.equal(await failed.locator('[data-task-error]').count(), 1);
       assert.equal(await failed.locator('details [data-error-details]').count(), 1);
       assert.equal(await failed.locator('[data-error-excerpt]').count(), 0);
