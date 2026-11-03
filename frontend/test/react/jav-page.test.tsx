@@ -1,3 +1,4 @@
+import { act } from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { QueryClientProvider, notifyManager } from '@tanstack/react-query';
 import { queryClient } from '../../src/react/query';
@@ -9,6 +10,12 @@ import { actionOrder, buttonNamed, click, mount, settle, type } from './render';
 
 notifyManager.setScheduler(notify => notify());
 afterEach(() => queryClient.clear());
+
+/** 页头筛选框是名册页那个 `IndexSearch`：停手 300 毫秒才交出文字。 */
+async function search(host: ParentNode, text: string) {
+  await type(host.querySelector('[data-index-search] input'), text);
+  await act(() => new Promise(resolve => { setTimeout(resolve, 320) }));
+}
 
 it('发现已有结果即时呈现，陈旧推荐在后台更新', async () => {
   const cached = { items: [{ id: 1, code: 'ABC-001' }], candidate_total: 1, limited: false };
@@ -83,9 +90,9 @@ it('发现按范围读取，清除文字和标签恢复列表，卡片打开对�
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(1);
   await click(buttonNamed('清除筛选', host));
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(2);
-  await type(host.querySelector('input[type="search"]'), 'ABC-001');
+  await search(host, 'ABC-001');
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(1);
-  await type(host.querySelector('input[type="search"]'), '');
+  await search(host, '');
   expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(2);
   await click(host.querySelector('[data-jav-card] h3'));
   expect(navigate).toHaveBeenLastCalledWith('/works/ABC-001');
@@ -129,7 +136,7 @@ it('新作分区的女优、厂牌、标签只列接口给的订阅新作筛选�
 it('新作分区默认按发行时间倒序，排序键再点翻方向，换一批按新种子重排且不按下排序键', async () => {
   const before = location.pathname + location.search;
   history.replaceState(null, '', '/jav?tab=releases');
-  const fetcher = vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ items: [], total: 0, candidate_total: 0, page: 1, size: 24,
+  const fetcher = vi.fn(async (_url: string) => ({ ok: true, status: 200, json: async () => ({ items: [], total: 0, candidate_total: 0, page: 1, size: 24,
     facets: { performers: [], studios: [], tags: [] } }) }));
   vi.stubGlobal('fetch', fetcher);
   const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="releases" readOnly navigate={vi.fn()} receipt={vi.fn()} /></QueryClientProvider>);

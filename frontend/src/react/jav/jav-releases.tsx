@@ -10,6 +10,7 @@ import { appSettingsStore, javLayout, storeJavLayout, JAV_LAYOUTS, cardRatio, gr
 import { entityFaceImg, facePos, logoUrl } from '@peach/card-art';
 import { wireHorizontalScroller } from '../../ui-kit/scroll';
 import { javContentSkeleton, javTagSkeleton, JAV_RECOMMENDATION_GRID } from '../../jav-skeleton';
+import { tierPlaceholdersHtml } from '../../catalog-filter-skeleton';
 import { errorMessage } from '../../api';
 import { entityDisplayName } from '../../core/entity-names';
 import type { DownloadPrefill } from '../activity/cloud-download-dialog';
@@ -20,16 +21,18 @@ import { Pagination } from '../components/table-pagination';
 import { FilterGlassRows, FilterPill, GlassPill } from '../components/filter-glass';
 import { Segments, Shuffle, SortKeys } from '../entity-filter/entity-filter-page';
 import { Chip } from '@/components/base/badges/chip';
-import { recommendationScore, type DiscoveryDirection } from './discovery-sorts';
+import { recommendationScore, RELEASE_SORTS, type DiscoveryDirection, type ReleaseSort } from './discovery-sorts';
 import { addWant, invalidateWants } from '../wants/wants';
 import { useAction } from '../settings/use-action';
 import { useEntityNames } from '../use-entity-names';
 import { DiscoveryCard, resourcePrefill } from './discovery-card';
-import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, RELEASE_SORTS, type ReleaseFacetPerformer, type ReleaseFacetStudio,
-  type ReleaseFilters, type ReleaseSort } from './jav';
+import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, type ReleaseFacetPerformer, type ReleaseFacetStudio,
+  type ReleaseFilters } from './jav';
 import { writeJavQuery } from './jav-navigation';
 
 type Facet = 'performer' | 'studio' | 'tag';
+/** 等数据时两排头像的占位，与路由骨架（`releasesFilterSkeleton`）同一份。 */
+const TIER_PLACEHOLDERS = `<div data-catalog-tier="performers" data-skeleton="tiers">${tierPlaceholdersHtml('performer')}</div><div data-catalog-tier="studios">${tierPlaceholdersHtml('studio')}</div>`;
 
 const performerRing = (person: ReleaseFacetPerformer) =>
   `<span data-tier-initial>${esc(firstGrapheme(entityDisplayName('performer', person.name, person.id)))}</span>${entityFaceImg({
@@ -56,11 +59,11 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
 }) {
   useEntityNames();
   const [filters, setFilters] = useState<ReleaseFilters>(() => releaseFilters(location.search));
-  /* 文字筛选停手 300 毫秒再问服务端：每敲一个字就是一趟整批筛选。 */
+  /* 页头的 `IndexSearch` 停手 300 毫秒才交出文字，这里换了就回第 1 页重问服务端。 */
   useEffect(() => {
     if (query === filters.q) return;
-    const timer = setTimeout(() => { setFilters(current => ({ ...current, q: query, page: 1 })); writeJavQuery({ page: '' }) }, 300);
-    return () => clearTimeout(timer);
+    setFilters(current => ({ ...current, q: query, page: 1 }));
+    writeJavQuery({ page: '' });
   }, [query, filters.q]);
   const choose = (facet: Facet, value: string) => {
     const next = filters[facet] === value ? '' : value;
@@ -119,6 +122,7 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
   const filtered = !!(filters.performer || filters.studio || filters.tag || filters.q);
   const pages = Math.max(1, Math.ceil((data?.total || 0) / RELEASE_PAGE_SIZE));
   return <section ref={section} aria-label="订阅新作" aria-busy={waiting || releases.isFetching} className="flex min-w-0 scroll-mt-24 flex-col gap-4">
+    {waiting ? <div data-catalog-tiers="" aria-busy="true" dangerouslySetInnerHTML={{ __html: TIER_PLACEHOLDERS }} /> : null}
     {data && (data.facets.performers.length || data.facets.studios.length) ? <div data-catalog-tiers="" data-release-tiers="">
       {data.facets.performers.length ? <div data-catalog-tier="performers" role="group" aria-label="按女优筛选">
         {data.facets.performers.map(person => <button key={person.name} type="button" data-tier-performer=""

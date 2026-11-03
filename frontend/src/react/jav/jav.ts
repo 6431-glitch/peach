@@ -4,8 +4,7 @@ import { fetchWants, WANTS_KEY } from '../wants/wants';
 import type { FaceRef, CoverItem } from '@peach/card-art';
 import { coverImage, javArtwork, remoteCoverUrl } from '@peach/card-art';
 import { esc } from '@peach/legacy/core';
-import type { DiscoveryDirection, DiscoverySort } from './discovery-sorts';
-import { JAV_RELEASE_SORT } from '../../sort-preferences';
+import { RELEASE_SORTS, type DiscoveryDirection, type DiscoverySort, type ReleaseSort } from './discovery-sorts';
 
 export { JAV_TABS, javTab, javPath, javLibraryPath } from './jav-navigation';
 export interface Discovery extends CoverItem {
@@ -38,15 +37,6 @@ export function fetchDiscoveries(scope: DiscoveryScope, signal: AbortSignal, opt
   return apiGet<DiscoveryResult>(`/api/jav/discoveries?${params}`, signal);
 }
 
-/** 新作分区的排序：发行时间打头（默认），其余同「发现」；`random` 是「换一批」，没有对应的排序键。 */
-export const RELEASE_SORTS = [
-  ['release_date', JAV_RELEASE_SORT[1], '按发行日期排序'],
-  ['source_score', '来源评分', '按来源评分排序'],
-  ['duration', '时长', '按时长排序'],
-  ['code', '番号', '按番号排序'],
-  ['taste', '口味', '按口味匹配排序'],
-] as const;
-export type ReleaseSort = typeof RELEASE_SORTS[number][0] | 'random';
 /** 新作分区的筛选与排序：都写在地址栏里，刷新与返回原样恢复。`seed` 只在换一批时有值。 */
 export interface ReleaseFilters {
   page: number; performer: string; studio: string; tag: string; q: string;

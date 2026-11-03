@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { RiCompassLine } from '@remixicon/react';
 import { Button, ButtonLink } from '@/components/base/buttons/button';
-import { Input } from '@/components/base/input/input';
 import { Chip } from '@/components/base/badges/chip';
 import { appSettingsStore, javLayout, storeJavLayout, JAV_LAYOUTS, cardRatio, gridLayout } from '@peach/appearance';
 import { wireHorizontalScroller } from '../../ui-kit/scroll';
@@ -19,6 +18,7 @@ import { writeJavQuery } from './jav-navigation';
 import { DiscoveryCard, resourcePrefill } from './discovery-card';
 import { Releases } from './jav-releases';
 import { JavHeader } from './jav-header';
+import { IndexSearch } from '../index/index-search';
 import { spriteGlyph } from '../components/sprite-glyph';
 import { FilterGlassRows, FilterIconButton, FilterPill, GlassPill } from '../components/filter-glass';
 import { LibraryShortcuts } from '../library-shortcuts/shortcut-controls';
@@ -26,7 +26,6 @@ import { Segments, SortKeys } from '../entity-filter/entity-filter-page';
 import { TaskProgress } from '../components/task-progress';
 import { DISCOVERY_SORTS, discoveryScore, recommendationScore, type DiscoverySort } from './discovery-sorts';
 
-const SearchGlyph = spriteGlyph('search');
 const MetadataStopGlyph = spriteGlyph('x');
 const MetadataRefreshGlyph = spriteGlyph('refresh-cw');
 const SEARCH_LABELS: Record<string, string> = { releases: '筛选新作', discover: '筛选推荐', wants: '筛选想要' };
@@ -37,13 +36,9 @@ export function JavPage({ tab, readOnly, navigate, receipt }: {
   const [download, setDownload] = useState<DownloadPrefill | null>(null);
   const [text, changeText] = useState(() => new URLSearchParams(location.search).get('q') || '');
   const setText = (value: string) => { changeText(value); writeJavQuery({ q: value }) };
-  const search = (event: FormEvent) => { event.preventDefault() };
   return <div className="flex w-full flex-col gap-6">
-    <JavHeader tab={tab} navigate={navigate} find={() => setDownload({})} />
-    <form aria-label={SEARCH_LABELS[tab]} onSubmit={search}>
-      <Input type="search" aria-label={SEARCH_LABELS[tab]} placeholder="筛选番号、女优或标题" leadingIcon={SearchGlyph}
-        value={text} onChange={setText} enterKeyHint="search" />
-    </form>
+    <JavHeader tab={tab} navigate={navigate} find={() => setDownload({})}
+      search={<IndexSearch label={SEARCH_LABELS[tab] || '筛选'} value={text} onQuery={setText} />} />
     {tab === 'releases'
       ? <Releases readOnly={readOnly} receipt={receipt} resource={setDownload} query={text.trim()} navigate={navigate} clearText={() => setText('')} />
       : tab === 'discover'
