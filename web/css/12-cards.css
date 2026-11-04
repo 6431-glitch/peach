@@ -204,9 +204,11 @@ body .card:focus-within{background:var(--hover);box-shadow:0 0 0 8px var(--hover
   border-radius:var(--badge-radius);font-size:var(--fs-xs);line-height:16px;font-weight:600;letter-spacing:0;vertical-align:1px}
 .javedition.subtitle{color:var(--ink-2)}
 .javedition.uncensored{color:var(--meter)}
-.javedition.cracked{color:var(--drop)}
+.javedition.leaked{color:var(--loupe)}
+/* 破解不用 `--drop`：那是删除与出错的颜色，放在版次上像是文件坏了。紫色取 Board UI 状态色，明暗各一套。 */
+.javedition.cracked{color:var(--color-status-purple-text)}
 .javedition.censored{color:var(--muted)}
-/* 卷号说的是「这是第几份文件」，不是版次，用中性灰和三种版次色区分开。 */
+/* 卷号说的是「这是第几份文件」，不是版次，用中性灰和各版次色区分开。 */
 .javedition.partlabel{color:var(--muted);margin-left:6px}
 .meta .s{display:flex;gap:8px;color:var(--muted);align-items:center;flex-wrap:wrap}
 .meta .who{color:var(--ink-2);min-width:0;max-width:100%;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}

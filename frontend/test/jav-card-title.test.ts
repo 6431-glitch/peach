@@ -14,6 +14,14 @@ it('已确认的版本标签与 4K 位于标题，分辨率未取得时不添加
   }
 });
 
+it('无码三档各用自己的颜色：无码、流出、破解', () => {
+  const host = document.createElement('div');
+  host.innerHTML = ['无码', '无码流出', '无码破解'].map((label) =>
+    javTitleHtml({ is_jav: true, code: 'EXM-001', catalog_title: '示例作品', edition_badges: [label] })).join('');
+  expect([...host.querySelectorAll('.javedition')].map((node) => node.className))
+    .toEqual(['javedition uncensored', 'javedition leaked', 'javedition cracked']);
+});
+
 it('含假名的标题标日文、纯拉丁字母标英文，纯汉字分不出中日时沿用页面语言', () => {
   expect(textLang('新人 AV デビュー')).toBe('ja');
   expect(textLang('ｶﾀｶﾅ')).toBe('ja');

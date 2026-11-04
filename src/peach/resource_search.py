@@ -24,7 +24,9 @@ import httpx
 from torznab.exceptions import TorznabAPIError
 from torznab.parser import parse_capabilities, parse_torznab
 
-from .catalog_rules import jav_edition_badges, normalise_code_key, release_code_from_text, same_release_code
+from .catalog_rules import (
+    UNCENSORED_EDITIONS, jav_edition_badges, normalise_code_key, release_code_from_text, same_release_code,
+)
 from .downloads import parse_magnet
 from .follow_secrets import CredentialError, CredentialStore
 from .feeds import scan_code
@@ -135,7 +137,7 @@ def qualities(title: str, tags: list[str], code: str) -> dict:
         (r"(?i)\bav1\b", "AV1")) if re.search(pattern, text)), "")
     editions = jav_edition_badges(title, code, tags)
     return {"resolution": resolution, "codec": codec, "chinese": "中字" in editions,
-            "uncensored": "无码" in editions or "无码破解" in editions}
+            "uncensored": any(label in UNCENSORED_EDITIONS for label in editions)}
 
 
 def torrent_info_hash(data: bytes) -> str:
