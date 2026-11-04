@@ -2099,6 +2099,42 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.json()["models"][0]["id"], "kimi-k3")
         discover.assert_called_once_with()
 
+    async def test_local_player_progress_writes_same_activity_columns(self):
+        from peach import playback_tracking, routes_media
+
+        class Probe:
+            eof = False
+
+            def __init__(self):
+                self.frames = iter([0.0, 0.0, 1.0, 2.0, 40.0, 41.0])
+
+            def snapshot(self):
+                position = next(self.frames, None)
+                if position is None:
+                    raise EOFError("player exited")
+                return playback_tracking.Snapshot(position, 100.0, False)
+
+            def close(self):
+                pass
+
+        con = sqlite3.connect(self.db)
+        before = con.execute("SELECT COALESCE(play_count,0) FROM asset WHERE id=1").fetchone()[0]
+        con.close()
+        trackers = playback_tracking.PlaybackTrackers(poll=0.001)
+        with patch.object(self.app.state, "playback_trackers", trackers):
+            track = routes_media._playback_tracker(self.app.state, 1)
+            self.assertTrue(track(Probe, lambda: True))
+            for _ in range(500):
+                if not trackers.threads:
+                    break
+                await asyncio.sleep(0.01)
+        self.assertFalse(trackers.threads)
+        con = sqlite3.connect(self.db)
+        row = con.execute("SELECT play_count,play_seconds,seek_count,leave_ratio,last_played IS NOT NULL "
+                          "FROM asset WHERE id=1").fetchone()
+        con.close()
+        self.assertEqual(row, (before + 1, 3.0, 1, 0.41, 1))
+
     async def test_post_writes_only_test_database(self):
         response = await self.client.post(
             "/api/activity", headers={"X-Token": "secret"},
