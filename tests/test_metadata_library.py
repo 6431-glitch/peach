@@ -879,6 +879,7 @@ class LibraryNfoTests(unittest.TestCase):
         for name, (live, sync, expected) in cases.items():
             with self.subTest(name):
                 contract = Mock()
+                contract.db_path = self.root / 'database/ledger.db'
                 contract.library_processing_job.thread = None
                 contract.library_processing_job.snapshot.return_value = {**live, 'job_id': 'one', 'started_at': 1}
                 with patch('peach.web_library_processing.settings_file.active'), \
