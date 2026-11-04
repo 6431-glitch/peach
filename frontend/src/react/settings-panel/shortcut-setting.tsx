@@ -65,7 +65,7 @@ export function ShortcutSetting({ current, onChange }: { current: Shortcut; onCh
         : held ? [...caps(pressed.modifiers, null, 'down'), slot('键')] : [slot('修饰键'), slot('键')];
   const custom = serializeShortcut(current) !== DEFAULT_SFW_SHORTCUT;
   const hint = saved ? `已改为 ${formatShortcut(saved, apple)}`
-    : recording ? (problem || '按下新的组合键，Esc 取消') : '不在输入框里时按下，即可开关 SFW 模式。';
+    : recording ? (problem || '按下新的组合键，Esc 取消') : '输入框外随时开关。';
   return (
     <div data-setting-row="">
       <span><b>SFW 快捷键</b><small id="sfwShortcutDescription" aria-live="polite">{hint}</small></span>
