@@ -50,6 +50,13 @@ def _cooling_until(contract, url: str) -> datetime | None:
     return datetime.fromtimestamp(until, timezone.utc) if until else None
 
 
+def _same_source(url: str, other: str) -> bool:
+    """两个订阅地址是不是同一个来源的：冷却按来源记，顺延也只顺延同一来源的那几个。"""
+    from .scraping_access import source_for
+
+    return source_for(url) == source_for(other)
+
+
 def _paused_by_source(error: Exception) -> bool:
     """来源冷却挡下的这一次；本趟预算耗尽（`SourceBudgetExhausted`）不算来源冷却。"""
     from .scraping_access import SourceBudgetExhausted, SourcePaused
@@ -101,6 +108,8 @@ def poll_source(contract, transport, source) -> dict:
     # `ok` 数失败、按 `added` 数新增，两个调度对象共用同一段结算。
     report = {"source": source_id, "name": source["name"] or source["url"],
               "ok": True, "seen": 0, "added": 0, "without_code": 0, "error": None}
+    if source["kind"] == feeds.KIND_DMM_ACTRESS:
+        return _poll_dmm(contract, transport, source, report)
     try:
         response = fetch(transport, source["url"], etag=source["etag"],
                          last_modified=source["last_modified"])
@@ -146,6 +155,50 @@ def poll_source(contract, transport, source) -> dict:
                   added=len(outcome["created"]),
                   codes=[code for _id, code in outcome["created"]])
     _backfill_solo_works(contract, transport, source, report)
+    return report
+
+
+def _poll_dmm(contract, transport, source, report: dict) -> dict:
+    """拉一条 DMM 片单源（ADR-0135）：按地址里的女优编号问 GraphQL，不 GET 那个地址。
+
+    请求走同一条 `SourceTransport` 与主机限流，包在 `holding` 里：验证页、封禁、地区限制与
+    限流让 DMM 整站进冷却，刮削链之后的请求在同一关停下。任何失败都按原因写进这一行。
+    """
+    from .sources.base import Session, SourceFailure
+    from .sources.dmm import DmmSource
+
+    source_id = int(source["id"])
+    interval = int(source["interval_minutes"])
+    site = DmmSource()
+    with contract.database.read_connection() as connection:
+        known = feeds.seen_keys(connection, source_id)
+    session = Session(transport)
+    try:
+        with site.holding(session):
+            works = site.actress_works(feeds.dmm_actress_id(source["url"]), session=session,
+                                       known=known, limit=feeds.MAX_ENTRIES)
+    except Exception as error:  # noqa: BLE001 - 原因写到源那一行上给人看
+        message = error.message if isinstance(error, SourceFailure) else str(error)
+        report.update(ok=False, error=message,
+                      reason=str(error.reason) if isinstance(error, SourceFailure) else None)
+        # 和演员页同一条：整站冷却挡回来的，冷却一过就重拉（ADR-0134）。
+        retry_at = _cooling_until(contract, source["url"]) if _paused_by_source(error) else None
+        if retry_at is not None:
+            report["paused"] = True
+        with contract.database.write_transaction() as connection:
+            feeds.settle(connection, source_id, error=message, interval_minutes=interval,
+                         retry_at=retry_at)
+        return report
+    parsed = feeds.parse_dmm_actress(works)
+    hidden = web_settings.hidden_compilations(contract.database)
+    with contract.database.write_transaction() as connection:
+        outcome = feeds.poll(connection, source, parsed, hidden)
+        feeds.settle(connection, source_id, error=None, interval_minutes=interval,
+                     seen=outcome["seen"], new=len(outcome["created"]), page_name=parsed.title)
+    report.update(seen=outcome["seen"], fresh=outcome["fresh"], total=works.total,
+                  pre_order=sum(work.pre_order for work in works.works),
+                  without_code=outcome["without_code"], compilations=outcome["compilations"],
+                  added=len(outcome["created"]), codes=[code for _id, code in outcome["created"]])
     return report
 
 
@@ -207,6 +260,10 @@ def _check_sources(contract, body, previous):
 
 def _execute_check(contract, body, job_id: str) -> dict:
     previous = contract.feed_job.snapshot() or {}
+    if 'source_ids' not in previous:
+        # 订阅中的人后来刮到了 DMM 编号的，这一轮前补上她的 DMM 片单源（ADR-0135）。
+        with contract.database.write_transaction() as connection:
+            feeds.sync_dmm_sources(connection)
     rows = _check_sources(contract, body, previous)
     transport = _transport(contract)
     results = list(previous.get('results') or [])
@@ -214,19 +271,23 @@ def _execute_check(contract, body, job_id: str) -> dict:
     codes = [code for row in results for code in row.get('codes') or []]
     if not contract.feed_job.checkpoint(job_id, source_ids=[int(row['id']) for row in rows]):
         raise InterruptedError('订阅检查已停止')
-    deferred = 0
+    deferred, held = 0, set()
     try:
         for index, source in enumerate(rows):
-            if int(source['id']) in completed:
+            if int(source['id']) in completed | held:
                 continue
             until = _cooling_until(contract, source["url"])
             if until is not None:
-                pending = [row for row in rows[index:] if int(row['id']) not in completed]
-                results, deferred = _defer_round(contract, pending, until, results)
+                # 只顺延同一来源的：JavDB 冷却挡不住 DMM 片单，反过来也一样（ADR-0135）。
+                pending = [row for row in rows[index:] if int(row['id']) not in completed | held
+                           and _same_source(row["url"], source["url"])]
+                results, count = _defer_round(contract, pending, until, results)
+                deferred += count
+                held.update(int(row['id']) for row in pending)
                 if not contract.feed_job.checkpoint(job_id, results=results, checked=len(results),
                                                     total=len(rows), added=len(set(codes))):
                     raise InterruptedError('订阅检查已停止')
-                break
+                continue
             if not contract.feed_job.update(job_id, checked=len(results), total=len(rows),
                                             current=source["name"] or source["url"]):
                 raise InterruptedError('订阅检查已停止')
@@ -419,13 +480,14 @@ def w_feed_source(contract, body) -> dict:
 
 
 def _subscribe(connection, entity_id: int, canonical_name: str) -> list[int]:
-    """这位的每个 JavDB 演员页各订一条，返回源 id。地址按账本里她的编号现拼。"""
+    """这位的每个 JavDB 演员页与 DMM 片单各订一条，返回源 id。地址按账本里她的编号现拼。"""
     refs = [dict(ref) for ref in connection.execute(
         "SELECT provider,external_kind,external_id FROM entity_external_ref"
         " WHERE entity_id=?", (int(entity_id),))]
-    pages = entry_links.javdb_actor_pages(canonical_name, refs)
+    pages = [*entry_links.javdb_actor_pages(canonical_name, refs),
+             *feeds.dmm_actress_pages(connection, entity_id)]
     if not pages:
-        raise ValueError("这位在 JavDB 上没有演员页编号")
+        raise ValueError("这位在 JavDB 与 DMM 上都没有编号")
     return feeds.follow_entity(connection, entity_id, pages)
 
 
