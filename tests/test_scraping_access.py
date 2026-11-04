@@ -168,7 +168,7 @@ class ScrapingAccessTests(unittest.TestCase):
 
     def test_connections_do_not_claim_session_validity_or_echo_exception_urls(self):
         contract = SimpleNamespace(follow_secrets_root=self.root)
-        with patch("peach.web_scraping.SourceTransport") as factory:
+        with patch("peach.source_checks.SourceTransport") as factory:
             factory.return_value.side_effect = httpx.ConnectError("https://secret:password@example.org/")
             result = w_scraping_check(contract, {"source": "fc2cmadb"})
         self.assertFalse(result["session_verified"])
@@ -193,7 +193,7 @@ class ScrapingAccessTests(unittest.TestCase):
                  (HttpResponse(200, {}, b"<html>ok</html>", login), "ok", True, "", "登录"))
         for response, kind, ok, says, avoids in cases:
             with self.subTest(status=response.status, url=response.url), \
-                    patch("peach.web_scraping.SourceTransport") as factory:
+                    patch("peach.source_checks.SourceTransport") as factory:
                 factory.return_value.return_value = response
                 result = w_scraping_check(contract, {"source": "fc2cmadb"})["results"][0]
             self.assertEqual((result["kind"], result["ok"]), (kind, ok))
@@ -218,7 +218,7 @@ class ScrapingAccessTests(unittest.TestCase):
             (HttpResponse(200, {}, b"<title>Just a moment</title>", "https://airav.io/"), "cloudflare_challenge"),
         ]
         for outcome, reason in cases:
-            with self.subTest(reason=reason), patch("peach.web_scraping.SourceTransport") as factory:
+            with self.subTest(reason=reason), patch("peach.source_checks.SourceTransport") as factory:
                 if isinstance(outcome, Exception):
                     factory.return_value.side_effect = outcome
                 else:
@@ -602,7 +602,7 @@ class ScrapingAccessTests(unittest.TestCase):
             result = _fetch_cover(contract, "ABW-232")
         self.assertEqual(result["reason"], "network")
         self.assertIn(MOBILE_BROADBAND_HINT, result["error"])
-        with patch("peach.web_scraping.SourceTransport") as factory:
+        with patch("peach.source_checks.SourceTransport") as factory:
             factory.return_value.side_effect = httpx.ConnectError("EOF occurred in violation of protocol")
             checks = {item["label"]: item for item in
                       w_scraping_check(SimpleNamespace(follow_secrets_root=self.root), {"source": "dmm"})["results"]}
@@ -817,10 +817,10 @@ class SourcePreflightTests(unittest.TestCase):
             checked.assert_not_called()
 
     def test_preflight_bounds_requests_and_uses_no_browser(self):
-        from peach.web_scraping import check_source
+        from peach.source_checks import check_source
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            with patch('peach.web_scraping.SourceTransport') as factory:
+            with patch('peach.source_checks.SourceTransport') as factory:
                 factory.return_value.return_value = HttpResponse(200, {}, b'<html></html>')
                 result = check_source(root, 'javdb', preflight=True)
             self.assertTrue(result['results'][0]['ok'])

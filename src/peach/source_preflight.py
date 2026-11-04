@@ -6,7 +6,7 @@ from pathlib import Path
 import time
 
 from .scraping_access import SOURCES
-from .web_scraping import check_source
+from .source_checks import check_source
 
 
 def check_sources(secrets_root: Path, sources: list[str] | None = None) -> dict:
