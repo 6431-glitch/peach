@@ -497,7 +497,7 @@ def q_items(contract: WebContract, args):
                 r["creator"] = r["creator_entity"]["name"]
             r["performer_total"] = len(refs) or len(all_performers)
             r["_entity_kinds"] = tuple(canonical)
-    sources = dict(_download_source_names(contract)) if rows else {}
+    sources = dict(_download_source_names(contract))
     for r in rows:
         r["cost"] = cost_for(r['location'], r.get('path'))
         r["has_thumb"] = contract.has_snapshot(r["snapshot_path"])
@@ -1236,7 +1236,7 @@ def q_related(contract: WebContract, aid, limit=24):
         for asset_id, tag in con_tags(contract, related_ids, marks):
             related_tags.setdefault(asset_id, []).append(tag)
         _name_shared_tags(contract, aid, picked, related_tags)
-    sources = dict(_download_source_names(contract)) if picked else {}
+    sources = dict(_download_source_names(contract))
     for d in picked:
         d["cost"] = cost_for(d['location'], d.get('path'))
         d["has_thumb"] = contract.has_snapshot(d["snapshot_path"])
