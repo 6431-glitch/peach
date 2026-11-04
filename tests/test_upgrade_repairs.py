@@ -7,7 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-from peach import r18_legacy_repair, upgrade_repairs
+from peach import r18_legacy_repair, upgrade_repairs, upgrade_rules
 from peach.entities import upsert_asset_entity
 from peach.repository import LedgerDatabase
 from peach.task_runs import TaskRunStore
@@ -303,13 +303,33 @@ class UpgradeRepairTests(unittest.TestCase):
                 connection.execute('INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration) '
                                    "VALUES(?,'local',?,?,'video',?,?,60)",
                                    (key, name, name, code, json.dumps({'code': 'scan:filename'})))
-            old = upgrade_repairs.CATALOG_REVISION.replace('catalog-v3', 'catalog-v2')
+            old = upgrade_repairs.CATALOG_REVISION.replace(upgrade_rules.CATALOG, 'catalog-v2')
             connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
                                (old, '1', json.dumps({'revision': old})))
         self.service.prepare()
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code FROM asset ORDER BY id').fetchall()
         self.assertEqual([tuple(row) for row in rows], [(1, 'MCDV-24'), (2, 'LAF-041')])
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertIn(1, receipt['media_ids'])
+        self.assertNotIn(2, receipt['media_ids'])
+
+    def test_catalog_upgrade_restores_heyzo_four_digits(self):
+        # #354：旧规则把 `HEYZO-0707.mp4` 收成三位 `HEYZO-707`，用户手改过的番号不动。
+        with self.database.write_transaction() as connection:
+            for key, name, code, owner in ((1, 'HEYZO-0707.mp4', 'HEYZO-707', 'scan:filename'),
+                                           (2, 'HEYZO-1082.mp4', 'HEYZO-1082', 'scan:filename'),
+                                           (3, 'heyzo_hd_0500_full.mp4', 'HEYZO-500', 'user:edit')):
+                connection.execute('INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration) '
+                                   "VALUES(?,'local',?,?,'video',?,?,60)",
+                                   (key, name, name, code, json.dumps({'code': owner})))
+            old = upgrade_repairs.CATALOG_REVISION.replace(upgrade_rules.CATALOG, 'catalog-v3')
+            connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
+                               (old, '1', json.dumps({'revision': old})))
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            rows = connection.execute('SELECT id,code FROM asset ORDER BY id').fetchall()
+        self.assertEqual([tuple(row) for row in rows], [(1, 'HEYZO-0707'), (2, 'HEYZO-1082'), (3, 'HEYZO-500')])
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertIn(1, receipt['media_ids'])
         self.assertNotIn(2, receipt['media_ids'])

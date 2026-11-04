@@ -485,6 +485,14 @@ class DeliveryFilenameTests(unittest.TestCase):
         self.assertEqual(release_code_from_filename("heyzo_lt_1380_full-1.mp4"), "HEYZO-1380")
         self.assertEqual(release_code_from_filename("HEYZO-1380.mp4"), "HEYZO-1380")
 
+    def test_heyzo_keeps_four_digits_below_one_thousand(self):
+        """#354：HEYZO 官方编号定宽四位，前导零是编号的一部分，收成三位就查不到资料。"""
+        for name in ("HEYZO-0707.mp4", "heyzo_hd_0707_full.mp4", "HEYZO-707.mp4", "heyzo-00707.mp4"):
+            with self.subTest(name=name):
+                self.assertEqual(release_code_from_filename(name), "HEYZO-0707")
+        self.assertEqual(normalise_code_key("HEYZO-707"), "HEYZO-0707")
+        self.assertEqual(normalise_code_key("ABC-0123"), "ABC-123")
+
     def test_the_number_alone_is_not_a_heyzo_release(self):
         # 站名是这条规则的全部证据：少了它，创作者目录里按下划线分段、末尾带画质
         # 数字的名字同样满足形状。
