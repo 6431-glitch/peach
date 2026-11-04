@@ -24,8 +24,9 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse, Response
 from filelock import FileLock, Timeout
 
-from . import (access, data_storage, distribution, entry_links, error_reporting, folder_picker, media_libraries, onboarding,
-               push_discovery, settings_file, media_configuration, tunnel, web_downloads)
+from . import (access, data_storage, distribution, entry_links, error_reporting, folder_picker, ledger_backups,
+               media_libraries, onboarding, push_discovery, settings_file, media_configuration, tunnel, web_downloads)
+from .jobs import JobAlreadyRunning
 from .routes_auth import require_auth, require_authenticated_client, same_origin
 from .web_entry import runtime_fact_entries
 from .web_local_access import local_client, managed_configuration
@@ -719,6 +720,42 @@ def relocate_storage(request: Request, body: dict[str, Any] = Body(default_facto
         raise HTTPException(400, {"message": "无法迁移到这个位置", "errors": {"target": str(exc)}}) from exc
     except Timeout as exc:
         raise HTTPException(409, "迁移请求正在处理") from exc
+
+
+def _ledger_backups(request: Request):
+    _storage_config()
+    return ledger_backups.manager(request)
+
+
+@router.get("/api/configuration/ledger-backups")
+def read_ledger_backups(request: Request, _args=Depends(require_auth)):
+    """「账本备份」：可恢复的备份列表、立即备份与恢复两个任务的状态、上次恢复的结果。"""
+    local_only(request)
+    return _ledger_backups(request).snapshot()
+
+
+@router.post("/api/configuration/ledger-backups/backup")
+def backup_ledger(request: Request, _args=Depends(require_auth)):
+    local_only(request)
+    same_origin(request)
+    try:
+        return _ledger_backups(request).start_backup()
+    except (ValueError, JobAlreadyRunning) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.post("/api/configuration/ledger-backups/restore")
+def restore_ledger(request: Request, body: dict[str, Any] = Body(default_factory=dict),
+                   _args=Depends(require_auth)):
+    """用选中的备份替换当前账本；页面二次确认后才发，`confirm` 必须为真。"""
+    local_only(request)
+    same_origin(request)
+    if body.get("confirm") is not True:
+        raise HTTPException(400, "恢复会替换当前账本，请先确认")
+    try:
+        return _ledger_backups(request).start_restore(body.get("id"))
+    except (ValueError, JobAlreadyRunning) as exc:
+        raise HTTPException(409, str(exc)) from exc
 
 
 @router.get("/api/configuration/updates")
