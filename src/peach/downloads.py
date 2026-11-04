@@ -53,6 +53,8 @@ INGESTED = "ingested"
 FAILED = "failed"
 CANCELLED = "cancelled"
 STALLED = "stalled"
+#: 提交时网盘暂时没应答，磁力还没交出去；对账线程按退避再交，见 `SUBMIT_RETRY_WINDOW`。
+SUBMIT_PENDING = "submit_pending"
 
 POSTPROCESS_NOT_REQUESTED = "not_requested"
 POSTPROCESS_PENDING = "pending"
@@ -69,10 +71,10 @@ POSTPROCESS_LABELS = {
 STATE_LABELS = {
     CANDIDATE: "待选择的资源", SELECTED: "已选定", SUBMITTED: "已提交", REMOTE_RUNNING: "网盘下载中",
     REMOTE_DONE: "网盘下载完成", LANDED: "文件已可访问", INGESTED: "已入库",
-    FAILED: "失败", CANCELLED: "已取消", STALLED: "长时间未完成",
+    FAILED: "失败", CANCELLED: "已取消", STALLED: "长时间未完成", SUBMIT_PENDING: "等待自动重新提交",
 }
-#: 轮询要看的状态。远端完成与已落地还在等账本里出现那个文件。
-TRACKED_STATES = frozenset({SUBMITTED, REMOTE_RUNNING, REMOTE_DONE, LANDED})
+#: 轮询要看的状态。远端完成与已落地还在等账本里出现那个文件；等待重新提交的还要再交一次。
+TRACKED_STATES = frozenset({SUBMIT_PENDING, SUBMITTED, REMOTE_RUNNING, REMOTE_DONE, LANDED})
 #: 可以再提交一次的状态。已入库的不必，在跑的接管就行。
 RESUBMITTABLE_STATES = frozenset({FAILED, CANCELLED, STALLED})
 
@@ -273,6 +275,9 @@ def parse_iso(text: str | None) -> float | None:
 
 #: 提交后第一次看的间隔，之后按这张表退避，最后一档封顶。JavBoss 提交后 10 秒查一次。
 POLL_DELAYS = (10.0, 30.0, 60.0, 120.0, 300.0, 600.0, 900.0)
+#: 提交时网盘暂时没应答（如 CloudDrive2 刷新 115 离线列表超时），从第一次提交起按 `POLL_DELAYS`
+#: 再交，这么久还没交上才算失败。
+SUBMIT_RETRY_WINDOW = 3600.0
 #: 远端完成后先等推送发现登记；过了这一段账本里还没有，才定向登记一次。
 LANDING_GRACE = 60.0
 #: 远端完成之后最多等这么久让文件出现在挂载目录、进入账本，超过算「落地未见」。
@@ -689,7 +694,7 @@ class SubmitResult:
 
 #: 提交结果的几种说法。`adopted` 是本机已有同一 infohash 的任务；`adopted_remote` 是远端
 #: 目录里已有同一个离线任务，接过来跟踪、没有调提交接口，也就没有扣配额。
-SUBMIT_OUTCOMES = ("submitted", "adopted", "adopted_remote", "refused", "failed")
+SUBMIT_OUTCOMES = ("submitted", "adopted", "adopted_remote", "deferred", "refused", "failed")
 
 
 class DownloadService:
@@ -754,19 +759,59 @@ class DownloadService:
             try:
                 status = self.providers(provider).submit(magnet, folder)
             except DownloadError as error:
+                if not error.retryable:
+                    self._fail(task, error, now)
+                    self.store.record_submission(task=task, outcome="failed", now=now,
+                                                 failure=error.failure, detail=error.detail)
+                    return SubmitResult("failed", task)
+                task.state = SUBMIT_PENDING
+                self._reschedule(task, now, error.detail)
+                outcome = "deferred"
+                self.store.record_submission(task=task, outcome=outcome, now=now,
+                                             failure=error.failure, detail=error.detail)
+            else:
+                self._accepted(task, status, now)
+                outcome = "adopted_remote" if status.adopted else "submitted"
+                self.store.record_submission(task=task, outcome=outcome, now=now)
+        self._wake.set()
+        return SubmitResult(outcome, task)
+
+    def _accepted(self, task: DownloadTask, status: RemoteStatus, now: float) -> None:
+        task.remote_id = status.remote_id or task.remote_id
+        task.remote_name = status.name or task.remote_name
+        task.state = SUBMITTED
+        task.checks = 0
+        task.failure_detail = None
+        task.next_check_at = iso(now + POLL_DELAYS[0])
+        self.store.save(task)
+
+    def _retry_submit(self, task: DownloadTask, now: float) -> None:
+        """再交一次提交时网盘没应答的磁力。远端收下后从这一刻起按新提交对账。"""
+        with self._submit_lock:
+            latest = self.store.get(task.id)
+            if latest is None or latest.state != SUBMIT_PENDING:
+                return  # 到期之后、拿到提交锁之前被取消或重新提交了。
+            task = latest
+            try:
+                status = self.providers(task.provider).submit(parse_magnet(task.source_uri), task.target)
+            except DownloadError as error:
+                started = parse_iso(task.submitted_at) or now
+                if error.retryable and now - started < SUBMIT_RETRY_WINDOW:
+                    self._reschedule(task, now, error.detail)
+                    return
+                if error.retryable:
+                    error = DownloadError(error.failure, f"{error.detail}（自动重试 {task.checks} 次后仍未提交）")
                 self._fail(task, error, now)
                 self.store.record_submission(task=task, outcome="failed", now=now,
                                              failure=error.failure, detail=error.detail)
-                return SubmitResult("failed", task)
-            task.remote_id = status.remote_id or task.remote_id
-            task.remote_name = status.name or task.remote_name
-            task.state = SUBMITTED
-            task.next_check_at = iso(now + POLL_DELAYS[0])
-            self.store.save(task)
-            outcome = "adopted_remote" if status.adopted else "submitted"
-            self.store.record_submission(task=task, outcome=outcome, now=now)
-        self._wake.set()
-        return SubmitResult(outcome, task)
+                return
+            latest = self.store.get(task.id)
+            if latest is None or latest.state != SUBMIT_PENDING:
+                return  # 再交的这段时间里任务被取消了。
+            task.submitted_at = iso(now)
+            self._accepted(task, status, now)
+            self.store.record_submission(task=task, outcome="adopted_remote" if status.adopted else "submitted",
+                                         now=now)
 
     def _fresh(self, task, magnet: Magnet, provider, folder, code, title, origin, now) -> DownloadTask:
         """新任务，或把失败／取消／停滞的那一行重置成一次新的提交。"""
@@ -915,6 +960,9 @@ class DownloadService:
         now = self.clock()
         if task.state == STALLED:
             self._recheck_stalled(task, now)
+            return
+        if task.state == SUBMIT_PENDING:
+            self._retry_submit(task, now)
             return
         try:
             if task.state in {SUBMITTED, REMOTE_RUNNING}:

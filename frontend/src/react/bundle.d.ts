@@ -235,7 +235,7 @@ export interface DownloadsSnapshot {
 
 export interface DownloadSubmitResult {
   ok: boolean;
-  outcome: 'submitted' | 'adopted' | 'adopted_remote' | 'refused' | 'failed';
+  outcome: 'submitted' | 'adopted' | 'adopted_remote' | 'deferred' | 'refused' | 'failed';
   task: DownloadTask;
 }
 
