@@ -1,7 +1,7 @@
 /* 让其他设备信任本机 HTTPS 证书：下载本机 CA、核对 SHA-256 指纹、手机扫码下载。
  *
  * 下发的只有 CA 的公开证书，服务端重新编码后给出，私钥不经过这里。二维码里的链接带一个
- * 十分钟有效的签名，手机不用先登录（ADR-0141）；页面开着时在过期前重取一次。
+ * 十分钟有效的签名，手机不用先登录（ADR-0142）；页面开着时在过期前重取一次。
  * 指纹与到期日用配置页共用的 `FactList`，各平台的安装步骤是 BoardUI `SettingsRow`，下载键是 `ButtonLink`。 */
 import { useQuery } from '@tanstack/react-query';
 import { RiDownloadLine } from '@remixicon/react';

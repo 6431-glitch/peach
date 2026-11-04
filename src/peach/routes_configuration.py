@@ -1117,7 +1117,7 @@ _TOKEN_LOCK = threading.Lock()
 
 
 def api_token_payload(request: Request) -> dict[str, Any]:
-    """访问口令能不能在这里换。口令本身不回给页面，只在换的那一次响应里给新值（ADR-0141）。"""
+    """访问口令能不能在这里换。口令本身不回给页面，只在换的那一次响应里给新值（ADR-0142）。"""
     settings = request.app.state.settings
     if not settings.token:
         reason = "这次启动没有使用访问口令。"
