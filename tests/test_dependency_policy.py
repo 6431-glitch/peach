@@ -113,7 +113,7 @@ class NpmAuditTests(unittest.TestCase):
         self.enterContext(contextlib.redirect_stdout(self.output))
 
     def test_docker_dependency_updates_have_a_takeover_recipe(self):
-        for manifest in ('Dockerfile', '.github/actions/actionlint/Dockerfile'):
+        for manifest in ('Dockerfile', '.github/actions/actionlint/Dockerfile', 'compose.yaml'):
             self.assertEqual(adopt.recipe_for([manifest])[0], 'docker')
 
     def test_high_and_critical_vulnerabilities_fail_without_network_retries(self):

@@ -256,6 +256,8 @@ export interface ReleaseState {
   in_app_update?: boolean;
   /** 容器换新版要在宿主机上做的几步；其他安装方式是空表。 */
   steps?: { text: string; command: string }[];
+  /** Docker 镜像检查到新镜像时才有：能否经 Watchtower 一键更新（ADR-0140），不能时 `reason` 说明为什么。 */
+  one_click?: { available: boolean; reason: string };
 }
 
 export interface UpdateJob {

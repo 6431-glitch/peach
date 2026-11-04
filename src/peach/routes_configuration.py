@@ -30,7 +30,7 @@ from .jobs import JobAlreadyRunning
 from .routes_auth import require_auth, require_authenticated_client, same_origin, sessions as access_sessions
 from .web_entry import runtime_fact_entries
 from .web_local_access import local_client, managed_configuration
-from . import release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall
+from . import release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall, docker_update
 
 router = APIRouter()
 _SAVE_LOCK = threading.Lock()
@@ -804,6 +804,19 @@ def upgrade_repairs_review(request: Request, _args=Depends(require_auth)):
         raise HTTPException(404, '暂无升级复核记录')
     return Response(path.read_bytes(), media_type='application/json',
                     headers={'Content-Disposition': 'attachment; filename="upgrade-review.json"'})
+
+
+@router.post("/api/configuration/docker-update")
+def run_docker_update(request: Request, _args=Depends(require_auth)):
+    """请同一 compose 里的 Watchtower 拉取新镜像并重建容器（ADR-0140）。"""
+    local_only(request)
+    same_origin(request)
+    if not distribution.docker():
+        raise HTTPException(404, "只有 Docker 镜像有一键更新")
+    try:
+        return docker_update.trigger()
+    except (ValueError, OSError) as exc:
+        raise HTTPException(409, str(exc)) from exc
 
 
 @router.get("/api/configuration/update-status")
