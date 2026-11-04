@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "565e5abd-bcf6-4552-9e8e-2e532129483f", e._sentryDebugIdIdentifier = "sentry-dbid-565e5abd-bcf6-4552-9e8e-2e532129483f");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "483b089c-62cf-4bd3-aaa9-176479afd8ee", e._sentryDebugIdIdentifier = "sentry-dbid-483b089c-62cf-4bd3-aaa9-176479afd8ee");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -20323,8 +20323,8 @@ var Tg = class extends dg {
 		let { element: t, name: n, keyframes: r, pseudoElement: i, allowFlatten: a = !1, finalKeyframe: o, onComplete: s } = e;
 		this.isPseudoElement = !!i, this.allowFlatten = a, this.options = e;
 		let c = wg(e);
-		this.animation = Sg(t, n, r, c, i), c.autoplay === !1 && this.animation.pause(), this.animation.onfinish = () => {
-			if (this.finishedTime = this.time, !i) {
+		this.animation = Sg(t, n, r, c, i), c.autoplay === !1 && this.animation.pause(), this.animation.onfinish = this.onFinish = () => {
+			if (this.animation.onfinish = null, this.finishedTime = this.time, !i) {
 				let e = cg(r, this.options, o, this.speed);
 				this.updateMotionValue?.(e), mg(t, n, e), this.animation.cancel();
 			}
@@ -20332,21 +20332,22 @@ var Tg = class extends dg {
 		}, ug(this, e, c);
 	}
 	play() {
-		this.isStopped || (this.manualStartTime = null, this.animation.play(), this.state === "finished" && this.updateFinished());
+		this.isStopped || (this.manualStartTime = null, this.animation.onfinish = this.onFinish, this.animation.play(), this.state === "finished" && this.updateFinished());
 	}
 	pause() {
 		this.animation.pause();
 	}
 	complete() {
-		this.animation.finish?.();
+		this.isStopped || (this.animation.onfinish = this.onFinish), this.animation.finish?.();
 	}
 	cancel() {
+		this.animation.onfinish = null;
 		try {
 			this.animation.cancel();
 		} catch {}
 	}
 	stop() {
-		this.isStopped || (this.isStopped = !0, this.state !== "idle" && this.finishedTime === null && (this.updateMotionValue ? this.updateMotionValue() : this.commitStyles(), this.isPseudoElement || (this.animation.onfinish = null, this.cancel())));
+		this.isStopped || (this.isStopped = !0, this.state !== "idle" && this.finishedTime === null && (this.updateMotionValue ? this.updateMotionValue() : this.commitStyles(), this.isPseudoElement || this.cancel()));
 	}
 	commitStyles() {
 		let e = this.options?.element;
@@ -20383,7 +20384,7 @@ var Tg = class extends dg {
 		this.manualStartTime = this.animation.startTime = e;
 	}
 	attachTimeline({ timeline: e, onAttach: t, observe: n }) {
-		return this.allowFlatten && this.animation.effect?.updateTiming({ easing: "linear" }), this.animation.onfinish = null, e && _g() ? (this.animation.timeline = e, t?.(this.animation), wh) : n(this);
+		return this.allowFlatten && this.animation.effect?.updateTiming({ easing: "linear" }), this.animation.onfinish = this.onFinish = null, e && _g() ? (this.animation.timeline = e, t?.(this.animation), wh) : n(this);
 	}
 }, Eg = class {
 	constructor(e) {
@@ -22659,4 +22660,4 @@ E();
 var cv = document.getElementById("peach-page"), lv = cv ? sv[cv.dataset.page ?? ""] : void 0;
 cv && lv && (0, M.createRoot)(cv).render(/* @__PURE__ */ (0, z.jsx)(lv, { data: { ...cv.dataset } }));
 
-//# debugId=565e5abd-bcf6-4552-9e8e-2e532129483f
+//# debugId=483b089c-62cf-4bd3-aaa9-176479afd8ee
