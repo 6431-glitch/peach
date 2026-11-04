@@ -188,7 +188,6 @@ class UpgradeRepairs:
                     (CATALOG_REVISION, CATALOG_REVISION + ':text-*')).fetchone()
             if applied is not None:
                 self._restore_receipt(json.loads(applied[0]))
-                self._settle_verification()
                 return
             self._restore_receipt(None)
             sources = Path(contract.follow_sources_root)
@@ -228,14 +227,22 @@ class UpgradeRepairs:
                 connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
                                    (REVISION, str(time.time()), json.dumps(receipt, ensure_ascii=False)))
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
-            self._settle_verification()
 
     def _settle_verification(self) -> None:
         """核查差异的结算规则（ADR-0137）对存量候选跑一遍，规则版本变了才再跑。
 
         只喂带核查标记的那些行：其余候选的判据没变，这一步不替它们重判。有要处理的行才
         先备份；结果连同规则版本记进 `ledger_upgrade_repair`，账本恢复到之前的备份时会重跑。
+        几千行要跑一两分钟，所以不在 `prepare` 里挡着服务启动，由 `start` 交给后台调度跑；
+        自动落库按批提交，页面上的写入照常穿插进来。
         """
+        try:
+            self._settle_verification_once()
+        except Exception as exc:
+            self.error = str(exc)
+            LOGGER.exception('核查差异存量结算失败')
+
+    def _settle_verification_once(self) -> None:
         from .metadata_auto_apply import _parsed_candidates, auto_apply_metadata
         from .review_csv import read_candidates
         key = f'verification-settlement-{upgrade_rules.VERIFICATION_SETTLEMENT}'
@@ -415,6 +422,7 @@ class UpgradeRepairs:
         if self.available and not self.scheduler.running:
             self.tick()
             self.scheduler.add_job(self.tick, 'interval', seconds=60, max_instances=1, coalesce=True)
+            self.scheduler.add_job(self._settle_verification, max_instances=1)
             self.scheduler.start()
 
     def stop(self) -> None:

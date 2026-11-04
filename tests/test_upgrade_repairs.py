@@ -149,9 +149,7 @@ class UpgradeRepairTests(unittest.TestCase):
             row=connection.execute('SELECT catalog_title,field_owners FROM asset WHERE id=1').fetchone()
             self.assertEqual(row[0], '元の題名')
             self.assertEqual(json.loads(row[1])['catalog_title'], 'auto:dmm')
-            self.assertEqual(connection.execute(
-                "SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT GLOB 'verification-settlement-*'"
-            ).fetchone()[0], 2)
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 2)
             self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
         self.assertEqual(upgrade_repairs._read(self.service.receipt)['text_media_ids'], [1])
@@ -290,9 +288,7 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code,duration FROM asset ORDER BY id').fetchall()
             self.assertEqual([tuple(row) for row in rows], [(1, 'SSIS-123', None), (2, 'BAD-001', None)])
-            self.assertEqual(connection.execute(
-                "SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT GLOB 'verification-settlement-*'"
-            ).fetchone()[0], 1)
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 1)
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 1)
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(receipt['local']['before'], receipt['local']['after'])
@@ -332,8 +328,9 @@ class UpgradeRepairTests(unittest.TestCase):
             self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 0)
         self.assertFalse(self.service.receipt.exists())
 
-    def test_verification_rows_already_on_disk_settle_once_after_upgrade(self):
-        """升级前落盘的核查候选（ADR-0137）由升级补修结算一次，官方一致的日期写入，备份先行。"""
+    def test_verification_rows_already_on_disk_settle_once_in_the_background(self):
+        """升级前落盘的核查候选（ADR-0137）在后台结算一次，官方一致的日期写入，备份先行；
+        启动前的 `prepare` 不等它。"""
         import csv
         with self.database.write_transaction() as connection:
             connection.execute("INSERT INTO asset(id,location,path,name,medium,code,release_date) "
@@ -353,7 +350,11 @@ class UpgradeRepairTests(unittest.TestCase):
                              'field': 'release_date', 'current_value': '2024-09-06', 'status': 'candidate',
                              'candidates_json': json.dumps(candidates)})
         self.service.prepare()
-        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual(connection.execute('SELECT release_date FROM asset WHERE id=7').fetchone()[0],
+                             '2024-09-06')
+        self.service._settle_verification()
+        self.service._settle_verification()
         with self.database.read_connection() as connection:
             self.assertEqual(connection.execute('SELECT release_date FROM asset WHERE id=7').fetchone()[0],
                              '2024-09-10')
