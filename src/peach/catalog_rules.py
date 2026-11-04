@@ -1129,8 +1129,37 @@ def is_uncensored_release(name: str | None, code: str | None) -> bool:
 
 
 def jav_edition_badges(name: str | None, code: str | None,
-                       tags: tuple[str, ...] | list[str] = ()) -> list[str]:
-    """Project filename/tag evidence into compact edition badges beside the code."""
+                       tags: tuple[str, ...] | list[str] = (),
+                       source_names: tuple[str, ...] | list[str] = ()) -> list[str]:
+    """Project filename/tag evidence into compact edition badges beside the code.
+
+    `source_names` 是这个文件来源处的名字：云下载的种子名与网盘任务名。网盘离线下载
+    落地的文件名常常只剩番号，`SONE-804ch` 里的 `ch` 只留在任务名上。来源名按同一套
+    判据读，和文件名的关系是：
+    - 中字只有「有」这一个方向，任何一边有就算；
+    - 无码与无码破解以文件侧（文件名、番号形状、标签）为准，文件侧什么都没说时才用来源名。
+      文件名写 `-U`、种子名写「破解」，结果是「无码」。
+    几个来源名之间不分先后，各项证据取并集。
+    """
+    subtitled, uncensored, cracked = _edition_evidence(name, code, tags)
+    evidence = [_edition_evidence(source, code) for source in source_names]
+    subtitled = subtitled or any(item[0] for item in evidence)
+    if not uncensored:
+        uncensored = any(item[1] for item in evidence)
+        cracked = any(item[2] for item in evidence)
+    badges = []
+    if subtitled:
+        badges.append("中字")
+    if cracked:
+        badges.append("无码破解")
+    elif uncensored:
+        badges.append("无码")
+    return badges
+
+
+def _edition_evidence(name: str | None, code: str | None,
+                      tags: tuple[str, ...] | list[str] = ()) -> tuple[bool, bool, bool]:
+    """一段名字（加标签）给出的版次证据：(中字, 无码, 无码破解)。"""
     text = _MEDIA_EXTENSION.sub("", str(name or ""))
     tag_set = {str(tag).strip().casefold() for tag in tags if str(tag).strip()}
     code_pattern = _jav_code_pattern(code)
@@ -1164,14 +1193,7 @@ def jav_edition_badges(name: str | None, code: str | None,
         or bool(re.search(r"(?:^|[-_.\s\[])(?:c|ch|sub|中字|中文字幕)"
                           r"(?:$|[-_.\s\]])", suffix, re.I))
     )
-    badges = []
-    if subtitled:
-        badges.append("中字")
-    if cracked:
-        badges.append("无码破解")
-    elif uncensored:
-        badges.append("无码")
-    return badges
+    return subtitled, uncensored, cracked
 
 
 #: 头尾的裸域名不允许标签里带连字符：`ABP-762-fuckbe.com` 整串都符合「标签+.com」，
@@ -1269,12 +1291,13 @@ def jav_fallback_title(name: str | None, code: str | None) -> str:
 
 
 def jav_display_metadata(name: str | None, code: str | None,
-                         tags: tuple[str, ...] | list[str] = ()) -> dict[str, object]:
+                         tags: tuple[str, ...] | list[str] = (),
+                         source_names: tuple[str, ...] | list[str] = ()) -> dict[str, object]:
     """Safe display projection; raw name/code remain untouched for file operations."""
     return {
         "display_code": normalise_code_key(code),
         "display_title": jav_fallback_title(name, code),
-        "edition_badges": jav_edition_badges(name, code, tags),
+        "edition_badges": jav_edition_badges(name, code, tags, source_names),
     }
 
 
