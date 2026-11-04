@@ -66,7 +66,7 @@ export function CertificateTrust({ initial }: { initial: CertificateState }) {
           <div className="flex min-w-0 flex-1 basis-64 flex-col gap-2">
             <FactList>
               <Fact term="SHA-256 指纹">
-                <span className="flex max-w-[48ch] flex-wrap justify-end gap-x-[1ch] font-mono text-caption-1-regular">
+                <span className="flex max-w-sm flex-wrap justify-end gap-x-2 font-mono text-caption-1-regular">
                   {quarters.map((quarter, index) => <span key={index} className="whitespace-nowrap">{quarter}</span>)}
                 </span>
               </Fact>

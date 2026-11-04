@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "21becda0-9170-491b-9b31-ebdbc6643d18", e._sentryDebugIdIdentifier = "sentry-dbid-21becda0-9170-491b-9b31-ebdbc6643d18");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "0cbc915c-23a0-4243-9174-f396365068ce", e._sentryDebugIdIdentifier = "sentry-dbid-0cbc915c-23a0-4243-9174-f396365068ce");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -4647,7 +4647,7 @@ function Ko({ initial: e }) {
 					children: [/* @__PURE__ */ (0, Q.jsxs)(lt, { children: [/* @__PURE__ */ (0, Q.jsx)(j, {
 						term: "SHA-256 指纹",
 						children: /* @__PURE__ */ (0, Q.jsx)("span", {
-							className: "flex max-w-[48ch] flex-wrap justify-end gap-x-[1ch] font-mono text-caption-1-regular",
+							className: "flex max-w-sm flex-wrap justify-end gap-x-2 font-mono text-caption-1-regular",
 							children: r.map((e, t) => /* @__PURE__ */ (0, Q.jsx)("span", {
 								className: "whitespace-nowrap",
 								children: e
@@ -5970,4 +5970,4 @@ function Hs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { zs as ConfigurationPage };
 
-//# debugId=21becda0-9170-491b-9b31-ebdbc6643d18
+//# debugId=0cbc915c-23a0-4243-9174-f396365068ce
