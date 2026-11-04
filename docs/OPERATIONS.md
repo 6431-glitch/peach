@@ -117,7 +117,7 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.longmeidao.pea
 
 ### Windows 应用内更新的发布签名
 
-Windows 独立包的应用内更新校验每个版本 `SHA256SUMS.txt` 的 Ed25519 签名，取舍见 [ADR-0134](adr/0134-release-sums-ed25519-signature.md)。`src/peach/release_signing.py` 的 `PUBLIC_KEYS` 为空时不校验；写入公钥后，这一版起的客户端只装签名验得过的版本。
+Windows 独立包的应用内更新校验每个版本 `SHA256SUMS.txt` 的 Ed25519 签名，取舍见 [ADR-0137](adr/0137-release-sums-ed25519-signature.md)。`src/peach/release_signing.py` 的 `PUBLIC_KEYS` 为空时不校验；写入公钥后，这一版起的客户端只装签名验得过的版本。
 
 `release.yml` 的 `release` 作业生成 `SHA256SUMS.txt` 后，把 `release` environment 的 secret `PEACH_RELEASE_SIGNING_KEY` 经标准输入交给 `scripts/sign_release.py`，签名文件 `SHA256SUMS.txt.sig` 随 Release 上传。源码已有公钥而 secret 为空时作业失败，不发布未签名的版本。
 
@@ -441,7 +441,7 @@ Peach 配置页地址是 `/configuration`。从管理菜单或设置弹窗的「
 
 ### 账本备份与恢复
 
-配置页「应用与维护 → 账本备份」列出 `database/` 与 `generated/organize-backups/` 里所有能恢复的备份，新的在前，每行写明时间、来源（手动，或自动及其用途）和大小。取舍见 [ADR-0134](adr/0134-user-triggered-ledger-backup-and-restore.md)。
+配置页「应用与维护 → 账本备份」列出 `database/` 与 `generated/organize-backups/` 里所有能恢复的备份，新的在前，每行写明时间、来源（手动，或自动及其用途）和大小。取舍见 [ADR-0138](adr/0138-user-triggered-ledger-backup-and-restore.md)。
 
 - **立即备份**：后台复制当前账本，进度同时显示在任务中心。复制完先做完整性检查，通过才命名为 `ledger.pre-manual-<时间>.db`；没通过的那份直接删掉。手动备份和自动备份同一套保留规则（见「迁移、备份与运维脚本」）。
 - **从备份恢复**：只能在写入端执行，且数据目录里没有别的任务在跑。确认后依次检查备份的完整性和结构（来自更新版本的备份拒收，较旧的先迁到当前结构），把当前账本另存为 `ledger.pre-restore-<时间>.db`，再把备份写进账本。恢复期间不能启动新任务；任务中心的历史保留恢复前的记录。完成后刷新页面查看恢复后的资料。
@@ -810,7 +810,7 @@ Windows 托盘在取得单实例锁后启动独立监视器。监视器用 Win32
 
 - 独立包的版本检查读取 GitHub 公开发行记录与 R2 公开清单，选择可下载的最高版本；同版本优先 GitHub。R2 制品必须具有 SHA-256，发行说明统一指向 GitHub。任一来源不可用时仍检查另一来源，两个来源都未取得时显示检查失败。
 - 更新包、完整包和轻量安装器的工具包下载失败或校验不符时，尝试另一公开源的同版本、同文件名；每次都按原发布记录的大小与 SHA-256 校验。备源不能替换为其他版本或放宽校验，两个来源都失败时保留错误状态。
-- `release_signing.PUBLIC_KEYS` 非空时，Windows 更新器下载前先取同版本的 `SHA256SUMS.txt` 与 `SHA256SUMS.txt.sig`，用随包公钥验过签名后，更新包与完整包只按签过名的摘要校验；两个来源都验不过就停在当前版本，提示到发布页手动下载（[ADR-0134](adr/0134-release-sums-ed25519-signature.md)）。
+- `release_signing.PUBLIC_KEYS` 非空时，Windows 更新器下载前先取同版本的 `SHA256SUMS.txt` 与 `SHA256SUMS.txt.sig`，用随包公钥验过签名后，更新包与完整包只按签过名的摘要校验；两个来源都验不过就停在当前版本，提示到发布页手动下载（[ADR-0137](adr/0137-release-sums-ed25519-signature.md)）。
 
 - 版本号只在 `src/peach/__init__.py::__version__` 里定义，采用 pre-1.0 SemVer。Git 提交是构建标识，`vX.Y.Z` 标签是发布点，推到 GitHub 就触发 Release 工作流（见「桌面入口与发布」）。
 - 版本号在发布时才动，一次发布加一格，所以每个 `X.Y.Z` 都有一份能下载的制品。

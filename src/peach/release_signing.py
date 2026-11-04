@@ -1,4 +1,4 @@
-"""Windows 独立包更新的发布签名（ADR-0134）。
+"""Windows 独立包更新的发布签名（ADR-0137）。
 
 每个版本的 `SHA256SUMS.txt` 由发布作业用 Ed25519 私钥签名，签名写在同目录的
 `SHA256SUMS.txt.sig`，一行一个签名：`<公钥 base64> <签名 base64>`。更新器只认
@@ -10,7 +10,7 @@ import base64
 import re
 
 #: 受信任的发布签名公钥（base64，32 字节 Ed25519）。为空时更新器不要求签名；随某一版发出后，
-#: 这一版起的客户端只装签名验得过的版本，发布作业缺私钥即失败。轮换见 ADR-0134。
+#: 这一版起的客户端只装签名验得过的版本，发布作业缺私钥即失败。轮换见 ADR-0137。
 PUBLIC_KEYS: tuple[str, ...] = ()
 SUMS = "SHA256SUMS.txt"
 SIGNATURE = SUMS + ".sig"

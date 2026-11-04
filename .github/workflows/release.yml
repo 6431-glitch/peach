@@ -394,7 +394,7 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    # 发布签名私钥放在这个只允许 `v*` 标签部署的 environment 里（ADR-0134）。
+    # 发布签名私钥放在这个只允许 `v*` 标签部署的 environment 里（ADR-0137）。
     environment: release
     permissions:
       contents: write

@@ -191,7 +191,7 @@ def _fetch_small(client, url: str) -> bytes:
 
 
 def signed_release(release: dict) -> dict:
-    """源码带发布公钥时，更新包与完整包的摘要只取签名验过的 `SHA256SUMS.txt`（ADR-0134）。
+    """源码带发布公钥时，更新包与完整包的摘要只取签名验过的 `SHA256SUMS.txt`（ADR-0137）。
 
     两个公开源依次尝试；都验不过就不升级，已装版本原样保留。
     """

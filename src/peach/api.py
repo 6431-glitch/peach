@@ -208,7 +208,7 @@ WARM_AGGREGATES = (("/api/taste", {"window": "all"}), ("/api/review", {}), ("/ap
 def _start_ledger_services(settings: PeachSettings, contract, services) -> bool:
     """只读核对当前账本后，恢复任务并启动依赖账本的后台服务。"""
     try:
-        # 上次从备份恢复没走完：先把账本收拾到确定的状态，再判它能不能用（ADR-0134）。
+        # 上次从备份恢复没走完：先把账本收拾到确定的状态，再判它能不能用（ADR-0138）。
         ledger_backups.recover(settings.db_path)
     except Exception:
         LOGGER.exception('账本恢复标记未能处理')

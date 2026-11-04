@@ -16,7 +16,7 @@
 （`ORGANIZE_KEEP_RECENT`，`ORGANIZE_MIN_AGE` 为零）；整理进行中的那份由 `holding`
 登记，同一进程里的清退都不碰它。登记不跨进程：手动脚本给 `--keep 0` 时只靠份数保护。
 
-设置页的「立即备份」与「从备份恢复」也在这里（ADR-0134）。手动备份叫
+设置页的「立即备份」与「从备份恢复」也在这里（ADR-0138）。手动备份叫
 `ledger.pre-manual-<时间>.db`，恢复前另存的当前账本叫 `ledger.pre-restore-<时间>.db`，
 和自动备份同目录、同一套保留规则。恢复不换文件，而是经 SQLite Backup API 写进在用的账本，
 写入前留下 `ledger.restore.json`；启动时看到它说明上次恢复没走完，由 `recover` 收拾。
@@ -248,7 +248,7 @@ def prune(
 
 
 # ---------------------------------------------------------------------------
-# 手动备份与从备份恢复（ADR-0134）
+# 手动备份与从备份恢复（ADR-0138）
 
 
 class BackupRejected(ValueError):
