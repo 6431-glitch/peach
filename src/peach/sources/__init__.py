@@ -30,7 +30,7 @@ SITE_SOURCES: dict[str, type[SiteSource]] = {
     JAVARCHIVE.name: JavArchiveSource,
     AVBASE.name: AVBaseSource,
     JAVBUS.name: JavBusSource,
-    # 刮削走匿名接口（ADR-0143）；详情页那一路的 `JavDBSource` 由视频预览直接取。
+    # 刮削走匿名接口（ADR-0144）；详情页那一路的 `JavDBSource` 由视频预览直接取。
     JAVDB.name: JavDBPublicSource,
     **WIKI_SOURCES,
 }
