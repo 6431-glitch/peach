@@ -317,7 +317,7 @@ _BRACKETED_PROMO_DOMAIN = re.compile(
     r"[\[【(（]\s*" + _PROMO_DOMAIN.pattern + r"\s*[\]】)）]", re.I,
 )
 _EDITION_TAIL = re.compile(
-    r"(?:[-_.\s]+(?:c|ch|sub|uc|u|uncen(?:sored)?|uncensored|中字|中文字幕|无码|无码破解|破解))+$",
+    r"(?:[-_.\s]+(?:c|ch|sub|uc|u|ltx|uncen(?:sored)?|uncensored|中字|中文字幕|无码|无码破解|破解))+$",
     re.I,
 )
 
@@ -1161,6 +1161,9 @@ def jav_edition_badges(name: str | None, code: str | None,
     cracked = (
         bool(re.search(r"无码\s*破解|無碼\s*破解|AI\s*去码|"
                        r"(?:^|[-_.\s\[])破解(?:$|[-_.\s\]])", text, re.I))
+        # `-LTX` 是破解版的发布组标记（amane #613、mdcz `bc4e8828` 同认）。只看番号之后那段：
+        # `LTX` 自己也能是番号的字母段。
+        or bool(re.search(r"(?:^|[-_.\s\[])ltx(?:$|[-_.\s\]])", suffix, re.I))
         or "ai去码" in tag_set or "无码破解" in tag_set
     )
     uncensored = (
