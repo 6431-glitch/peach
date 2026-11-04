@@ -381,7 +381,7 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
           </Group>
           <Group index={4} tab={shown.tab}>
             <ToggleRow id="censorSetting" title="SFW 模式" describedBy="sfwDescription" checked={current.censored()}
-              description="隐藏敏感画面，停止悬停预览。"
+              description="隐藏敏感画面，停止悬停预览。不在输入时按 Shift+S 随时开关。"
               onToggle={(on) => current.setCensored(on)} />
           </Group>
         </div>

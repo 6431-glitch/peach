@@ -1,6 +1,6 @@
 /* search 域控制器：本域状态与动作，启动由 Application 的生命周期统一安装。 */
 import { javImageKind } from './../jav-artwork';
-import { preferencesState } from './preferences.js';
+import { censorOn, preferencesState, setCensored } from './preferences.js';
 import { coverImage } from './../card-art/markup';
 import { catalogState, goHome, homePath } from './catalog.js';
 import { disposeStage, mediaState, openItem } from './media.js';
@@ -156,6 +156,9 @@ applicationEffects.listen(document, 'keydown', e=>{
   }
   // 输入态不抢键：搜索框、标签弹窗和任何可编辑区域里的按键归它们自己处理。
   if(isTypingTarget(e.target)||e.ctrlKey||e.metaKey||e.altKey)return;
+  // Shift+S 一键切换 SFW：有人走近时不必先打开设置（同 javm 的老板键 `2304ab2`）。只认 Shift，
+  // 和单字母的播放器快捷键分开；输入态已在上一行放过。
+  if(e.shiftKey&&(e.key==='S'||e.key==='s')){e.preventDefault();setCensored(!censorOn());return}
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
     const imageStep=document.querySelector(`#stage[open] [data-media-carousel]:not([data-carousel-video-active]) [data-follow-image-step="${e.key==='ArrowRight'?1:-1}"]`);
     if(imageStep){e.preventDefault();imageStep.click();return}

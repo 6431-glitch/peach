@@ -156,6 +156,24 @@ describe('设置面板', () => {
     }
   });
 
+  it('Shift+S 在页面上切换 SFW 并记住，在输入框里不切换', { timeout: 60_000 }, async () => {
+    const opened = await openHome(browser);
+    try {
+      const page = opened.page;
+      const censored = () => page.evaluate(() => document.body.classList.contains('censor'));
+      await page.locator('body').click({ position: { x: 1, y: 1 } });
+      await page.keyboard.press('Shift+S');
+      assert.equal(await censored(), true);
+      assert.equal(await page.evaluate(() => localStorage.getItem('peach-censor')), '1');
+      await page.keyboard.press('Shift+S');
+      assert.equal(await censored(), false);
+      await page.locator('#q').focus();
+      await page.keyboard.press('Shift+S');
+      assert.equal(await censored(), false, '在搜索框里打大写 S 不该切换 SFW');
+      assert.deepEqual(opened.problems, []);
+    } finally { await opened.close() }
+  });
+
   it('界面音效关掉后点按不再出声，打开后又出声', { timeout: 60_000 }, async () => {
     const opened = await visit(browser, '/', DESKTOP);
     const { page } = opened;
