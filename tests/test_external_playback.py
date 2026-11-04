@@ -303,3 +303,14 @@ class PlaybackTrackingTests(unittest.TestCase):
         response.__enter__.return_value.read.return_value = payload
         with patch.object(probe.opener, 'open', return_value=response):
             self.assertTrue(probe.snapshot().finished)
+
+    def test_vlc_position_prefers_fractional_progress_over_whole_seconds(self):
+        probe = tracking.VlcProbe(1, 'x', 'movie.mp4')
+        payload = json.dumps({'state': 'playing', 'time': 6, 'length': 20, 'position': 0.3325,
+                              'information': {'category': {'meta': {'filename': 'movie.mp4'}}}}).encode()
+        response = MagicMock()
+        response.__enter__.return_value.read.return_value = payload
+        with patch.object(probe.opener, 'open', return_value=response):
+            snap = probe.snapshot()
+        self.assertAlmostEqual(snap.position, 6.65)
+        self.assertEqual((snap.duration, snap.paused, snap.finished), (20.0, False, False))

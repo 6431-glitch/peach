@@ -241,8 +241,10 @@ class VlcProbe:
         meta = (((data.get("information") or {}).get("category") or {}).get("meta") or {})
         current = meta.get("filename")
         other = bool(current) and current != self.filename
-        return Snapshot(_number(data.get("time")), _number(data.get("length")), state != "playing",
-                        finished=other or (state == "stopped"))
+        # `time` 只到整秒，每秒一问会让每段连续播放少记近一秒；`position` 是 0–1 的小数。
+        length, ratio = _number(data.get("length")), _number(data.get("position"))
+        position = ratio * length if ratio is not None and length else _number(data.get("time"))
+        return Snapshot(position, length, state != "playing", finished=other or (state == "stopped"))
 
     def close(self) -> None:
         pass
