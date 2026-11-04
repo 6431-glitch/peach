@@ -299,6 +299,28 @@ class PollingTests(_Deployment):
         self.assertEqual(checks, int(dl.STALL_RECHECK_HORIZON // dl.STALL_RECHECK))
         self.assertEqual(self.service.store.get(task_id).state, dl.STALLED)
 
+    def test_a_task_stalled_before_rechecks_existed_is_picked_up_within_the_horizon(self):
+        """升级前判停滞的旧任务没有复查时间；停滞还没满期限的照样复查，满了的不再碰。"""
+        self.service.save_settings({"targets": {"115": "/115/云下载"}, "wait_hours": 1},
+                                   self.declared)
+        recent, old = (self.submit(code=code, magnet=f"magnet:?xt=urn:btih:{digest}")["task"]["id"]
+                       for code, digest in (("ABC-123", "a" * 40), ("ABC-456", "b" * 40)))
+        self.tick(10)
+        self.tick(3600)
+        for task_id, age in ((recent, 3600.0), (old, dl.STALL_RECHECK_HORIZON)):
+            task = self.service.store.get(task_id)
+            self.assertEqual(task.state, dl.STALLED)
+            task.next_check_at = None
+            task.finished_at = dl.iso(self.clock() - age)
+            self.service.store.save(task)
+        self.assertEqual(self.service.store.next_due(self.clock()), 0.0)
+        self.provider.statuses = [dl.RemoteStatus(dl.DONE, "r1", "ABC-123", 1.0)]
+        self.assertEqual(self.tick(1), 1)
+        self.assertEqual(self.service.store.get(recent).state, dl.REMOTE_DONE)
+        untouched = self.service.store.get(old)
+        self.assertEqual((untouched.state, untouched.next_check_at), (dl.STALLED, None))
+        self.assertNotIn(old, [task.id for task in self.service.store.due(self.clock() + dl.STALL_RECHECK)])
+
     def test_a_task_the_cloud_never_listed_waits_longer_then_fails_as_not_accepted(self):
         # 真实的 CloudDrive2 提交不回远端编号，编号要等离线列表里看见任务才有。
         self.provider.submit_result = dl.RemoteStatus(dl.RUNNING, name="ABC-123")

@@ -280,6 +280,22 @@ class UpgradeRepairTests(unittest.TestCase):
                                "VALUES(?,'local',?,?,'video',?,?,?)",
                                (key, f'{key}.mp4', 'SSIS-123.mp4', code, json.dumps({'code': owner}), duration))
 
+    def test_old_studio_misses_are_released_only_once(self):
+        from peach.followups import Attempts, attempts_root
+        root = attempts_root(self.contract.candidate_root)
+        Attempts(root).record('studio-mark:7', 'fp', '官网未取得')
+        self.service._release_studio_misses()
+        record = json.loads((root / 'studio-mark-7.json').read_text(encoding='utf-8'))
+        self.assertIn('retry_until', record)
+        with self.database.read_connection() as connection:
+            receipt = connection.execute("SELECT result_json FROM ledger_upgrade_repair "
+                                         "WHERE id='studio-unbounded-misses-1'").fetchone()
+        self.assertEqual(json.loads(receipt[0]), {'released': 1})
+        # 放行之后又照旧规则记下的「未取得」，升级补修不再碰第二次。
+        Attempts(root).record('studio-mark:7', 'fp', '官网未取得')
+        self.service._release_studio_misses()
+        self.assertNotIn('retry_until', json.loads((root / 'studio-mark-7.json').read_text(encoding='utf-8')))
+
     def test_local_repairs_are_atomic_idempotent_and_preserve_manual_codes(self):
         self.asset(1)
         self.asset(2, owner='user:manual')

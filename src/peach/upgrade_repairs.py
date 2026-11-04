@@ -231,6 +231,25 @@ class UpgradeRepairs:
                                    (REVISION, str(time.time()), json.dumps(receipt, ensure_ascii=False)))
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
 
+    def _release_studio_misses(self) -> None:
+        """旧版断网时记下的「官网未取得」各放一次重试（`studio_followup.release_unbounded_misses`）。
+
+        只改候选缓存里的记号文件，不写账本行；做过的记进 `ledger_upgrade_repair`，只做一次。
+        """
+        from .studio_followup import release_unbounded_misses
+        key = 'studio-unbounded-misses-1'
+        try:
+            with self.contract.database.read_connection() as connection:
+                if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?', (key,)).fetchone():
+                    return
+            changed = release_unbounded_misses(attempts_root(self.contract.candidate_root))
+            with self.contract.database.write_transaction() as connection:
+                connection.execute('INSERT OR IGNORE INTO ledger_upgrade_repair(id,applied_at,result_json) '
+                                   'VALUES(?,?,?)', (key, str(time.time()), json.dumps({'released': changed})))
+            LOGGER.info('旧的「官网未取得」放行重试：%s 条', changed)
+        except Exception:
+            LOGGER.exception('放行旧的「官网未取得」重试失败')
+
     def _settle_verification(self) -> None:
         """核查差异的结算规则（ADR-0139）对存量候选跑一遍，规则版本变了才再跑。
 
@@ -426,6 +445,7 @@ class UpgradeRepairs:
             self.tick()
             self.scheduler.add_job(self.tick, 'interval', seconds=60, max_instances=1, coalesce=True)
             self.scheduler.add_job(self._settle_verification, max_instances=1)
+            self.scheduler.add_job(self._release_studio_misses, max_instances=1)
             self.scheduler.start()
 
     def stop(self) -> None:
