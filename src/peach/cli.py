@@ -759,6 +759,23 @@ def _doctor(args: argparse.Namespace) -> int:
     return 1 if result["status"] == "failed" else 0
 
 
+
+def _check_sources(args: argparse.Namespace) -> int:
+    import json
+    from .source_preflight import check_sources
+
+    result = check_sources(settings_file.active().directory("secrets"), args.source)
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False))
+    else:
+        print("检查来源页面与图片 CDN；连通不代表作品资料或登录会话已验证。")
+        for source in result["sources"]:
+            for target in source["results"]:
+                state = "可连接" if target["ok"] else target.get("reason", "未取得")
+                print(f"{source['label']} / {target['label']} [{state}] {target.get('message', '')}")
+    return 0 if result["ok"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="peach")
     commands = parser.add_subparsers(dest="command", required=True)
@@ -857,6 +874,11 @@ def build_parser() -> argparse.ArgumentParser:
     status.add_argument("--db", type=Path, default=DEFAULT_DB)
     status.add_argument("--shared-db", type=Path, default=SHARED_DATABASE_PATH)
     status.set_defaults(handler=_status)
+
+    sources = commands.add_parser("check-sources", help="安装后有界检测外部资料源与图片 CDN，不读取影片")
+    sources.add_argument("--source", action="append", help="只检查指定来源 ID；可重复指定，默认检查全部资料源")
+    sources.add_argument("--json", action="store_true", help="输出不含凭据的 JSON 结果")
+    sources.set_defaults(handler=_check_sources)
 
     doctor = commands.add_parser("doctor", help="逐项诊断本机配置、数据库、工具与挂载，不执行修复")
     doctor.add_argument("--json", action="store_true", help="输出脱敏 JSON 报告")
