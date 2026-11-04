@@ -2,7 +2,7 @@
  *
  * 列表单独取：服务端要拿这次请求的 cookie 认出哪一行是本机。撤销与改密码同一条边界，
  * 只在运行 Peach 的电脑上做，别处打开只能看。行是 BoardUI `SettingsRow`，行首是终端形态图标，
- * 系统词前是平台标志（Remix Icon），本机标记是 `Chip`，
+ * 浏览器名前是浏览器标志（`BrowserIcon`），系统词前是平台标志（Remix Icon），本机标记是 `Chip`，
  * 撤销键是 BoardUI `Button`，确认走 `confirmModal()`。 */
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
@@ -16,6 +16,7 @@ import { Button } from '@/components/base/buttons/button';
 import { SettingsRow } from '@/components/application/settings/settings-rows';
 
 import { apiGet, apiSend, errorMessage } from '../../api';
+import { BrowserIcon, browserIconId } from '../components/browser-icon';
 import { devicesSkeleton, rememberShape } from '../../configuration-skeleton';
 import { ErrorText, Footer, Help, Rows, Section, SectionSkeleton, Stack } from './section';
 
@@ -42,13 +43,21 @@ const SYSTEMS: Record<string, { platform?: Glyph; terminal: Glyph }> = {
   Linux: { terminal: RiComputerLine },
 };
 
-/** 设备名是「浏览器 · 系统」，系统词前放平台标志；认不出系统时照原文。 */
+/** 设备名是「浏览器 · 系统」：浏览器名前放浏览器标志，系统词前放平台标志；认不出的词照原文、不配图。 */
 function DeviceLabel({ row }: { row: DeviceSession }) {
+  if (!row.device) return deviceName(row);
   const parts = row.device.split(' · ');
-  const system = parts.at(-1) ?? '';
-  const Platform = SYSTEMS[system]?.platform;
-  if (!Platform) return deviceName(row);
-  return <>{parts.length > 1 ? `${parts[0]} · ` : ''}<Platform aria-hidden className="inline size-4 -mt-0.5 mr-1 align-middle text-foreground-icon-secondary" />{system}</>;
+  const system = SYSTEMS[parts.at(-1) ?? ''] ? parts.pop()! : '';
+  const browser = parts.join(' · ');
+  const Platform = system ? SYSTEMS[system]!.platform : undefined;
+  const mark = 'inline size-4 -mt-0.5 mr-1 align-middle';
+  return (
+    <>
+      {browser ? <>{browserIconId(browser) ? <BrowserIcon name={browser} className={mark} /> : null}{browser}</> : null}
+      {browser && system ? ' · ' : null}
+      {system ? <>{Platform ? <Platform aria-hidden className={`${mark} text-foreground-icon-secondary`} /> : null}{system}</> : null}
+    </>
+  );
 }
 
 function TerminalIcon({ row }: { row: DeviceSession }) {
