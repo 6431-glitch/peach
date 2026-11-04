@@ -356,8 +356,9 @@ minnano-av 也在 Cloudflare 后面，但对 HTTP 客户端是间歇拦截：202
 `resync_performer_agency.py` 都经 `SourceTransport` 取 minnano-av，共用同一份冷却与固定状态。2026-10-01 实测：
 临时 profile 的 Chrome 取检索页，跟到资料页 `actress695633.html`，资料表解析正常。
 
-候选备援（未接入）：OpenAver 0.16.13 拔掉 minnano-av 后按 xcity → 维基 → graphis 逐字段合并女优资料；只作 minnano-av
-取不到时的补位，不替换它，因为它是目前唯一能从名字走到事务所名册的入口（调研见 ADR-0092）。
+资料的补位已接入 avbase 女优页（ADR-0136，见下文「女优别名与资料的自动登记」）。它只在 minnano-av 上没有她时写，
+不替换 minnano-av，因为后者是目前唯一能从名字走到事务所名册的入口。OpenAver 另有 xcity → 维基 → graphis 的逐字段合并，
+仍未接入（调研见 ADR-0092）。
 
 ### JavArchive
 
@@ -604,12 +605,17 @@ Instagram 的独立用户登录会话未取得，自动适配器不进正式依�
   - `サイズ` 形如 `T156 / B86( Eカップ ) / W58 / H85 / S`，数字就是厘米；末尾那个 `S` 含义未取得，只留原文。
     资料没填的页没有生年月日、血液型、出身地那几行。
   - `ブログ` 那格显示 `http://`、`href` 是 `https://`，取 `href`。站内头像 `/p_actress_125_125/` 只有 125×125。
+  - avbase 女优页 `/talents/<名字>`（ADR-0136）：直连 httpx 带 Chrome UA 就回 200，名字站上没有回 404。
+    `__NEXT_DATA__` 的 `pageProps.talent.actors[]` 是站上归到她名下的名义，资料取 `meta.basic_info`；
+    `actors[].meta.fanza` 是另一份可能过时的 FANZA 资料，只留原文。没有出道年、活动期、博客与官网。一页
+    650～750 KB，缓存只存 `compact_talent_page` 裁出的 `talent` 与同名列表。冷却与作品采集共用 `avbase` 那一份。
+    它写的行不算 minnano-av 的「未过期」，minnano-av 取到就整行换掉。
   - avwikidb.com 直连 httpx 带 Chrome UA 就回整页（登记在 `scraping_access.SOURCES`，拒绝访问停 6 小时）。作品页
     `/work/<番号>/` 头里的 JSON-LD `Movie.actor` 每项给 `name`、罗马字 `alternateName` 与 `/actor/<编号>/`，编号
     从这里取。女优页 JSON-LD `Person.alternateName` 前两项是读音与罗马字，后面混着站上归并的其他名义（含男优
     名），不收。三围只在正文「身長・スリーサイズ」一格（`T148 B83(B) W55 H85`）。女优图是 DMM `actjpgs` 的
     125×125，不作头像；站内搜索是 `⌘K` 弹层，地址形态未取得。
-  - 出生日期与身高和 minnano-av 不一致时，只记进外部编号的 `metadata_json.conflicts`。
+  - 出生日期与身高和资料表那一行（minnano-av 或 avbase 写的）不一致时，只记进外部编号的 `metadata_json.conflicts`。
 
 ## 番号目录、创作者与水印
 
@@ -1346,7 +1352,9 @@ Feed 只回答一个问题：**最近出了哪些番号**。它不下载、不�
 判据不是「这个源有没有 RSS」，而是「条目里那串东西是不是真的番号」。一个源接进来之前，必须先看一眼它的番号长什么样，
 不能只看解析成功率（反例见下文 DUGA）。
 
-### 可用的两类
+### 可用的三类
+
+现在接进订阅的是后两类，都按人挂；sukebei 那类不绑定人物，已随 ADR-0047 清退，取证留作参照。
 
 - **原生 RSS：sukebei.nyaa.si**（`https://sukebei.nyaa.si/?page=rss&c=2_2&f=0`）。
   - RSS 2.0，一页 75 条。`guid` 是条目永久链接（`https://sukebei.nyaa.si/view/<id>`），`pubDate` 是 RFC 822 带时区的真实时间，
@@ -1373,6 +1381,16 @@ Feed 只回答一个问题：**最近出了哪些番号**。它不下载、不�
     另一个 `section-meta` 写着「N 部影片」。一位女优常有两页，
     旧艺名那页可能常年是空的（`/actors/MmbDR` 白石アイリ，2026-09-28 实测「0 部影片」「暂无内容」）。页面自报 0 部才算安静源；
     计数不为 0 却一条都解不出，仍按拉取失败报。
+- **按女优编号的片单：DMM GraphQL**（`legacySearchPPV` 带 `filter.actressIds`，ADR-0135）。
+  - 编号取账本里已刮到的 DMM 与 r18.dev 出演编号（`entity_external_ref` 的 `dmm`、`r18dev`），没有编号的人不建源、不发请求。
+    订阅中的人后来刮到编号的，下一轮拉取前补上。订阅地址 `https://video.dmm.co.jp/av/list/?actress=<编号>` 只是去重键与展示链接。
+  - 按发售日倒序，预购（`releaseStatus` 为 `PRE_ORDER`）排在最前，`deliveryStartAt` 是预定日期。2026-11-04 实测
+    森日向子 962 部、篠田ゆう 2066 部、楓カレン 257 部，第一页里预购分别 8、4、2 部；涼森れむ 只有 11 部（Prestige 专属）。
+  - 列表型没有 `makerContentId`，问它回 422。官方番号按 cid 用别名批量问 `ppvContent`，一页 100 部一次问完，
+    再过 `release_code_from_product`，与 JavDB 那一路写法一致（`MXDLP-0343` → `MXDLP-343`）。**不按 cid 推番号**：分卷与带数字的
+    字母段会推出一个看上去正常的别的番号（`MCSR-64002`、`DSVR-1234`）。分卷 `MCSR-640-02` 认不出番号，只记条目。
+  - 片单头部多是几十人的合集（森日向子 前 200 部里 175 部），出演名单在列表里就有，按合集判据收起的那类不建壳。
+  - 一页 100 部；一页里出现见过的就不再翻，首轮最多 200 部。走 `SourceTransport` 与主机限流，冷却与失败分类同刮削链的 DMM。
 
 ### 已核实不可用
 

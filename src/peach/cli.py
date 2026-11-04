@@ -210,6 +210,11 @@ def _build_sync(args: argparse.Namespace, settings: PeachSettings) -> LedgerSync
 
 def _migrate(args: argparse.Namespace) -> int:
     _require_readable_settings()
+    if args.action == "upgrade":
+        # 托盘起服务前先跑这一步；恢复中断后账本可能暂时不在，不收拾就会迁出一个空账本。
+        from .ledger_backups import recover
+        if (settled := recover(args.db)) is not None:
+            print(f"restore marker: {settled['message']}")
     all_migrations, pending = plan(args.db, MIGRATIONS_DIR)
     print(f"database: {args.db}")
     print(f"migrations: {len(all_migrations)}, pending: {len(pending)}")

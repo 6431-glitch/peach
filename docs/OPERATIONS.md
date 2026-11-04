@@ -115,6 +115,21 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.longmeidao.pea
 3. 仓库变量 `SPARKLE_APPCAST_ENABLED` 为 `true` 时，每个版本标签在 GitHub Release 公开后运行 `sparkle-appcast` 作业：官方 `generate_appcast` 生成两个架构的 appcast，`scripts/sparkle_appcast.py` 补写迁移号并核对版本、下载地址与大小，官方 `sign_update --verify` 核对签名，最后上传到 `https://downloads.peach.video/sparkle/macos-<架构>.xml`。没有 appcast 时，Sparkle 的检查会报更新源不可用。
 4. 第一个带公钥的版本须手动安装一次；之后的版本才能经 Sparkle 更新。在真机按 ADR-0130「未取得的证据」逐项验收。
 
+### Windows 应用内更新的发布签名
+
+Windows 独立包的应用内更新校验每个版本 `SHA256SUMS.txt` 的 Ed25519 签名，取舍见 [ADR-0137](adr/0137-release-sums-ed25519-signature.md)。`src/peach/release_signing.py` 的 `PUBLIC_KEYS` 为空时不校验；写入公钥后，这一版起的客户端只装签名验得过的版本。
+
+`release.yml` 的 `release` 作业生成 `SHA256SUMS.txt` 后，把 `release` environment 的 secret `PEACH_RELEASE_SIGNING_KEY` 经标准输入交给 `scripts/sign_release.py`，签名文件 `SHA256SUMS.txt.sig` 随 Release 上传。源码已有公钥而 secret 为空时作业失败，不发布未签名的版本。
+
+启用步骤由维护者完成，顺序不能颠倒：
+
+1. 在主检出运行 `scripts/sign_release.py --generate-key <私钥文件>`：私钥只写进该文件，已存在就拒绝覆盖，输出里只有公钥。私钥文件放进离线备份。
+2. 用 `gh secret set PEACH_RELEASE_SIGNING_KEY --env release` 从标准输入写入私钥。
+3. 发布一个版本，确认 Release 资产里有 `SHA256SUMS.txt.sig`。
+4. 公钥写进 `PUBLIC_KEYS`，经 PR 合入。
+
+轮换时把新公钥追加进 `PUBLIC_KEYS`，secret 里一行一把放新旧两把私钥；仍要自动升级的客户端都认得新公钥后，再删旧私钥和旧公钥。
+
 ### GitLab 发布与下载后端
 
 GitLab 兼容平台使用 `.gitlab-ci.yml`。唯一版本入口支持 `--gitlab-host` 指定主机，默认入口使用 GitHub。主线发布判据要求同一提交最新的 push 流水线成功，且 Linux、Windows、macOS 和 wheel 验收任务全部成功；缺少原生系统任务时拒绝打标签。主线上的三个平台验收只跑改动域与平台敏感用例（[ADR-0119](adr/0119-mainline-changed-scope-release-full-suite.md)）。版本提交 `chore(release): 版本 X` 的主线流水线同时是发布演练：三平台全量、媒体工具、Windows 与 macOS 构建、Windows 冒烟和 Docker 镜像都跑一遍，只是不发布。`--ship` 等演练全部成功才打标签；标签流水线核对同一提交的演练已通过，只重新构建并发布（[ADR-0121](adr/0121-release-rehearsal-and-atomic-publication.md)）。GitHub 的 `release.yml` 用同一套判据，迁回 GitHub 时不用改流程。CLI 传输复用官方 glab，不在仓库或命令参数里存访问令牌。
@@ -424,6 +439,15 @@ Peach 配置页地址是 `/configuration`。从管理菜单或设置弹窗的「
 
 源码运行时，默认位置是项目旁边的 `peach-data`；原位置留下的 `state/data-root.txt` 让默认位置和显式的 `PEACH_DATA_ROOT` 都跟到新位置。直接运行 `peach serve` 时没有看守进程接手，不能在设置页迁移：改用托盘或无桌面服务启动，或退出 Peach，手动移动数据目录，再把 `PEACH_DATA_ROOT` 指向新位置。
 
+### 账本备份与恢复
+
+配置页「应用与维护 → 账本备份」列出 `database/` 与 `generated/organize-backups/` 里所有能恢复的备份，新的在前，每行写明时间、来源（手动，或自动及其用途）和大小。取舍见 [ADR-0138](adr/0138-user-triggered-ledger-backup-and-restore.md)。
+
+- **立即备份**：后台复制当前账本，进度同时显示在任务中心。复制完先做完整性检查，通过才命名为 `ledger.pre-manual-<时间>.db`；没通过的那份直接删掉。手动备份和自动备份同一套保留规则（见「迁移、备份与运维脚本」）。
+- **从备份恢复**：只能在写入端执行，且数据目录里没有别的任务在跑。确认后依次检查备份的完整性和结构（来自更新版本的备份拒收，较旧的先迁到当前结构），把当前账本另存为 `ledger.pre-restore-<时间>.db`，再把备份写进账本。恢复期间不能启动新任务；任务中心的历史保留恢复前的记录。完成后刷新页面查看恢复后的资料。
+- **中断处理**：写入账本前会在账本目录留下 `ledger.restore.json`。恢复被打断（断电、强制结束）后，下次启动服务或运行 `peach migrate upgrade` 时先处理它：当前账本完整就保留；不完整就用已经迁好的暂存 `ledger.restore-staging.db` 补完恢复；暂存也不能用就退回恢复前另存的那份。结果显示在「账本备份」里，同时写入 `ledger.restore-result.json`。
+- 账本损坏、服务读不出资料时，「账本备份」照常可用，恢复在后台进行，进度只在这一页显示。
+
 容器的数据目录是宿主机挂载的卷，在容器里迁移会离开卷，重建容器时数据丢失，所以设置页不提供迁移，改为列出在宿主机上迁移的步骤和命令，见 [Docker 部署](DOCKER.md#迁移数据目录)。
 
 ### 卸载
@@ -490,7 +514,9 @@ minnano-av 与 javdb 使用实际解析并核对身份后落库的记录，显�
 - 已有部署如果没有访问密码设置，登录页继续使用访问口令。已登录的本机浏览器可以在配置页设置自己的密码，或明确关闭登录要求。
 - 修改密码需要当前密码；关闭密码还要勾选确认访问范围。修改或关闭立即生效，其他浏览器的登录会失效，当前设备保持登录 30 天。
 - 登录页勾选「保持登录」保持 30 天；不勾选只在这次浏览器会话内有效，最长 12 小时。刷新页面不会延长有效期。
-- 密码以 scrypt 哈希保存在本机 `<Peach 数据目录>/secrets/access.json`，不进数据库，也不参与同步。
+- 配置页「网络与访问 → 已登录的设备」列出每个登录过的浏览器：浏览器与系统、来源网段、最近活动，当前浏览器标为「本机」。在运行 Peach 的电脑上可以撤销其中一台，或撤销本机以外的全部；修改或关闭密码仍会让全部设备退出。
+- 密码以 scrypt 哈希保存在本机 `<Peach 数据目录>/secrets/access.json`，设备记录在同目录的 `browser-sessions.json`，只存登录令牌的摘要，不存令牌本身和完整 IP。两者都不进数据库，也不参与同步。
+- 升级前登录、仍在有效期内的浏览器不会被登出：它下一次访问时补进设备列表，此后同样可以撤销。
 
 安全模型的完整说明见 [安全说明](../SECURITY.md)。
 
@@ -784,6 +810,7 @@ Windows 托盘在取得单实例锁后启动独立监视器。监视器用 Win32
 
 - 独立包的版本检查读取 GitHub 公开发行记录与 R2 公开清单，选择可下载的最高版本；同版本优先 GitHub。R2 制品必须具有 SHA-256，发行说明统一指向 GitHub。任一来源不可用时仍检查另一来源，两个来源都未取得时显示检查失败。
 - 更新包、完整包和轻量安装器的工具包下载失败或校验不符时，尝试另一公开源的同版本、同文件名；每次都按原发布记录的大小与 SHA-256 校验。备源不能替换为其他版本或放宽校验，两个来源都失败时保留错误状态。
+- `release_signing.PUBLIC_KEYS` 非空时，Windows 更新器下载前先取同版本的 `SHA256SUMS.txt` 与 `SHA256SUMS.txt.sig`，用随包公钥验过签名后，更新包与完整包只按签过名的摘要校验；两个来源都验不过就停在当前版本，提示到发布页手动下载（[ADR-0137](adr/0137-release-sums-ed25519-signature.md)）。
 
 - 版本号只在 `src/peach/__init__.py::__version__` 里定义，采用 pre-1.0 SemVer。Git 提交是构建标识，`vX.Y.Z` 标签是发布点，推到 GitHub 就触发 Release 工作流（见「桌面入口与发布」）。
 - 版本号在发布时才动，一次发布加一格，所以每个 `X.Y.Z` 都有一份能下载的制品。
@@ -816,7 +843,7 @@ Windows 托盘在取得单实例锁后启动独立监视器。监视器用 Win32
 
 - 真实迁移前依次执行：SQLite 备份、asset/tag 计数、`PRAGMA integrity_check`、迁移版本检查、服务冒烟测试。已应用与待应用的迁移只认 `peach migrate status` 的输出。
 - 已应用的迁移文件不能修改，任何后续变更都要新增一个版本。已应用的迁移被改写会造成校验和漂移，只能用迁移前备份重放、逐条比对差异为 0 后再校正 `schema_migration`。
-- 数据库备份自动清退：`ledger.pre-*.db` 由 `peach.ledger_backups` 管理，「最近 5 份」「24 小时内」「比 `ledger.db` 新」三类全部保留，其余连同 `-wal`／`-shm` 删除。Windows 托盘每次启动自动执行；`scripts/prune_ledger_backups.py` 手动运行时默认只列计划，`--apply` 才删除；数据库 `integrity_check` 不是 ok 时拒绝清退，退出码 2。每份备份一百多 MB，5 天不清就是 7 GB。
+- 数据库备份自动清退：`ledger.pre-*.db`（含设置页的手动备份 `pre-manual` 与恢复前另存的 `pre-restore`）由 `peach.ledger_backups` 管理，「最近 5 份」「24 小时内」「比 `ledger.db` 新」三类全部保留，其余连同 `-wal`／`-shm` 删除。Windows 托盘每次启动自动执行；`scripts/prune_ledger_backups.py` 手动运行时默认只列计划，`--apply` 才删除；数据库 `integrity_check` 不是 ok 时拒绝清退，退出码 2。每份备份一百多 MB，5 天不清就是 7 GB。
 - 整理备份自动清退：下载后整理与手动整理写入前各留一份整库备份，放在 `<Peach 数据目录>/generated/organize-backups/`，文件名是 `ledger.pre-download-<任务>-<时间>.db` 与 `ledger.pre-organize-<时间>-<任务>.db`。每次写备份后按同一套规则清退这个目录，只留最近 5 份（`ORGANIZE_KEEP_RECENT`），不按年龄保留（`ORGANIZE_MIN_AGE` 为零）：一波下载一小时能整理四十个文件，24 小时窗口会攒下几十 GB。正在被整理引用的那份由 `ledger_backups.holding` 登记，Web 服务进程里的清退都跳过；目录里的其他文件名不动。手动查看或清理用 `scripts/prune_ledger_backups.py --organize`，同样默认只列计划，`--apply` 才删除；登记不跨进程，整理进行中不要给 `--keep 0`。
 - `<Peach 数据目录>/logs` 里的 `*.log` 统一保留半年，不限大小（`peach.log_retention.sweep`，托盘在启动任何子进程之前运行）：半年没写过的文件整份删除；还在写的文件按自然月分段，上次写入在更早月份的改名成 `<名字>.until-<最后写入日期>.log`，再过半年删除。子进程直接追加 stdout，不经过 `logging`，所以按文件处理，不按行处理。
 - 更新与打包产物自动清退：托盘每次启动只保留最近 2 份 `dist/Peach/Peach.pre-source-sync-*.exe` 备份，并删掉 `<Peach 数据目录>/state/source-sync-build/` 里不属于待应用记录的暂存构建（`WindowsUpdateInstaller.sweep_artifacts`）；`build_windows.ps1` 成功后删掉 PyInstaller 工作目录 `build/windows/app`；单文件托盘每次启动删掉 `%TEMP%` 里超过一天、不属于自己的 `_MEI*` 解压残留（`sweep_onefile_extractions`，托盘被结束进程时 PyInstaller 不会自己清理，每份 40–80 MB）。自动清理只认这几种命名：`Peach.exe` 本体、手工放进 `dist/` 的目录、`build/release-*`、`attic/` 都不碰，手工构建的残留要自己删。

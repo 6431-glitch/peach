@@ -14,6 +14,7 @@ import type {
 } from '../bundle';
 import { PathLine } from '../components/path-line';
 import { groupRoot } from './configuration-panel';
+import { LedgerBackupSettings } from './ledger-backup-settings';
 import { LibrarySharingSettings } from './library-sharing-settings';
 import { RemoteReportingSettings } from './remote-reporting-settings';
 import { Disclosure, ErrorText, ExternalLink, Fact, FactList, Footer, Help, Rows, Section, Stack } from './section';
@@ -28,6 +29,7 @@ export function MaintenanceSettings(
   return (
     <div {...groupRoot(panel)}>
       {data.storage ? <StorageSettings initial={data.storage} receipt={receipt} /> : null}
+      {data.storage ? <LedgerBackupSettings receipt={receipt} /> : null}
       {data.remote_reporting || data.library_sharing ? <Section id="librarySharing" guide="reporting" title="数据上传">
         {data.remote_reporting ? <RemoteReportingSettings initial={data.remote_reporting} receipt={receipt} /> : null}
         {data.library_sharing ? <div className="border-t border-separator-border">

@@ -18,7 +18,7 @@ const FAMILIES: [Icon, string[]][] = [
   [RiLinksLine, ['link-check', 'link-prune']],
   [RiDownloadCloud2Line, ['download-postprocess']],
   [RiHeart3Line, ['taste-refresh']],
-  [RiToolsLine, ['upgrade-repairs', 'diagnostic-export', 'amane-bridge', 'face-models']],
+  [RiToolsLine, ['upgrade-repairs', 'diagnostic-export', 'amane-bridge', 'face-models', 'ledger-backup', 'ledger-restore']],
 ];
 
 const ICONS = new Map(FAMILIES.flatMap(([icon, keys]) => keys.map((key) => [key, icon] as const)));

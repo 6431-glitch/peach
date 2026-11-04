@@ -4,6 +4,7 @@ from __future__ import annotations
 import io
 import json
 import os
+import re
 import sys
 import tempfile
 import threading
@@ -39,7 +40,8 @@ SAMPLE = """
 
 
 class FakeTransport:
-    """按地址回一份事先备好的响应。记下每次请求，好核对条件请求头。"""
+    """按地址回一份事先备好的响应，可调用的按请求现答（GraphQL 同一个地址答不同的查询）。
+    记下每次请求，好核对条件请求头。"""
 
     def __init__(self, responses):
         self.responses = responses
@@ -47,7 +49,32 @@ class FakeTransport:
 
     def __call__(self, request, timeout, max_bytes):
         self.requests.append(request)
-        return self.responses[request.url]
+        response = self.responses[request.url]
+        return response(request) if callable(response) else response
+
+
+DMM_ENDPOINT = "https://api.video.dmm.co.jp/graphql"
+
+
+def dmm_catalogue(rows, codes):
+    """DMM GraphQL 的假答复：片单一页 `rows`（cid, 发售日, 预购, 出演人数），官方番号按 `codes`。"""
+    def answer(request):
+        payload = json.loads(request.body)
+        if "legacySearchPPV" in payload["query"]:
+            contents = [{"id": cid, "title": "作品", "deliveryStartAt": f"{date}T00:00:00+09:00",
+                         "releaseStatus": "PRE_ORDER" if pre_order else None,
+                         "actresses": [{"id": "1051912", "name": "涼森れむ"},
+                                       *({"id": str(index), "name": f"女優{index}"}
+                                         for index in range(cast - 1))],
+                         "maker": {"id": "1", "name": "エスワン"}}
+                        for cid, date, pre_order, cast in rows]
+            data = {"legacySearchPPV": {"result": {
+                "pageInfo": {"totalCount": len(rows), "hasNext": False}, "contents": contents}}}
+        else:
+            cids = re.findall(r'ppvContent\(id: "([^"]+)"\)', payload["query"])
+            data = {f"a{index}": {"id": cid, "makerContentId": codes[cid]} for index, cid in enumerate(cids)}
+        return HttpResponse(200, {}, json.dumps({"data": data}, ensure_ascii=False).encode(), request.url)
+    return answer
 
 
 def remove_when_released(temporary: tempfile.TemporaryDirectory, timeout: float = 15.0) -> None:
@@ -478,6 +505,22 @@ class FeedWebTest(FeedWebFixture):
         self.assertEqual(row["error"], "JavDB 正在冷却，这一轮没有拉；其余 1 个源顺延到冷却结束后再拉")
         self.assertTrue(all(row["last_fetched_at"] is None and row["last_error"] is None
                             for row in self._rows().values()))
+
+    def test_a_javdb_cooldown_does_not_defer_the_dmm_catalogue(self):
+        """冷却按来源记：JavDB 在冷却，DMM 片单照拉（ADR-0135）。"""
+        from peach import scraping_access
+        javdb = self._add()
+        with self.contract.database.write_transaction() as connection:
+            dmm = feeds.add_source(connection, url=feeds.dmm_actress_url("1051912"))
+        self.transport.responses[DMM_ENDPOINT] = dmm_catalogue(
+            [("mikr00133", "2026-11-13", True, 1)], {"mikr00133": "MIKR-133"})
+        scraping_access.pause_source(self.contract.follow_secrets_root, "javdb", refused=True)
+        result = self._check()
+        reports = {row["source"]: row for row in result["results"]}
+        self.assertEqual(result["deferred"], 1)
+        self.assertEqual(reports[javdb]["error"], "JavDB 正在冷却，这一轮没有拉")
+        self.assertEqual((reports[dmm]["ok"], reports[dmm]["codes"]), (True, ["MIKR-133"]))
+        self.assertTrue(all(request.url == DMM_ENDPOINT for request in self.transport.requests))
 
     def test_a_scheduled_tick_without_due_sources_starts_nothing(self):
         """定时每半小时一跳；没有到期的源时不起任务，任务中心里不留空跑的一行。"""
@@ -1207,6 +1250,75 @@ class PerformerFeedSwitchTest(FeedWebFixture):
         with self.assertRaises(ValueError):
             self._switch(True, bare)
         self.assertEqual(self._sources(), [])
+
+    def _dmm_id(self, entity_id, value="1051912", provider="r18dev"):
+        with self.contract.database.write_transaction() as connection:
+            connection.execute(
+                "INSERT INTO entity_external_ref(entity_id,provider,external_kind,external_id)"
+                " VALUES(?,?,'performer',?)", (entity_id, provider, value))
+
+    def test_her_dmm_catalogue_is_a_second_source_merged_with_javdb(self):
+        self._dmm_id(self.performer)
+        self.transport.responses[DMM_ENDPOINT] = dmm_catalogue(
+            [("mikr00133", "2026-11-13", True, 1), ("pbd00528", "2026-10-20", False, 2),
+             ("mizd00570", "2026-11-27", True, 37)],
+            {"mikr00133": "MIKR-133", "pbd00528": "PBD-528", "mizd00570": "MIZD-570"})
+        result = self._switch(True)
+        self.assertEqual(len(result["sources"]), 2)
+        reports = {report["source"]: report for report in self._settled()["results"]}
+        # 同一个人的几条源挨在一起，JavDB 演员页在前。
+        self.assertEqual([source["kind"] for source in self._sources()],
+                         [feeds.KIND_JAVDB_ACTOR, feeds.KIND_DMM_ACTRESS])
+        sources = {source["kind"]: source for source in self._sources()}
+        dmm = sources[feeds.KIND_DMM_ACTRESS]
+        self.assertEqual((dmm["url"], dmm["kind_label"], dmm["page_name"], dmm["name"]),
+                         ("https://video.dmm.co.jp/av/list/?actress=1051912", "JAV 订阅 · DMM",
+                          "涼森れむ", "凉森れむ"))
+        self.assertEqual({key: reports[dmm["id"]][key] for key in ("ok", "pre_order", "compilations")},
+                         {"ok": True, "pre_order": 2, "compilations": 1})
+        mine = dispatch_api_get(self.contract, "/api/feeds/discoveries", {"entity": self.performer})
+        # PBD-528 两个来源都报了，只有一个壳；三五十人的合集不建壳。
+        self.assertEqual(sorted(item["code"] for item in mine["items"]),
+                         ["BBSS-106", "MIKR-133", "PBD-528"])
+        # 两类源一起开、一起关。
+        self._switch(False)
+        self.assertEqual([source["enabled"] for source in self._sources()], [False, False])
+
+    def test_a_dmm_failure_lands_on_its_own_row(self):
+        self._dmm_id(self.performer)
+        self.transport.responses[DMM_ENDPOINT] = HttpResponse(503, {}, b"", DMM_ENDPOINT)
+        self._switch(True)
+        reports = {report["source"]: report for report in self._settled()["results"]}
+        sources = {source["kind"]: source for source in self._sources()}
+        dmm, javdb = sources[feeds.KIND_DMM_ACTRESS], sources[feeds.KIND_JAVDB_ACTOR]
+        self.assertEqual((dmm["last_error"], reports[dmm["id"]]["reason"]), ("HTTP 503", "server_error"))
+        self.assertIsNotNone(dmm["next_fetch_at"])
+        self.assertTrue(reports[javdb["id"]]["ok"])
+
+    def test_a_performer_with_only_a_dmm_id_can_subscribe(self):
+        dmm_only = self._performer("RION", [])
+        self._dmm_id(dmm_only, "1012345", provider="dmm")
+        self.transport.responses[DMM_ENDPOINT] = dmm_catalogue([], {})
+        profile = dispatch_api_get(self.contract, "/api/entity", {"kind": "performer", "name": "RION"})
+        self.assertEqual(profile["feed"], {"following": False})
+        self._switch(True, dmm_only)
+        [report] = self._settled()["results"]
+        self.assertEqual((report["ok"], report["seen"]), (True, 0))
+        [source] = self._sources()
+        self.assertEqual(source["kind"], feeds.KIND_DMM_ACTRESS)
+
+    def test_a_round_adds_her_dmm_source_once_her_id_is_scraped(self):
+        self._switch(True)
+        self._settled()
+        self.assertEqual(len(self._sources()), 1)
+        self._dmm_id(self.performer, "1051912", provider="dmm")
+        self.transport.responses[DMM_ENDPOINT] = dmm_catalogue(
+            [("mikr00133", "2026-11-13", True, 1)], {"mikr00133": "MIKR-133"})
+        self._check()
+        kinds = sorted(source["kind"] for source in self._sources())
+        self.assertEqual(kinds, [feeds.KIND_DMM_ACTRESS, feeds.KIND_JAVDB_ACTOR])
+        mine = dispatch_api_get(self.contract, "/api/feeds/discoveries", {"entity": self.performer})
+        self.assertIn("MIKR-133", [item["code"] for item in mine["items"]])
 
 
 #: JavDB 演员搜索页：同一位的有碼与無碼两张卡，加一位同名的别人。写法照

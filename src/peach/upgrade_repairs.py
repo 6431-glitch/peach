@@ -228,6 +228,49 @@ class UpgradeRepairs:
                                    (REVISION, str(time.time()), json.dumps(receipt, ensure_ascii=False)))
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
 
+    def _settle_verification(self) -> None:
+        """核查差异的结算规则（ADR-0139）对存量候选跑一遍，规则版本变了才再跑。
+
+        只喂带核查标记的那些行：其余候选的判据没变，这一步不替它们重判。有要处理的行才
+        先备份；结果连同规则版本记进 `ledger_upgrade_repair`，账本恢复到之前的备份时会重跑。
+        几千行要跑一两分钟，所以不在 `prepare` 里挡着服务启动，由 `start` 交给后台调度跑；
+        自动落库按批提交，页面上的写入照常穿插进来。
+        """
+        try:
+            self._settle_verification_once()
+        except Exception as exc:
+            self.error = str(exc)
+            LOGGER.exception('核查差异存量结算失败')
+
+    def _settle_verification_once(self) -> None:
+        from .metadata_auto_apply import _parsed_candidates, auto_apply_metadata
+        from .review_csv import read_candidates
+        key = f'verification-settlement-{upgrade_rules.VERIFICATION_SETTLEMENT}'
+        contract = self.contract
+        with contract.database.read_connection() as connection:
+            if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?', (key,)).fetchone():
+                return
+        rows, _source, _skipped = read_candidates('metadata_fields', Path(contract.candidate_root))
+        rows = [row for row in rows
+                if any(candidate.get('requires_review') for candidate in _parsed_candidates(row))]
+        result = {'rows': len(rows)}
+        if rows:
+            backup = contract.db_path.with_name(f'ledger.pre-upgrade-{time.time_ns()}.db')
+            sqlite_backup(contract.db_path, backup)
+            summary = auto_apply_metadata(
+                contract.database, Path(contract.candidate_root), candidate_rows=rows,
+                snapshot_root=Path(contract.follow_sources_root) / 'library-metadata',
+                active=lambda: not self.stopping.is_set())
+            if self.stopping.is_set():
+                return
+            result.update({name: summary[name] for name in
+                           ('applied', 'kept', 'refreshed', 'auto_rejected', 'left_to_review')},
+                          backup=str(backup))
+        with contract.database.write_transaction() as connection:
+            connection.execute('INSERT OR IGNORE INTO ledger_upgrade_repair(id,applied_at,result_json) '
+                               'VALUES(?,?,?)', (key, str(time.time()), json.dumps(result, ensure_ascii=False)))
+        LOGGER.info('核查差异存量结算：%s', result)
+
     def _restore_receipt(self, authoritative):
         try:
             cached = _read(self.receipt)
@@ -379,6 +422,7 @@ class UpgradeRepairs:
         if self.available and not self.scheduler.running:
             self.tick()
             self.scheduler.add_job(self.tick, 'interval', seconds=60, max_instances=1, coalesce=True)
+            self.scheduler.add_job(self._settle_verification, max_instances=1)
             self.scheduler.start()
 
     def stop(self) -> None:

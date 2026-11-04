@@ -274,6 +274,31 @@ class PollingTests(_Deployment):
         task = self.service.store.get(task_id)
         self.assertEqual((task.state, task.failure), (dl.STALLED, "no_source"))
 
+    def test_a_stalled_task_that_finishes_later_still_lands(self):
+        self.service.save_settings({"targets": {"115": "/115/云下载"}, "wait_hours": 1},
+                                   self.declared)
+        task_id = self.submit()["task"]["id"]
+        self.tick(10)
+        self.tick(3600)
+        # 判停滞之后不再按秒级轮询，六小时看一眼。
+        self.provider.statuses = [dl.RemoteStatus(dl.DONE, "r1", "ABC-123", 1.0)]
+        self.assertEqual(self.tick(dl.STALL_RECHECK - 1), 0)
+        self.tick(1)
+        task = self.service.store.get(task_id)
+        self.assertEqual((task.state, task.failure, task.finished_at), (dl.REMOTE_DONE, None, None))
+
+    def test_stalled_rechecks_stop_after_the_horizon(self):
+        self.service.save_settings({"targets": {"115": "/115/云下载"}, "wait_hours": 1},
+                                   self.declared)
+        task_id = self.submit()["task"]["id"]
+        self.tick(10)
+        self.tick(3600)
+        checks = 0
+        while self.service.store.get(task_id).next_check_at:
+            checks += self.tick(dl.STALL_RECHECK)
+        self.assertEqual(checks, int(dl.STALL_RECHECK_HORIZON // dl.STALL_RECHECK))
+        self.assertEqual(self.service.store.get(task_id).state, dl.STALLED)
+
     def test_a_task_the_cloud_never_listed_waits_longer_then_fails_as_not_accepted(self):
         # 真实的 CloudDrive2 提交不回远端编号，编号要等离线列表里看见任务才有。
         self.provider.submit_result = dl.RemoteStatus(dl.RUNNING, name="ABC-123")

@@ -256,7 +256,7 @@ def local_playback(request: Request, id: int, player: str = 'default', args=Depe
     asset = request.app.state.media_engine.asset(id)
     path = request.app.state.media_engine.filesystem.file_for(asset, thumbnail=False)
     try:
-        launcher.open_media(path, player)
+        launcher.open_media(path, player, track=_playback_tracker(request.app.state, id))
     except ValueError as exc:
         raise HTTPException(400, str(exc)) from None
     except (OSError, subprocess.SubprocessError) as exc:
@@ -264,6 +264,22 @@ def local_playback(request: Request, id: int, player: str = 'default', args=Depe
                        player, type(exc).__name__, getattr(exc, 'errno', None), getattr(exc, 'winerror', None))
         raise HTTPException(503, '无法打开播放器，请检查系统文件关联或选择其他播放器') from None
     return {'opened': True}
+
+
+def _playback_tracker(state, asset_id: int):
+    """外部播放器回报的进度按网页播放器同一口径写：首次前进计一次播放，其余进活动记录。"""
+    from .playback_tracking import Session
+    from .web_activity import w_activity, w_play
+    trackers, contract = state.playback_trackers, state.web_contract
+    if not trackers.has_room():
+        return None
+
+    def report(body: dict, first: bool) -> None:
+        if first:
+            w_play(contract, {'id': asset_id})
+        w_activity(contract, body)
+
+    return lambda connect, alive: trackers.start(Session(asset_id, connect, alive, report))
 
 
 def _external_asset(request: Request, asset_id: int, ticket: str, origin: str):

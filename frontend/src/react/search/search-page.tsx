@@ -16,6 +16,7 @@ import { entityDisplayName } from '../../core/entity-names';
 import { useEntityNames } from '../use-entity-names';
 import { TabCount } from '../components/board-tabs';
 import { PillTabList } from '../components/pill-tabs';
+import { composingKey } from '../components/ime';
 import {
   menuModel, nextPage, shufflePicks, SUGGEST_DEBOUNCE, SUGGEST_EACH, SUGGEST_ONE_KIND, SUGGEST_PROFILE_KINDS, SUGGEST_RIGHT_KINDS, fold,
   type MenuModel, type MenuSection, type SearchApi, type SearchOption, type SearchProps, type SuggestCard,
@@ -464,7 +465,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
   };
 
   const key = (event: KeyboardEvent) => {
-    if (event.isComposing) return;
+    if (composingKey(event)) return;
     const field = input();
     if (event.key === 'Escape') {
       if (isOpen()) { close(); event.preventDefault(); return }
@@ -495,7 +496,7 @@ function createOps(props: () => SearchProps, s: Store, menu: () => HTMLElement |
   };
   const onInput = (event: InputEvent) => {
     s.cancelRoll();
-    if (event.isComposing) return;
+    if (composingKey(event)) return;
     s.dismissed = false;
     props().helpers.typed(input());
     refresh();

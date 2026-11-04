@@ -116,7 +116,7 @@ SCOPES: dict[str, tuple[str, ...]] = {
                 "test_version_bump.py", "test_changelog.py", "test_release_due.py", "test_release_candidate.py", "test_media_build_cache.py", "test_runner_launcher.py",
                 "test_restart_windows_tray.py", "test_deploy_windows_tray.py", "test_runtime_prepare.py",
                 "test_buildinfo.py", "test_versioning.py", "test_macos_standalone.py",
-                "test_windows_update.py", "test_release_updates.py", "test_automatic_updates.py", "test_standalone_update.py", "test_upgrade_repairs.py", "test_certs.py", "test_config.py",
+                "test_windows_update.py", "test_release_updates.py", "test_release_signing.py", "test_automatic_updates.py", "test_standalone_update.py", "test_upgrade_repairs.py", "test_certs.py", "test_config.py",
                 "test_fsutil.py", "test_desktop_settings.py", "test_desktop_installer.py", "test_data_storage.py",
                 "test_job_status.py", "test_jobs.py", "test_task_runs.py", "test_followups.py", "test_update_tasks.py",
                 "test_task_center_integration.py", "test_task_control.py", "test_task_resources.py", "test_resource_platform.py", "test_reference_updates.py",
@@ -189,6 +189,8 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     "scripts/fetch_sparkle_macos.py": ("tooling", "packaging"),
     "scripts/sparkle-macos.json": ("tooling", "packaging"),
     "scripts/sparkle_appcast.py": ("tooling", "packaging"),
+    # 发布签名脚本的用例与客户端校验放在同一份 `test_release_signing.py` 里。
+    "scripts/sign_release.py": ("tooling",),
     "scripts/fetch_ffmpeg_sources.py": ("tooling", "packaging"),
     "scripts/ffmpeg-sources.json": ("tooling", "packaging"),
     "scripts/build_ffmpeg_windows.sh": ("tooling", "packaging"),
@@ -319,6 +321,9 @@ AUTO_SCOPE_PREFIXES: tuple[tuple[str, str | tuple[str, ...]], ...] = (
     # 站点解析器契约与套了契约的站（ADR-0044）：测试住在 `test_metadata_sources.py` 与
     # `test_community_catalog.py`，都在 metadata 域；按包内模块名推不出来。
     ("src/peach/sources/", "metadata"),
+    # 来源录制回放：录制由 `test_metadata_replay.py` 回放，录制脚本也由它装载；重录不必全量。
+    ("tests/fixtures/source-replay/", "metadata"),
+    ("scripts/record_source_fixtures.py", ("metadata", "tooling")),
     ("scripts/localize_performer_names.py", ("metadata", "tooling")),
     ("scripts/localize_series_names.py", ("metadata", "tooling")),
     ("scripts/localize_studio_names.py", ("metadata", "tooling")),

@@ -96,6 +96,8 @@ TASK_LABELS = {
     "mp4-header-repair": "播放文件头修复",
     'jav-discovery-metadata': '发现页资料读取',
     'diagnostic-export': '诊断导出',
+    "ledger-backup": "账本备份",
+    "ledger-restore": "从备份恢复账本",
     "upgrade-repairs": "自动修复",
     "upgrade-library": "资料自动修复",
     "organize": "按模板整理",

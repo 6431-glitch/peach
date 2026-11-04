@@ -197,6 +197,7 @@ class DependencyPolicyTests(unittest.TestCase):
             "browserexport": "browserexport",
             "ahocorasick": "pyahocorasick",
             "bs4": "beautifulsoup4",
+            "cryptography": "cryptography",
             "curl_cffi": "curl_cffi",
             "cv2": "opencv-python-headless",
             "dmgbuild": "dmgbuild",

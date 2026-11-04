@@ -1,14 +1,14 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "994f0254-5425-4c98-9acd-e046d82c113a", e._sentryDebugIdIdentifier = "sentry-dbid-994f0254-5425-4c98-9acd-e046d82c113a");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "530a2a26-2b8c-4c73-85b2-144d2f850871", e._sentryDebugIdIdentifier = "sentry-dbid-530a2a26-2b8c-4c73-85b2-144d2f850871");
 	} catch {}
 })();
 import { AnimatedItems as e, CHART_CARD as t, CHART_COLORS as n, Cell as r, ChartBackground as i, ChartContainer as a, ChartEmpty as o, ChartLegend as s, ChartLegendContent as c, ChartTip as l, ChartTooltip as u, ChartTooltipContent as d, DefaultZIndexes as f, LabelListFromLabelProp as p, Layer as m, LoadingIndicator as h, PolarChart as g, PolarLabelListContextProvider as _, RegisterGraphicalItemId as v, Sector as y, SetPolarGraphicalItem as b, SetPolarLegendPayload as x, SetTooltipEntrySettings as S, Shape as C, ZIndexLayer as w, adaptEventsOfChild as T, arrayTooltipSearcher as E, combineAllBarPositions as ee, combineBarPosition as D, combineBarSizeList as te, combineDisplayedStackedData as ne, combineStackGroups as re, combineStackedData as ie, createSelector as O, defaultPolarChartProps as ae, findAllByType as oe, getBandSizeOfAxis as k, getBaseValueOfBar as se, getCateCoordinateOfBar as ce, getColorsCount as le, getNormalizedStackId as ue, getTooltipNameProp as de, getValueByDataKey as fe, getZIndexFromUnknown as pe, interpolate as me, isCategoricalAxis as he, isNullish as ge, isStacked as _e, matchAppend as ve, mathSign as ye, noop as be, resolveDefaultProps as xe, selectActiveTooltipIndex as Se, selectAngleAxis as Ce, selectBarCategoryGap as we, selectBarGap as Te, selectChartDataAndAlwaysIgnoreIndexes as Ee, selectChartDataWithIndexes as De, selectChartLayout as A, selectPolarItemsSettings as Oe, selectPolarViewBox as ke, selectRadiusAxis as Ae, selectReverseStackOrder as je, selectRootBarSize as Me, selectRootMaxBarSize as Ne, selectStackOffsetType as Pe, selectTooltipAxis as Fe, selectUnfilteredPolarItems as Ie, sliceConfig as Le, sliceKey as Re, svgPropertiesNoEvents as ze, svgPropertiesNoEventsFromUnknown as Be, truncateByDomain as Ve, useAnimationCallbacks as He, useAppSelector as j, useMouseClickItemDispatch as Ue, useMouseEnterItemDispatch as We, useMouseLeaveItemDispatch as Ge, usePolarChartLayout as Ke } from "./peach-app.chart-tip-CRxYp6KT.js";
 import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as M, $b4f18e3395fe64d7$export$3e41faf802a29e71 as N, $b4f18e3395fe64d7$export$b2539bed5023c21c as qe, $b4f18e3395fe64d7$export$e51a686c67fdaa2d as Je, ButtonLink as P, EmptyState as F, LOC as Ye, MEDIA_SOURCE_ICONS as Xe, NR as Ze, Note as Qe, Progress as I, SEGMENT as $e, SEGMENTED_TRACK as et, STATS_KEY as tt, STAT_STRIP as nt, SegmentedTabList as rt, SourceMark as it, StatCard as at, StatusLabel as ot, Xc as st, Xt as ct, _8 as lt, __toESM as ut, bandRows as dt, cardClass as ft, clsx as pt, errorMessage as mt, fetchStats as ht, fmtCount as L, fmtSize as R, known as gt, lengthRows as _t, mM as z, mediumRows as vt, percentText as B, playedFor as yt, playedItemUrl as bt, radialArc as xt, radialBarSize as St, radialCeiling as Ct, radialSlices as wt, reachedShare as Tt, replayRows as Et, require_jsx_runtime as Dt, require_react as Ot, settingsPath as kt, statCardClass as At, uo as jt, useQuery as Mt, watchNote as Nt, watchedShare as Pt } from "./peach-app.js";
 import { Page as Ft } from "./peach-app.page-QAncjzM1.js";
 import { ConnectionStatus as It } from "./peach-app.connection-status-DI6kgn3i.js";
-import { ActivityHeat as Lt, BarCard as V, ExpandableRanking as Rt, PolarAngleAxis as zt, selectPolarAxisScale as Bt, selectPolarAxisTicks as Vt, selectPolarGraphicalItemAxisTicks as Ht } from "./peach-app.expandable-ranking-dFA65P9N.js";
+import { ActivityHeat as Lt, BarCard as V, ExpandableRanking as Rt, PolarAngleAxis as zt, selectPolarAxisScale as Bt, selectPolarAxisTicks as Vt, selectPolarGraphicalItemAxisTicks as Ht } from "./peach-app.expandable-ranking-DrIZgDjz.js";
 // node_modules/recharts/es6/util/RadialBarUtils.js
 var H = /* @__PURE__ */ ut(Ot()), Ut = ["option"];
 function Wt(e, t) {
@@ -919,6 +919,7 @@ function Q({ term: e, value: t, total: n }) {
 				}) : null]
 			})]
 		}), /* @__PURE__ */ (0, Y.jsx)(I, {
+			meter: !0,
 			label: `${e}：${L(t)} / ${n.toLocaleString()}`,
 			value: gt(t) ? Ar(t, r) : 0,
 			max: r
@@ -1097,6 +1098,7 @@ function Ir({ volume: e }) {
 				})]
 			}),
 			t == null ? null : /* @__PURE__ */ (0, Y.jsx)(I, {
+				meter: !0,
 				label: `${e.label}空间使用率`,
 				value: Ar(n, Math.max(t, 1)),
 				max: Math.max(t, 1)
@@ -1195,6 +1197,7 @@ function zr({ rows: e, hasMedia: t }) {
 				}), /* @__PURE__ */ (0, Y.jsxs)("div", {
 					className: "min-w-0 basis-40",
 					children: [/* @__PURE__ */ (0, Y.jsx)(I, {
+						meter: !0,
 						label: `真实观看 ${t.toFixed(0)}%`,
 						value: t
 					}), /* @__PURE__ */ (0, Y.jsx)("small", {
@@ -1236,6 +1239,7 @@ function Br({ sources: e, videos: t }) {
 					})]
 				}),
 				/* @__PURE__ */ (0, Y.jsx)(I, {
+					meter: !0,
 					label: `${e.k} 覆盖视频`,
 					value: Ar(e.assets, Math.max(t, 1)),
 					max: Math.max(t, 1)
@@ -1473,4 +1477,4 @@ function Vr(e) {
 }
 export { Vr as StatsPage };
 
-//# debugId=994f0254-5425-4c98-9acd-e046d82c113a
+//# debugId=530a2a26-2b8c-4c73-85b2-144d2f850871

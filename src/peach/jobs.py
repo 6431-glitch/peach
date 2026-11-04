@@ -349,6 +349,13 @@ class BackgroundJob:
         value = getattr(getattr(self.runs, 'database', None), 'db_path', None)
         return Path(value) if isinstance(value, (str, Path)) else None
 
+    def registration(self, job_id: str) -> tuple[tuple[Path, ...], tuple[int, ...]]:
+        """这一轮自己的任务登记文件与 `task_run` 行。要等别的任务都停下的那一轮查忙时，把自己除外。"""
+        activity = self._activity_files.get(job_id)
+        run_id = self._run_ids.get(job_id)
+        return ((activity,) if activity is not None else (),
+                (run_id,) if run_id is not None else ())
+
     def update(self, job_id: str, **fields: object) -> bool:
         """状态仍属于 `job_id` 时改字段；已经被顶掉就什么都不做并返回 False。"""
         with self.editing(job_id) as state:

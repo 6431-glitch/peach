@@ -57,6 +57,8 @@ dependencies = [
   "watchdog==6.0.0",
   "zeroconf==0.153.0",
   "smbprotocol==1.17.0",
+  # 应用内更新校验发布签名（Ed25519，ADR-0137）。
+  "cryptography==50.0.2",
 ]
 
 [project.urls]

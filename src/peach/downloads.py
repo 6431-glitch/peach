@@ -284,6 +284,11 @@ MISSING_GRACE = 180.0
 UNSEEN_GRACE = 900.0
 DEFAULT_WAIT_HOURS = 168
 MAX_WAIT_HOURS = 24 * 60
+#: 判成「长时间未完成」之后，远端任务多半还挂在网盘里，冷门种子过几天才凑齐源的也有。
+#: 之后每隔这么久再看一眼，远端完成就照常落地入库；最多再看这么久就彻底不管。
+#: 做法同 SakuraMedia `551715b321`：超时只是不再催，不等于远端不会完成。
+STALL_RECHECK = 6 * 3600.0
+STALL_RECHECK_HORIZON = 7 * 86400.0
 #: 已落地的目录最多登记这么多个文件；种子里成千上万个小文件交给全量扫描。
 MAX_LANDED_FILES = 500
 
@@ -443,13 +448,15 @@ class DownloadStore:
         return {row["id"]: dict(row) for row in rows}
 
     def due(self, now: float) -> list[DownloadTask]:
+        # 停滞的任务只有排了复查时间才算到期；时间为空表示已经不再复查。
         states = tuple(sorted(TRACKED_STATES))
         marks = ",".join("?" for _ in states)
         with self.database.read_connection() as connection:
             rows = connection.execute(
-                f"SELECT * FROM download_task WHERE state IN ({marks}) "
-                "AND (next_check_at IS NULL OR next_check_at<=?) ORDER BY next_check_at, id",
-                (*states, iso(now))).fetchall()
+                f"SELECT * FROM download_task WHERE (state IN ({marks}) "
+                "AND (next_check_at IS NULL OR next_check_at<=?)) "
+                "OR (state=? AND next_check_at IS NOT NULL AND next_check_at<=?) ORDER BY next_check_at, id",
+                (*states, iso(now), STALLED, iso(now))).fetchall()
         return [DownloadTask.from_row(row) for row in rows]
 
     def next_due(self) -> float | None:
@@ -457,8 +464,9 @@ class DownloadStore:
         marks = ",".join("?" for _ in states)
         with self.database.read_connection() as connection:
             row = connection.execute(
-                f"SELECT min(coalesce(next_check_at,'')) FROM download_task WHERE state IN ({marks})",
-                states).fetchone()
+                f"SELECT min(coalesce(next_check_at,'')) FROM download_task WHERE state IN ({marks}) "
+                "OR (state=? AND next_check_at IS NOT NULL)",
+                (*states, STALLED)).fetchone()
         if row is None or row[0] is None:
             return None
         return parse_iso(row[0]) or 0.0
@@ -768,7 +776,7 @@ class DownloadService:
         task.failure_detail = error.detail
         task.finished_at = iso(now)
         task.updated_at = iso(now)
-        task.next_check_at = None
+        task.next_check_at = iso(now + STALL_RECHECK) if state == STALLED else None
         if error.block:
             task.blocked_at = iso(now)
         self.store.save(task)
@@ -895,6 +903,9 @@ class DownloadService:
 
     def advance(self, task: DownloadTask) -> None:
         now = self.clock()
+        if task.state == STALLED:
+            self._recheck_stalled(task, now)
+            return
         try:
             if task.state in {SUBMITTED, REMOTE_RUNNING}:
                 self._follow_remote(task, now)
@@ -910,6 +921,28 @@ class DownloadService:
             self._fail(task, DownloadError(
                 "no_source", f"等了 {self.config.wait_hours} 小时远端还没完成，多半是没有人做种。"
                 "可以取消，或换一个磁力"), now, state=STALLED)
+
+    def _recheck_stalled(self, task: DownloadTask, now: float) -> None:
+        """停滞任务的低频复查：远端完成就回到落地流程，否则排下一次，超出期限就不再查。
+
+        这里不改失败原因与「长时间未完成」的状态：远端仍在跑、出错或不见了，都只是这次没等到。
+        """
+        try:
+            provider = self.providers(task.provider)
+            status = provider.status(task)
+            done = status.state == DONE or (status.state == MISSING and provider.landed(task))
+        except DownloadError:
+            done = False
+        if done:
+            task.finished_at = None
+            task.failure = None
+            self._remote_done(task, status, now)
+            return
+        stalled = parse_iso(task.finished_at) or now
+        task.next_check_at = (iso(now + STALL_RECHECK)
+                              if now + STALL_RECHECK - stalled <= STALL_RECHECK_HORIZON else None)
+        task.updated_at = iso(now)
+        self.store.save(task)
 
     def _overdue(self, task: DownloadTask, now: float) -> bool:
         started = parse_iso(task.submitted_at) or now
@@ -948,6 +981,9 @@ class DownloadService:
                 if unseen:
                     raise DownloadError("not_accepted", "网盘没有收下这个任务：提交后离线列表里始终没有它，目标目录里也没有文件")
                 raise DownloadError("removed", "网盘里的这个任务不见了：离线列表里找不到它，目标目录里也没有文件")
+        self._remote_done(task, status, now)
+
+    def _remote_done(self, task: DownloadTask, status, now: float) -> None:
         task.remote_name = status.name or task.remote_name
         task.remote_id = status.remote_id or task.remote_id
         task.state = REMOTE_DONE

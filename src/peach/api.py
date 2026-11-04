@@ -35,7 +35,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.datastructures import MutableHeaders
 from starlette.middleware.gzip import DEFAULT_EXCLUDED_CONTENT_TYPES, GZipMiddleware
 
-from . import (__version__, browser_transport, feeds, tunnel, web_contract,
+from . import (__version__, browser_transport, feeds, ledger_backups, tunnel, web_contract,
                web_feeds, web_follow, web_settings)
 from . import routes_api, routes_auth, routes_configuration, routes_jav_browser, routes_media, routes_pages, routes_subtitles
 from .buildinfo import frozen_build
@@ -207,6 +207,11 @@ WARM_AGGREGATES = (("/api/taste", {"window": "all"}), ("/api/review", {}), ("/ap
 
 def _start_ledger_services(settings: PeachSettings, contract, services) -> bool:
     """只读核对当前账本后，恢复任务并启动依赖账本的后台服务。"""
+    try:
+        # 上次从备份恢复没走完：先把账本收拾到确定的状态，再判它能不能用（ADR-0138）。
+        ledger_backups.recover(settings.db_path)
+    except Exception:
+        LOGGER.exception('账本恢复标记未能处理')
     status = inspect_database(settings.db_path)
     repairs = getattr(contract, 'upgrade_repairs', None)
     if status['schema'] == 'pending' and repairs is not None and repairs.available:
@@ -532,6 +537,8 @@ def create_app(
         try:
             yield
         finally:
+            # 外部播放器的最后一段观看要赶在账本收尾前落下。
+            await asyncio.to_thread(_app.state.playback_trackers.stop)
             await activation.stop()
             _app.state.ledger_background_ready = False
             aggregate_stop.set()
@@ -612,6 +619,8 @@ def create_app(
     app.state.strm_resources = StrmResources()
     import secrets
     app.state.external_playback_key = secrets.token_bytes(32)
+    from .playback_tracking import PlaybackTrackers
+    app.state.playback_trackers = PlaybackTrackers()
     app.state.sync = sync
     app.state.tunnel = tunnel_manager
 
