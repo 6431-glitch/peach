@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from peach import feed_followup, feeds, web_feeds, web_settings, web_state  # noqa: E402
+from peach import web_jav_browser_performer as performer  # noqa: E402
 from peach.http import HttpResponse  # noqa: E402
 from peach.web_contract import WebContract  # noqa: E402
 from peach.web_router import dispatch_api_get, dispatch_api_post  # noqa: E402
@@ -1126,8 +1127,8 @@ SOLO_PAGE = """
 """
 
 
-class PerformerFeedSwitchTest(FeedWebFixture):
-    """人物页「订阅新作」开关：地址由服务端按 JavDB 演员页拼，页面只送开和关。"""
+class PerformerFeedFixture(FeedWebFixture):
+    """一位有 JavDB 演员页的女优、按地址回样本页的传输，以及订阅相关的取数辅助。"""
 
     def setUp(self):
         super().setUp()
@@ -1167,6 +1168,10 @@ class PerformerFeedSwitchTest(FeedWebFixture):
 
     def _sources(self):
         return dispatch_api_get(self.contract, "/api/feeds", {})["sources"]
+
+
+class PerformerFeedSwitchTest(PerformerFeedFixture):
+    """人物页「订阅新作」开关：地址由服务端按 JavDB 演员页拼，页面只送开和关。"""
 
     def test_switching_on_subscribes_her_javdb_page_and_fetches_it_now(self):
         result = self._switch(True)
@@ -1343,8 +1348,8 @@ LOGIN_PAGE = """<html><head><title> 登入 | JavDB 成人影片數據庫 </title
 <body><form action="/user_sessions"></form></body></html>"""
 
 
-class FeedFollowByNameTest(PerformerFeedSwitchTest):
-    """订阅源页签「添加 JAV 订阅」：按名字搜演员卡，勾选后登记到她名下并订上（ADR-0083）。"""
+class FeedFollowByNameFixture(PerformerFeedFixture):
+    """JavDB 演员搜索页与几张演员卡的样本，按名字查找与登记的辅助。"""
 
     def setUp(self):
         super().setUp()
@@ -1373,6 +1378,10 @@ class FeedFollowByNameTest(PerformerFeedSwitchTest):
                 " AND provider='javdb' ORDER BY external_id", (entity_id,)).fetchall()
         return row, refs
 
+
+class FeedFollowByNameTest(FeedFollowByNameFixture):
+    """订阅源页签「添加 JAV 订阅」：按名字搜演员卡，勾选后登记到她名下并订上（ADR-0083）。"""
+
     def test_lookup_lists_every_card_and_only_pre_picks_the_one_person_matching_the_name(self):
         result = self._lookup()
         self.assertEqual(result["url"], self.search)
@@ -1397,7 +1406,7 @@ class FeedFollowByNameTest(PerformerFeedSwitchTest):
                 " VALUES(?,'濑户环奈',peach_normalize('濑户环奈'),'test')", (held,))
         result = self._lookup()
         first, second = result["candidates"][:2]
-        self.assertEqual(result["known"], {"id": held, "name": "瀬戸環奈"})
+        self.assertEqual(result["known"], {"id": held, "name": "瀬戸環奈", "subscribable": True, "following": False})
         self.assertEqual(first["held_by"], {"id": held, "name": "瀬戸環奈"})
         self.assertIsNone(second["held_by"])
         # 无码那张卡上只有正名，也对得上她；别名撞上的写法只报一次。
@@ -1416,6 +1425,20 @@ class FeedFollowByNameTest(PerformerFeedSwitchTest):
             self._lookup()
         with self.assertRaises(ValueError):
             self._lookup("  ")
+
+    def test_a_known_performer_with_an_id_can_be_followed_when_javdb_cannot_search(self):
+        """反馈「订阅女优搜不到」：JavDB 冷却或回登入页时，库里已有编号的她照样能订。"""
+        self._serve(self.search, LOGIN_PAGE)
+        held = self._performer("瀬戸環奈", ["Kn01"])
+        result = self._lookup()
+        self.assertEqual((result["candidates"], result["suggested"]), ([], []))
+        self.assertEqual(result["known"], {"id": held, "name": "瀬戸環奈", "subscribable": True, "following": False})
+        self.assertRegex(result["unavailable"], "登入页")
+        # 库里认得出、却没有任何编号的，仍然要靠搜索，搜不成就照旧报错。
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("DELETE FROM entity_external_ref WHERE entity_id=?", (held,))
+        with self.assertRaisesRegex(ValueError, "登入页"):
+            self._lookup()
 
     def test_following_an_unknown_name_creates_her_binds_the_cards_and_subscribes_now(self):
         result = self._follow(["Kn01", "Kn02"])
@@ -1469,6 +1492,87 @@ class FeedFollowByNameTest(PerformerFeedSwitchTest):
         with self.assertRaises(ValueError):
             self._follow(["../Kn01"])
         self.assertEqual(self._sources(), [])
+
+
+class PerformerPageFollowTest(FeedFollowByNameFixture):
+    """用户脚本女优页上的「订阅新作」：先按页面地址里的站内编号认人，只有名字的页去 JavDB 确认。"""
+
+    JAVDB = "https://javdb.com/actors/Kn01"
+    DMM = "https://video.dmm.co.jp/av/list/?actress=1061586"
+    MISSAV = "https://missav.ws/dm127/cn/actresses/" + "%E7%80%AC%E6%88%B8%E7%92%B0%E5%A5%88"
+
+    def _status(self, url, names=()):
+        return performer.performer_status(self.contract, None, url, names)
+
+    def _page_follow(self, url, enabled=True, names=()):
+        return performer.follow_performer(self.contract, None,
+                                          {"source_url": url, "enabled": enabled, "names": list(names)})
+
+    def test_the_page_address_names_the_site_id_or_the_name(self):
+        self.assertEqual(performer.performer_page(self.JAVDB, ["瀬戸環奈, 瀨戶環奈"]),
+                         {"site": "javdb", "javdb": "Kn01", "dmm": "", "names": ["瀬戸環奈", "瀨戶環奈"]})
+        for url in (self.DMM, "https://www.dmm.co.jp/digital/videoa/-/list/=/article=actress/id=1061586/"):
+            with self.subTest(url=url):
+                self.assertEqual(performer.performer_page(url)["dmm"], "1061586")
+        self.assertEqual(performer.performer_page(
+            "https://missav.ws/cn/actresses/" + "%E6%A3%AE%E6%B2%A2%E3%81%8B%E3%81%AA%EF%BC%88%E9%A3%AF%E5%B2%A1%E3%81%8B%E3%81%AA%E3%81%93%EF%BC%89")["names"],
+                         ["森沢かな", "飯岡かなこ"])
+        for url in ("https://javdb.com/v/WM9m8", "https://video.dmm.co.jp/av/list/?actress=abc",
+                    "https://missav.ws/cn/ssis-057", "https://example.com/actors/Kn01", "http://javdb.com/actors/Kn01"):
+            with self.subTest(url=url), self.assertRaisesRegex(ValueError, "不是支持的女优页"):
+                performer.performer_page(url)
+
+    def test_a_held_javdb_id_names_her_and_switches_her_subscription(self):
+        held = self._performer("瀬戸かんな", ["Kn01"])
+        status = self._status(self.JAVDB, ["瀬戸環奈"])
+        self.assertEqual((status["name"], status["entity_id"], status["following"]), ("瀬戸かんな", held, False))
+        self.assertTrue(self._page_follow(self.JAVDB)["following"])
+        self._settled()
+        self.assertFalse(self._page_follow(self.JAVDB, enabled=False)["following"])
+
+    def test_an_unknown_javdb_page_creates_her_from_the_page_name_and_binds_the_id(self):
+        status = self._page_follow(self.JAVDB, names=["瀬戸環奈, 瀨戶環奈"])
+        self.assertEqual((status["name"], status["following"]), ("瀬戸環奈", True))
+        _row, refs = self._entity(status["entity_id"])
+        self.assertEqual([ref["external_id"] for ref in refs], ["Kn01"])
+        self._settled()
+
+    def test_an_unknown_dmm_page_asks_dmm_for_her_name_and_subscribes_her_catalogue(self):
+        with patch.object(performer, "_dmm_name", return_value="森日向子") as asked, \
+                patch.object(web_feeds, "fetch_new_sources"):
+            status = self._page_follow(self.DMM)
+        asked.assert_called_once()
+        self.assertEqual((status["name"], status["following"]), ("森日向子", True))
+        [source] = [row for row in self._sources() if row["entity_id"] == status["entity_id"]]
+        self.assertEqual(source["url"], feeds.dmm_actress_url("1061586"))
+        # 再来一次就按编号认出她，不再问 DMM。
+        with patch.object(performer, "_dmm_name") as again:
+            self.assertEqual(self._status(self.DMM)["entity_id"], status["entity_id"])
+        again.assert_not_called()
+
+    def test_a_name_only_page_follows_her_once_javdb_confirms_one_person(self):
+        status = self._page_follow(self.MISSAV)
+        self.assertEqual((status["name"], status["following"]), ("瀬戸環奈", True))
+        _row, refs = self._entity(status["entity_id"])
+        self.assertEqual([ref["external_id"] for ref in refs], ["Kn01", "Kn02"])
+        self._settled()
+
+    def test_a_name_only_page_refuses_when_javdb_has_two_people_or_cannot_search(self):
+        for page, reason in ((TWINS_PAGE, "没能确认是同一位女优"), (LOGIN_PAGE, "登入页")):
+            with self.subTest(reason=reason):
+                self._serve(self.search, page)
+                with self.assertRaisesRegex(ValueError, reason):
+                    self._page_follow(self.MISSAV)
+        self.assertEqual(self._sources(), [])
+        self.assertEqual((self._status(self.MISSAV)["entity_id"], self._status(self.MISSAV)["name"]),
+                         (None, "瀬戸環奈"))
+
+    def test_a_known_name_with_an_id_is_followed_without_searching(self):
+        self._serve(self.search, LOGIN_PAGE)
+        held = self._performer("瀬戸環奈", ["Kn01"])
+        self.assertEqual(self._page_follow(self.MISSAV)["entity_id"], held)
+        self.assertTrue(all(request.url != self.search for request in self.transport.requests))
+        self._settled()
 
 
 class JavDiscoveryTest(FeedWebFixture):
