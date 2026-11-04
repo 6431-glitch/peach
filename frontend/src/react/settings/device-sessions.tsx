@@ -2,12 +2,12 @@
  *
  * 列表单独取：服务端要拿这次请求的 cookie 认出哪一行是本机。撤销与改密码同一条边界，
  * 只在运行 Peach 的电脑上做，别处打开只能看。行是 BoardUI `SettingsRow`，行首是终端形态图标，
- * 浏览器名前是浏览器标志（`BrowserIcon`），系统词前是平台标志（Remix Icon），本机标记是 `Chip`，
+ * 浏览器名前是浏览器标志（`BrowserIcon`），系统词前是品牌原色的平台标志（Remix Icon），本机标记是 `Chip`，
  * 撤销键是 BoardUI `Button`，确认走 `confirmModal()`。 */
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
-  RiAndroidFill, RiAppleFill, RiChromeFill, RiComputerLine, RiDeviceLine, RiSmartphoneLine, RiTabletLine, RiWindowsFill,
+  RiAndroidFill, RiAppleFill, RiComputerLine, RiDeviceLine, RiSmartphoneLine, RiTabletLine, RiWindowsFill,
 } from '@remixicon/react';
 import { confirmModal } from '@peach/legacy/ui';
 
@@ -31,17 +31,33 @@ export interface DeviceSessionList { revision: string; sessions: DeviceSession[]
 const deviceName = (row: DeviceSession) => row.device || '未识别的浏览器';
 
 type Glyph = typeof RiComputerLine;
+/* 平台标志与旁边的浏览器标志一样用品牌原色：Windows 蓝、Android 绿；Apple 官方标志是单色，用正文色实心；
+ * ChromeOS 直接用 Chrome 的彩色标志。行首终端图标是界面字形，保持灰色。 */
+const WINDOWS_BLUE = '#0078D4';
+const ANDROID_GREEN = '#3DDC84';
+const apple = { glyph: RiAppleFill, className: 'text-text-primary' };
+const android = { glyph: RiAndroidFill, color: ANDROID_GREEN };
+type Platform = { glyph: Glyph; color?: string; className?: string } | { browser: string };
+
 /** 服务端 `device_name()` 写出的系统词 → 平台标志与终端形态。没有 Linux 通用标志，只给终端图标。 */
-const SYSTEMS: Record<string, { platform?: Glyph; terminal: Glyph }> = {
-  iPhone: { platform: RiAppleFill, terminal: RiSmartphoneLine },
-  iPad: { platform: RiAppleFill, terminal: RiTabletLine },
-  Android: { platform: RiAndroidFill, terminal: RiSmartphoneLine },
-  'Android 平板': { platform: RiAndroidFill, terminal: RiTabletLine },
-  ChromeOS: { platform: RiChromeFill, terminal: RiComputerLine },
-  Windows: { platform: RiWindowsFill, terminal: RiComputerLine },
-  macOS: { platform: RiAppleFill, terminal: RiComputerLine },
+const SYSTEMS: Record<string, { platform?: Platform; terminal: Glyph }> = {
+  iPhone: { platform: apple, terminal: RiSmartphoneLine },
+  iPad: { platform: apple, terminal: RiTabletLine },
+  Android: { platform: android, terminal: RiSmartphoneLine },
+  'Android 平板': { platform: android, terminal: RiTabletLine },
+  ChromeOS: { platform: { browser: 'chrome' }, terminal: RiComputerLine },
+  Windows: { platform: { glyph: RiWindowsFill, color: WINDOWS_BLUE }, terminal: RiComputerLine },
+  macOS: { platform: apple, terminal: RiComputerLine },
   Linux: { terminal: RiComputerLine },
 };
+
+const MARK = 'inline size-4 -mt-0.5 mr-1 align-middle';
+
+function PlatformMark({ platform }: { platform: Platform }) {
+  if ('browser' in platform) return <BrowserIcon name={platform.browser} className={MARK} />;
+  const { glyph: Glyph, color, className = '' } = platform;
+  return <Glyph aria-hidden data-platform-mark="" className={`${MARK} ${className}`} style={color ? { color } : undefined} />;
+}
 
 /** 设备名是「浏览器 · 系统」：浏览器名前放浏览器标志，系统词前放平台标志；认不出的词照原文、不配图。 */
 function DeviceLabel({ row }: { row: DeviceSession }) {
@@ -49,13 +65,12 @@ function DeviceLabel({ row }: { row: DeviceSession }) {
   const parts = row.device.split(' · ');
   const system = SYSTEMS[parts.at(-1) ?? ''] ? parts.pop()! : '';
   const browser = parts.join(' · ');
-  const Platform = system ? SYSTEMS[system]!.platform : undefined;
-  const mark = 'inline size-4 -mt-0.5 mr-1 align-middle';
+  const platform = system ? SYSTEMS[system]!.platform : undefined;
   return (
     <>
-      {browser ? <>{browserIconId(browser) ? <BrowserIcon name={browser} className={mark} /> : null}{browser}</> : null}
+      {browser ? <>{browserIconId(browser) ? <BrowserIcon name={browser} className={MARK} /> : null}{browser}</> : null}
       {browser && system ? ' · ' : null}
-      {system ? <>{Platform ? <Platform aria-hidden className={`${mark} text-foreground-icon-secondary`} /> : null}{system}</> : null}
+      {system ? <>{platform ? <PlatformMark platform={platform} /> : null}{system}</> : null}
     </>
   );
 }
