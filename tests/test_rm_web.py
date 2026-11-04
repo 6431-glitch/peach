@@ -3596,6 +3596,30 @@ class DuplicateDetectionTests(unittest.TestCase):
         self.assertTrue(group["cross_drive"])
         self.assertEqual(group["drives"], ["A:", "B:"])
 
+    def test_kept_group_leaves_the_list_until_its_members_change(self):
+        first = self.add("SSIS-057", 7200, 5_000_000_000, drive="A")
+        second = self.add("SSIS-057", 7200, 4_000_000_000, drive="B")
+        other = [self.add("ABW-232", 7200, 5_000_000_000), self.add("ABW-232", 7200, 3_000_000_000)]
+        rm_web.w_batch(self.contract, {"ids": [second, first], "operation": "keep-duplicates"})
+        result = self.groups()
+        self.assertEqual([group["code"] for group in result["groups"]], ["ABW-232"])
+        self.assertEqual((result["total"], result["files"], result["kept"]), (1, 2, 1),
+                         "标过都保留的组不计入组数、文件数与可回收")
+        self.assertEqual(result["reclaimable"], 3_000_000_000)
+
+        third = self.add("SSIS-057", 7200, 3_000_000_000, drive="C")
+        result = self.groups()
+        self.assertEqual(result["kept"], 0, "多出一份副本，这组要重新列出")
+        regrouped = next(group for group in result["groups"] if group["code"] == "SSIS-057")
+        self.assertEqual({item["id"] for item in regrouped["files"]}, {first, second, third})
+
+        rm_web.w_batch(self.contract, {"ids": [first, second, third], "operation": "keep-duplicates"})
+        self.assertEqual(self.groups()["kept"], 1)
+        rm_web.w_batch(self.contract, {"ids": [first, second, third], "operation": "reconsider-duplicates"})
+        self.assertEqual(self.groups()["total"], 2, "撤销后这组回到列表")
+        with self.assertRaises(ValueError):
+            rm_web.w_batch(self.contract, {"ids": other[:1], "operation": "keep-duplicates"})
+
     def test_duplicate_rows_keep_the_full_path_for_review(self):
         self.add("SSIS-057", 7200, 5_000_000_000, drive="A")
         self.add("SSIS-057", 7200, 4_000_000_000, drive="B")
