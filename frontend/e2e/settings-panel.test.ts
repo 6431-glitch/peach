@@ -156,6 +156,26 @@ describe('设置面板', () => {
     }
   });
 
+  it('改过的 SFW 快捷键按物理键位生效，原来的 Shift+S 不再切换', { timeout: 60_000 }, async () => {
+    const opened = await openHome(browser);
+    try {
+      const page = opened.page;
+      const censored = () => page.evaluate(() => document.body.classList.contains('censor'));
+      await page.evaluate(() => localStorage.setItem('peach.sfw-shortcut', 'Alt+KeyH'));
+      await page.reload({ waitUntil: 'load' });
+      await settle(page);
+      await page.locator('body').click({ position: { x: 1, y: 1 } });
+      await page.keyboard.press('Shift+S');
+      assert.equal(await censored(), false);
+      await page.keyboard.press('Alt+KeyH');
+      assert.equal(await censored(), true);
+      await openPanel(page);
+      await page.locator(PANEL).getByRole('tab', { name: '内容显示', exact: true }).click();
+      assert.equal(await page.locator(`${PANEL} [data-setting-shortcut] kbd`).innerText(), 'Alt+H');
+      assert.deepEqual(opened.problems, []);
+    } finally { await opened.close() }
+  });
+
   it('Shift+S 在页面上切换 SFW 并记住，在输入框里不切换', { timeout: 60_000 }, async () => {
     const opened = await openHome(browser);
     try {

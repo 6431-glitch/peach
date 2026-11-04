@@ -1,6 +1,7 @@
 /* search 域控制器：本域状态与动作，启动由 Application 的生命周期统一安装。 */
 import { javImageKind } from './../jav-artwork';
-import { censorOn, preferencesState, setCensored } from './preferences.js';
+import { censorOn, preferencesState, setCensored, sfwShortcut } from './preferences.js';
+import { matchesShortcut } from '../keyboard-shortcut';
 import { coverImage } from './../card-art/markup';
 import { catalogState, goHome, homePath } from './catalog.js';
 import { disposeStage, mediaState, openItem } from './media.js';
@@ -155,10 +156,11 @@ applicationEffects.listen(document, 'keydown', e=>{
     return;
   }
   // 输入态不抢键：搜索框、标签弹窗和任何可编辑区域里的按键归它们自己处理。
-  if(isTypingTarget(e.target)||e.ctrlKey||e.metaKey||e.altKey)return;
-  // Shift+S 一键切换 SFW：有人走近时不必先打开设置（同 javm 的老板键 `2304ab2`）。只认 Shift，
-  // 和单字母的播放器快捷键分开；输入态已在上一行放过。
-  if(e.shiftKey&&(e.key==='S'||e.key==='s')){e.preventDefault();setCensored(!censorOn());return}
+  if(isTypingTarget(e.target))return;
+  // SFW 开关键（默认 Shift+S，可在设置里改）：有人走近时不必先打开设置（同 javm 的老板键
+  // `2304ab2`）。绑定必带修饰键，所以要在下一行放过修饰键组合之前比对。
+  if(!e.defaultPrevented&&matchesShortcut(e,sfwShortcut())){e.preventDefault();setCensored(!censorOn());return}
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
   if(e.key==='ArrowLeft'||e.key==='ArrowRight'){
     const imageStep=document.querySelector(`#stage[open] [data-media-carousel]:not([data-carousel-video-active]) [data-follow-image-step="${e.key==='ArrowRight'?1:-1}"]`);
     if(imageStep){e.preventDefault();imageStep.click();return}

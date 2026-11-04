@@ -33,6 +33,7 @@ import { NumberSetting } from './number-setting';
 import type { Choice, PanelSettings, SettingsPanelApi, SettingsPanelHost } from './settings-panel-api';
 import { fetchSettings, refreshPanelData, SETTINGS_KEY, useSaveSettings } from './settings-data';
 import { Note } from '../components/note';
+import { ShortcutSetting } from './shortcut-setting';
 import { SidebarOrder } from './sidebar-order';
 import { SettingsDialogClose } from '../components/settings-dialog-close';
 
@@ -379,8 +380,9 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
           </Group>
           <Group index={4} tab={shown.tab}>
             <ToggleRow id="censorSetting" title="SFW 模式" describedBy="sfwDescription" checked={current.censored()}
-              description="隐藏敏感画面，停止悬停预览。不在输入时按 Shift+S 随时开关。"
+              description="隐藏敏感画面，停止悬停预览。"
               onToggle={(on) => current.setCensored(on)} />
+            <ShortcutSetting current={current.sfwShortcut()} onChange={current.setSfwShortcut} />
           </Group>
         </div>
       </div>
