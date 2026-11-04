@@ -79,6 +79,56 @@ def _release_candidates(rows: list, endpoint: str, system: str = "win32", machin
     return releases
 
 
+def _listings(client):
+    """两个公开发行源的发布列表，取不到的源跳过：逐个给出 `(endpoint, rows)`。"""
+    for endpoint in (API_URL, DOWNLOADS_API):
+        try:
+            headers = {"Accept": "application/json"}
+            if endpoint == API_URL:
+                headers.update(Accept="application/vnd.github+json", **{"X-GitHub-Api-Version": "2022-11-28"})
+            response = client(HttpRequest("GET", endpoint, headers), 12.0, 2_000_000)
+            if response.status != 200:
+                continue
+            rows = json.loads(response.body)
+        except (OSError, ValueError, TypeError, TimeoutError, httpx.HTTPError):
+            continue
+        if isinstance(rows, list):
+            yield endpoint, rows
+
+
+def tool_package(tool: str, *, transport=None) -> dict:
+    """最新公开版本里的 Windows 工具包 `Peach-<版本>-windows-x64-tools-<tool>.zip`。
+
+    源码运行的版本号不一定有同名发布（主线可能已在下一版），所以不按本机版本拼地址，
+    取两个源里最新的那份；工具包与程序版本无关，包内 `manifest.json` 自带工具版本。
+    返回 `url`、`size`、`digest`（`sha256:` 前缀）与 `version`；两个源都没有时抛 ValueError。
+    """
+    client = transport or HttpxTransport()
+    try:
+        found = []
+        for endpoint, rows in _listings(client):
+            for row in rows:
+                version = _version(row.get("tag_name")) if isinstance(row, dict) and not row.get("draft") else None
+                if version is None:
+                    continue
+                tag = row["tag_name"]
+                name = f"Peach-{tag.removeprefix('v')}-windows-x64-tools-{tool}.zip"
+                asset = next((a for a in row.get("assets") or [] if isinstance(a, dict)
+                              and a.get("name") == name and a.get("state") == "uploaded"), None)
+                if (asset is None or not re.fullmatch(r"sha256:[0-9a-f]{64}", asset.get("digest") or "")
+                        or not isinstance(asset.get("size"), int)):
+                    continue
+                directory = f"{DOWNLOADS_BASE}/{tag}" if endpoint == DOWNLOADS_API else f"{RELEASES_URL}/download/{tag}"
+                found.append((version, {"url": f"{directory}/{name}", "size": asset["size"],
+                                        "digest": asset["digest"], "version": tag.removeprefix("v")}))
+        if not found:
+            raise ValueError("未能从发布页取得工具包信息，请检查网络与 Peach 代理后重试")
+        return max(found, key=lambda item: item[0])[1]
+    finally:
+        if transport is None:
+            client.close()
+
+
 def check(*, transport=None, system: str | None = None, machine: str | None = None) -> dict:
     result = snapshot()
     system = system or sys.platform
@@ -87,20 +137,11 @@ def check(*, transport=None, system: str | None = None, machine: str | None = No
     try:
         releases = []
         obtained = False
-        for endpoint in (API_URL, DOWNLOADS_API):
+        for endpoint, rows in _listings(client):
+            obtained = True
             try:
-                headers = {"Accept": "application/json"}
-                if endpoint == API_URL:
-                    headers.update(Accept="application/vnd.github+json", **{"X-GitHub-Api-Version": "2022-11-28"})
-                response = client(HttpRequest("GET", endpoint, headers), 12.0, 2_000_000)
-                if response.status != 200:
-                    continue
-                rows = json.loads(response.body)
-                if not isinstance(rows, list):
-                    continue
-                obtained = True
                 releases.extend(_release_candidates(rows, endpoint, system, machine))
-            except (OSError, ValueError, TypeError, TimeoutError, httpx.HTTPError):
+            except (ValueError, TypeError):
                 continue
         if not releases:
             return dict(result, state="empty" if obtained else "error",

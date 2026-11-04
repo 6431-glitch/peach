@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "51613070-26e8-4783-9a83-ec3787385f9d", e._sentryDebugIdIdentifier = "sentry-dbid-51613070-26e8-4783-9a83-ec3787385f9d");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "565e5abd-bcf6-4552-9e8e-2e532129483f", e._sentryDebugIdIdentifier = "sentry-dbid-565e5abd-bcf6-4552-9e8e-2e532129483f");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -19772,7 +19772,10 @@ function ih({ done: e }) {
 							summary: "运行信息",
 							children: /* @__PURE__ */ (0, z.jsx)(qm, { children: e.facts.map((e) => /* @__PURE__ */ (0, z.jsxs)(Jm, {
 								term: e.term,
-								children: [e.value, e.download_url ? /* @__PURE__ */ (0, z.jsx)(Km, {
+								children: [e.value, e.install_tool ? /* @__PURE__ */ (0, z.jsx)("span", {
+									className: "text-text-secondary",
+									children: "可在配置页「应用与维护」里安装。"
+								}) : e.download_url ? /* @__PURE__ */ (0, z.jsx)(Km, {
 									href: e.download_url,
 									children: e.download_label ?? e.download_url
 								}) : null]
@@ -22656,4 +22659,4 @@ E();
 var cv = document.getElementById("peach-page"), lv = cv ? sv[cv.dataset.page ?? ""] : void 0;
 cv && lv && (0, M.createRoot)(cv).render(/* @__PURE__ */ (0, z.jsx)(lv, { data: { ...cv.dataset } }));
 
-//# debugId=51613070-26e8-4783-9a83-ec3787385f9d
+//# debugId=565e5abd-bcf6-4552-9e8e-2e532129483f

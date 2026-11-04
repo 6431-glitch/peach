@@ -35,6 +35,26 @@ it('分区依次是运行信息、新手教程、卸载；缺依赖的运行信�
   expect(link?.textContent).toBe('下载 FFmpeg');
 });
 
+it('能装的缺失工具给「安装」，装完用服务端回的运行信息换掉那一行并回执', async () => {
+  const data: ConfigurationData = {
+    editable: true, notice: '', revision: 'r', media_dirs: [], library_count: 0, port: 9123,
+    facts: [{ term: 'untrunc', value: '未安装；缺索引的 MP4 需要它才修得了。', install_tool: 'untrunc' }],
+  };
+  const fetcher = fetchMock(200, { message: '已安装 untrunc（9d86ec9）', facts: [{ term: 'untrunc', value: '已安装，版本 9d86ec9' }] });
+  vi.stubGlobal('fetch', fetcher);
+  const receipt = vi.fn();
+  const host = await mount(<MaintenanceSettings data={data} receipt={receipt} reopenTutorial={vi.fn()} />);
+  const facts = section(host, '运行信息')!;
+  expect(facts.querySelector('a')).toBeNull();
+  await click(buttonNamed('安装', facts));
+  await settle();
+  expect(fetcher.mock.calls[0]?.[0]).toBe('/api/configuration/media-tools');
+  expect(sentBody(fetcher)).toEqual({ tool: 'untrunc' });
+  expect(facts.querySelector('dd')?.textContent).toBe('已安装，版本 9d86ec9');
+  expect(buttonNamed('安装', facts)).toBeNull();
+  expect(receipt).toHaveBeenCalledWith('已安装 untrunc（9d86ec9）');
+});
+
 describe('自动更新', () => {
   it('两颗开关互相约束，服务端成功后才回执，关闭也能保存', async () => {
     const fetcher = fetchMock(200, automatic);

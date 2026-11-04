@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "80caf3f2-9a7b-4fda-9c35-03d51996f275", e._sentryDebugIdIdentifier = "sentry-dbid-80caf3f2-9a7b-4fda-9c35-03d51996f275");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "2f3cd5a5-f56d-4330-99e5-239a1b564c28", e._sentryDebugIdIdentifier = "sentry-dbid-2f3cd5a5-f56d-4330-99e5-239a1b564c28");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2204,7 +2204,10 @@ function wa({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 					})
 				}) : null]
 			}) : null,
-			/* @__PURE__ */ (0, Q.jsx)(Da, { facts: e.facts }),
+			/* @__PURE__ */ (0, Q.jsx)(Da, {
+				facts: e.facts,
+				receipt: t
+			}),
 			/* @__PURE__ */ (0, Q.jsx)(Ta, {
 				receipt: t,
 				reopenTutorial: n
@@ -2294,17 +2297,25 @@ function Ea({ initial: e, receipt: t }) {
 		]
 	});
 }
-function Da({ facts: e }) {
-	return /* @__PURE__ */ (0, Q.jsx)(L, {
+function Da({ facts: e, receipt: t }) {
+	let [n, r] = (0, Z.useState)(null), i = n ?? e, a = Y(), o = (e) => void a.run(e, (t) => G("/api/configuration/media-tools", { tool: e }, "POST", t), (e) => {
+		r(e.facts), t(e.message);
+	});
+	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "facts",
 		title: "运行信息",
-		children: /* @__PURE__ */ (0, Q.jsx)(lt, { children: e.map((e) => /* @__PURE__ */ (0, Q.jsxs)(j, {
-			term: e.term,
-			children: [e.value, e.download_url ? /* @__PURE__ */ (0, Q.jsx)(A, {
-				href: e.download_url,
-				children: e.download_label
+		children: [/* @__PURE__ */ (0, Q.jsx)(lt, { children: i.map(({ term: e, value: t, install_tool: n, download_url: r, download_label: i }) => /* @__PURE__ */ (0, Q.jsxs)(j, {
+			term: e,
+			children: [t, n ? /* @__PURE__ */ (0, Q.jsx)(E, {
+				size: "small",
+				onClick: () => o(n),
+				...K(a.busy === n),
+				children: "安装"
+			}) : r ? /* @__PURE__ */ (0, Q.jsx)(A, {
+				href: r,
+				children: i
 			}) : null]
-		}, e.term)) })
+		}, e)) }), a.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: a.error }) : null]
 	});
 }
 function Oa({ uninstall: e, receipt: t }) {
@@ -5820,4 +5831,4 @@ function Ps({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { js as ConfigurationPage };
 
-//# debugId=80caf3f2-9a7b-4fda-9c35-03d51996f275
+//# debugId=2f3cd5a5-f56d-4330-99e5-239a1b564c28

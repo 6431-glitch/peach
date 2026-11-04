@@ -585,7 +585,7 @@ Windows 上 TLS 私钥禁用了权限继承，只允许实际运行服务的账�
 
 ## 播放与转码
 
-浏览器能直接播放的格式（例如常见的 MP4）不需要额外软件。Windows 安装版和绿色版携带 FFmpeg、ffprobe 与修复损坏 MP4 索引用的 untrunc。源码部署需要自行提供这些工具；配置页「运行信息」缺少它们时会给出下载入口。首次设置缺少 OpenSSL 时也会给出下载入口。
+浏览器能直接播放的格式（例如常见的 MP4）不需要额外软件。Windows 安装版和绿色版携带 FFmpeg、ffprobe 与修复损坏 MP4 索引用的 untrunc。源码部署缺少这些工具时，Windows x64 可在配置页「应用与维护」→「运行信息」点「安装」：Peach 从最新发布下载同一份 `tools-ffmpeg.zip` 或 `tools-untrunc.zip`，经 Peach 代理设置出网，按发布摘要校验整包、按包内清单校验每个文件，再解压到数据目录的 `tools/ffmpeg`、`tools/untrunc`，装好后那一行显示版本。下载中断或校验不符时已有文件不变，再点一次即重新下载；已装且校验相符时不重复下载。macOS 与 Linux 没有发布的工具包（macOS 应用与 Docker 镜像自带工具），源码部署仍按页面上的官方下载入口自行安装，或加入 PATH。首次设置缺少 OpenSSL 时也会给出下载入口。
 
 Peach 按下面的顺序找 FFmpeg 和 ffprobe：
 

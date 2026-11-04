@@ -36,7 +36,7 @@ export function MaintenanceSettings(
           <LibrarySharingSettings initial={data.library_sharing} receipt={receipt} />
         </div> : null}
       </Section> : null}
-      <Facts facts={data.facts} />
+      <Facts facts={data.facts} receipt={receipt} />
       <TutorialSettings receipt={receipt} reopenTutorial={reopenTutorial} />
       {data.uninstall ? <UninstallSettings uninstall={data.uninstall} receipt={receipt} /> : null}
     </div>
@@ -98,17 +98,30 @@ export function AutomaticUpdates({ initial, receipt }: { initial: AutomaticUpdat
   );
 }
 
-function Facts({ facts }: { facts: ConfigurationFact[] }) {
+/* 缺的媒体工具在能装的平台上带「安装」：下载、校验、解压都在那一次请求里做完，回来的运行信息整块
+ * 替换，刚装好的那一行直接写着版本。其余平台没有发布的工具包，仍是官方下载外链。 */
+function Facts({ facts: loaded, receipt }: { facts: ConfigurationFact[]; receipt(message: string): void }) {
+  const [installed, setInstalled] = useState<ConfigurationFact[] | null>(null);
+  const facts = installed ?? loaded;
+  const action = useAction();
+  const install = (tool: string) => void action.run(tool, (signal) => apiSend<{ message: string; facts: ConfigurationFact[] }>(
+    '/api/configuration/media-tools', { tool }, 'POST', signal), (result) => {
+    setInstalled(result.facts);
+    receipt(result.message);
+  });
   return (
     <Section guide="facts" title="运行信息">
       <FactList>
-        {facts.map((fact) => (
-          <Fact key={fact.term} term={fact.term}>
-            {fact.value}
-            {fact.download_url ? <ExternalLink href={fact.download_url}>{fact.download_label}</ExternalLink> : null}
+        {facts.map(({ term, value, install_tool: tool, download_url: url, download_label: label }) => (
+          <Fact key={term} term={term}>
+            {value}
+            {tool
+              ? <Button size="small" onClick={() => install(tool)} {...busyProps(action.busy === tool)}>安装</Button>
+              : url ? <ExternalLink href={url}>{label}</ExternalLink> : null}
           </Fact>
         ))}
       </FactList>
+      {action.error ? <ErrorText>{action.error}</ErrorText> : null}
     </Section>
   );
 }
