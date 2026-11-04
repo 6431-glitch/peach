@@ -122,9 +122,10 @@ function FollowupList({ rows }: { rows: TaskRunPayload[] }) {
 /** 一轮任务一张卡。失败时整张卡的框线换成 danger 色，不给结束原因那行字上色——
  *  一屏十几行里逐行读红字，比看一眼哪张卡的框是红的慢得多。 */
 function RunCard(
-  { run, meta, children, error, issues, followups, followupTotal = 0, badge, resourceActive }:
+  { run, meta, children, error, issues, followups, followupTotal = 0, badge, resourceActive, controlled }:
   { run: TaskRunPayload; meta: string; children?: ReactNode; error?: string; issues?: ReactNode;
-    followups?: TaskRunPayload[]; followupTotal?: number; badge?: ReactNode; resourceActive?: boolean },
+    followups?: TaskRunPayload[]; followupTotal?: number; badge?: ReactNode; resourceActive?: boolean;
+    controlled?: TaskRunPayload[] },
 ) {
   /* 一轮派出上千条后继时只下发最近几十条，合并的几批又可能各带几十条：标题写全数，
      列表先列在跑与排队的、再列最近结束的，最多 `FOLLOWUP_ROWS` 条，并说清只列了其中几条。 */
@@ -151,7 +152,7 @@ function RunCard(
             <strong className="min-w-0 break-words text-title-3-medium text-text-primary">{run.task_label}</strong>
             {badge ?? <StatusBadge run={run} />}
           </div>
-          <TaskControls run={run} />
+          <TaskControls run={run} runs={controlled} />
         </div>
         <p className="text-caption-1-regular text-text-secondary">{meta}</p>
         <TaskResources run={run} active={resourceActive} />
@@ -305,7 +306,7 @@ function WorkingRun(
     runs.length > 1 ? `${runs.length} 批` : '',
     `${momentText(oldest.started_at || oldest.finished_at)} 开始`].filter(Boolean).join(' · ');
   return (
-    <RunCard run={run} meta={meta} followups={followups} followupTotal={total} resourceActive
+    <RunCard run={run} meta={meta} followups={followups} followupTotal={total} resourceActive controlled={runs}
       badge={run.control ? <StatusBadge run={run} /> : <Chip color="blue">进行中</Chip>}>
       <div className="flex flex-col gap-1.5">
         <Progress label={`${run.task_label}进度`} value={settled} max={total} />
@@ -401,11 +402,10 @@ export function ActivityPage() {
   };
   const folds = foldRoutine(finished, (run) => isRoutine(run)
     && (quietChildren(run) || DISPATCHERS.has(run.task_key)));
-  // 各父任务的控制范围独立：合成一张卡会让较早那批的后继没有对应操作入口。
-  const workingGroups = [
-    ...foldByKind(working.filter((run) => !run.control)),
-    ...working.filter((run) => run.control).map((run) => ({ run, runs: [run] })),
-  ].sort((left, right) => right.run.id - left.run.id);
+  // 控制状态相同的几批合成一张，卡上的暂停、继续、取消对其中每一批都发一次；
+  // 状态不同的（一批已暂停、一批在跑）分开摆，按钮才说得清作用在哪批上。
+  const workingGroups = foldByKind(working, (run) => run.control?.state || '')
+    .sort((left, right) => right.run.id - left.run.id);
   const newest = latestOfKind(allRuns);
   const quiet = !running.length && !working.length && !skipped.length && !finished.length;
   return (
