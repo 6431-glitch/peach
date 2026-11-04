@@ -215,6 +215,7 @@ class DependencyPolicyTests(unittest.TestCase):
             "psutil": "psutil",
             "pydantic": "pydantic",
             "pystray": "pystray",
+            "qrcode": "qrcode",
             "resvg_py": "resvg-py",
             "sentry_sdk": "sentry-sdk",
             "smbclient": "smbprotocol",

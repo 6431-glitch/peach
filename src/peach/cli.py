@@ -118,12 +118,15 @@ def _serve(args: argparse.Namespace) -> int:
     if not distribution.standalone() and not _is_loopback(args.host) and (publish_mdns or TUNNEL_ENABLED):
         from .mdns import lan_ipv4
         tunnel_lan_address = args.mdns_address or lan_ipv4()
+    token = "" if args.setup else _serve_token(args)
+    secrets_dir = settings_file.active().directory("secrets")
     settings = PeachSettings(
         db_path=args.db,
         host=args.host,
         port=args.port,
-        token="" if args.setup else _serve_token(args),
-        access_path=settings_file.active().directory("secrets") / "access.json",
+        token=token,
+        token_file=auth.token_file(args.token, secrets_dir) if token else None,
+        access_path=secrets_dir / "access.json",
         configured=CONFIGURED and not args.setup,
         docs_enabled=args.docs,
         mdns_enabled=publish_mdns,
