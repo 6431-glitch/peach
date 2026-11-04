@@ -9,7 +9,7 @@ MGS 的 5/23、标题带 MGS 附注、演员里有男优，各字段按 Peach �
 
 一部分页面要登录才给，回的是登入页而不是 401/403（`peach.javdb.LOGIN`），搜索页与详情页都要认。
 
-刮削不读详情页，走 `JavDBPublicSource` 的匿名接口（ADR-0140）：不带 Cookie，不占 javdb.com
+刮削不读详情页，走 `JavDBPublicSource` 的匿名接口（ADR-0143）：不带 Cookie，不占 javdb.com
 的出口配额，字段投影成与详情页同形的记录。详情页解析留给视频预览。
 """
 from __future__ import annotations
