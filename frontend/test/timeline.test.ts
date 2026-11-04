@@ -49,6 +49,7 @@ describe('时间到雪碧图坐标', () => {
   it('只预热页数可数的自有接触印相', () => {
     expect(preloadPages({ frames: 250, interval: 10 })).toBe(3);
     expect(preloadPages({ frames: 2, interval: 0, cues: [[0, 3], [3, 6]] })).toBe(0);
+    expect(preloadPages({ source: 'jellyfin', frames: 250, interval: 10 })).toBe(0);
     expect(preloadPages({ frames: 100 * PRELOAD_PAGES + 1, interval: 10 })).toBe(0);
     expect(preloadPages(null)).toBe(0);
   });

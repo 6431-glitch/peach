@@ -36,9 +36,9 @@ export function previewCenter(pointer: number, track: number, width: number, ins
   return Math.min(track - inset - width / 2, Math.max(inset + width / 2, pointer));
 }
 
-/** 固定间隔的自有接触印相才预热：页数可数。外部来源的 `cues` 是逐帧单图，可能几百张，按需取。 */
+/** 只预热 Peach 自有接触印相：页数可数。外部来源的 `s` 是帧号、一帧一图，可能几百张，按需取。 */
 export function preloadPages(sheet: TimelineSheets | null | undefined): number {
-  if (!sheet || sheet.cues?.length || !(sheet.interval > 0) || sheet.frames <= 0) return 0;
+  if (!sheet || (sheet.source || 'peach') !== 'peach' || sheet.cues?.length || !(sheet.interval > 0) || sheet.frames <= 0) return 0;
   const pages = Math.ceil(sheet.frames / ((sheet.columns || 10) * (sheet.rows || 10)));
   return pages <= PRELOAD_PAGES ? pages : 0;
 }
