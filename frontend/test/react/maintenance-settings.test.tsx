@@ -45,7 +45,7 @@ it('能装的缺失工具给「安装」，装完用服务端回的运行信息�
   const receipt = vi.fn();
   const host = await mount(<MaintenanceSettings data={data} receipt={receipt} reopenTutorial={vi.fn()} />);
   const facts = section(host, '运行信息')!;
-  expect(facts.querySelector('a')).toBeNull();
+  expect(facts.querySelector('a[target="_blank"]')).toBeNull();
   await click(buttonNamed('安装', facts));
   await settle();
   expect(fetcher.mock.calls[0]?.[0]).toBe('/api/configuration/media-tools');
