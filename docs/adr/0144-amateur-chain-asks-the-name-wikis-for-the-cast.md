@@ -26,7 +26,7 @@ Seesaa 上的素人系総合 Wiki 与 av_neme 就是把素人作品对到艺名�
 
 **二、只在缺演员时问。** 这一行缺演员、链上有 Wiki 时，MGStage 把标量给齐了也不停（`settles(..., wants_cast=True)`），接着问 Wiki；一个 Wiki 给出演员就不再问另一个。两个都没给（没有这部片、连不上），MGStage 给的字段已经够了就停，不为此落到综合索引——javdb 那条全进程共用的 3 秒队列正是要省的。已有演员的行不问 Wiki。
 
-**三、演员栏上两个 Wiki 排在官方档前面。** `FIELD_SOURCE_PRIORITY["performers"]` 在 fc2cmadb、fc2ppvdb 之后加上 sougouwiki、av_neme。只有素人番号问得到它们，提前不影响别的类型；标题、厂牌、日期仍听 MGStage。
+**三、演员栏上两个 Wiki 排在官方档前面。** `FIELD_SOURCE_PRIORITY["performers"]` 在 fc2cmadb、fc2ppvdb 之后加上 sougouwiki、av_neme。只有素人番号问得到它们，提前不影响别的类型；标题、厂牌、日期仍听 MGStage。称呼里一个艺名都剪不出的（`早見さん`），在别家给出艺名时不算证据，沿用 ADR-0079 对 FC2 的同一处理（`_without_descriptive_performers`，记进 note 的 `descriptive_dropped`）；没有别家给艺名时照旧交人工。
 
 **四、取页走正式链的传输。** `LibraryMetadataProvider.wiki` 用资料处理那一份 `HostLimitedTransport`（Peach 代理设置、全进程主机间隔 2 秒），页缓存放在数据根 `sources/library-metadata/seesaa-pages`，同厂牌的下一部片直接读缓存里的厂牌表。每站请求上限 2000 次，每取一页前看这部片的动作预算（90 秒）。没找到（含站内搜索翻完仍未命中的 `incomplete_search`）记成「没有」，7 天内不再问；连不上记成来源失败，下一轮重试。
 
