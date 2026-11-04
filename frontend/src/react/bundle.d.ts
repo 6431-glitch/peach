@@ -279,6 +279,8 @@ export interface ConfigurationFact {
   value: string;
   download_url?: string;
   download_label?: string;
+  /** 能由 Peach 装进数据目录的缺失工具（`ffmpeg`、`untrunc`），有它就不给下载外链。 */
+  install_tool?: string;
 }
 
 export interface ConfigurationData {

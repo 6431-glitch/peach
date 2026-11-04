@@ -133,6 +133,26 @@ class ReleaseUpdateTests(unittest.TestCase):
         self.assertEqual(calls, [release_updates.API_URL, release_updates.DOWNLOADS_API])
         self.assertEqual(result["asset_url"], release_updates.RELEASES_URL + "/download/v1.0.0/Peach-1.0.0-windows-x64.zip")
 
+    def test_tool_package_is_the_newest_release_carrying_that_tool_with_a_digest(self):
+        def tools(version, digest=True):
+            row = release(version)
+            row["assets"].append({"name": f"Peach-{version}-windows-x64-tools-ffmpeg.zip", "state": "uploaded",
+                                  "size": 42, **({"digest": "sha256:" + "b" * 64} if digest else {})})
+            return row
+
+        github = [tools("2.0.0", digest=False), tools("1.5.0"), release("3.0.0")]
+        mirror = [tools("1.0.0")]
+
+        def transport(request, *_args):
+            rows = mirror if request.url == release_updates.DOWNLOADS_API else github
+            return HttpResponse(200, {}, json.dumps(rows).encode())
+
+        self.assertEqual(release_updates.tool_package("ffmpeg", transport=transport), {
+            "url": release_updates.RELEASES_URL + "/download/v1.5.0/Peach-1.5.0-windows-x64-tools-ffmpeg.zip",
+            "size": 42, "digest": "sha256:" + "b" * 64, "version": "1.5.0"})
+        with self.assertRaisesRegex(ValueError, "工具包"):
+            release_updates.tool_package("untrunc", transport=transport)
+
     def test_standalone_tray_checks_releases_without_git(self):
         execute = Mock(side_effect=AssertionError("Git must not run"))
         with patch("peach.distribution.standalone", return_value=True), patch.object(

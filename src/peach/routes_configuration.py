@@ -35,7 +35,8 @@ from .jobs import JobAlreadyRunning
 from .routes_auth import require_auth, require_authenticated_client, same_origin, sessions as access_sessions
 from .web_entry import runtime_fact_entries
 from .web_local_access import local_client, managed_configuration
-from . import release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall, docker_update
+from . import (release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall, docker_update,
+               media_tools)
 
 router = APIRouter()
 _SAVE_LOCK = threading.Lock()
@@ -419,6 +420,22 @@ def save_automatic_updates(request: Request, body: dict = Body(...), _args=Depen
         return request.app.state.automatic_updates.save(body)
     except (ValueError, OSError, Timeout) as exc:
         raise HTTPException(400, str(exc)) from exc
+
+
+@router.post("/api/configuration/media-tools")
+def install_media_tool(request: Request, body: dict = Body(...), _args=Depends(require_auth)):
+    """把 FFmpeg 或 untrunc 装进数据目录（Windows x64，见 `media_tools`），回最新的运行信息。
+
+    下载在请求里同步做完：工具包几十 MB，按钮转着等，比后台任务加轮询少一整套状态。
+    """
+    local_only(request)
+    same_origin(request)
+    config = settings_file.load_config()
+    try:
+        message = media_tools.install(config.directory("tools"), str(body.get("tool", "")))
+    except (ValueError, OSError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+    return {"message": message, "facts": runtime_fact_entries(config)}
 
 
 @router.post("/api/configuration/peach-proxy")
