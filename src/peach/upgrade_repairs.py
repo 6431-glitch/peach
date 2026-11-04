@@ -63,7 +63,8 @@ def _catalog_plan(connection, sources: Path, *, catalog: bool = True) -> dict:
     text = metadata_text_repair.collect(connection, sources / 'library-metadata')
     if not catalog:
         return {'codes':[], 'fields':[], 'names':[], 'aliases':[], 'text':text, 'catalog':False}
-    from .catalog_rules import compile_code_patterns, release_code_from_filename, same_release_code
+    from .catalog_rules import (compile_code_patterns, normalise_code_key, release_code_from_filename,
+                                same_release_code)
     from .profiles import read_settings
     patterns = compile_code_patterns(read_settings(connection).get('codePatterns'))
     codes = []
@@ -71,7 +72,9 @@ def _catalog_plan(connection, sources: Path, *, catalog: bool = True) -> dict:
         if owner_of(row['field_owners'], 'code') != SCAN_FILENAME:
             continue
         expected = release_code_from_filename(row['name'] or '', patterns=patterns)
-        if expected and row['code'] and not same_release_code(expected, row['code']):
+        # 同一部片、规范写法变了的也改：HEYZO 定宽四位后，旧的 `HEYZO-707` 规范化就是 `HEYZO-0707`（#354）。
+        rewritten = row['code'] != expected == normalise_code_key(row['code'])
+        if expected and row['code'] and (rewritten or not same_release_code(expected, row['code'])):
             codes.append({'id': row['id'], 'current': row['code'], 'target': expected})
     fields = r18_legacy_repair.collect(connection, sources / 'library-metadata')
     names = r18_legacy_repair.collect_entities(connection, sources / 'library-metadata',

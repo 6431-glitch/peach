@@ -624,17 +624,24 @@ def normalise_code_key(code: str | None) -> str:
 #: 130 分钟）。代价是随手写成 `MCDV-24` 的有码片会被认成无码那部。
 SHORT_SERIAL_PREFIXES = frozenset({"MCDV"})
 
+#: 官方编号定宽、不足位数补零的字母段。`HEYZO`：官网与各来源都写四位（`HEYZO-0707`），
+#: 按三位收成 `HEYZO-707` 就查不到资料（#354）。
+SERIAL_WIDTHS = {"HEYZO": 4}
+
 
 def _keeps_width(letters: str, digits: str) -> bool:
     return len(digits) < 3 and letters.upper() in SHORT_SERIAL_PREFIXES
 
 
 def code_serial(letters: str, digits: str) -> str:
-    """番号数字段的规范写法：补零到三位，`SHORT_SERIAL_PREFIXES` 的短号按原写保留。
+    """番号数字段的规范写法：补零到三位，`SERIAL_WIDTHS` 的字母段补到登记的位数，
+    `SHORT_SERIAL_PREFIXES` 的短号按原写保留。
 
-    三位以上的前导零一律收掉：DMM 的 `mcdv00024` 与 `MCDV-024` 是同一部。
+    多出来的前导零一律收掉：DMM 的 `mcdv00024` 与 `MCDV-024` 是同一部。
     """
-    return digits if _keeps_width(letters, digits) else f"{int(digits):03d}"
+    if _keeps_width(letters, digits):
+        return digits
+    return f"{int(digits):0{SERIAL_WIDTHS.get(letters.upper(), 3)}d}"
 
 
 def code_serial_pattern(letters: str, digits: str) -> str:
