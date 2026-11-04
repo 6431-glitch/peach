@@ -271,7 +271,10 @@ function CheckAllCard({ toast }: ScrapingProps) {
   };
 
   const checks = (job?.results ?? []).flatMap(
-    (report) => report.results.map((check) => ({ name: targetName(report, check), check })));
+    (report) => report.results.map((check) => ({ source: report.source, name: targetName(report, check), check })));
+  // 站标跟名字走，同来源卡标题旁的那一枚。
+  const titled = (source: string, name: string) =>
+    <span className="inline-flex min-w-0 items-center gap-1.5"><SiteMark source={source} />{name}</span>;
   const passed = checks.filter(({ check }) => check.outcome === 'ok');
   // 按口径成组，组内保持来源顺序：要人去登录的排前面，不在这里查的片商官网垫底。
   const problems = checks.filter(({ check }) => check.outcome !== 'ok').sort(
@@ -307,8 +310,8 @@ function CheckAllCard({ toast }: ScrapingProps) {
           : null}
         {problems.length
           ? <ul className="flex min-w-0 flex-col">
-              {problems.map(({ name, check }) => (
-                <IssueRow key={name} title={name}>
+              {problems.map(({ source, name, check }) => (
+                <IssueRow key={name} title={titled(source, name)}>
                   <span className="flex flex-wrap items-center gap-2">
                     <StatusLabel tone={OUTCOME_TONES[check.outcome]}>{check.outcome_label}</StatusLabel>
                     {check.message
@@ -322,8 +325,8 @@ function CheckAllCard({ toast }: ScrapingProps) {
         {passed.length
           ? <Disclosure summary={`可连接的 ${passed.length} 项`}>
               <FactList>
-                {passed.map(({ name, check }) => (
-                  <Fact key={name} term={name}>
+                {passed.map(({ source, name, check }) => (
+                  <Fact key={name} term={titled(source, name)}>
                     {[check.width ? `${check.width} × ${check.height}` : '',
                       check.elapsed_s !== undefined ? `${check.elapsed_s.toFixed(2)} 秒` : ''].filter(Boolean).join(' · ')}
                   </Fact>

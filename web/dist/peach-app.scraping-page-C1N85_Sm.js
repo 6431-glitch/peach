@@ -1,10 +1,10 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "14c1e974-8ca8-4012-b8f7-793ccb5fcab6", e._sentryDebugIdIdentifier = "sentry-dbid-14c1e974-8ca8-4012-b8f7-793ccb5fcab6");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "383a2275-18e0-4000-88e8-d6afd5fd1120", e._sentryDebugIdIdentifier = "sentry-dbid-383a2275-18e0-4000-88e8-d6afd5fd1120");
 	} catch {}
 })();
-import { $fe21c36db05242bb$export$d7b12c4107be0d61 as e, AMANE_BRIDGE_CHECK_URL as t, AMANE_BRIDGE_KEY as n, AMANE_BRIDGE_REBUILD_URL as r, Button as i, CHECK_ALL_KEY as a, COVER_JOB_KEY as o, CUSTOM_SOURCES_KEY as s, CUSTOM_SOURCES_URL as c, Checkbox as l, Disclosure as u, ErrorText as d, ExternalLink as f, Fact as p, FactList as m, FieldLabel as h, Footer as g, Help as _, Input as v, IssueRow as y, LinkButton as ee, LoadingDots as b, Note as x, Progress as S, Rows as te, SCRAPING_CHECK_ALL_URL as C, SCRAPING_CHECK_URL as ne, SCRAPING_COVER_URL as w, SCRAPING_KEY as T, SCRAPING_SETTINGS_URL as re, SEGMENT as ie, SEGMENTED_TRACK as ae, Section as E, SegmentedRadioGroup as oe, Select$1 as se, SelectField as D, SelectItem as ce, SettingsRow as le, Stack as O, StatusLabel as k, __toESM as A, apiSend as j, busyProps as M, checkText as ue, composingKey as de, confirmModal as N, errorMessage as P, esc as F, fetchAmaneBridge as I, fetchCheckAllJob as L, fetchCoverJob as R, fetchCustomSources as z, fetchSources as fe, i2 as pe, momentText as me, queryClient as B, require_jsx_runtime as he, require_react as ge, spinnerHtml as _e, useAction as V, useBackgroundJob as H, useMutation as U, useQuery as W } from "./peach-app.js";
+import { $fe21c36db05242bb$export$d7b12c4107be0d61 as e, AMANE_BRIDGE_CHECK_URL as t, AMANE_BRIDGE_KEY as n, AMANE_BRIDGE_REBUILD_URL as r, Button as i, CHECK_ALL_KEY as a, COVER_JOB_KEY as o, CUSTOM_SOURCES_KEY as s, CUSTOM_SOURCES_URL as c, Checkbox as l, Disclosure as u, ErrorText as d, ExternalLink as f, Fact as p, FactList as m, FieldLabel as h, Footer as g, Help as _, Input as v, IssueRow as y, LinkButton as ee, LoadingDots as b, Note as x, Progress as S, Rows as te, SCRAPING_CHECK_ALL_URL as C, SCRAPING_CHECK_URL as ne, SCRAPING_COVER_URL as w, SCRAPING_KEY as T, SCRAPING_SETTINGS_URL as re, SEGMENT as ie, SEGMENTED_TRACK as ae, Section as E, SegmentedRadioGroup as oe, Select$1 as se, SelectField as D, SelectItem as ce, SettingsRow as le, Stack as O, StatusLabel as k, __toESM as A, apiSend as j, busyProps as M, checkText as ue, composingKey as N, confirmModal as de, errorMessage as P, esc as F, fetchAmaneBridge as I, fetchCheckAllJob as L, fetchCoverJob as R, fetchCustomSources as z, fetchSources as fe, i2 as pe, momentText as me, queryClient as B, require_jsx_runtime as he, require_react as ge, spinnerHtml as _e, useAction as V, useBackgroundJob as H, useMutation as U, useQuery as W } from "./peach-app.js";
 import { CodeBlock as ve } from "./peach-app.code-block-CyDva4Ms.js";
 import { Page as G } from "./peach-app.page-QAncjzM1.js";
 import { SiteMark as K } from "./peach-app.site-mark-D_VlIyJz.js";
@@ -85,7 +85,7 @@ function Ce({ receipt: e }) {
 						}),
 						/* @__PURE__ */ (0, J.jsx)(i, {
 							variant: "danger",
-							onClick: () => N({
+							onClick: () => de({
 								title: "删除自定义来源",
 								body: `删除「${F(t.name)}」后，采集将不再查询这个来源。`,
 								confirmLabel: "删除来源",
@@ -202,7 +202,7 @@ function we({ initial: e, cancel: t, saved: n }) {
 					p.current++, s(e), f("");
 				},
 				onKeyDown: (e) => {
-					if (e.key !== "Enter" || de(e.nativeEvent)) return;
+					if (e.key !== "Enter" || N(e.nativeEvent)) return;
 					e.preventDefault();
 					let t = p.current;
 					m.run("preview", (e) => j(c, {
@@ -273,9 +273,9 @@ function Ee({ source: t, toast: n }) {
 				sources: t.sources.map((t) => t.source === e.saved.source ? e.saved : t)
 			}), C(), n(t ? "Cookie 已撤销" : "来源设置已保存");
 		}
-	}), D = U({ mutationFn: () => j(ne, { source: t.source }) }), A = w.isPending || D.isPending, de = (e) => {
+	}), D = U({ mutationFn: () => j(ne, { source: t.source }) }), A = w.isPending || D.isPending, N = (e) => {
 		e.preventDefault(), !A && (D.reset(), w.mutate(!1));
-	}, N = () => {
+	}, de = () => {
 		A || (D.reset(), w.mutate(!0));
 	}, F = () => {
 		A || (w.reset(), D.mutate());
@@ -294,7 +294,7 @@ function Ee({ source: t, toast: n }) {
 	let L = y || (w.error ? P(w.error) : "") || (D.error ? P(D.error) : ""), R = D.data?.results ?? [], z = r === "peach" || t.accepts_cookie || t.browser || !!L || R.length > 0;
 	return /* @__PURE__ */ (0, J.jsxs)(E, {
 		title: t.label,
-		onSubmit: de,
+		onSubmit: N,
 		aside: /* @__PURE__ */ (0, J.jsxs)("span", {
 			className: "flex min-w-0 items-center gap-1",
 			children: [/* @__PURE__ */ (0, J.jsx)(K, { source: t.source }), t.login ? /* @__PURE__ */ (0, J.jsx)(f, {
@@ -426,7 +426,7 @@ function Ee({ source: t, toast: n }) {
 			/* @__PURE__ */ (0, J.jsxs)(g, { children: [
 				t.accepts_cookie && t.cookie_saved ? /* @__PURE__ */ (0, J.jsx)(i, {
 					variant: "secondary",
-					onClick: N,
+					onClick: de,
 					...M(A),
 					children: "撤销 Cookie"
 				}) : null,
@@ -477,9 +477,13 @@ function ke({ toast: e }) {
 	}), o = (e) => {
 		e.preventDefault(), !(n || r.isPending) && r.mutate();
 	}, s = (t?.results ?? []).flatMap((e) => e.results.map((t) => ({
+		source: e.source,
 		name: Oe(e, t),
 		check: t
-	}))), c = s.filter(({ check: e }) => e.outcome === "ok"), l = s.filter(({ check: e }) => e.outcome !== "ok").sort((e, t) => $.indexOf(e.check.outcome) - $.indexOf(t.check.outcome)), d = r.error ? P(r.error) : t?.status === "failed" ? t.error || "检查未完成" : "", f = t?.status === "complete" && t.completed_at ? [me((/* @__PURE__ */ new Date(t.completed_at * 1e3)).toISOString()), t.elapsed_s === void 0 ? "" : `用时 ${t.elapsed_s.toFixed(1)} 秒`].filter(Boolean).join(" · ") : "";
+	}))), c = (e, t) => /* @__PURE__ */ (0, J.jsxs)("span", {
+		className: "inline-flex min-w-0 items-center gap-1.5",
+		children: [/* @__PURE__ */ (0, J.jsx)(K, { source: e }), t]
+	}), l = s.filter(({ check: e }) => e.outcome === "ok"), d = s.filter(({ check: e }) => e.outcome !== "ok").sort((e, t) => $.indexOf(e.check.outcome) - $.indexOf(t.check.outcome)), f = r.error ? P(r.error) : t?.status === "failed" ? t.error || "检查未完成" : "", h = t?.status === "complete" && t.completed_at ? [me((/* @__PURE__ */ new Date(t.completed_at * 1e3)).toISOString()), t.elapsed_s === void 0 ? "" : `用时 ${t.elapsed_s.toFixed(1)} 秒`].filter(Boolean).join(" · ") : "";
 	return /* @__PURE__ */ (0, J.jsxs)(E, {
 		id: "check-all",
 		title: "连接检查",
@@ -503,9 +507,9 @@ function ke({ toast: e }) {
 					]
 				})]
 			}) : null,
-			d ? /* @__PURE__ */ (0, J.jsx)(x, {
+			f ? /* @__PURE__ */ (0, J.jsx)(x, {
 				tone: "error",
-				children: d
+				children: f
 			}) : null,
 			s.length ? /* @__PURE__ */ (0, J.jsx)("div", {
 				className: "flex flex-wrap gap-2",
@@ -521,31 +525,31 @@ function ke({ toast: e }) {
 					}, e) : null;
 				})
 			}) : null,
-			l.length ? /* @__PURE__ */ (0, J.jsx)("ul", {
+			d.length ? /* @__PURE__ */ (0, J.jsx)("ul", {
 				className: "flex min-w-0 flex-col",
-				children: l.map(({ name: e, check: t }) => /* @__PURE__ */ (0, J.jsx)(y, {
-					title: e,
+				children: d.map(({ source: e, name: t, check: n }) => /* @__PURE__ */ (0, J.jsx)(y, {
+					title: c(e, t),
 					children: /* @__PURE__ */ (0, J.jsxs)("span", {
 						className: "flex flex-wrap items-center gap-2",
 						children: [/* @__PURE__ */ (0, J.jsx)(k, {
-							tone: De[t.outcome],
-							children: t.outcome_label
-						}), t.message ? /* @__PURE__ */ (0, J.jsx)("span", {
+							tone: De[n.outcome],
+							children: n.outcome_label
+						}), n.message ? /* @__PURE__ */ (0, J.jsx)("span", {
 							className: "text-body-2-regular text-text-secondary",
-							children: t.message
+							children: n.message
 						}) : null]
 					})
-				}, e))
+				}, t))
 			}) : null,
-			c.length ? /* @__PURE__ */ (0, J.jsx)(u, {
-				summary: `可连接的 ${c.length} 项`,
-				children: /* @__PURE__ */ (0, J.jsx)(m, { children: c.map(({ name: e, check: t }) => /* @__PURE__ */ (0, J.jsx)(p, {
-					term: e,
-					children: [t.width ? `${t.width} × ${t.height}` : "", t.elapsed_s === void 0 ? "" : `${t.elapsed_s.toFixed(2)} 秒`].filter(Boolean).join(" · ")
-				}, e)) })
+			l.length ? /* @__PURE__ */ (0, J.jsx)(u, {
+				summary: `可连接的 ${l.length} 项`,
+				children: /* @__PURE__ */ (0, J.jsx)(m, { children: l.map(({ source: e, name: t, check: n }) => /* @__PURE__ */ (0, J.jsx)(p, {
+					term: c(e, t),
+					children: [n.width ? `${n.width} × ${n.height}` : "", n.elapsed_s === void 0 ? "" : `${n.elapsed_s.toFixed(2)} 秒`].filter(Boolean).join(" · ")
+				}, t)) })
 			}) : null
 		] }), /* @__PURE__ */ (0, J.jsx)(g, {
-			status: f ? `上次检查 ${f}` : void 0,
+			status: h ? `上次检查 ${h}` : void 0,
 			children: /* @__PURE__ */ (0, J.jsx)(i, {
 				type: "submit",
 				...M(n || r.isPending),
@@ -725,4 +729,4 @@ function Me({ toast: e }) {
 }
 export { Me as ScrapingPage, Z as linkHost, X as networkOptions };
 
-//# debugId=14c1e974-8ca8-4012-b8f7-793ccb5fcab6
+//# debugId=383a2275-18e0-4000-88e8-d6afd5fd1120
