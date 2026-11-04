@@ -27,6 +27,10 @@ WEB = "https://catembylegacy.fastcdn.dpdns.org"
 API = "https://jdforrepam.com/api"
 PAGE_SIZE = 10
 MAX_REVIEW_PAGES = 8
+#: 资料请求的主机间隔，由用户 2026-11-05 定为 0.5 秒。同日实测：2 秒逐档降到 0.25 秒各 40 次，
+#: 再按 0.5 秒连发 600 次（5 分钟），全部 HTTP 200 且业务成功；更长时间的累计配额未测。
+#: 撞上 403/429 时仍整源冷却 15 分钟（`_get`）。
+API_INTERVAL = 0.5
 _JS_IDENTIFIER = r'[A-Za-z_$][A-Za-z0-9_$]*'
 _CACHE_ROOT = ContextVar('jav_public_cache_root', default=None)
 _CACHE_READS = ContextVar('jav_public_cache_reads', default=None)
@@ -184,7 +188,7 @@ class PublicAPI:
                  cache_root=None, wallclock=time.time):
         self.transport = transport
         self.clock = clock
-        self.limiter = HostLimiter({}, default_interval=3.0, clock=clock, sleeper=sleeper)
+        self.limiter = HostLimiter({}, default_interval=API_INTERVAL, clock=clock, sleeper=sleeper)
         self.lock = threading.RLock()
         self.cache: OrderedDict[str, tuple[float, object]] = OrderedDict()
         self.cache_root, self.wallclock = cache_root, wallclock

@@ -184,6 +184,18 @@ class PublicProtocolTests(unittest.TestCase):
             api._get('https://javdb.com/example')
             limiter.assert_called_once()
 
+    def test_api_requests_wait_half_a_second_apart(self):
+        now, slept = [100.0], []
+
+        def sleeper(seconds):
+            slept.append(round(seconds, 3))
+            now[0] += seconds
+
+        api = PublicAPI(lambda *_: HttpResponse(200, {}, b'{}'), clock=lambda: now[0], sleeper=sleeper)
+        api._get('https://jdforrepam.com/api/first')
+        api._get('https://jdforrepam.com/api/second')
+        self.assertEqual(slept, [0.5])
+
     def test_gender_uses_only_explicit_supported_source_values(self):
         for value, expected in ((0, "female"), (1, "male"), (None, "unknown"),
                                 (False, "unknown"), (2, "unknown"), ("male", "male"), ("0", "unknown")):
