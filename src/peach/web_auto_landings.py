@@ -102,9 +102,12 @@ def _works(contract: WebContract, connection, ids: set[int], codes: set[str]) ->
     return by_id, by_code
 
 
-def list_writes(contract: WebContract, connection) -> list[dict]:
-    """每条仍在的自动写入：作品、写了什么、原来是什么，以及规则与时间。新的在前。"""
-    decisions = _decisions(connection)
+def _assets_of(connection, decisions: list[tuple[str, str, dict]]) -> tuple[dict[str, list[int]], set[str]]:
+    """每条决定写到了哪几部作品，以及只能按番号找作品的那几条的番号。
+
+    覆盖按 note 的 `previous`，并集按标签行留痕里的 `review_item`；都没有（标签已被人删光）时，
+    按文件出的行取 `asset:<编号>`，其余按番号回查。
+    """
     union_batches = {batch for rule, _key, note in decisions if rule == VERIFIED_UNION_RULE
                      for batch in _batches_of(note)}
     tagged = _tagged_assets(connection, union_batches)
@@ -112,32 +115,45 @@ def list_writes(contract: WebContract, connection) -> list[dict]:
     codes = set()
     for rule, item_key, note in decisions:
         head = item_key.rpartition(":")[0]
-        if rule == VERIFIED_REPLACE_RULE:
-            assets_of[item_key] = [int(before["asset_id"]) for before in note.get("previous") or []]
-        else:
-            assets_of[item_key] = tagged.get(item_key, [])
-        if head.startswith("asset:") and head[6:].isdigit():
-            assets_of[item_key] = assets_of[item_key] or [int(head[6:])]
-        elif not assets_of[item_key]:
+        ids = ([int(before["asset_id"]) for before in note.get("previous") or []]
+               if rule == VERIFIED_REPLACE_RULE else tagged.get(item_key, []))
+        if not ids and head.startswith("asset:") and head[6:].isdigit():
+            ids = [int(head[6:])]
+        elif not ids:
             codes.add(head)
+        assets_of[item_key] = ids
+    return assets_of, codes
+
+
+def _write_row(rule: str, item_key: str, note: dict, ids: list[int], work: dict | None) -> dict:
+    """一条写入在列表里的样子；作品已不在账本里时标 `gone`。"""
+    head, _, field = item_key.rpartition(":")
+    batches = _batches_of(note)
+    union = rule == VERIFIED_UNION_RULE
+    return {
+        "item_key": item_key, "rule": rule, "label": RULES[rule], "batch": batches[-1] if batches else "",
+        "at": max((batch_time(batch) or 0 for batch in batches), default=0) or None,
+        "field": "标签" if union else LABELS.get(field, field),
+        "value": str(note.get("value") or ""),
+        "previous": list(dict.fromkeys(str(before.get("value") or "") for before in note.get("previous") or [])),
+        "tags": list(note.get("added_tags") or []) if union else [],
+        "assets": len(ids) or 1,
+        **(work or {"asset_id": ids[0] if ids else None, "name": "",
+                    "code": "" if head.startswith("asset:") else head, "preview_url": "", "gone": True}),
+    }
+
+
+def list_writes(contract: WebContract, connection) -> list[dict]:
+    """每条仍在的自动写入：作品、写了什么、原来是什么，以及规则与时间。新的在前。"""
+    decisions = _decisions(connection)
+    assets_of, codes = _assets_of(connection, decisions)
     by_id, by_code = _works(contract, connection, {i for ids in assets_of.values() for i in ids}, codes)
     listed = []
     for rule, item_key, note in decisions:
-        head, _, field = item_key.rpartition(":")
         ids = assets_of[item_key]
-        work = next((by_id[i] for i in ids if i in by_id), None) or by_code.get(normalise_code_key(head))
-        batches = _batches_of(note)
-        previous = list(dict.fromkeys(str(before.get("value") or "") for before in note.get("previous") or []))
-        listed.append({
-            "item_key": item_key, "rule": rule, "label": RULES[rule], "batch": batches[-1] if batches else "",
-            "at": max((batch_time(batch) or 0 for batch in batches), default=0) or None,
-            "field": "标签" if rule == VERIFIED_UNION_RULE else LABELS.get(field, field),
-            "value": str(note.get("value") or ""), "previous": previous,
-            "tags": list(note.get("added_tags") or []) if rule == VERIFIED_UNION_RULE else [],
-            "assets": len(ids) or 1,
-            **(work or {"asset_id": ids[0] if ids else None, "name": "",
-                        "code": "" if head.startswith("asset:") else head, "preview_url": "", "gone": True}),
-        })
+        work = (next((by_id[i] for i in ids if i in by_id), None)
+                or by_code.get(normalise_code_key(item_key.rpartition(":")[0])))
+        listed.append(_write_row(rule, item_key, note, ids, work))
     return sorted(listed, key=lambda item: (-(item["at"] or 0), item["code"], item["item_key"]))
 
 
