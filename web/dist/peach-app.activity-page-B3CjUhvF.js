@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "63c653c0-9fae-4d96-8401-ec28416d1aa4", e._sentryDebugIdIdentifier = "sentry-dbid-63c653c0-9fae-4d96-8401-ec28416d1aa4");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "00e7c64c-7211-4521-b4cc-8edcd2734ebf", e._sentryDebugIdIdentifier = "sentry-dbid-00e7c64c-7211-4521-b4cc-8edcd2734ebf");
 	} catch {}
 })();
 import { Button as e, Bx as t, Chip as n, Disclosure as r, DownloadsPanel as i, EmptyState as a, Gg as o, HN as s, IssueRow as c, LinkButton as l, Lo as u, LoadingDots as d, Ma as f, NameLink as p, Note as m, OV as h, Pf as g, Progress as _, RB as v, Rk as y, Su as b, TASKS_KEY as x, TRIGGER_LABELS as S, Xl as C, __toESM as w, apiGet as T, apiSend as E, busyProps as D, cardClass as ee, confirmModal as O, controlTask as k, cx as A, elapsedText as j, errorMessage as M, f1 as te, fetchEarlier as ne, fetchTasks as re, fmtSize as N, foldByKind as ie, foldRoutine as ae, followupDetail as P, followupTally as F, groupFollowups as oe, hasResultProblems as I, i2 as L, isActive as R, isRoutine as se, latestOfKind as ce, mergeFinished as z, momentText as B, notifyManager as V, oe as H, pollInterval as le, problemDestination as U, progressText as W, readableErrorHeadline as ue, replaceEqualDeep as de, require_jsx_runtime as fe, require_react as pe, statusLabel as me, summaryItems as he, taskIssues as ge, taskSubject as _e, um as ve, uo as ye, useMutation as G, useQuery as be, useQueryClient as K, vl as xe } from "./peach-app.js";
@@ -234,7 +234,11 @@ var Ie = new Map([
 		"studio-mark"
 	]],
 	[C, ["media-repair", "mp4-header-repair"]],
-	[ve, ["link-check", "link-prune"]],
+	[ve, [
+		"link-check",
+		"link-prune",
+		"source-check"
+	]],
 	[H, ["download-postprocess"]],
 	[u, ["taste-refresh"]],
 	[v, [
@@ -786,4 +790,4 @@ function $e() {
 }
 export { $e as ActivityPage };
 
-//# debugId=63c653c0-9fae-4d96-8401-ec28416d1aa4
+//# debugId=00e7c64c-7211-4521-b4cc-8edcd2734ebf

@@ -109,7 +109,7 @@ from .web_tutorial import q_tutorial_progress, w_tutorial_progress
 from .web_folders import q_folders, w_folder_preview, w_folder_rule
 from .web_scraping import (
     q_scraping, q_scraping_amane_bridge, w_scraping_amane_check, w_scraping_amane_rebuild,
-    w_scraping_check, w_scraping_cover, w_scraping_settings,
+    w_scraping_check, w_scraping_check_all, w_scraping_cover, w_scraping_settings,
 )
 from .web_state import WebContract, path_version
 from .web_tasks import q_tasks
@@ -365,6 +365,7 @@ GET_HANDLERS = {
     "/api/scraping": q_scraping,
     "/api/scraping/cover": lambda contract, args: contract.scraping_cover_job.snapshot() or {"status": "idle"},
     "/api/scraping/amane-bridge": q_scraping_amane_bridge,
+    "/api/scraping/check-all": lambda contract, args: contract.source_check_job.snapshot() or {"status": "idle"},
     "/api/settings": q_settings,
     "/api/library-shortcuts": q_library_shortcuts,
     "/api/tutorial-progress": q_tutorial_progress,
@@ -436,6 +437,7 @@ POST_HANDLERS = {
     "/api/scraping/cover": w_scraping_cover,
     "/api/jav/cover": w_jav_cover,
     "/api/scraping/check": w_scraping_check,
+    "/api/scraping/check-all": w_scraping_check_all,
     "/api/scraping/amane-bridge/check": w_scraping_amane_check,
     "/api/scraping/amane-bridge/rebuild": w_scraping_amane_rebuild,
     "/api/feeds/check": w_feed_check,
