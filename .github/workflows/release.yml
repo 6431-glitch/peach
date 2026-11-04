@@ -394,6 +394,8 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # 发布签名私钥放在这个只允许 `v*` 标签部署的 environment 里（ADR-0134）。
+    environment: release
     permissions:
       contents: write
       actions: read
@@ -402,12 +404,26 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
       - name: 核对并取得同提交演练产物
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           python scripts/github_release_candidate.py desktop --destination release
           python scripts/github_release_candidate.py macos --destination macos-candidates
+      - name: 生成并签名发布摘要
+        env:
+          PEACH_RELEASE_SIGNING_KEY: ${{ secrets.PEACH_RELEASE_SIGNING_KEY }}
+        run: |
+          set -euo pipefail
+          uv sync --locked --python python
+          cp macos-candidates/release/*.dmg release/
+          (cd release && sha256sum ./*.zip ./*-setup.exe ./*.dmg > SHA256SUMS.txt)
+          # 源码没有发布公钥且没配私钥时跳过；公钥已随源码发出却缺私钥时失败，不发布未签名的版本。
+          printf '%s' "$PEACH_RELEASE_SIGNING_KEY" | .venv/bin/python scripts/sign_release.py --sums release/SHA256SUMS.txt
       - name: 创建预发布
         env:
           GH_TOKEN: ${{ github.token }}
@@ -415,10 +431,10 @@ jobs:
           VERSION: ${{ github.ref_name }}
         run: |
           cd release
-          cp ../macos-candidates/release/*.dmg .
           tail -n +4 ../macos-candidates/scripts/MACOS_DOWNLOADS.md >> RELEASE_NOTES.md
-          sha256sum ./*.zip ./*-setup.exe ./*.dmg > SHA256SUMS.txt
-          gh release create "$GITHUB_REF_NAME" ./*.zip ./*-setup.exe ./*.dmg SHA256SUMS.txt --verify-tag --prerelease --title "Peach ${VERSION#v} · Windows / macOS 测试版" --notes-file RELEASE_NOTES.md
+          files=(./*.zip ./*-setup.exe ./*.dmg SHA256SUMS.txt)
+          if [ -f SHA256SUMS.txt.sig ]; then files+=(SHA256SUMS.txt.sig); fi
+          gh release create "$GITHUB_REF_NAME" "${files[@]}" --verify-tag --prerelease --title "Peach ${VERSION#v} · Windows / macOS 测试版" --notes-file RELEASE_NOTES.md
 
   # Sparkle 更新源（ADR-0130）：Release 公开之后才写 appcast，下载地址指向同一 Release 的 DMG。
   # 私钥只在这一个仅标签运行的作业里经标准输入交给官方工具；仓库变量未开启时整个作业跳过。
