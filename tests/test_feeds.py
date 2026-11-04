@@ -4,6 +4,7 @@ from __future__ import annotations
 import sys
 import tempfile
 import unittest
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
@@ -162,6 +163,35 @@ class CompilationTest(unittest.TestCase):
         self.assertIsNone(feeds.compilation_kind("愛する妻が…", "篠田ゆう", "マドンナ"))
 
 
+class FeedPhaseTest(unittest.TestCase):
+    """下次拉取按源的相位排（ADR-0134）：同时加的源错开，跳与跳之间的延迟不累积。"""
+
+    MOMENT = datetime(2026, 11, 3, 3, 28, 57, tzinfo=timezone.utc)
+    PERIOD = timedelta(minutes=feeds.DEFAULT_INTERVAL_MINUTES)
+
+    def test_sources_fetched_together_spread_over_the_window(self):
+        upcoming = sorted(feeds.next_fetch(source_id, self.MOMENT, feeds.DEFAULT_INTERVAL_MINUTES)
+                          for source_id in range(1, 12))
+        for moment in upcoming:
+            self.assertGreaterEqual(moment, self.MOMENT + self.PERIOD / 2)
+            self.assertLessEqual(moment, self.MOMENT + self.PERIOD * 1.5)
+        slots = {int((moment.timestamp() % self.PERIOD.total_seconds())
+                     // timedelta(minutes=feeds.TICK_MINUTES).total_seconds()) for moment in upcoming}
+        # 11 个源落进 12 个半小时档里的至少 9 个：一跳最多拉两三个，而不是 11 个一起。
+        self.assertGreaterEqual(len(slots), 9)
+
+    def test_tick_lag_does_not_drift_the_schedule(self):
+        """到期之后要等到下一跳才拉，拉完排的下次仍回到同一个相位，周期保持一个间隔。"""
+        moment = self.MOMENT
+        due = feeds.next_fetch(7, moment, feeds.DEFAULT_INTERVAL_MINUTES)
+        for lag in (timedelta(minutes=29), timedelta(minutes=3), timedelta(minutes=17)):
+            fetched = due + lag
+            following = feeds.next_fetch(7, fetched, feeds.DEFAULT_INTERVAL_MINUTES)
+            self.assertAlmostEqual((following - due).total_seconds(),
+                                   self.PERIOD.total_seconds(), places=2)
+            due = following
+
+
 class FeedStoreTest(unittest.TestCase):
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -277,6 +307,27 @@ class FeedStoreTest(unittest.TestCase):
             feeds.set_enabled(connection, source_id, False)
         with self.database.read_connection() as connection:
             self.assertEqual(feeds.due_sources(connection), [])
+
+    def test_the_longest_waiting_source_is_due_first(self):
+        first = self._source(url="https://javdb.com/actors/a1")
+        second = self._source(url="https://javdb.com/actors/a2")
+        fresh = self._source(url="https://javdb.com/actors/a3")
+        with self.database.write_transaction() as connection:
+            feeds.defer(connection, first, datetime(2026, 11, 3, 2, tzinfo=timezone.utc))
+            feeds.defer(connection, second, datetime(2026, 11, 3, 1, tzinfo=timezone.utc))
+        with self.database.read_connection() as connection:
+            due = [int(row["id"]) for row in feeds.due_sources(connection, "2026-11-03T03:00:00Z")]
+        self.assertEqual(due, [fresh, second, first])
+
+    def test_settle_after_a_cooldown_retries_at_its_end(self):
+        source_id = self._source()
+        until = datetime(2026, 11, 3, 3, 15, tzinfo=timezone.utc)
+        with self.database.write_transaction() as connection:
+            feeds.settle(connection, source_id, error="来源拒绝访问", interval_minutes=360,
+                         now=datetime(2026, 11, 3, 3, tzinfo=timezone.utc), retry_at=until)
+            row = connection.execute("SELECT next_fetch_at FROM feed_source WHERE id=?",
+                                     (source_id,)).fetchone()
+        self.assertEqual(row[0], feeds.stamp(until))
 
     def test_performer_names_match_existing_entities_only(self):
         with self.database.write_transaction() as connection:

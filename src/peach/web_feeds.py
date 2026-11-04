@@ -11,7 +11,7 @@ import re
 import threading
 import time
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 
 from . import (
@@ -33,7 +33,28 @@ FETCH_MAX_BYTES = 2 * 1024 * 1024
 #: 一轮里最多拉几个源。源多的时候分几轮拉完，而不是让一轮跑到限流上去。
 MAX_SOURCES_PER_RUN = 20
 
+#: 定时那几轮多久派一次存量后继：旧壳重试、补封面、缺头像的存量女优与想要作品重试
+#: （ADR-0134）。定时拉取每 `feeds.TICK_MINUTES` 一跳，存量跟着每跳派一次就成了原来的十几倍；
+#: 本轮新发现的番号不受它管，照旧当场派取资料。
+STOCK_INTERVAL = timedelta(hours=6)
+
 _NOT_MODIFIED = 304
+
+
+def _cooling_until(contract, url: str) -> datetime | None:
+    """这个地址所属的来源还在冷却就返回冷却结束的时刻（UTC），否则 None。"""
+    from .scraping_access import paused_until, source_for
+
+    source = source_for(url)
+    until = paused_until(contract.follow_secrets_root, source) if source else 0.0
+    return datetime.fromtimestamp(until, timezone.utc) if until else None
+
+
+def _paused_by_source(error: Exception) -> bool:
+    """来源冷却挡下的这一次；本趟预算耗尽（`SourceBudgetExhausted`）不算来源冷却。"""
+    from .scraping_access import SourceBudgetExhausted, SourcePaused
+
+    return isinstance(error, SourcePaused) and not isinstance(error, SourceBudgetExhausted)
 
 
 def _parse_source(kind: str, body: bytes, url: str):
@@ -85,9 +106,13 @@ def poll_source(contract, transport, source) -> dict:
                          last_modified=source["last_modified"])
     except Exception as error:  # noqa: BLE001 - 原因写到源那一行上给人看
         report.update(ok=False, error=str(error))
+        # 整站冷却挡回来的，冷却一过就重拉，不跟着间隔再等一整轮。
+        retry_at = _cooling_until(contract, source["url"]) if _paused_by_source(error) else None
+        if retry_at is not None:
+            report["paused"] = True
         with contract.database.write_transaction() as connection:
             feeds.settle(connection, source_id, error=str(error),
-                         interval_minutes=interval)
+                         interval_minutes=interval, retry_at=retry_at)
         return report
     if response.status == _NOT_MODIFIED:
         with contract.database.write_transaction() as connection:
@@ -189,10 +214,19 @@ def _execute_check(contract, body, job_id: str) -> dict:
     codes = [code for row in results for code in row.get('codes') or []]
     if not contract.feed_job.checkpoint(job_id, source_ids=[int(row['id']) for row in rows]):
         raise InterruptedError('订阅检查已停止')
+    deferred = 0
     try:
         for index, source in enumerate(rows):
             if int(source['id']) in completed:
                 continue
+            until = _cooling_until(contract, source["url"])
+            if until is not None:
+                pending = [row for row in rows[index:] if int(row['id']) not in completed]
+                results, deferred = _defer_round(contract, pending, until, results)
+                if not contract.feed_job.checkpoint(job_id, results=results, checked=len(results),
+                                                    total=len(rows), added=len(set(codes))):
+                    raise InterruptedError('订阅检查已停止')
+                break
             if not contract.feed_job.update(job_id, checked=len(results), total=len(rows),
                                             current=source["name"] or source["url"]):
                 raise InterruptedError('订阅检查已停止')
@@ -208,13 +242,29 @@ def _execute_check(contract, body, job_id: str) -> dict:
         if close:
             close()
     contract.cache_bust()
-    # 取资料：新发现的先排，没取到资料的旧壳留着保底名额，同一批一条后继。只缺封面的另成一批
-    # 补封面。定时那一轮只带到了重试时间的，手动点的那一轮全带；已在队里的番号都不再带。
-    retry_after = feed_followup.RETRY_AFTER if body.get("automatic") else timedelta(0)
+    planned, stock = _plan_followups(contract, codes, automatic=bool(body.get("automatic")))
+    return {"ok": True, "checked": len(results), "total": len(rows), "results": results,
+            "added": len(codes), "deferred": deferred, "stock": stock,
+            # 后继由结果声明，调度端统一派（ADR-0040）：这里只把清单交出去。
+            "followups": [dict(key=item.key, task_key=item.task_key, label=item.label)
+                          for item in planned]}
+
+
+def _plan_followups(contract, codes: list[str], *, automatic: bool) -> tuple[list, bool]:
+    """这一轮拉完要派的后继，以及这一轮有没有带上存量。
+
+    取资料：新发现的先排，没取到资料的旧壳留着保底名额，同一批一条后继。只缺封面的另成一批
+    补封面。定时那一轮只带到了重试时间的，手动点的那一轮全带；已在队里的番号都不再带。
+    存量部分（旧壳、封面、头像）定时那几轮隔 `STOCK_INTERVAL` 才派一次，新番号每轮都派。
+    """
+    stock = _stock_due(contract) if automatic else True
+    retry_after = feed_followup.RETRY_AFTER if automatic else timedelta(0)
     hidden = web_settings.hidden_compilations(contract.database)
     busy = feed_followup.in_flight(contract.task_runs)
     fresh = [code for code in dict.fromkeys(codes) if normalise_code_key(code) not in busy]
     with contract.database.read_connection() as connection:
+        if not stock:
+            return feed_followup.plan(fresh[:feed_followup.MAX_BATCH]), False
         batch = feed_followup.scrape_batch(
             connection, fresh, exclude=[*codes, *busy], retry_after=retry_after, hidden=hidden)
         covers = feed_followup.cover_backlog(
@@ -226,15 +276,53 @@ def _execute_check(contract, body, job_id: str) -> dict:
         planned += avatar_followup.stock(
             connection, contract.avatar_root, Attempts(attempts_root(contract.candidate_root)),
             limit=MAX_FOLLOWUPS - len(planned))
-    return {"ok": True, "checked": len(rows), "total": len(rows), "results": results,
-            "added": len(codes),
-            # 后继由结果声明，调度端统一派（ADR-0040）：这里只把清单交出去。
-            "followups": [dict(key=item.key, task_key=item.task_key, label=item.label)
-                          for item in planned]}
+    contract.feed_stock_planned_at = time.monotonic()
+    return planned, True
+
+
+def _defer_round(contract, pending, until: datetime, results: list) -> tuple[list, int]:
+    """来源在冷却：这一轮剩下的源都顺延到冷却结束，整轮只记一条失败（ADR-0134）。
+
+    冷却是整个来源的状态，不是哪个订阅的毛病；每个源各记一条「正在冷却」只会把真正的
+    原因淹掉。本轮撞上 403 的那一行已经写了原因，就在它后面补一句顺延了几个；本轮一开始
+    来源就在冷却（别的任务撞出来的），就用第一个源那一行说明，它的上次结论不改。
+    """
+    with contract.database.write_transaction() as connection:
+        for row in pending:
+            feeds.defer(connection, int(row["id"]), until)
+    results = list(results)
+    trigger = next((row for row in reversed(results) if row.get("paused")), None)
+    rest = len(pending)
+    if trigger is None:
+        from .scraping_access import SOURCES, source_for
+        first = pending[0]
+        label = SOURCES.get(source_for(first["url"]) or "", {}).get("label", "来源")
+        trigger = {"source": int(first["id"]), "name": first["name"] or first["url"],
+                   "ok": False, "seen": 0, "added": 0, "without_code": 0, "paused": True,
+                   "error": f"{label} 正在冷却，这一轮没有拉"}
+        results.append(trigger)
+        rest -= 1
+    if rest:
+        trigger["error"] = f"{trigger['error']}；其余 {rest} 个源顺延到冷却结束后再拉"
+    return results, len(pending)
+
+
+def _stock_due(contract) -> bool:
+    """定时这一轮该不该派存量后继：本进程里还没派过，或上次派过已经满 `STOCK_INTERVAL`。"""
+    last = getattr(contract, "feed_stock_planned_at", None)
+    return last is None or time.monotonic() - last >= STOCK_INTERVAL.total_seconds()
 
 
 def w_feed_check(contract, body) -> dict:
-    """拉一轮订阅。不带参数只拉到期的源，`all` 拉全部启用的源。"""
+    """拉一轮订阅。不带参数只拉到期的源，`all` 拉全部启用的源。
+
+    定时那一跳没有到期的源就什么也不起：每半小时一跳（`feeds.TICK_MINUTES`），任务中心
+    不该每半小时多一行空跑。
+    """
+    if body.get("automatic") and "sources" not in body and not body.get("all"):
+        with contract.database.read_connection() as connection:
+            if not feeds.due_sources(connection):
+                return {"ok": True, "idle": True, "checked": 0, "total": 0, "results": []}
     finished = threading.Event()
     request_id = uuid.uuid4().hex
 
@@ -243,8 +331,9 @@ def w_feed_check(contract, body) -> dict:
             result = _execute_check(contract, body, job_id)
             contract.feed_job.update(job_id, **result, status="complete",
                                      current=None, completed_at=time.time())
-            # 「想要」里取不到资料或封面的，跟着每一轮拉取再试（隔 `web_wants.RETRY_AFTER`）。
-            web_wants.start_scrape(contract, trigger="scheduled" if body.get("automatic") else "manual")
+            # 「想要」里取不到资料或封面的，跟着派存量的那几轮再试（隔 `web_wants.RETRY_AFTER`）。
+            if result["stock"]:
+                web_wants.start_scrape(contract, trigger="scheduled" if body.get("automatic") else "manual")
         finally:
             finished.set()
 
