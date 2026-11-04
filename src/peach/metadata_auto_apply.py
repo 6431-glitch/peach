@@ -1127,11 +1127,34 @@ def _current_owners(connection, row: dict, field: str, assets=None) -> set[str]:
     return {owner_of(asset["field_owners"], column) for asset in found}
 
 
+def _pinned_asset_id(connection, group: dict) -> int | None:
+    """按文件出的候选行（`asset:<编号>:<字段>`）指的那条在库视频；已不在时返回 None。
+
+    编号与路径都对得上的是它。路径对不上、编号还在且番号相同的也是它：扫描按番号把挪过
+    的文件改指回原行（ADR-0131），编号不变，候选件里记的还是旧路径——处理任务重出这一
+    行时沿用旧行，路径也不跟着换。2026-11-04 真实账本里 697 行是这样，按路径认的话谁批准
+    都写不进去。番号也对不上，就当是别的片占了这个编号。
+    """
+    asset_id = str(group.get("asset_id") or "").strip()
+    if not asset_id.isdigit():
+        return None
+    found = connection.execute(
+        "SELECT path,code FROM asset WHERE id=? AND medium='video' AND disposal IS NULL",
+        (int(asset_id),)).fetchone()
+    if found is None:
+        return None
+    if found[0] == group.get("asset_path"):
+        return int(asset_id)
+    code = normalise_code_key(str(group.get("code") or ""))
+    return int(asset_id) if code and normalise_code_key(str(found[1] or "")) == code else None
+
+
 def verification_outcome(connection, row: dict, *, assets=None) -> Verification | None:
     """核查差异（ADR-0108）按确定判据结算的去向；这一行没有核查差异时返回 None。
 
     依次问：
 
+    0. 按文件出的行，那条资产已不在库（`_pinned_asset_id`）：写不进去，保留；
     1. 标签：候选里认得出、账本还没有的，按并集补，一个不删；
     2. 现值归人（`user:`、`review:`）：人判过，保留；
     3. 日期式番号的发行日期：现值就是番号那天，保留（ADR-0034）；
@@ -1150,6 +1173,8 @@ def verification_outcome(connection, row: dict, *, assets=None) -> Verification 
     """
     if not _verification_difference(connection, row):
         return None
+    if row.get("asset_path") and _pinned_asset_id(connection, row) is None:
+        return Verification(VERIFY_KEEP, "adr-0137-asset-gone")
     field = str(row.get("field") or "").strip()
     code = str(row.get("code") or "").strip()
     current = str(row.get("current_value") or "").strip()
@@ -1544,11 +1569,8 @@ def _landing_scope(connection, group: dict, candidate: dict,
     code = str(group.get("code") or "").strip()
     query = str(group.get("query") or code).strip()
     if group.get('asset_path'):
-        assets = connection.execute(
-            "SELECT id FROM asset WHERE id=? AND path=? AND medium='video' "
-            "AND disposal IS NULL",
-            (group.get('asset_id'), group['asset_path']),
-        ).fetchall()
+        pinned = _pinned_asset_id(connection, group)
+        assets = [] if pinned is None else [{"id": pinned}]
     else:
         # 写入范围必须和判据、现值刷新看的是同一组资产，三处共用一份番号匹配。
         assets = _codes_matching(connection, [code, query], "id,code")
@@ -1975,35 +1997,14 @@ def _land_verification(connection, item_key: str, prior: dict | None, row: dict,
     if verified.kind not in (VERIFY_UNION, VERIFY_REPLACE):
         return None
     code = str(row.get("code") or "").strip()
-    again = (verified.kind == VERIFY_UNION and prior is not None
-             and _decision_note(prior).get("rule") == VERIFIED_UNION_RULE)
-    if prior is not None and not again and not (
-            _is_automatic(prior) and _decision_reopens(prior, row["candidates"], code=code)):
-        return None
+    reopens = prior is not None and _decision_reopens(prior, row["candidates"], code=code)
     reviewed = sorted({str(c.get("candidate_key") or "").strip()
                        for c in row["candidates"]} - {""})
     if verified.kind == VERIFY_UNION:
-        wanted = set(verified.tags)
-        added: list[str] = []
-        for candidate in verified.sources:
-            grown = _extend_approved_tags(connection, row, candidate, batch, now, only=wanted)
-            if grown:
-                added.extend(grown)
-                wanted -= {normalize_entity_name(tag) for tag in grown}
-        if not added:
-            return None
-        lead = verified.sources[0]
-        earlier = _decision_note(prior) if again else {}
-        _write_auto_decision(connection, item_key, {
-            "auto_applied": True, "rule": verified.rule,
-            "candidate_key": lead.get("candidate_key"), "source": lead.get("source"),
-            "value": "、".join(added), "batch": batch,
-            # 再补一次时累加：撤回按这里列的每个批次删。
-            "batches": list(dict.fromkeys([*earlier.get("batches", []), batch])),
-            "added_tags": list(dict.fromkeys([*earlier.get("added_tags", []), *added])),
-            "reviewed_candidate_keys": reviewed,
-        }, now)
-        return {"item_key": item_key, "field": "tags", "value": "、".join(added), "assets": None}
+        return _land_verified_union(connection, item_key, prior, row, verified, reviewed,
+                                    reopens=reopens, batch=batch, now=now)
+    if prior is not None and not (_is_automatic(prior) and reopens):
+        return None
     candidate = verified.candidate or {}
     field = str(row.get("field") or "").strip()
     column = METADATA_FIELD_COLUMNS[field]
@@ -2027,6 +2028,51 @@ def _land_verification(connection, item_key: str, prior: dict | None, row: dict,
         "reviewed_candidate_keys": reviewed,
     }, now)
     return {"item_key": item_key, "field": field, "value": written, "assets": count}
+
+
+def _land_verified_union(connection, item_key: str, prior: dict | None, row: dict,
+                         verified: Verification, reviewed: list[str], *, reopens: bool,
+                         batch: str, now: str) -> dict | None:
+    """按并集补核查带回的标签，返回落库摘要；这一行不归它补时返回 None。
+
+    三种情形能补：还没有决定；上一次也是这条并集规则写的（之后又收录了生词，照样补）；
+    人批准过的标签决定过期了（ADR-0082：人批准的标签只增不删）。人的决定只追加这次补了
+    什么，原有各项不动；note 不是 JSON 的（早期手写备注）不碰。
+    """
+    note = _decision_note(prior or {})
+    again = note.get("rule") == VERIFIED_UNION_RULE
+    human = (prior is not None and not _is_automatic(prior) and reopens and bool(note)
+             and str(prior.get("status") or "").strip() == "approved")
+    if prior is not None and not (again or human or (_is_automatic(prior) and reopens)):
+        return None
+    wanted = set(verified.tags)
+    added: list[str] = []
+    for candidate in verified.sources:
+        grown = _extend_approved_tags(connection, row, candidate, batch, now, only=wanted)
+        if grown:
+            added.extend(grown)
+            wanted -= {normalize_entity_name(tag) for tag in grown}
+    if not added:
+        return None
+    grown = {"added_tags": list(dict.fromkeys([*note.get("added_tags", []), *added])),
+             "reviewed_candidate_keys": reviewed}
+    summary = {"item_key": item_key, "field": "tags", "value": "、".join(added), "assets": None}
+    if human:
+        # 与 `_reopened_approval` 同一口径：status、updated_at 与原有各项都不动。
+        connection.execute(
+            "UPDATE review_decision SET note=? WHERE category='metadata_fields' AND item_key=?",
+            (json.dumps({**note, **grown}, ensure_ascii=False, separators=(",", ":")), item_key))
+        return summary
+    lead = verified.sources[0]
+    _write_auto_decision(connection, item_key, {
+        "auto_applied": True, "rule": verified.rule,
+        "candidate_key": lead.get("candidate_key"), "source": lead.get("source"),
+        "value": "、".join(added), "batch": batch,
+        # 再补一次时累加：撤回按这里列的每个批次删。
+        "batches": list(dict.fromkeys([*(note.get("batches", []) if again else []), batch])),
+        **(grown if again else {**grown, "added_tags": added}),
+    }, now)
+    return summary
 
 
 def planned_verified_revert(connection, source: str, batch: str = "") -> list[dict]:

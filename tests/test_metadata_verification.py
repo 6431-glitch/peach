@@ -75,9 +75,10 @@ class VerificationSettlementTests(unittest.TestCase):
                                    "VALUES(?,?,0.75,'javinizer:dmm:tag')", (asset_id, tag))
         return asset_id
 
-    def row(self, code, field, current, *candidates):
-        """一行核查候选。`candidates` 是 `(来源, 取值)`，第三项给 False 表示不带核查标记。"""
-        key = f"{code}:{field}"
+    def row(self, code, field, current, *candidates, pinned=None):
+        """一行核查候选。`candidates` 是 `(来源, 取值)`，第三项给 False 表示不带核查标记；
+        `pinned` 给 `(资产编号, 路径)` 就是处理任务按文件出的那种行。"""
+        key = f"asset:{pinned[0]}:{field}" if pinned else f"{code}:{field}"
         built = []
         for index, (source, value, *flag) in enumerate(candidates):
             shown = ("、".join(item["name"] if isinstance(item, dict) else item for item in value)
@@ -89,6 +90,7 @@ class VerificationSettlementTests(unittest.TestCase):
                 **({"javdb_rule": 2, "source_id": "FixtureWork"} if source == "javdb" else {}),
                 **({"requires_review": True} if not flag or flag[0] else {})})
         self.rows.append({"item_key": key, "code": code, "query": code, "field": field,
+                          **({"asset_id": str(pinned[0]), "asset_path": pinned[1]} if pinned else {}),
                           "field_label": field, "current_value": current,
                           "candidates_json": json.dumps(built, ensure_ascii=False),
                           "source_count": str(len(built)), "source_profile": "library",
@@ -208,6 +210,43 @@ class VerificationSettlementTests(unittest.TestCase):
         self.settle()
         self.assertEqual(self.tags(asset_id), {"中出内射", "巨乳", "母子设定", "痴女"})
         self.assertEqual(self.decisions(), {})
+
+    def test_row_pinned_to_an_asset_no_longer_in_the_library_is_kept(self):
+        """按文件出的行，那个编号已经是别的片：谁批准都写不进去，不摆给人，也不写。"""
+        asset_id = self.asset("ABP-602", release_date="2017-08-01")
+        key = self.row("ABP-601", "release_date", "2017-08-01", ("makers", "2017-08-05"),
+                       pinned=(asset_id, r"B:\云下载\ABP-601A-C.mp4"))
+        self.asset("ABP-601", release_date="2017-08-01")
+        self.assertKept(key, "adr-0137-asset-gone", asset_id, "release_date", "2017-08-01")
+
+    def test_row_pinned_to_a_relocated_file_still_lands_on_the_same_asset(self):
+        """扫描按番号改指挪过的文件，编号不变（ADR-0131）；候选件里的旧路径不挡落库。"""
+        asset_id = self.asset("ABP-601", release_date="2017-08-01")
+        key = self.row("ABP-601", "release_date", "2017-08-01", ("makers", "2017-08-05"),
+                       pinned=(asset_id, r"B:\云下载\ABP-601A-C.mp4"))
+        self.assertNotIn(key, self.queue())
+        self.settle()
+        self.assertEqual(self.value(asset_id, "release_date"), ("2017-08-05", "auto:makers"))
+
+    def test_human_approved_tags_grow_and_keep_the_human_record(self):
+        asset_id = self.asset("ROYD-083", tags=("中出内射", "辣妹"))
+        key = self.row("ROYD-083", "tags", "中出内射、辣妹",
+                       ("makers", ["中出内射", "辣妹", "痴女"]))
+        human = {"candidate_key": "earlier", "source": "dmm", "user_note": "批量复核"}
+        with contextlib.closing(sqlite3.connect(self.db_path)) as connection, connection:
+            connection.execute("INSERT INTO review_decision(category,item_key,status,note,updated_at)"
+                               " VALUES('metadata_fields',?,'approved',?,'2026-10-01')",
+                               (key, json.dumps(human, ensure_ascii=False)))
+        self.settle()
+        self.assertEqual(self.tags(asset_id), {"中出内射", "辣妹", "痴女"})
+        with contextlib.closing(sqlite3.connect(self.db_path)) as connection:
+            status, note, updated = connection.execute(
+                "SELECT status,note,updated_at FROM review_decision WHERE item_key=?", (key,)).fetchone()
+        note = json.loads(note)
+        self.assertEqual((status, updated), ("approved", "2026-10-01"))
+        self.assertEqual({name: note[name] for name in human}, human)
+        self.assertEqual(note["added_tags"], ["痴女"])
+        self.assertNotIn(key, self.queue())
 
     # ---- 可撤写入 ----
 
