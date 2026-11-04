@@ -17,7 +17,7 @@ from urllib.parse import urlencode, urlsplit
 
 from PIL import Image
 
-from .catalog_rules import normalise_code_key
+from .catalog_rules import normalise_code_key, release_identity, same_release_code
 from .http import HttpRequest, HttpxTransport, response_text
 from .scripting import HostLimiter
 from .jav_cache import DAY, PublicSnapshots, cache_lifetime
@@ -133,6 +133,14 @@ class PublicIdentityAmbiguous(PublicSourceUnavailable):
     """同番号有多个来源身份，不能按番号绑定资料或媒体。"""
 
 
+class PublicNotFound(PublicSourceUnavailable):
+    """来源搜索结果里没有这个番号。"""
+
+
+class PublicSourcePaused(PublicSourceUnavailable):
+    """来源冷却期内不发请求。"""
+
+
 class PublicBudgetExceeded(PublicSourceUnavailable):
     """本轮匿名资料请求预算已用完。"""
 
@@ -206,7 +214,7 @@ class PublicAPI:
     def _get(self, url: str, *, signed=False, limit=2 * 1024 * 1024, image=False):
         paused = self.image_paused_until if image else self.paused_until
         if self.clock() < paused:
-            raise PublicSourceUnavailable("图片来源暂时不可用，请稍后重试" if image else "作品资料来源暂时不可用，请稍后重试")
+            raise PublicSourcePaused("图片来源暂时不可用，请稍后重试" if image else "作品资料来源暂时不可用，请稍后重试")
         if not image:
             self.limiter.wait(url)
         budget = self.request_context.get()
@@ -384,16 +392,20 @@ class PublicAPI:
         return snapshot
 
     def movie(self, code: str, *, refresh=False, source_id=None) -> dict:
+        """番号对应的来源作品。来源去掉 MGS 的数字前缀（`259LUXU-891` 记作 `LUXU-891`），
+        搜索词与身份核对都按 `release_identity` 认同一部作品。"""
         canonical = normalise_code_key(code)
 
         def identify():
             product = re.fullmatch(r'FC2-PPV-(\d+)', canonical)
-            query = product[1] if product else canonical
+            query = product[1] if product else release_identity(canonical) or canonical
             rows = self._rows("/v2/search", "movies", {"q": query, "type": "movie", "page": 1})
             matches = [row for row in rows if isinstance(row, dict)
-                       and normalise_code_key(row.get("number")) == canonical]
-            if not matches or any(not isinstance(row.get('id'), str)
-                                  or not re.fullmatch(r'[A-Za-z0-9]+', row['id']) for row in matches):
+                       and same_release_code(canonical, row.get("number"))]
+            if not matches:
+                raise PublicNotFound("未取得这个番号的作品资料")
+            if any(not isinstance(row.get('id'), str)
+                   or not re.fullmatch(r'[A-Za-z0-9]+', row['id']) for row in matches):
                 raise PublicSourceUnavailable("未取得这个番号的作品资料")
             return list(dict.fromkeys(row['id'] for row in matches))
 
@@ -409,7 +421,7 @@ class PublicAPI:
 
         def fetch():
             movie = self._json("/v4/movies/" + movie_id).get("movie")
-            if (not isinstance(movie, dict) or normalise_code_key(movie.get("number")) != canonical
+            if (not isinstance(movie, dict) or not same_release_code(canonical, movie.get("number"))
                     or movie.get("id") != movie_id):
                 raise PublicSourceUnavailable("来源作品身份不匹配")
             return {**movie, 'javdb_rule': RULE}
@@ -421,7 +433,7 @@ class PublicAPI:
         canonical = normalise_code_key(code)
         identity = source.get("id")
         if (not current_evidence(source) or not isinstance(identity, str)
-                or normalise_code_key(source.get("number")) != canonical
+                or not same_release_code(canonical, source.get("number"))
                 or not re.fullmatch(r"[A-Za-z0-9]+", identity)):
             return
         key = 'movie-id:' + canonical
@@ -468,7 +480,7 @@ class PublicAPI:
             return self.movie(code)
         if (not isinstance(movie, dict) or not isinstance(movie.get('id'), str)
                 or not re.fullmatch(r'[A-Za-z0-9]+', movie['id'])
-                or normalise_code_key(movie.get('number')) != normalise_code_key(code)):
+                or not same_release_code(code, movie.get('number'))):
             raise PublicSourceUnavailable('来源作品身份不匹配')
         return movie
 

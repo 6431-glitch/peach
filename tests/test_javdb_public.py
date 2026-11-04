@@ -13,7 +13,7 @@ from PIL import Image
 
 from peach.http import HttpResponse
 from peach.javdb_public import PublicAPI, PublicSourceUnavailable, decode_image, preview_video_url, public_signature_parts
-from peach.javdb_public import PublicBudgetExceeded, PublicRequestBudget, actor_gender
+from peach.javdb_public import PublicBudgetExceeded, PublicNotFound, PublicRequestBudget, PublicSourcePaused, actor_gender
 from peach.web_jav_detail import (JAV_ACTOR_IMAGE_MAX_AGE, JAV_IMAGE_MAX_AGE, jav_image, q_jav_detail,
                                   q_jav_reviews, q_jav_resources)
 from peach.web_state import WebContract
@@ -249,6 +249,25 @@ class PublicProtocolTests(unittest.TestCase):
         self.assertEqual(parse_qs(urlsplit(search.url).query)['q'], ['1627464'])
         with self.assertRaises(PublicSourceUnavailable):
             self.api().movie('FC2-PPV-1627464')
+
+    def test_mgs_prefixed_code_searches_source_number_and_keeps_identity(self):
+        api = self.api(number='LUXU-891')
+        self.assertEqual(api.movie('259LUXU-891')['number'], 'LUXU-891')
+        search = next(request for request in self.requests if '/v2/search' in request.url)
+        self.assertEqual(parse_qs(urlsplit(search.url).query)['q'], ['LUXU-891'])
+        self.assertEqual(api.movie('259LUXU-891', source_id='Exact')['id'], 'Exact')
+        with self.assertRaisesRegex(PublicSourceUnavailable, '身份不匹配'):
+            self.api(number='LUXU-892').movie('259LUXU-891', source_id='Exact')
+
+    def test_missing_search_result_and_cooldown_have_their_own_kinds(self):
+        with self.assertRaises(PublicNotFound):
+            self.api().movie('EXM-999')
+        api = self.api(blocked=True)
+        with self.assertRaises(PublicSourceUnavailable) as first:
+            api.movie('EXM-001')
+        self.assertNotIsInstance(first.exception, PublicSourcePaused)
+        with self.assertRaises(PublicSourcePaused):
+            api.movie('EXM-002')
 
     def test_exact_work_is_cached_and_signed_without_credentials(self):
         api = self.api()
