@@ -1,7 +1,7 @@
 """把自动落库写下的一批结果整批撤回（ADR-0052）。
 
 认哪些写入、怎么撤、哪些不动，全在 `peach.auto_landing_revert`；复核页的「自动写入的资料」
-走同一份实现（ADR-0140）。这里只管命令行参数、打印计划和备份。
+走同一份实现（ADR-0141）。这里只管命令行参数、打印计划和备份。
 
     revert_auto_landing.py --source auto:follow-creator
     revert_auto_landing.py --source auto:performer-alias

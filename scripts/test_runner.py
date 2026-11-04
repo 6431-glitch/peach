@@ -260,7 +260,7 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     # 失效标记由资料页、网页链接体检、维护脚本与种子导出共用。
     "src/peach/link_status.py": ("catalog", "metadata", "tooling", "web"),
     "scripts/revert_auto_landing.py": ("catalog", "metadata", "tooling"),
-    # 撤回的实现与复核页入口（ADR-0140）：脚本用例散在 catalog、metadata、tooling，网页用例在
+    # 撤回的实现与复核页入口（ADR-0141）：脚本用例散在 catalog、metadata、tooling，网页用例在
     # `test_metadata_verification.py`，路由登记在 `test_rm_web.py`。
     "src/peach/auto_landing_revert.py": ("catalog", "metadata", "tooling"),
     "src/peach/web_auto_landings.py": ("catalog", "metadata", "web"),

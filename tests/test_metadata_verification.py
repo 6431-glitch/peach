@@ -315,7 +315,7 @@ class VerificationSettlementTests(unittest.TestCase):
             rm_auto.revert_verified(connection, plan)
         self.assertEqual(self.value(asset_id, "release_date"), ("2024-09-11", USER_MANUAL))
 
-    # ---- 复核页撤回（ADR-0140） ----
+    # ---- 复核页撤回（ADR-0141） ----
 
     def auto_landings(self, **args):
         return rm_web.dispatch_api_get(self.contract, "/api/review/auto-landings", args)

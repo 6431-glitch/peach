@@ -34,7 +34,7 @@ id 或路径已被别的行占用时那一批拒绝撤回。登记时自动接�
 核查差异按确定判据结算的两条（ADR-0139）按规则名撤：`adr-0139-official-replaces-verified`
 按 note 的 `previous` 把旧值与旧归属还原，之后被别人改过的资产不动；`adr-0139-verified-tags-union`
 删掉那一行补进的标签。两条都删掉决定，`batch` 给 note 里记的批次号。先改判据再撤。
-复核页的「自动写入的资料」逐条列出这两条规则的写入（ADR-0140），撤回走这里同一个 `plan` 与 `apply`。
+复核页的「自动写入的资料」逐条列出这两条规则的写入（ADR-0141），撤回走这里同一个 `plan` 与 `apply`。
 
 西方发行方的无番号作品封面（`ASSET-ID-<id>.jpg`）在 `.scraping.json` 边车里记 `source` 与 `batch`
 （`auto:western-artwork@<时间>`）。撤回删掉封面与同组边车，作品回到没有封面的样子。
@@ -249,7 +249,7 @@ def plan(connection, source: str, batch: str = "", *, logo_root: Path, cover_roo
          files: bool = True, item_keys: set[str] | None = None) -> dict:
     """这个来源（与批次）要撤的全部条目，只读。`apply` 与 `remove_files` 都按它做。
 
-    复核页只放行两条核查结算规则（ADR-0140），它们不写盘上文件：`files=False` 不扫标识与
+    复核页只放行两条核查结算规则（ADR-0141），它们不写盘上文件：`files=False` 不扫标识与
     封面目录，`item_keys` 只收窄核查结算那一类，撤的是人逐条勾选的那几行决定。
     """
     return {
