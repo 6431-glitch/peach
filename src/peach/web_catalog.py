@@ -69,10 +69,18 @@ def _download_source_names(contract: WebContract) -> tuple[tuple[int, tuple[str,
                                         tables=('download_task',))
 
 
+def group_inputs(contract: WebContract) -> tuple:
+    """分组快照在 `GROUP_TABLES` 之外的输入：版次还看种子名。
+
+    缓存里用到 `video_work_key` 的计算也要带上它，否则下载绑定改了版次分组，
+    按作品计的数不会跟着变。
+    """
+    return (_download_source_names(contract),)
+
+
 def _group_cached(contract: WebContract, key: str, fn):
-    """分组快照及其派生缓存：账本三张表之外，版次还看种子名。"""
-    return contract.cached_until_changed(key, fn, _download_source_names(contract),
-                                        tables=GROUP_TABLES)
+    """分组快照及其派生缓存。"""
+    return contract.cached_until_changed(key, fn, *group_inputs(contract), tables=GROUP_TABLES)
 
 #: 卡片随每条记录返回的女优上限。共演作品必须带上全部出镜者，而不是只留第一位；
 #: 但 BEST 合集实测有 41 位，全量下发会把列表响应撑大，所以截断并同时给出总数，
