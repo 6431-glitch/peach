@@ -280,6 +280,8 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     "src/peach/performer_header.py": ("metadata", "catalog", "web"),
     # 推送发现横跨扫描登记（tooling）与 HTTP 端点（catalog），按名字只推得出一个域。
     "src/peach/push_discovery.py": ("tooling", "catalog"),
+    # 入库通知由推送发现、云下载整理与任务接口共用，测试分在 catalog 与 tooling，按名字推不出来。
+    "src/peach/ingest_notices.py": ("catalog", "tooling"),
     # 个人记录的判据与搬运（ADR-0087）：资源同步与列表在 catalog，扫描登记与撤回脚本在 tooling。
     "src/peach/personal_records.py": ("catalog", "tooling"),
     "src/peach/record_rehome.py": ("catalog", "tooling"),
