@@ -158,6 +158,8 @@ docker compose cp peach:/tmp/peach-support.zip ./peach-support.zip
 
 ## 更新与范围
 
+配置页「检查更新」在容器里显示安装方式「Docker 镜像」，有新版本时不给下载键，改为列出宿主机上的两步：`docker compose pull` 拉取新镜像，`docker compose up -d` 重建容器。`.env` 把 `PEACH_VERSION` 固定成版本号的，先改成新版本再拉取。
+
 更新镜像并重建容器时保留 `/data`。数据库有待执行迁移时，先备份并按 [运行与配置](OPERATIONS.md) 的迁移流程处理；Docker 启动入口不会自动迁移已有数据库。健康检查使用 `/healthz?ready=1`。
 
 Linux 容器不读取用户电脑上的浏览历史，也不包含交互式浏览器；需要本机浏览器完成验证的来源在此环境不可用。CloudDrive2 的真实账号登录、网盘流量与 NAS 实机挂载需在目标机器验证。

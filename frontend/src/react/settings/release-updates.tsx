@@ -11,7 +11,7 @@ import type { ReleaseState, UpdateJob } from '../bundle';
 import { Note } from '../components/note';
 import { Progress } from '../components/progress';
 import { StatusLabel } from '../components/status-label';
-import { ErrorText, ExternalLink, Fact, FactList, Footer, Help, Section, Stack } from './section';
+import { CommandSteps, ErrorText, ExternalLink, Fact, FactList, Footer, Help, Section, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
 const ACTIVE = new Set(['downloading', 'verifying', 'extracting', 'preparing', 'restarting', 'installing']);
@@ -112,6 +112,9 @@ export function ReleaseUpdates({ initial, initialJob }: { initial: ReleaseState;
           : error || data.state === 'error'
             ? <ErrorText>{error || data.message}</ErrorText>
             : data.state === 'unchecked' ? null : <Help role="status">{data.message}</Help>}
+        {/* 容器没有应用内更新：在宿主机上拉镜像、重建容器。 */}
+        {data.state === 'available' && !error && data.steps?.length
+          ? <CommandSteps label="在宿主机上更新" steps={data.steps} /> : null}
         {job.state === 'error' ? <ErrorText>{job.message}</ErrorText> : null}
         {job.state !== 'idle' && job.state !== 'error' ? (
           <div aria-live="polite" className="flex flex-col gap-2">
