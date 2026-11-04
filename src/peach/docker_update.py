@@ -117,7 +117,9 @@ def trigger(root: Path, *, transport: httpx.BaseTransport | None = None) -> dict
     saved = values(root)
     if not saved.get("token"):
         raise ValueError("请先保存 Watchtower 令牌")
-    if not describe(root)["rolling"]:
+    if not image_tag():
+        raise ValueError("容器里没有镜像标签，compose.yaml 可能还是旧版；换成仓库当前的 compose.yaml 后重建容器")
+    if image_tag() != ROLLING_TAG:
         raise ValueError("镜像标签不是 edge，Watchtower 换不到新版本；请按下方步骤在宿主机上更新")
     url = saved.get("url") or DEFAULT_URL
     try:

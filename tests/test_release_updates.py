@@ -262,8 +262,9 @@ class DockerUpdateTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "令牌"):
             docker_update.trigger(self.root, transport=transport)
         docker_update.save(self.root, {"url": "http://watchtower:8080", "token": "s3cret"})
-        with patch.dict("os.environ", {docker_update.IMAGE_TAG_ENV: "0.53.0"}):
-            self.assertFalse(docker_update.ready(self.root))
-            with self.assertRaisesRegex(ValueError, "edge"):
-                docker_update.trigger(self.root, transport=transport)
+        for tag, message in (("0.53.0", "edge"), ("", "compose.yaml")):
+            with self.subTest(tag=tag), patch.dict("os.environ", {docker_update.IMAGE_TAG_ENV: tag}):
+                self.assertFalse(docker_update.ready(self.root))
+                with self.assertRaisesRegex(ValueError, message, msg="旧 compose 没传标签时要指向 compose 文件，不是 .env"):
+                    docker_update.trigger(self.root, transport=transport)
         self.assertEqual(requests, [], "换不到新版本时不打扰 Watchtower")

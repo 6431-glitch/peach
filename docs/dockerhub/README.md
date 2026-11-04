@@ -47,6 +47,10 @@ services:
     init: true
     restart: unless-stopped
     stop_grace_period: 75s
+    environment:
+      PEACH_IMAGE_TAG: ${PEACH_VERSION:-edge}
+    labels:
+      com.centurylinklabs.watchtower.enable: "true"
     ports:
       - "${PEACH_BIND:-127.0.0.1}:${PEACH_PORT:-8900}:8900"
     volumes:
@@ -99,7 +103,9 @@ On NAS container UIs, run `peach token` in the Peach container's terminal to get
 
 ## Updating
 
-Run `docker compose pull` and `docker compose up -d` again. Keep the `peach-data` volume: deleting it removes your settings, database and watch history. Hardware transcoding, CloudDrive2 networking, path mapping and diagnostics are covered in the [Docker guide](https://github.com/peach-mitao/peach/blob/master/docs/DOCKER.md).
+Run `docker compose pull` and `docker compose up -d` again. Keep the `peach-data` volume: deleting it removes your settings, database and watch history.
+
+To update from the settings page instead, run the optional Watchtower container from the repository's [`compose.yaml`](https://github.com/peach-mitao/peach/blob/master/compose.yaml) (`watchtower` profile) and enter its token under Settings → Maintenance → One-click update. Watchtower mounts the Docker socket, which gives it root-level control of the host; read the [one-click update section](https://github.com/peach-mitao/peach/blob/master/docs/DOCKER.md#一键更新可选-watchtower) before enabling it. Hardware transcoding, CloudDrive2 networking, path mapping and diagnostics are covered in the [Docker guide](https://github.com/peach-mitao/peach/blob/master/docs/DOCKER.md).
 
 ## License
 

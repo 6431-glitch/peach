@@ -90,9 +90,9 @@ export function DockerUpdateSettings({ state, onSaved, receipt }: {
         <Input id="docker-update-token" type="password" label="Watchtower 令牌" autoComplete="off" maxLength={512}
           value={token} onChange={setToken}
           hint={state.token_set ? '已保存，留空不改。' : '与宿主机 secrets/watchtower-token 文件的内容一致。'} />
-        {!state.rolling
-          ? <Help>当前镜像标签是 {state.image_tag || '未取得'}，Watchtower 只会换同一标签的新镜像。把 .env 的 PEACH_VERSION 删掉或改成 edge 后才能一键更新。</Help>
-          : null}
+        {state.rolling ? null : state.image_tag
+          ? <Help>当前镜像标签是 {state.image_tag}，Watchtower 只会换同一标签的新镜像。把 .env 的 PEACH_VERSION 删掉或改成 edge 后才能一键更新。</Help>
+          : <Help>容器里没有镜像标签，compose.yaml 可能还是旧版。换成仓库当前的 compose.yaml 后重建容器，才能一键更新。</Help>}
         {action.error ? <ErrorText>{action.error}</ErrorText> : null}
       </Stack>
       <Footer>

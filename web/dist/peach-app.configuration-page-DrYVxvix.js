@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "d12779d0-b70d-4476-8688-11ba2bc2cfe4", e._sentryDebugIdIdentifier = "sentry-dbid-d12779d0-b70d-4476-8688-11ba2bc2cfe4");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "7e29bc25-ab84-42e6-a136-b98eb873a38a", e._sentryDebugIdIdentifier = "sentry-dbid-7e29bc25-ab84-42e6-a136-b98eb873a38a");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -791,11 +791,11 @@ function Ir({ state: e, onSaved: t, receipt: n }) {
 				onChange: o,
 				hint: e.token_set ? "已保存，留空不改。" : "与宿主机 secrets/watchtower-token 文件的内容一致。"
 			}),
-			e.rolling ? null : /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
+			e.rolling ? null : e.image_tag ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 				"当前镜像标签是 ",
-				e.image_tag || "未取得",
+				e.image_tag,
 				"，Watchtower 只会换同一标签的新镜像。把 .env 的 PEACH_VERSION 删掉或改成 edge 后才能一键更新。"
-			] }),
+			] }) : /* @__PURE__ */ (0, Q.jsx)(N, { children: "容器里没有镜像标签，compose.yaml 可能还是旧版。换成仓库当前的 compose.yaml 后重建容器，才能一键更新。" }),
 			s.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: s.error }) : null
 		] }), /* @__PURE__ */ (0, Q.jsx)(M, { children: /* @__PURE__ */ (0, Q.jsx)(E, {
 			type: "submit",
@@ -2539,7 +2539,7 @@ function za({ initial: e, initialJob: t, docker: n }) {
 			/* @__PURE__ */ (0, Q.jsxs)(ut, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "当前版本",
-					children: r.current_version
+					children: p.job.state === "done" ? p.job.version : r.current_version
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "安装方式",
@@ -5943,4 +5943,4 @@ function Bs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Ls as ConfigurationPage };
 
-//# debugId=d12779d0-b70d-4476-8688-11ba2bc2cfe4
+//# debugId=7e29bc25-ab84-42e6-a136-b98eb873a38a

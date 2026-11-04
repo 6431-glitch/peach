@@ -104,7 +104,7 @@ export function ReleaseUpdates({ initial, initialJob, docker }: {
     <Section id="releaseUpdates" guide="updates" title="检查更新" aside={<StatusLabel tone={error || data.state === 'error' || job.state === 'error' || container.job.state === 'timeout' ? 'error' : running || rebuilding ? 'progress' : container.job.state === 'done' ? 'success' : data.state === 'available' ? 'warning' : data.state === 'unchecked' ? 'neutral' : 'success'}>
       {error || data.state === 'error' || job.state === 'error' ? '检查未完成' : container.job.state === 'timeout' ? '更新未完成' : running ? '准备更新中' : rebuilding ? '正在更新' : container.job.state === 'done' ? '已更新' : job.state === 'ready' ? '可安装' : data.state === 'available' ? '有可用更新' : data.state === 'unchecked' ? '尚未检查' : '检查完成'}</StatusLabel>}>
       <FactList>
-        <Fact term="当前版本">{data.current_version}</Fact>
+        <Fact term="当前版本">{container.job.state === 'done' ? container.job.version : data.current_version}</Fact>
         <Fact term="安装方式">{data.installation}</Fact>
         <Fact term="更新通道">{data.channel}</Fact>
         <Fact term="最新版本">{data.latest_version || '未取得'}</Fact>
