@@ -52,6 +52,8 @@ export interface AccessSettingsProps {
   receipt(message: string): void;
   /** 需要登录时紧跟在密码分区下面的设备列表；改密码后拿到新 `revision` 重新画。 */
   devices?(state: AccessState): import('react').ReactNode;
+  /** 不论访问方式都跟在后面的分区（访问口令）；确认文案随当前访问方式变。 */
+  after?(state: AccessState): import('react').ReactNode;
 }
 
 export interface StartupState {
@@ -295,6 +297,9 @@ export interface ConfigurationData {
   update_job?: UpdateJob;
   automatic_updates?: AutomaticUpdateState;
   access?: AccessState;
+  api_token?: import('./settings/api-token-settings').ApiTokenState;
+  /** 没有 HTTPS 服务或没有本机 CA 时为 null，那一块整个不渲染。 */
+  certificate?: import('./settings/certificate-trust').CertificateState | null;
   tunnel?: TunnelState;
   editable: boolean;
   /** 不能编辑时给用户看的原因，可编辑时为空。 */

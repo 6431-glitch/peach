@@ -1,6 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "291b0207-ad40-4fe7-a5a3-8833eac94686", e._sentryDebugIdIdentifier = "sentry-dbid-291b0207-ad40-4fe7-a5a3-8833eac94686");
 	} catch {}
 })();
@@ -16,14 +17,38 @@ var Z = /* @__PURE__ */ Jt(Mn(), 1), ur = "flex flex-col gap-6";
 function dr(e) {
 	return e ? {
 		className: e.active ? `${ur} ui-board-group-active` : ur,
+========
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "0cbc915c-23a0-4243-9174-f396365068ce", e._sentryDebugIdIdentifier = "sentry-dbid-0cbc915c-23a0-4243-9174-f396365068ce");
+	} catch {}
+})();
+import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
+import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as Le, $3a442827418ebe87$export$eb2fcfdbd7ba97d4 as Re, $542a13ca2fa5b484$export$5b6b19405a83ff9d as ze, $72abaeab4d80592f$export$78efe591171d7d45 as Be, $bd263d78e9bf3c56$export$f5c9f3c2c4054eec as Ve, $ea3928288112382f$export$439d29a4e110a164 as He, $f2ff30fde7b014be$export$3ddf2d174ce01153 as Ue, $fe21c36db05242bb$export$a98f0dcb43a68a25 as We, $fe21c36db05242bb$export$d7b12c4107be0d61 as Ge, ACCENTS as Ke, ApiError as qe, Button as E, ButtonLink as Je, CLOUD_LOCATIONS as Ye, CLOUD_PROXY_HELP as Xe, CONFIGURATION_KEY as Ze, CONFIGURATION_URL as Qe, CREDENTIAL_STATE as $e, Checkbox as D, Chip as et, Disclosure as O, ENTRY_LINKS_HELP as tt, ENTRY_LINKS_HINT as nt, EmptyState as rt, ErrorText as k, Eu as it, ExternalLink as A, FEED_SCHEDULE_KEY as at, FOLLOW_CREDENTIALS_KEY as ot, FOLLOW_INITIAL_RANGE_OPTIONS as st, FOLLOW_SCHEDULE_KEY as ct, Fact as j, FactList as lt, FieldLabel as ut, Footer as M, Help as N, HintText as dt, Input as P, L1 as ft, LIBRARY_FOLDER_HELP as pt, LIBRARY_PROCESSING_KEY as mt, Label as ht, LinkButton as gt, LoadingDots as _t, M6 as vt, MEDIA_PROCESSING_KEY as yt, MEDIA_PROCESSING_URL as bt, MEDIA_SOURCE_ICONS as xt, MENU_POPOVER_SURFACE as St, Note as F, PICK_FOLDER_URL as Ct, POLICY_COLUMNS as wt, POLICY_COVER_NOTE as Tt, POLICY_MATRIX as Et, POLICY_SUMMARY as Dt, PathLine as Ot, PillTabList as kt, Progress as At, Rows as I, SEGMENT as jt, SEGMENTED_TRACK as Mt, SETTINGS_KEY as Nt, SETTINGS_URL as Pt, Section as L, SectionSkeleton as Ft, SegmentedRadioGroup as It, Select as Lt, Select$1 as R, SelectItem as z, SettingsCard as Rt, SettingsRow as B, SiteLabel as zt, SourceLabel as Bt, SourceMark as Vt, Stack as V, StatusLabel as H, Switch as U, THUMBNAIL_JOBS_KEY as Ht, TaskCenterLink as Ut, TextField as Wt, TextFieldContext as Gt, Uz as Kt, __toESM as qt, _p as Jt, animate as Yt, apiGet as W, apiSend as G, appSettingsStore as Xt, boundedPreference as Zt, busyProps as K, cardClass as Qt, cloudProxySkeleton as $t, clsx as en, cn as tn, confirmModal as nn, credentialDone as rn, credentialsSkeleton as an, cx as on, d6 as sn, devicesSkeleton as cn, errorMessage as q, fetchConfiguration as ln, fetchCredentials as un, fetchFeedSchedule as dn, fetchFollowSchedule as fn, fetchLibraryProcessing as pn, fetchMediaProcessing as mn, fetchSettings as hn, fetchThumbnailJobs as gn, fmtSize as J, indexersSkeleton as _n, javBrowserSkeleton as vn, l1 as yn, momentText as bn, motion as xn, overlayHost as Sn, peachHistory$1 as Cn, previewLibraryColor as wn, processingActive as Tn, providerIcon as En, queryClient as Dn, randomId as On, rememberShape as kn, require_jsx_runtime as An, require_react as jn, restartEffectText as Mn, saveCredential as Nn, schedulePollInterval as Pn, settingsPath as Fn, shellNavigate as In, sortCx as Ln, sourceDefaultCost as Rn, useAction as Y, useClientUpdates as zn, useLibraryTints as Bn, useMutation as Vn, useQuery as X, useQueryClient as Hn, useReducedMotion as Un, useRunSchedule as Wn, useSaveFollowSchedule as Gn, useSaveSettings as Kn, useSaveThumbnailMode as qn, we as Jn, z3 as Yn } from "./peach-app.js";
+import { CodeBlock as Xn } from "./peach-app.code-block-CyDva4Ms.js";
+import { FolderField as Zn, FolderFieldLine as Qn, FolderRow as $n, MEDIA_SOURCES as er, MediaReadPolicy as tr, MediaReadPolicyHelp as nr, SourceSelect as rr, isCloudSource as ir, sourceMark as ar, useFolderRows as or } from "./peach-app.folder-rows-BWBfTyUD.js";
+import { ConnectionStatus as sr } from "./peach-app.connection-status-DI6kgn3i.js";
+import { SourceIcon as cr } from "./peach-app.source-view-DalWfDkm.js";
+import { BrowserIcon as lr, browserIconId as ur } from "./peach-app.browser-icon-N9Od-bAf.js";
+// src/react/settings/configuration-panel.ts
+var Z = /* @__PURE__ */ qt(jn(), 1), dr = "flex flex-col gap-6";
+function fr(e) {
+	return e ? {
+		className: e.active ? `${dr} ui-board-group-active` : dr,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		"data-board-group": String(e.index),
 		id: e.id,
 		role: "tabpanel",
 		"aria-labelledby": e.labelledBy
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	} : { className: ur };
 }
 // src/react/settings/userscript-probe.ts
 function fr() {
+========
+	} : { className: dr };
+}
+// src/react/settings/userscript-probe.ts
+function pr() {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let e = (0, Z.useRef)(null), [t, n] = (0, Z.useState)(0), [r, i] = (0, Z.useState)("checking");
 	return (0, Z.useEffect)(() => {
 		let t = kn(), n = !1, r = e.current, a, o = () => {
@@ -54,14 +79,24 @@ function fr() {
 	};
 }
 // src/react/settings/userscript-status.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Q = jn();
 function pr(e, t) {
+========
+var Q = An();
+function mr(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let n = e.split(".").map(Number), r = t.split(".").map(Number);
 	for (let e = 0; e < 3; e++) if (n[e] !== r[e]) return n[e] > r[e];
 	return !0;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function mr({ enabled: e, release: t }) {
 	let { frame: n, attempt: r, status: i, retry: a } = fr(), o = typeof i == "object", s = o && !pr(i.version, t.minimum_version), c = o && !pr(i.version, t.version), l = i === "checking" ? "progress" : i === "missing" ? "neutral" : s || c || !i.paired ? "warning" : "success", u = i === "checking" ? "检测中" : i === "missing" ? "未检测到" : s ? "需更新" : c ? "可更新" : i.paired ? "已连接" : "待配对", d = i === "checking" ? "checking" : i === "missing" ? "missing" : s ? "required" : c ? "available" : i.paired ? e ? "enabled" : "disabled" : "unpaired";
+========
+function hr({ enabled: e, release: t }) {
+	let { frame: n, attempt: r, status: i, retry: a } = pr(), o = typeof i == "object", s = o && !mr(i.version, t.minimum_version), c = o && !mr(i.version, t.version), l = i === "checking" ? "progress" : i === "missing" ? "neutral" : s || c || !i.paired ? "warning" : "success", u = i === "checking" ? "检测中" : i === "missing" ? "未检测到" : s ? "需更新" : c ? "可更新" : i.paired ? "已连接" : "待配对", d = i === "checking" ? "checking" : i === "missing" ? "missing" : s ? "required" : c ? "available" : i.paired ? e ? "enabled" : "disabled" : "unpaired";
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)("iframe", {
 		ref: n,
 		title: "Peach 用户脚本检测",
@@ -81,7 +116,11 @@ function mr({ enabled: e, release: t }) {
 				children: [/* @__PURE__ */ (0, Q.jsx)("span", {
 					className: "text-body-medium text-text-primary",
 					children: "Peach 用户脚本"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				}), /* @__PURE__ */ (0, Q.jsx)(or, {
+========
+				}), /* @__PURE__ */ (0, Q.jsx)(sr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					tone: l,
 					children: /* @__PURE__ */ (0, Q.jsx)("span", {
 						"data-copy-key": `userscript.${d}.status`,
@@ -139,23 +178,40 @@ function mr({ enabled: e, release: t }) {
 	})] });
 }
 // src/react/settings/jav-browser-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var hr = "/api/configuration/jav-browser";
 function gr({ receipt: e, refreshKey: t }) {
 	let n = X({
 		queryKey: ["jav-browser-settings", t],
 		queryFn: ({ signal: e }) => W(hr, e),
+========
+var gr = "/api/configuration/jav-browser";
+function _r({ receipt: e, refreshKey: t }) {
+	let n = X({
+		queryKey: ["jav-browser-settings", t],
+		queryFn: ({ signal: e }) => W(gr, e),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		refetchOnMount: "always",
 		refetchOnWindowFocus: "always"
 	});
 	return n.error && !n.data ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(n.error) }) : n.isFetching && !n.data ? /* @__PURE__ */ (0, Q.jsx)(It, {
 		label: "正在读取浏览器添加设置",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		html: yn
 	}) : n.data ? /* @__PURE__ */ (0, Q.jsx)(_r, {
+========
+		html: vn
+	}) : n.data ? /* @__PURE__ */ (0, Q.jsx)(vr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		initial: n.data,
 		receipt: e
 	}) : null;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function _r({ initial: e, receipt: t }) {
+========
+function vr({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.provider), [o, s] = (0, Z.useState)(""), c = Y();
 	(0, Z.useEffect)(() => {
 		An("javBrowser", {
@@ -164,7 +220,11 @@ function _r({ initial: e, receipt: t }) {
 		}), r(e), a((t) => e.providers.some((e) => e.key === t) ? t : e.provider), e.enabled || s("");
 	}, [e]);
 	let l = (e) => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		c.run(e, (t) => G(hr, {
+========
+		c.run(e, (t) => G(gr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			action: e,
 			provider: i
 		}, "POST", t), (n) => {
@@ -178,7 +238,11 @@ function _r({ initial: e, receipt: t }) {
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "flex min-w-0 flex-col gap-4",
 			children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				/* @__PURE__ */ (0, Q.jsx)(mr, {
+========
+				/* @__PURE__ */ (0, Q.jsx)(hr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					enabled: n.enabled,
 					release: n.userscript
 				}),
@@ -251,17 +315,29 @@ function _r({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/download-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var vr = "/api/configuration/downloads", yr = "/api/configuration/downloads/check", br = "/api/configuration/downloads/folder", xr = "/api/configuration/downloads/pikpak/login", Sr = "/api/configuration/downloads/pikpak/logout", Cr = "/api/configuration/downloads/pikpak/browser-login", wr = 2e3, Tr = Dn("pikpak");
 function Er({ initial: e, receipt: t, panel: n, issues: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...dr(n),
 		children: [r, e ? /* @__PURE__ */ (0, Q.jsx)(Dr, {
+========
+var yr = "/api/configuration/downloads", br = "/api/configuration/downloads/check", xr = "/api/configuration/downloads/folder", Sr = "/api/configuration/downloads/pikpak/login", Cr = "/api/configuration/downloads/pikpak/logout", wr = "/api/configuration/downloads/pikpak/browser-login", Tr = 2e3, Er = En("pikpak");
+function Dr({ initial: e, receipt: t, panel: n, issues: r }) {
+	return /* @__PURE__ */ (0, Q.jsxs)("div", {
+		...fr(n),
+		children: [r, e ? /* @__PURE__ */ (0, Q.jsx)(Or, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			initial: e,
 			receipt: t
 		}) : null]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Dr({ initial: e, receipt: t }) {
+========
+function Or({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)("");
 	(0, Z.useEffect)(() => {
 		r((t) => ({
@@ -272,20 +348,32 @@ function Dr({ initial: e, receipt: t }) {
 	}, [e.media_sources, e.pikpak_roots]);
 	let o = n.media_sources ?? [], s = o.includes("pikpak"), c = o.some((e) => Ye.includes(e)), l = s && (n.pikpak.logged_in || !!i.trim());
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		c ? /* @__PURE__ */ (0, Q.jsx)(Or, {
+========
+		c ? /* @__PURE__ */ (0, Q.jsx)(kr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			state: n,
 			settle: r,
 			receipt: t,
 			pikpakAccount: l
 		}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		s ? /* @__PURE__ */ (0, Q.jsx)(jr, {
+========
+		s ? /* @__PURE__ */ (0, Q.jsx)(Mr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			state: n,
 			settle: r,
 			receipt: t,
 			username: i,
 			setUsername: a
 		}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		/* @__PURE__ */ (0, Q.jsx)(gr, {
+========
+		/* @__PURE__ */ (0, Q.jsx)(_r, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			receipt: t,
 			refreshKey: JSON.stringify([
 				n.media_sources,
@@ -296,8 +384,13 @@ function Dr({ initial: e, receipt: t }) {
 		})
 	] });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 	let [i, a] = (0, Z.useState)(e.config), [o, s] = (0, Z.useState)(""), [c, l] = (0, Z.useState)(String(e.config.wait_hours)), [u, d] = (0, Z.useState)(null), [f, p] = (0, Z.useState)(""), [m, h] = (0, Z.useState)(kr), [g, _] = (0, Z.useState)(""), [v, y] = (0, Z.useState)(!1), b = Y(), x = e.media_sources ?? [], S = x.includes("115"), C = x.includes("pikpak"), w = (e) => i.targets[e] ?? "", T = (e, t) => a({
+========
+function kr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
+	let [i, a] = (0, Z.useState)(e.config), [o, s] = (0, Z.useState)(""), [c, l] = (0, Z.useState)(String(e.config.wait_hours)), [u, d] = (0, Z.useState)(null), [f, p] = (0, Z.useState)(""), [m, h] = (0, Z.useState)(Ar), [g, _] = (0, Z.useState)(""), [v, y] = (0, Z.useState)(!1), b = Y(), x = e.media_sources ?? [], S = x.includes("115"), C = x.includes("pikpak"), w = (e) => i.targets[e] ?? "", T = (e, t) => a({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		...i,
 		targets: {
 			...i.targets,
@@ -326,7 +419,11 @@ function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 			target: !e.config.targets[115],
 			root: !e.config.pikpak_root
 		};
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		b.run("auto", (e) => W(yr, e), (e) => te(e, t), (e) => _(q(e)));
+========
+		b.run("auto", (e) => W(br, e), (e) => te(e, t), (e) => _(q(e)));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	}, []), /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "download",
 		title: "云下载",
@@ -341,13 +438,21 @@ function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 				token: o,
 				pikpak_account: r
 			};
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			b.run("save", (e) => G(vr, f, "POST", e), (e) => {
+========
+			b.run("save", (e) => G(yr, f, "POST", e), (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				let { report: r, ...i } = e;
 				t(i), a(i.config), l(String(i.config.wait_hours)), s(""), r ? te(r, {
 					address: !i.config.clouddrive_address,
 					target: u,
 					root: !i.config.pikpak_root
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				}, i.config.targets[115] ?? "") : (d(null), p(""), h(kr), y(!1), _("")), n("已保存配置");
+========
+				}, i.config.targets[115] ?? "") : (d(null), p(""), h(Ar), y(!1), _("")), n("已保存配置");
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			}, (e) => _(q(e)));
 		},
 		children: [
@@ -442,7 +547,11 @@ function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 				divided: !0,
 				children: /* @__PURE__ */ (0, Q.jsx)(vt, { label: "正在检查 CloudDrive2" })
 			}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			u ? /* @__PURE__ */ (0, Q.jsx)(Ar, {
+========
+			u ? /* @__PURE__ */ (0, Q.jsx)(jr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				report: u,
 				detected: f,
 				suggested: m,
@@ -454,7 +563,11 @@ function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 						pikpak_root: i.pikpak_root,
 						pikpak_account: r
 					};
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					b.run("folder", (e) => G(br, t, "POST", e), (t) => {
+========
+					b.run("folder", (e) => G(xr, t, "POST", e), (t) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						d(t), h((t) => ({
 							...t,
 							target: {
@@ -486,7 +599,11 @@ function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 							pikpak_root: i.pikpak_root,
 							pikpak_account: r
 						};
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 						b.run("check", (e) => G(yr, t, "POST", e), (t) => te(t, e), (e) => _(q(e)));
+========
+						b.run("check", (e) => G(br, t, "POST", e), (t) => te(t, e), (e) => _(q(e)));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					},
 					disabled: !e.available,
 					...K(b.busy === "check"),
@@ -501,12 +618,20 @@ function Or({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var kr = {
+========
+var Ar = {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	target: null,
 	root: "",
 	saved: !1
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ar({ report: e, detected: t, suggested: n, create: r, creating: i }) {
+========
+function jr({ report: e, detected: t, suggested: n, create: r, creating: i }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let a = n.target, o = !!(t || a || n.root || e.permissions.length || e.folder || e.quota);
 	return !o && !e.problems.length ? null : /* @__PURE__ */ (0, Q.jsxs)(V, {
 		divided: !0,
@@ -568,30 +693,52 @@ function Ar({ report: e, detected: t, suggested: n, create: r, creating: i }) {
 		] }) : null, e.problems.map((e) => /* @__PURE__ */ (0, Q.jsx)(k, { children: e }, e))]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function jr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
+========
+function Mr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [a, o] = (0, Z.useState)(""), [s, c] = (0, Z.useState)(!1), [l, u] = (0, Z.useState)(""), [d, f] = (0, Z.useState)(""), [p, m] = (0, Z.useState)(""), h = Y(), g = e.pikpak, _ = e.pikpak_browser, v = _.state === "waiting";
 	(0, Z.useEffect)(() => {
 		if (!v) return;
 		let e = new AbortController(), r, i = async () => {
 			try {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				let r = await W(Cr, e.signal);
+========
+				let r = await W(wr, e.signal);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				if (e.signal.aborted || (t(r), r.pikpak_browser.state === "done" ? n("已登录 PikPak") : r.pikpak_browser.state !== "waiting" && m(r.pikpak_browser.message), r.pikpak_browser.state !== "waiting")) return;
 			} catch (t) {
 				if (e.signal.aborted) return;
 				f(q(t));
 			}
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			r = setTimeout(i, wr);
 		};
 		return r = setTimeout(i, wr), () => {
+========
+			r = setTimeout(i, Tr);
+		};
+		return r = setTimeout(i, Tr), () => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			e.abort(), clearTimeout(r);
 		};
 	}, [v]);
 	let y = () => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		m(""), h.run("browser", (e) => G(Cr, {}, "POST", e), (e) => {
 			t(e), f("");
 		}, (e) => f(q(e)));
 	}, b = () => {
 		h.run("cancel", (e) => G(`${Cr}/cancel`, {}, "POST", e), (e) => {
+========
+		m(""), h.run("browser", (e) => G(wr, {}, "POST", e), (e) => {
+			t(e), f("");
+		}, (e) => f(q(e)));
+	}, b = () => {
+		h.run("cancel", (e) => G(`${wr}/cancel`, {}, "POST", e), (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			t(e), f(""), m(e.pikpak_browser.message);
 		}, (e) => f(q(e)));
 	}, x = (e) => {
@@ -601,11 +748,19 @@ function jr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 			password: a,
 			remember: s
 		};
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		h.run("login", (e) => G(xr, i, "POST", e), (e) => {
 			t(e.settings), f(""), e.ok ? (u(""), o(""), n("已登录 PikPak")) : u(e.captcha_url ?? "");
 		}, (e) => f(q(e)));
 	}, S = () => {
 		h.run("logout", (e) => G(Sr, {}, "POST", e), (e) => {
+========
+		h.run("login", (e) => G(Sr, i, "POST", e), (e) => {
+			t(e.settings), f(""), e.ok ? (u(""), o(""), n("已登录 PikPak")) : u(e.captcha_url ?? "");
+		}, (e) => f(q(e)));
+	}, S = () => {
+		h.run("logout", (e) => G(Cr, {}, "POST", e), (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			t(e), f(""), n("已登出 PikPak");
 		}, (e) => f(q(e)));
 	}, C = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
@@ -655,7 +810,11 @@ function jr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "pikpak",
 		title: "PikPak 账号",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		icon: /* @__PURE__ */ (0, Q.jsx)(Tr, {}),
+========
+		icon: /* @__PURE__ */ (0, Q.jsx)(Er, {}),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		onSubmit: x,
 		aside: /* @__PURE__ */ (0, Q.jsx)(H, {
 			tone: g.logged_in ? "success" : v ? "progress" : T ? "error" : "neutral",
@@ -706,11 +865,19 @@ function jr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 	});
 }
 // src/react/settings/ledger-backup-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Mr = "/api/configuration/ledger-backups", Nr = 1500, Pr = (e) => (/* @__PURE__ */ new Date(e.modified_at * 1e3)).toLocaleString();
 function Fr(e) {
 	return [e.source === "manual" ? "手动" : `自动 · ${e.purpose}`, J(e.bytes)].join(" · ");
 }
 function Ir({ job: e, label: t }) {
+========
+var Nr = "/api/configuration/ledger-backups", Pr = 1500, Fr = (e) => (/* @__PURE__ */ new Date(e.modified_at * 1e3)).toLocaleString();
+function Ir(e) {
+	return [e.source === "manual" ? "手动" : `自动 · ${e.purpose}`, J(e.bytes)].join(" · ");
+}
+function Lr({ job: e, label: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"aria-live": "polite",
 		className: "flex flex-col gap-2",
@@ -725,23 +892,38 @@ function Ir({ job: e, label: t }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Lr({ receipt: e }) {
+========
+function Rr({ receipt: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(""), a = Y(), o = t?.backup.status === "running", s = t?.restore.status === "running", c = o || s, l = (0, Z.useRef)({
 		backup: !1,
 		restore: !1
 	});
 	if ((0, Z.useEffect)(() => {
 		let e = new AbortController();
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		return W(Mr, e.signal).then(n, (t) => {
+========
+		return W(Nr, e.signal).then(n, (t) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			e.signal.aborted || i(String(t?.message || t));
 		}), () => e.abort();
 	}, []), (0, Z.useEffect)(() => {
 		if (!c) return;
 		let e = new AbortController(), t = setTimeout(() => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			W(Mr, e.signal).then(n, () => {
 				e.signal.aborted || n((e) => e && { ...e });
 			});
 		}, Nr);
+========
+			W(Nr, e.signal).then(n, () => {
+				e.signal.aborted || n((e) => e && { ...e });
+			});
+		}, Pr);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		return () => {
 			e.abort(), clearTimeout(t);
 		};
@@ -756,6 +938,7 @@ function Lr({ receipt: e }) {
 		title: "账本备份",
 		children: /* @__PURE__ */ (0, Q.jsx)(V, { children: r ? /* @__PURE__ */ (0, Q.jsx)(k, { children: r }) : /* @__PURE__ */ (0, Q.jsx)(vt, { label: "正在读取备份列表" }) })
 	});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	let u = () => void a.run("backup", (e) => G(`${Mr}/backup`, {}, "POST", e), n), d = (e) => void rn({
 		title: "从备份恢复账本",
 		danger: !0,
@@ -763,6 +946,15 @@ function Lr({ receipt: e }) {
 		confirmLabel: "替换当前账本",
 		onConfirm: async () => {
 			l.current.restore = !0, n(await G(`${Mr}/restore`, {
+========
+	let u = () => void a.run("backup", (e) => G(`${Nr}/backup`, {}, "POST", e), n), d = (e) => void nn({
+		title: "从备份恢复账本",
+		danger: !0,
+		body: `将用 ${Fr(e)} 的备份（${Ir(e)}）替换当前账本，此后的资料、观看记录与复核结论回到备份时的状态。替换前先把当前账本另存为一份备份；恢复期间不能启动新任务。`,
+		confirmLabel: "替换当前账本",
+		onConfirm: async () => {
+			l.current.restore = !0, n(await G(`${Nr}/restore`, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				id: e.id,
 				confirm: !0
 			}));
@@ -776,11 +968,19 @@ function Lr({ receipt: e }) {
 			/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(N, { children: "账本保存全部资料、观看记录与复核结论。手动备份与写入前的自动备份放在一起，保留最近 5 份和 24 小时内的备份。" }),
 				t.writer ? null : /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["这台电脑不是账本写入端，只能在写入端恢复：", t.writer_reason] }),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				o ? /* @__PURE__ */ (0, Q.jsx)(Ir, {
 					job: t.backup,
 					label: "备份进度"
 				}) : null,
 				s ? /* @__PURE__ */ (0, Q.jsx)(Ir, {
+========
+				o ? /* @__PURE__ */ (0, Q.jsx)(Lr, {
+					job: t.backup,
+					label: "备份进度"
+				}) : null,
+				s ? /* @__PURE__ */ (0, Q.jsx)(Lr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					job: t.restore,
 					label: "恢复进度"
 				}) : null,
@@ -792,8 +992,13 @@ function Lr({ receipt: e }) {
 				className: "border-t border-separator-border",
 				"data-ledger-backups": "",
 				children: /* @__PURE__ */ (0, Q.jsx)(I, { children: t.backups.map((e) => /* @__PURE__ */ (0, Q.jsx)(B, {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					label: Pr(e),
 					description: Fr(e),
+========
+					label: Fr(e),
+					description: Ir(e),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					children: /* @__PURE__ */ (0, Q.jsx)(E, {
 						variant: "secondary",
 						disabled: !t.writer || c,
@@ -815,7 +1020,11 @@ function Lr({ receipt: e }) {
 	});
 }
 // src/react/settings/library-sharing-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Rr({ initial: e, receipt: t }) {
+========
+function zr({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(null), [o, s] = (0, Z.useState)(!1), [c, l] = (0, Z.useState)(!1), u = (0, Z.useMemo)(() => i ? JSON.stringify(i.data, null, 2) : "", [i]), d = Y(), f = (e) => void d.run("save", (t) => G("/api/configuration/library-sharing", {
 		enabled: e,
 		schema: n.schema,
@@ -892,7 +1101,11 @@ function Rr({ initial: e, receipt: t }) {
 				/* @__PURE__ */ (0, Q.jsx)(O, {
 					summary: "上传数据预览",
 					defaultOpen: !0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					children: /* @__PURE__ */ (0, Q.jsx)(Yn, {
+========
+					children: /* @__PURE__ */ (0, Q.jsx)(Xn, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						code: u,
 						language: "json",
 						label: "馆藏与口味上传预览",
@@ -945,7 +1158,11 @@ function Rr({ initial: e, receipt: t }) {
 	] });
 }
 // src/react/settings/remote-reporting-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function zr({ value: e, onChange: t, busy: n = !1 }) {
+========
+function Br({ value: e, onChange: t, busy: n = !1 }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 		label: "发送版本统计与错误诊断（推荐）",
 		description: "上传版本、系统信息、故障类型、代码位置与发生次数。",
@@ -967,9 +1184,15 @@ function zr({ value: e, onChange: t, busy: n = !1 }) {
 		})
 	})] });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Br({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), i = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(zr, {
+========
+function Vr({ initial: e, receipt: t }) {
+	let [n, r] = (0, Z.useState)(e), i = Y();
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Br, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		value: n,
 		busy: i.busy === "save",
 		onChange: (e) => {
@@ -986,16 +1209,26 @@ function Br({ initial: e, receipt: t }) {
 	}) : null] });
 }
 // src/react/components/animated-number.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Vr = .6;
 function Hr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
+========
+var Hr = .6;
+function Ur({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let r = Un(), [i, a] = (0, Z.useState)(e), o = (0, Z.useRef)(e);
 	return (0, Z.useEffect)(() => {
 		if (r || o.current === e) {
 			o.current = e, a(e);
 			return;
 		}
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		let t = Xt(o.current, e, {
 			duration: Vr,
+========
+		let t = Yt(o.current, e, {
+			duration: Hr,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			ease: "easeOut",
 			onUpdate: (e) => {
 				o.current = e, a(e);
@@ -1008,7 +1241,11 @@ function Hr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), class
 	});
 }
 // node_modules/recharts/es6/state/selectors/pieSelectors.js
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ur(e, t) {
+========
+function Wr(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1018,30 +1255,52 @@ function Ur(e, t) {
 	}
 	return n;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Wr(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
 		t % 2 ? Ur(Object(n), !0).forEach(function(t) {
 			Gr(e, t, n[t]);
 		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Ur(Object(n)).forEach(function(t) {
+========
+function Gr(e) {
+	for (var t = 1; t < arguments.length; t++) {
+		var n = arguments[t] == null ? {} : arguments[t];
+		t % 2 ? Wr(Object(n), !0).forEach(function(t) {
+			Kr(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Wr(Object(n)).forEach(function(t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Gr(e, t, n) {
 	return (t = Kr(t)) in e ? Object.defineProperty(e, t, {
+========
+function Kr(e, t, n) {
+	return (t = qr(t)) in e ? Object.defineProperty(e, t, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Kr(e) {
 	var t = qr(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
 function qr(e, t) {
+========
+function qr(e) {
+	var t = Jr(e, "string");
+	return typeof t == "symbol" ? t : t + "";
+}
+function Jr(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1051,20 +1310,36 @@ function qr(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Jr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Yr = [], Xr = (e, t, n) => n?.length === 0 ? Yr : n, Zr = oe([
 	Te,
 	Jr,
 	Xr
+========
+var Yr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Xr = [], Zr = (e, t, n) => n?.length === 0 ? Xr : n, Qr = oe([
+	Te,
+	Yr,
+	Zr
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 ], (e, t, n) => {
 	var r = e.chartData;
 	if (t != null) {
 		var i = t?.data != null && t.data.length > 0 ? t.data : r;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		if (i && i.length || n == null || (i = n.map((e) => Wr(Wr({}, t.presentationProps), e.props))), i != null) return i;
 	}
 }), Qr = oe([
 	Zr,
 	Jr,
 	Xr
+========
+		if (i && i.length || n == null || (i = n.map((e) => Gr(Gr({}, t.presentationProps), e.props))), i != null) return i;
+	}
+}), $r = oe([
+	Qr,
+	Yr,
+	Zr
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 ], (e, t, n) => {
 	if (e != null && t != null) return e.map((e, r) => {
 		var i, a = he(e, t.nameKey, t.name), o = n != null && (i = n[r]) != null && (i = i.props) != null && i.fill ? n[r].props.fill : typeof e == "object" && e && "fill" in e ? e.fill : t.fill;
@@ -1076,6 +1351,7 @@ var Jr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find(
 			type: t.legendType
 		};
 	});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }), $r = oe([
 	Zr,
 	Jr,
@@ -1083,11 +1359,21 @@ var Jr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find(
 	Ee
 ], (e, t, n, r) => {
 	if (t != null && e != null) return wi({
+========
+}), ei = oe([
+	Qr,
+	Yr,
+	Zr,
+	Ee
+], (e, t, n, r) => {
+	if (t != null && e != null) return Ti({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		offset: r,
 		pieSettings: t,
 		displayedData: e,
 		cells: n
 	});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }), ei = ["key"], ti = [
 	"onMouseEnter",
 	"onClick",
@@ -1095,23 +1381,44 @@ var Jr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find(
 ], ni = ["id"], ri = ["id"];
 function ii() {
 	return ii = Object.assign ? Object.assign.bind() : function(e) {
+========
+}), ti = ["key"], ni = [
+	"onMouseEnter",
+	"onClick",
+	"onMouseLeave"
+], ri = ["id"], ii = ["id"];
+function ai() {
+	return ai = Object.assign ? Object.assign.bind() : function(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		for (var t = 1; t < arguments.length; t++) {
 			var n = arguments[t];
 			for (var r in n) ({}).hasOwnProperty.call(n, r) && (e[r] = n[r]);
 		}
 		return e;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}, ii.apply(null, arguments);
 }
 function ai(e, t) {
 	if (e == null) return {};
 	var n, r, i = oi(e, t);
+========
+	}, ai.apply(null, arguments);
+}
+function oi(e, t) {
+	if (e == null) return {};
+	var n, r, i = si(e, t);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (Object.getOwnPropertySymbols) {
 		var a = Object.getOwnPropertySymbols(e);
 		for (r = 0; r < a.length; r++) n = a[r], t.indexOf(n) === -1 && {}.propertyIsEnumerable.call(e, n) && (i[n] = e[n]);
 	}
 	return i;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function oi(e, t) {
+========
+function si(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (e == null) return {};
 	var n = {};
 	for (var r in e) if ({}.hasOwnProperty.call(e, r)) {
@@ -1120,7 +1427,11 @@ function oi(e, t) {
 	}
 	return n;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function si(e, t) {
+========
+function ci(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1133,27 +1444,46 @@ function si(e, t) {
 function $(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		t % 2 ? si(Object(n), !0).forEach(function(t) {
 			ci(e, t, n[t]);
 		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : si(Object(n)).forEach(function(t) {
+========
+		t % 2 ? ci(Object(n), !0).forEach(function(t) {
+			li(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : ci(Object(n)).forEach(function(t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ci(e, t, n) {
 	return (t = li(t)) in e ? Object.defineProperty(e, t, {
+========
+function li(e, t, n) {
+	return (t = ui(t)) in e ? Object.defineProperty(e, t, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function li(e) {
 	var t = ui(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
 function ui(e, t) {
+========
+function ui(e) {
+	var t = di(e, "string");
+	return typeof t == "symbol" ? t : t + "";
+}
+function di(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1163,12 +1493,21 @@ function ui(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var di = S;
 function fi(e) {
 	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => Qr(t, e.id, n));
 	return r == null ? null : /*#__PURE__*/ Z.createElement(w, { legendPayload: r });
 }
 function pi(e) {
+========
+var fi = S;
+function pi(e) {
+	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => $r(t, e.id, n));
+	return r == null ? null : /*#__PURE__*/ Z.createElement(w, { legendPayload: r });
+}
+function mi(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (e != null && typeof e != "boolean" && typeof e != "function") {
 		if (/*#__PURE__*/ Z.isValidElement(e)) {
 			var t = e.props?.fill;
@@ -1178,8 +1517,13 @@ function pi(e) {
 		return typeof n == "string" ? n : void 0;
 	}
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var mi = /*#__PURE__*/ Z.memo((e) => {
 	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = pi(f), m = {
+========
+var hi = /*#__PURE__*/ Z.memo((e) => {
+	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = mi(f), m = {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		dataDefinedOnItem: r.map((e) => {
 			var t = e.tooltipPayload;
 			return p == null || t == null ? t : t.map((e) => $($({}, e), {}, {
@@ -1204,20 +1548,32 @@ var mi = /*#__PURE__*/ Z.memo((e) => {
 		}
 	};
 	return /*#__PURE__*/ Z.createElement(T, { tooltipEntrySettings: m });
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }), hi = (e, t) => e > t ? "start" : e < t ? "end" : "middle", gi = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), _i = (e, t, n) => {
+========
+}), gi = (e, t) => e > t ? "start" : e < t ? "end" : "middle", _i = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), vi = (e, t, n) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	var r = t.top, i = t.left, a = t.width, o = t.height, s = fe(a, o);
 	return {
 		cx: i + pe(e.cx, a, a / 2),
 		cy: r + pe(e.cy, o, o / 2),
 		innerRadius: pe(e.innerRadius, s, 0),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		outerRadius: gi(n, e.outerRadius, s),
 		maxRadius: e.maxRadius || Math.sqrt(a * a + o * o) / 2
 	};
 }, vi = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), yi = (e, t) => {
+========
+		outerRadius: _i(n, e.outerRadius, s),
+		maxRadius: e.maxRadius || Math.sqrt(a * a + o * o) / 2
+	};
+}, yi = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), bi = (e, t) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
 	if (typeof e == "function") return e(t);
 	var n = tn("recharts-pie-label-line", typeof e == "boolean" ? "" : e.className);
 	t.key;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	var r = ai(t, ei);
 	return /*#__PURE__*/ Z.createElement(l, ii({}, r, {
 		type: "linear",
@@ -1229,17 +1585,38 @@ var mi = /*#__PURE__*/ Z.memo((e) => {
 	if (typeof e == "function" && (r = e(t), /*#__PURE__*/ Z.isValidElement(r))) return r;
 	var i = tn("recharts-pie-label-text", ue(e));
 	return /*#__PURE__*/ Z.createElement(ne, ii({}, t, {
+========
+	var r = oi(t, ti);
+	return /*#__PURE__*/ Z.createElement(l, ai({}, r, {
+		type: "linear",
+		className: n
+	}));
+}, xi = (e, t, n) => {
+	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
+	var r = n;
+	if (typeof e == "function" && (r = e(t), /*#__PURE__*/ Z.isValidElement(r))) return r;
+	var i = en("recharts-pie-label-text", ue(e));
+	return /*#__PURE__*/ Z.createElement(ne, ai({}, t, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		alignmentBaseline: "middle",
 		className: i
 	}), r);
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function xi(e) {
+========
+function Si(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label, a = n.labelLine, o = n.dataKey;
 	if (!r || !i || !t) return null;
 	var s = Oe(n), c = ke(i), l = ke(a), u = typeof i == "object" && "offsetRadius" in i && typeof i.offsetRadius == "number" && i.offsetRadius || 20, d = t.map((e, t) => {
 		var n = (e.startAngle + e.endAngle) / 2, r = be(e.cx, e.cy, e.outerRadius + u, n), d = $($($($({}, s), e), {}, { stroke: "none" }, c), {}, {
 			index: t,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			textAnchor: hi(r.x, e.cx)
+========
+			textAnchor: gi(r.x, e.cx)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		}, r), p = $($($($({}, s), e), {}, {
 			fill: "none",
 			stroke: e.fill
@@ -1251,6 +1628,7 @@ function xi(e) {
 		return /*#__PURE__*/ Z.createElement(re, {
 			zIndex: f.label,
 			key: `label-${e.startAngle}-${e.endAngle}-${e.midAngle}-${t}`
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		}, /*#__PURE__*/ Z.createElement(g, null, a && yi(a, p), bi(i, d, he(e, o))));
 	});
 	return /*#__PURE__*/ Z.createElement(g, { className: "recharts-pie-labels" }, d);
@@ -1258,13 +1636,27 @@ function xi(e) {
 function Si(e) {
 	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label;
 	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(xi, {
+========
+		}, /*#__PURE__*/ Z.createElement(g, null, a && bi(a, p), xi(i, d, he(e, o))));
+	});
+	return /*#__PURE__*/ Z.createElement(g, { className: "recharts-pie-labels" }, d);
+}
+function Ci(e) {
+	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label;
+	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(Si, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		sectors: t,
 		props: n,
 		showLabels: r
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ci(e) {
 	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = ai(i, ti), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
+========
+function wi(e) {
+	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = oi(i, ni), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return t == null || t.length === 0 ? null : /*#__PURE__*/ Z.createElement(Z.Fragment, null, t.map((e, h) => {
 		if (e?.startAngle === 0 && e?.endAngle === 0 && t.length !== 1) return null;
 		var _ = m == null || m === o, v = String(h) === f && (p == null || i.dataKey === p) && _, C = n && v ? n : f ? r : null, w = $($({}, e), {}, {
@@ -1278,7 +1670,11 @@ function Ci(e) {
 			[d]: h,
 			[u]: o
 		});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		return /*#__PURE__*/ Z.createElement(g, ii({
+========
+		return /*#__PURE__*/ Z.createElement(g, ai({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			key: `sector-${e?.startAngle}-${e?.endAngle}-${e.midAngle}-${h}`,
 			tabIndex: -1,
 			className: "recharts-pie-sector"
@@ -1288,13 +1684,22 @@ function Ci(e) {
 			onClick: S(e, h)
 		}), /*#__PURE__*/ Z.createElement(ee, {
 			option: C ?? a,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			DefaultShape: di,
+========
+			DefaultShape: fi,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			shapeProps: w
 		}));
 	}));
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function wi(e) {
 	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = vi(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
+========
+function Ti(e) {
+	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = yi(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		var n = he(t, c, 0);
 		return e + (_e(n) ? n : 0);
 	}, 0), v = d > 0 && _ > 0 && n.some((e) => {
@@ -1304,7 +1709,11 @@ function wi(e) {
 	if (_ > 0) {
 		var x;
 		b = n.map((e, n) => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			var s = he(e, c, 0), d = he(e, l, n), p = _i(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
+========
+			var s = he(e, c, 0), d = he(e, l, n), p = vi(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			g = n ? x.endAngle + ye(f) * m * (s === 0 ? 0 : 1) : o;
 			var C = g + ye(f) * ((s === 0 ? 0 : v) + h * y), w = (g + C) / 2, T = (p.innerRadius + p.outerRadius) / 2, ee = [{
 				name: d,
@@ -1336,7 +1745,11 @@ function wi(e) {
 	}
 	return b;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ti(e) {
+========
+function Ei(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	var t = e.showLabels, n = e.sectors, r = e.children, i = (0, Z.useMemo)(() => !t || !n ? [] : n.map((e) => ({
 		value: e.value,
 		payload: e.payload,
@@ -1355,7 +1768,11 @@ function Ti(e) {
 	})), [n, t]);
 	return /*#__PURE__*/ Z.createElement(b, { value: t ? i : void 0 }, r);
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Ei = (e, t) => {
+========
+var Di = (e, t) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (e == null) return [];
 	var n = [], r = e.find((e) => e.status !== "removed"), i = r ? r.next.startAngle : 0;
 	return e.forEach((e, r) => {
@@ -1377,11 +1794,19 @@ var Ei = (e, t) => {
 		}
 	}), n;
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Di(t) {
 	var n = t.props, r = t.previousSectorsRef, i = t.id, a = n.sectors, o = n.activeShape, s = n.inactiveShape, c = n.animationInterpolateFn, l = je(n.onAnimationStart, n.onAnimationEnd), u = l.isAnimating, d = l.handleAnimationStart, f = l.handleAnimationEnd, p = Ie();
 	if (p == null) return null;
 	var m = a[0];
 	return /*#__PURE__*/ Z.createElement(Ti, {
+========
+function Oi(t) {
+	var n = t.props, r = t.previousSectorsRef, i = t.id, a = n.sectors, o = n.activeShape, s = n.inactiveShape, c = n.animationInterpolateFn, l = je(n.onAnimationStart, n.onAnimationEnd), u = l.isAnimating, d = l.handleAnimationStart, f = l.handleAnimationEnd, p = Ie();
+	if (p == null) return null;
+	var m = a[0];
+	return /*#__PURE__*/ Z.createElement(Ei, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		showLabels: !u,
 		sectors: a
 	}, /*#__PURE__*/ Z.createElement(e, {
@@ -1398,7 +1823,11 @@ function Di(t) {
 		animationInterpolateFn: c,
 		animationMatchBy: n.animationMatchBy,
 		layout: p
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(Ci, {
+========
+	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(wi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		sectors: e,
 		activeShape: o,
 		inactiveShape: s,
@@ -1408,7 +1837,11 @@ function Di(t) {
 		animationElapsedTime: t,
 		isAnimating: u || t < 1,
 		isEntrance: r
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}))), /*#__PURE__*/ Z.createElement(Si, {
+========
+	}))), /*#__PURE__*/ Z.createElement(Ci, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		showLabels: !u,
 		sectors: a,
 		props: n
@@ -1422,11 +1855,19 @@ function Di(t) {
 		clockWise: !1
 	}, n.children));
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Oi = {
 	animationBegin: 400,
 	animationDuration: 1500,
 	animationEasing: "ease",
 	animationInterpolateFn: Ei,
+========
+var ki = {
+	animationBegin: 400,
+	animationDuration: 1500,
+	animationEasing: "ease",
+	animationInterpolateFn: Di,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	animationMatchBy: ve,
 	cx: "50%",
 	cy: "50%",
@@ -1444,17 +1885,30 @@ var Oi = {
 	outerRadius: "80%",
 	paddingAngle: 0,
 	rootTabIndex: 0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	shape: di,
+========
+	shape: fi,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	startAngle: 0,
 	stroke: "#fff",
 	zIndex: f.area
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ki(e) {
 	var n = e.id, r = ai(e, ni), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => $r(e, n, s)), l = (0, Z.useRef)(null), u = tn("recharts-pie", a);
 	return i || c == null ? (l.current = null, /*#__PURE__*/ Z.createElement(g, {
 		tabIndex: o,
 		className: u
 	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(mi, {
+========
+function Ai(e) {
+	var n = e.id, r = oi(e, ri), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => ei(e, n, s)), l = (0, Z.useRef)(null), u = en("recharts-pie", a);
+	return i || c == null ? (l.current = null, /*#__PURE__*/ Z.createElement(g, {
+		tabIndex: o,
+		className: u
+	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(hi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		dataKey: e.dataKey,
 		nameKey: e.nameKey,
 		sectors: c,
@@ -1470,14 +1924,23 @@ function ki(e) {
 	}), /*#__PURE__*/ Z.createElement(g, {
 		tabIndex: o,
 		className: u
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}, /*#__PURE__*/ Z.createElement(Di, {
+========
+	}, /*#__PURE__*/ Z.createElement(Oi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		props: $($({}, r), {}, { sectors: c }),
 		previousSectorsRef: l,
 		id: n
 	})));
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ai(e) {
 	var t = xe(e, Oi), n = t.id, r = ai(t, ri), i = Oe(r);
+========
+function ji(e) {
+	var t = xe(e, ki), n = t.id, r = oi(t, ii), i = Oe(r);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /*#__PURE__*/ Z.createElement(x, {
 		id: n,
 		type: "pie"
@@ -1505,12 +1968,21 @@ function Ai(e) {
 		cornerRadius: r.cornerRadius,
 		presentationProps: i,
 		maxRadius: t.maxRadius
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}), /*#__PURE__*/ Z.createElement(fi, ii({}, r, { id: e })), /*#__PURE__*/ Z.createElement(ki, ii({}, r, { id: e }))));
 }
 var ji = Ai;
 ji.displayName = "Pie";
 // node_modules/recharts/es6/chart/PieChart.js
 function Mi(e, t) {
+========
+	}), /*#__PURE__*/ Z.createElement(pi, ai({}, r, { id: e })), /*#__PURE__*/ Z.createElement(Ai, ai({}, r, { id: e }))));
+}
+var Mi = ji;
+Mi.displayName = "Pie";
+// node_modules/recharts/es6/chart/PieChart.js
+function Ni(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1520,30 +1992,52 @@ function Mi(e, t) {
 	}
 	return n;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ni(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
 		t % 2 ? Mi(Object(n), !0).forEach(function(t) {
 			Pi(e, t, n[t]);
 		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Mi(Object(n)).forEach(function(t) {
+========
+function Pi(e) {
+	for (var t = 1; t < arguments.length; t++) {
+		var n = arguments[t] == null ? {} : arguments[t];
+		t % 2 ? Ni(Object(n), !0).forEach(function(t) {
+			Fi(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Ni(Object(n)).forEach(function(t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Pi(e, t, n) {
 	return (t = Fi(t)) in e ? Object.defineProperty(e, t, {
+========
+function Fi(e, t, n) {
+	return (t = Ii(t)) in e ? Object.defineProperty(e, t, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Fi(e) {
 	var t = Ii(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
 function Ii(e, t) {
+========
+function Ii(e) {
+	var t = Li(e, "string");
+	return typeof t == "symbol" ? t : t + "";
+}
+function Li(e, t) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1553,6 +2047,7 @@ function Ii(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Li = ["item"], Ri = Ni(Ni({}, se), {}, {
 	layout: "centric",
 	startAngle: 0,
@@ -1563,10 +2058,23 @@ var Li = ["item"], Ri = Ni(Ni({}, se), {}, {
 		chartName: "PieChart",
 		defaultTooltipEventType: "item",
 		validateTooltipEventTypes: Li,
+========
+var Ri = ["item"], zi = Pi(Pi({}, se), {}, {
+	layout: "centric",
+	startAngle: 0,
+	endAngle: 360
+}), Bi = /*#__PURE__*/ (0, Z.forwardRef)((e, t) => {
+	var n = xe(e, zi);
+	return /*#__PURE__*/ Z.createElement(v, {
+		chartName: "PieChart",
+		defaultTooltipEventType: "item",
+		validateTooltipEventTypes: Ri,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		tooltipPayloadSearcher: ae,
 		categoricalChartProps: n,
 		ref: t
 	});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }), Bi = 5, Vi = 2e3, Hi = 0, Ui = "80%", Wi = 0, Gi = 0, Ki = 0, qi = 360, Ji = [], Yi = (0, Z.createContext)(null);
 function Xi() {
 	let e = (0, Z.use)(Yi);
@@ -1574,6 +2082,15 @@ function Xi() {
 	return e;
 }
 function Zi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
+========
+}), Vi = 5, Hi = 2e3, Ui = 0, Wi = "80%", Gi = 0, Ki = 0, qi = 0, Ji = 360, Yi = [], Xi = (0, Z.createContext)(null);
+function Zi() {
+	let e = (0, Z.use)(Xi);
+	if (!e) throw Error("Pie chart parts (<Pie />, <Tooltip />, …) must be used within <EvilPieChart />");
+	return e;
+}
+function Qi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [d, f] = (0, Z.useState)(c), p = (0, Z.useCallback)((e) => {
 		if (f(e), e === null) {
 			l?.(null);
@@ -1606,12 +2123,20 @@ function Zi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className
 		d,
 		p
 	]);
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	return /* @__PURE__ */ (0, Q.jsx)(Yi, {
+========
+	return /* @__PURE__ */ (0, Q.jsx)(Xi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		value: m,
 		children: /* @__PURE__ */ (0, Q.jsxs)(r, {
 			className: o,
 			config: e,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(zi, {
+========
+			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(Bi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				id: "evil-charts-pie-chart",
 				accessibilityLayer: !0,
 				...s,
@@ -1620,10 +2145,17 @@ function Zi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className
 		})
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Qi({ variant: e = "gradient", innerRadius: t = Hi, outerRadius: n = Ui, cornerRadius: r = Wi, paddingAngle: i = Gi, startAngle: a = Ki, endAngle: o = qi, isClickable: s = !1, glowingSectors: c = Ji, children: l, pieProps: u }) {
 	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = Xi(), v = (0, Z.useId)().replace(/:/g, "");
 	if (h) return /* @__PURE__ */ (0, Q.jsx)(ji, {
 		data: oa,
+========
+function $i({ variant: e = "gradient", innerRadius: t = Ui, outerRadius: n = Wi, cornerRadius: r = Gi, paddingAngle: i = Ki, startAngle: a = qi, endAngle: o = Ji, isClickable: s = !1, glowingSectors: c = Yi, children: l, pieProps: u }) {
+	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = Zi(), v = (0, Z.useId)().replace(/:/g, "");
+	if (h) return /* @__PURE__ */ (0, Q.jsx)(Mi, {
+		data: sa,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		dataKey: "value",
 		nameKey: "name",
 		innerRadius: t,
@@ -1634,6 +2166,7 @@ function Qi({ variant: e = "gradient", innerRadius: t = Hi, outerRadius: n = Ui,
 		endAngle: o,
 		strokeWidth: 0,
 		isAnimationActive: !1,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		shape: (e) => /* @__PURE__ */ (0, Q.jsx)(sa, { ...e })
 	});
 	let y = ra(l, p), b = f.map((e) => ({
@@ -1641,6 +2174,15 @@ function Qi({ variant: e = "gradient", innerRadius: t = Hi, outerRadius: n = Ui,
 		fill: `url(#${v}-colors-${e[m]})`
 	}));
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(ji, {
+========
+		shape: (e) => /* @__PURE__ */ (0, Q.jsx)(ca, { ...e })
+	});
+	let y = ia(l, p), b = f.map((e) => ({
+		...e,
+		fill: `url(#${v}-colors-${e[m]})`
+	}));
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Mi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		data: b,
 		dataKey: p,
 		nameKey: m,
@@ -1672,18 +2214,32 @@ function Qi({ variant: e = "gradient", innerRadius: t = Hi, outerRadius: n = Ui,
 		},
 		...u,
 		children: y
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(ia, {
 		id: v,
 		config: d,
 		variant: e
 	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(aa, {
+========
+	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(aa, {
+		id: v,
+		config: d,
+		variant: e
+	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(oa, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		id: v,
 		glowingSectors: c
 	})] })] });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var $i = () => null;
 function ea({ variant: e, roundness: t, defaultIndex: n }) {
 	let { isLoading: r, nameKey: i } = Xi();
+========
+var ea = () => null;
+function ta({ variant: e, roundness: t, defaultIndex: n }) {
+	let { isLoading: r, nameKey: i } = Zi();
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return r ? null : /* @__PURE__ */ (0, Q.jsx)(s, {
 		defaultIndex: n,
 		content: /* @__PURE__ */ (0, Q.jsx)(c, {
@@ -1694,8 +2250,13 @@ function ea({ variant: e, roundness: t, defaultIndex: n }) {
 		})
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ta({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
 	let { nameKey: o, selectedSector: s, selectSector: c } = Xi();
+========
+function na({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
+	let { nameKey: o, selectedSector: s, selectSector: c } = Zi();
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)(i, {
 		verticalAlign: n,
 		align: t,
@@ -1708,6 +2269,7 @@ function ta({ variant: e, align: t = "center", verticalAlign: n = "bottom", isCl
 		})
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function na({ variant: e = "dots" }) {
 	return /* @__PURE__ */ (0, Q.jsx)(n, { variant: e });
 }
@@ -1715,6 +2277,15 @@ var ra = (e, t) => {
 	let n = null;
 	return Z.Children.forEach(e, (e) => {
 		if (!(0, Z.isValidElement)(e) || e.type !== $i) return;
+========
+function ra({ variant: e = "dots" }) {
+	return /* @__PURE__ */ (0, Q.jsx)(n, { variant: e });
+}
+var ia = (e, t) => {
+	let n = null;
+	return Z.Children.forEach(e, (e) => {
+		if (!(0, Z.isValidElement)(e) || e.type !== ea) return;
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		let { dataKey: r, labelListProps: i } = e.props;
 		n = /* @__PURE__ */ (0, Q.jsx)(m, {
 			dataKey: r ?? t,
@@ -1726,7 +2297,11 @@ var ra = (e, t) => {
 			...i
 		});
 	}), n;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }, ia = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
+========
+}, aa = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let r = de(n);
 	return /* @__PURE__ */ (0, Q.jsx)("linearGradient", {
 		id: `${e}-colors-${t}`,
@@ -1748,7 +2323,11 @@ var ra = (e, t) => {
 			}, i);
 		})
 	}, `${e}-colors-${t}`);
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }) }), aa = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
+========
+}) }), oa = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	id: `${e}-glow-${t}`,
 	x: "-100%",
 	y: "-100%",
@@ -1768,12 +2347,21 @@ var ra = (e, t) => {
 		}),
 		/* @__PURE__ */ (0, Q.jsxs)("feMerge", { children: [/* @__PURE__ */ (0, Q.jsx)("feMergeNode", { in: "glow" }), /* @__PURE__ */ (0, Q.jsx)("feMergeNode", { in: "SourceGraphic" })] })
 	]
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }, `${e}-glow-${t}`)) }), oa = Array.from({ length: Bi }, (e, t) => ({
 	name: `loading${t}`,
 	value: 100 / Bi
 })), sa = (e) => {
 	let { index: t = 0, ...n } = e, r = t / Bi * (Vi / 1e3);
 	return /* @__PURE__ */ (0, Q.jsx)(Sn.g, {
+========
+}, `${e}-glow-${t}`)) }), sa = Array.from({ length: Vi }, (e, t) => ({
+	name: `loading${t}`,
+	value: 100 / Vi
+})), ca = (e) => {
+	let { index: t = 0, ...n } = e, r = t / Vi * (Hi / 1e3);
+	return /* @__PURE__ */ (0, Q.jsx)(xn.g, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		initial: { opacity: .15 },
 		animate: { opacity: [
 			.15,
@@ -1781,7 +2369,11 @@ var ra = (e, t) => {
 			.15
 		] },
 		transition: {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			duration: Vi / 1e3,
+========
+			duration: Hi / 1e3,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			delay: r,
 			repeat: Infinity,
 			ease: "easeInOut"
@@ -1792,9 +2384,15 @@ var ra = (e, t) => {
 		})
 	});
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 Zi.Pie = Qi, Zi.Label = $i, Zi.Tooltip = ea, Zi.Legend = ta, Zi.Background = na;
 // src/react/settings/storage-charts.tsx
 var ca = {
+========
+Qi.Pie = $i, Qi.Label = ea, Qi.Tooltip = ta, Qi.Legend = na, Qi.Background = ra;
+// src/react/settings/storage-charts.tsx
+var la = {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	database: "var(--color-chart-1)",
 	backups: "var(--color-chart-2)",
 	playback: "var(--color-chart-3)",
@@ -1804,7 +2402,11 @@ var ca = {
 	sources: "var(--color-chart-7)",
 	records: "var(--color-chart-8)",
 	tools: "var(--color-chart-9)"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }, la = "var(--color-text-tertiary)", ua = {
+========
+}, ua = "var(--color-text-tertiary)", da = {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	database: "bg-chart-1",
 	backups: "bg-chart-2",
 	playback: "bg-chart-3",
@@ -1814,6 +2416,7 @@ var ca = {
 	sources: "bg-chart-7",
 	records: "bg-chart-8",
 	tools: "bg-chart-9"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }, da = (e) => J(e);
 function fa(e) {
 	let t = e.filter((e) => ca[e.key] && e.bytes > 0).map((e) => ({
@@ -1822,15 +2425,33 @@ function fa(e) {
 		bytes: e.bytes,
 		color: ca[e.key]
 	})), n = e.filter((e) => !ca[e.key]).reduce((e, t) => e + t.bytes, 0);
+========
+}, fa = (e) => J(e);
+function pa(e) {
+	let t = e.filter((e) => la[e.key] && e.bytes > 0).map((e) => ({
+		key: e.key,
+		label: e.label,
+		bytes: e.bytes,
+		color: la[e.key]
+	})), n = e.filter((e) => !la[e.key]).reduce((e, t) => e + t.bytes, 0);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return n > 0 ? [...t, {
 		key: "rest",
 		label: "其余",
 		bytes: n,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		color: la
 	}] : t;
 }
 function pa({ storage: e }) {
 	let t = e.usage, n = fa(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
+========
+		color: ua
+	}] : t;
+}
+function ma({ storage: e }) {
+	let t = e.usage, n = pa(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		label: e.label,
 		colors: Ae(e.color)
 	}])), i = n.map((e) => ({
@@ -1842,14 +2463,23 @@ function pa({ storage: e }) {
 		children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "relative mx-auto size-48 flex-none",
 			role: "img",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			"aria-label": `数据目录共 ${da(t.total_bytes)}，各类占比`,
 			children: [/* @__PURE__ */ (0, Q.jsxs)(Zi, {
+========
+			"aria-label": `数据目录共 ${fa(t.total_bytes)}，各类占比`,
+			children: [/* @__PURE__ */ (0, Q.jsxs)(Qi, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				data: i,
 				dataKey: "value",
 				nameKey: "slice",
 				config: r,
 				className: "aspect-square size-48 flex-none",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: [/* @__PURE__ */ (0, Q.jsx)(Zi.Pie, {
+========
+				children: [/* @__PURE__ */ (0, Q.jsx)(Qi.Pie, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					innerRadius: "68%",
 					outerRadius: "100%",
 					paddingAngle: 1,
@@ -1857,13 +2487,21 @@ function pa({ storage: e }) {
 				}), /* @__PURE__ */ (0, Q.jsx)(o, {
 					nameKey: "slice",
 					hideLabel: !0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					format: da
+========
+					format: fa
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				})]
 			}), /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "pointer-events-none absolute inset-0 flex flex-col items-center justify-center",
 				children: [/* @__PURE__ */ (0, Q.jsx)("b", {
 					className: "text-title-2-medium tabular-nums text-text-primary",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					children: da(t.total_bytes)
+========
+					children: fa(t.total_bytes)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				}), /* @__PURE__ */ (0, Q.jsxs)("small", {
 					className: "text-caption-1-regular tabular-nums text-text-secondary",
 					children: [t.total_files.toLocaleString(), " 个文件"]
@@ -1879,11 +2517,16 @@ function pa({ storage: e }) {
 					children: [
 						/* @__PURE__ */ (0, Q.jsx)("i", {
 							"aria-hidden": !0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							className: `${te} ${ua[e.key] || "bg-text-tertiary"}`
+========
+							className: `${te} ${da[e.key] || "bg-text-tertiary"}`
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						}),
 						e.label,
 						/* @__PURE__ */ (0, Q.jsx)("span", {
 							className: "tabular-nums text-text-primary",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							children: da(e.bytes)
 						})
 					]
@@ -1893,6 +2536,17 @@ function pa({ storage: e }) {
 	});
 }
 function ma({ storage: e }) {
+========
+							children: fa(e.bytes)
+						})
+					]
+				}, e.key))
+			}), /* @__PURE__ */ (0, Q.jsx)(ha, { storage: e })]
+		})]
+	});
+}
+function ha({ storage: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (e.total_bytes === null || e.free_bytes === null || !e.usage) return null;
 	let t = Math.min(e.usage.total_bytes, e.total_bytes), n = e.free_bytes, r = Math.max(0, e.total_bytes - n - t), i = {
 		peach: {
@@ -1901,7 +2555,11 @@ function ma({ storage: e }) {
 		},
 		others: {
 			label: "其他文件",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			colors: Ae(la)
+========
+			colors: Ae(ua)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		},
 		free: {
 			label: "可用",
@@ -1914,7 +2572,11 @@ function ma({ storage: e }) {
 			className: "text-caption-1-regular text-text-secondary",
 			children: [
 				"所在磁盘共 ",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				da(e.total_bytes),
+========
+				fa(e.total_bytes),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				e.system_drive ? "（系统盘）" : "",
 				"，Peach 占 ",
 				((t) => {
@@ -1922,7 +2584,11 @@ function ma({ storage: e }) {
 					return n < .1 ? "不到 0.1%" : `${n.toFixed(+(n < 10))}%`;
 				})(t),
 				"， 可用 ",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				da(n)
+========
+				fa(n)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			]
 		}), /* @__PURE__ */ (0, Q.jsxs)(p, {
 			data: [{
@@ -1953,19 +2619,29 @@ function ma({ storage: e }) {
 				/* @__PURE__ */ (0, Q.jsx)(p.Bar, { dataKey: "free" }),
 				/* @__PURE__ */ (0, Q.jsx)(o, {
 					hideLabel: !0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					format: da
+========
+					format: fa
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				})
 			]
 		})]
 	});
 }
 // src/react/settings/storage-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var ha = "/api/configuration/storage", ga = 1500, _a = 864e5, va = (e) => e instanceof qe && e.body?.errors?.target || q(e);
 function ya(e) {
+========
+var ga = "/api/configuration/storage", _a = 1500, va = 864e5, ya = (e) => e instanceof qe && e.body?.errors?.target || q(e);
+function ba(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if (e.free_bytes === null || e.total_bytes === null) return "未取得";
 	let t = `${J(e.free_bytes)} 可用，共 ${J(e.total_bytes)}`;
 	return e.system_drive ? `${t}（系统盘）` : t;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var ba = (e) => e.cleanable && e.reclaimable > 0;
 function xa({ job: e }) {
 	let t = e.files || 0, n = e.expected_files || 0, r = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
@@ -1973,6 +2649,15 @@ function xa({ job: e }) {
 		/* @__PURE__ */ (0, Q.jsx)(Hr, { value: t }),
 		" 个文件 · ",
 		/* @__PURE__ */ (0, Q.jsx)(Hr, {
+========
+var xa = (e) => e.cleanable && e.reclaimable > 0;
+function Sa({ job: e }) {
+	let t = e.files || 0, n = e.expected_files || 0, r = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
+		"已统计 ",
+		/* @__PURE__ */ (0, Q.jsx)(Ur, { value: t }),
+		" 个文件 · ",
+		/* @__PURE__ */ (0, Q.jsx)(Ur, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			value: e.bytes || 0,
 			format: J
 		})
@@ -1992,8 +2677,13 @@ function xa({ job: e }) {
 		] })] }) : /* @__PURE__ */ (0, Q.jsx)(vt, { label: "正在统计占用空间" }), n ? null : /* @__PURE__ */ (0, Q.jsx)(N, { children: r })]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Sa({ category: e, selected: t, disabled: n, onToggle: r }) {
 	let i = ba(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
+========
+function Ca({ category: e, selected: t, disabled: n, onToggle: r }) {
+	let i = xa(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"data-category": e.key,
 		className: "flex min-h-13 w-full items-start gap-3 border-b border-separator-border py-2.5 pr-3 last:border-b-0",
@@ -2012,7 +2702,11 @@ function Sa({ category: e, selected: t, disabled: n, onToggle: r }) {
 						className: "flex items-center gap-2 text-body-regular text-text-primary",
 						children: [/* @__PURE__ */ (0, Q.jsx)("i", {
 							"aria-hidden": !0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							className: `size-2.5 shrink-0 rounded-xs ${ua[e.key] || "bg-text-tertiary"}`
+========
+							className: `size-2.5 shrink-0 rounded-xs ${da[e.key] || "bg-text-tertiary"}`
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						}), e.label]
 					}),
 					/* @__PURE__ */ (0, Q.jsx)("p", {
@@ -2027,7 +2721,11 @@ function Sa({ category: e, selected: t, disabled: n, onToggle: r }) {
 			}),
 			/* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex shrink-0 flex-col items-end gap-0.5 text-right",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: [/* @__PURE__ */ (0, Q.jsx)(Hr, {
+========
+				children: [/* @__PURE__ */ (0, Q.jsx)(Ur, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					value: e.bytes,
 					format: J,
 					className: "text-body-regular text-text-primary"
@@ -2039,22 +2737,37 @@ function Sa({ category: e, selected: t, disabled: n, onToggle: r }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ca({ initial: e, receipt: t }) {
+========
+function wa({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(""), [o, s] = (0, Z.useState)(/* @__PURE__ */ new Set()), c = Y(), l = n.job.state !== "idle", u = (0, Z.useRef)(l);
 	(0, Z.useEffect)(() => {
 		if (!l) return;
 		let e = new AbortController(), t = setTimeout(() => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			W(ha, e.signal).then(r, () => {
 				e.signal.aborted || r((e) => ({ ...e }));
 			});
 		}, ga);
+========
+			W(ga, e.signal).then(r, () => {
+				e.signal.aborted || r((e) => ({ ...e }));
+			});
+		}, _a);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		return () => {
 			e.abort(), clearTimeout(t);
 		};
 	}, [n]), (0, Z.useEffect)(() => {
 		l ? u.current = !0 : u.current && (u.current = !1, s(/* @__PURE__ */ new Set()), n.job.error || t(n.job.message || "已统计占用空间"));
 	}, [l]);
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	let d = () => void c.run("measure", (e) => G(`${ha}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(ba) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
+========
+	let d = () => void c.run("measure", (e) => G(`${ga}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(xa) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		if (!e.length) return;
 		let n = e.reduce((e, t) => e + t.reclaimable, 0);
 		rn({
@@ -2062,7 +2775,11 @@ function Ca({ initial: e, receipt: t }) {
 			body: `将删除 ${J(n)}：${e.map((e) => `${e.label} ${J(e.reclaimable)}（清理后${e.note}）`).join("；")}。`,
 			confirmLabel: `清理 ${J(n)}`,
 			danger: e.some((e) => e.key === "backups"),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			onConfirm: async () => r(await G(`${ha}/clean`, { categories: e.map((e) => e.key) }))
+========
+			onConfirm: async () => r(await G(`${ga}/clean`, { categories: e.map((e) => e.key) }))
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		});
 	}, g = () => void c.run("relocate", async (e) => {
 		let t = (await G(wt, { initial: n.data_root }, "POST", e)).path;
@@ -2074,6 +2791,7 @@ function Ca({ initial: e, receipt: t }) {
 			confirmLabel: "迁移数据目录",
 			onConfirm: async () => {
 				try {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					a((await G(`${ha}/relocate`, { target: t })).message);
 				} catch (e) {
 					throw Error(va(e));
@@ -2081,6 +2799,15 @@ function Ca({ initial: e, receipt: t }) {
 			}
 		});
 	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < _a), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
+========
+					a((await G(`${ga}/relocate`, { target: t })).message);
+				} catch (e) {
+					throw Error(ya(e));
+				}
+			}
+		});
+	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < va), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		let r = new Set(n);
 		return t ? r.add(e) : r.delete(e), r;
 	});
@@ -2098,12 +2825,20 @@ function Ca({ initial: e, receipt: t }) {
 				})
 			}), /* @__PURE__ */ (0, Q.jsx)(j, {
 				term: "所在磁盘",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: ya(n)
+========
+				children: ba(n)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			})] }),
 			/* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(xa, { job: n.job }) : null,
+========
+					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(Sa, { job: n.job }) : null,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					f ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 						"data-storage-result": "",
 						className: $t({
@@ -2113,10 +2848,17 @@ function Ca({ initial: e, receipt: t }) {
 						}),
 						children: [/* @__PURE__ */ (0, Q.jsx)("div", {
 							className: "border-b border-separator-border p-4",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							children: /* @__PURE__ */ (0, Q.jsx)(pa, { storage: n })
 						}), /* @__PURE__ */ (0, Q.jsx)("div", {
 							className: "flex flex-col pl-4",
 							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(Sa, {
+========
+							children: /* @__PURE__ */ (0, Q.jsx)(ma, { storage: n })
+						}), /* @__PURE__ */ (0, Q.jsx)("div", {
+							className: "flex flex-col pl-4",
+							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(Ca, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 								category: e,
 								selected: o.has(e.key),
 								disabled: x,
@@ -2171,11 +2913,16 @@ function Ca({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/maintenance-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var wa = [
+========
+var Ta = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["6", "每 6 小时"],
 	["24", "每天"],
 	["168", "每周"]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ta({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...dr(r),
@@ -2185,34 +2932,66 @@ function Ta({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 				receipt: t
 			}) : null,
 			e.storage ? /* @__PURE__ */ (0, Q.jsx)(Lr, { receipt: t }) : null,
+========
+function Ea({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
+	return /* @__PURE__ */ (0, Q.jsxs)("div", {
+		...fr(r),
+		children: [
+			e.storage ? /* @__PURE__ */ (0, Q.jsx)(wa, {
+				initial: e.storage,
+				receipt: t
+			}) : null,
+			e.storage ? /* @__PURE__ */ (0, Q.jsx)(Rr, { receipt: t }) : null,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			e.remote_reporting || e.library_sharing ? /* @__PURE__ */ (0, Q.jsxs)(L, {
 				id: "librarySharing",
 				guide: "reporting",
 				title: "数据上传",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(Br, {
+========
+				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(Vr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					initial: e.remote_reporting,
 					receipt: t
 				}) : null, e.library_sharing ? /* @__PURE__ */ (0, Q.jsx)("div", {
 					className: "border-t border-separator-border",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					children: /* @__PURE__ */ (0, Q.jsx)(Rr, {
+========
+					children: /* @__PURE__ */ (0, Q.jsx)(zr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						initial: e.library_sharing,
 						receipt: t
 					})
 				}) : null]
 			}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Oa, { facts: e.facts }),
 			/* @__PURE__ */ (0, Q.jsx)(Ea, {
 				receipt: t,
 				reopenTutorial: n
 			}),
 			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(ka, {
+========
+			/* @__PURE__ */ (0, Q.jsx)(ka, { facts: e.facts }),
+			/* @__PURE__ */ (0, Q.jsx)(Da, {
+				receipt: t,
+				reopenTutorial: n
+			}),
+			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(Aa, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				uninstall: e.uninstall,
 				receipt: t
 			}) : null
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ea({ reopenTutorial: e }) {
+========
+function Da({ reopenTutorial: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)("section", {
 		"aria-label": "新手教程",
 		className: "w-full",
@@ -2227,7 +3006,11 @@ function Ea({ reopenTutorial: e }) {
 		}) }) })
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Da({ initial: e, receipt: t }) {
+========
+function Oa({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e.mode), [i, a] = (0, Z.useState)(e.interval_hours), o = Y(e.error), s = (r) => {
 		r.preventDefault(), e.available && o.run("save", (e) => G("/api/configuration/automatic-updates", {
 			mode: n,
@@ -2270,7 +3053,11 @@ function Da({ initial: e, receipt: t }) {
 						onSelectionChange: (e) => {
 							e !== null && a(Number(e));
 						},
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 						children: wa.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+========
+						children: Ta.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 							id: e,
 							children: t
 						}, e))
@@ -2290,7 +3077,11 @@ function Da({ initial: e, receipt: t }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Oa({ facts: e }) {
+========
+function ka({ facts: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)(L, {
 		guide: "facts",
 		title: "运行信息",
@@ -2303,8 +3094,13 @@ function Oa({ facts: e }) {
 		}, e.term)) })
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ka({ uninstall: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(!1), [i, a] = (0, Z.useState)(""), o = () => void rn({
+========
+function Aa({ uninstall: e, receipt: t }) {
+	let [n, r] = (0, Z.useState)(!1), [i, a] = (0, Z.useState)(""), o = () => void nn({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		title: "卸载 Peach",
 		danger: !0,
 		body: n ? "将退出 Peach，移除程序、开机自启、桌面图标、设置、本地数据库、观看记录、凭据和缓存。原始媒体文件保留。" : "将退出 Peach 并移除程序、开机自启和桌面图标。设置、本地数据库、观看记录与缓存保留。",
@@ -2413,13 +3209,18 @@ function Na({ job: e }) {
 	})] }) : null;
 }
 // src/react/settings/release-updates.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Pa = /* @__PURE__ */ new Set([
+========
+var ja = /* @__PURE__ */ new Set([
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	"downloading",
 	"verifying",
 	"extracting",
 	"preparing",
 	"restarting",
 	"installing"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 ]), Fa = [
 	65,
 	75,
@@ -2436,6 +3237,18 @@ function Ra({ initial: e, initialJob: t }) {
 		cancelLabel: "取消",
 		onConfirm: f.run
 	});
+========
+]), Ma = [
+	65,
+	75,
+	90
+], Na = 120, Pa = "https://github.com/peach-mitao/peach/releases";
+function Fa({ initial: e, initialJob: t }) {
+	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(t || {
+		state: "idle",
+		progress: 0
+	}), [o, s] = (0, Z.useState)(""), c = Y(), l = (0, Z.useRef)(!1), u = (0, Z.useRef)(!0), d = ja.has(i.state);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	(0, Z.useEffect)(() => (u.current = !0, () => {
 		u.current = !1;
 	}), []);
@@ -2452,7 +3265,11 @@ function Ra({ initial: e, initialJob: t }) {
 	(0, Z.useEffect)(() => {
 		i.state !== "ready" || l.current || (l.current = !0, _());
 	}, [i.state]), (0, Z.useEffect)(() => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		let e = new AbortController(), t = Pa.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
+========
+		let e = new AbortController(), t = ja.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			try {
 				let t = await W("/api/configuration/update-status", e.signal);
 				if (e.signal.aborted) return;
@@ -2465,9 +3282,15 @@ function Ra({ initial: e, initialJob: t }) {
 				let n = await W("/api/configuration/automatic-updates", e.signal);
 				!e.signal.aborted && n.result && r(n.result);
 			} catch {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				o += 1, o >= Ia && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
 			}
 			!e.signal.aborted && o < Ia && (n = setTimeout(c, t));
+========
+				o += 1, o >= Na && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
+			}
+			!e.signal.aborted && o < Na && (n = setTimeout(c, t));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		};
 		return n = setTimeout(c, t), () => {
 			e.abort(), clearTimeout(n);
@@ -2538,7 +3361,11 @@ function Ra({ initial: e, initialJob: t }) {
 							/* @__PURE__ */ (0, Q.jsx)(jt, {
 								label: "更新准备进度",
 								value: i.progress,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 								stops: Fa
+========
+								stops: Ma
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 							}),
 							/* @__PURE__ */ (0, Q.jsxs)(N, { children: ["下载 → 校验 → 解压 → 准备安装 · ", i.message] }),
 							/* @__PURE__ */ (0, Q.jsx)(N, { children: x })
@@ -2559,7 +3386,11 @@ function Ra({ initial: e, initialJob: t }) {
 							children: "GitHub"
 						}),
 						/* @__PURE__ */ (0, Q.jsx)(A, {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							href: n.release_url || La,
+========
+							href: n.release_url || Pa,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 							children: "查看发布页"
 						})
 					]
@@ -2603,7 +3434,11 @@ function Ra({ initial: e, initialJob: t }) {
 	});
 }
 // src/react/settings/upgrade-repairs.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var za = {
+========
+var Ia = {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	pending: "等待修复",
 	running: "正在修复",
 	failed: "需要重试",
@@ -2611,8 +3446,13 @@ var za = {
 	complete: "已完成",
 	unavailable: "当前部署未启用"
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ba() {
 	let { snapshot: e } = Bn(), [t, n] = (0, Z.useState)(null), r = Y();
+========
+function La() {
+	let { snapshot: e } = zn(), [t, n] = (0, Z.useState)(null), r = Y();
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	(0, Z.useEffect)(() => n(null), [e]);
 	let i = t ?? e?.repairs, a = i?.state || "pending", o = i?.items.reduce((e, t) => e + (t.pending || 0), 0) || 0, s = i?.items.reduce((e, t) => e + (t.failed || 0), 0) || 0, c = i?.items.reduce((e, t) => e + (t.review_count || 0), 0) || 0;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
@@ -2622,7 +3462,11 @@ function Ba() {
 			tone: a === "failed" ? "error" : a === "running" ? "progress" : a === "review" ? "warning" : a === "complete" ? "success" : "neutral",
 			children: /* @__PURE__ */ (0, Q.jsx)("span", {
 				"data-copy-key": `upgradeRepairs.${a}.status`,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: za[a] || "未取得"
+========
+				children: Ia[a] || "未取得"
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			}, a)
 		}),
 		children: [
@@ -2630,6 +3474,7 @@ function Ba() {
 			/* @__PURE__ */ (0, Q.jsxs)(ut, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待完成",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Hr, { value: o }), " 项"] })
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(j, {
@@ -2639,6 +3484,17 @@ function Ba() {
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待复核",
 					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Hr, { value: c }), " 项"] })
+========
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Ur, { value: o }), " 项"] })
+				}),
+				/* @__PURE__ */ (0, Q.jsx)(j, {
+					term: "失败",
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Ur, { value: s }), " 项"] })
+				}),
+				/* @__PURE__ */ (0, Q.jsx)(j, {
+					term: "待复核",
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Ur, { value: c }), " 项"] })
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				})
 			] }),
 			i?.message || r.error ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: r.error || i?.message }) }) : null,
@@ -2662,6 +3518,7 @@ function Ba() {
 	});
 }
 // src/react/settings/general-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Va({ data: e, receipt: t, panel: n }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...dr(n),
@@ -2676,13 +3533,33 @@ function Va({ data: e, receipt: t, panel: n }) {
 				receipt: t
 			}) : null,
 			e.startup ? /* @__PURE__ */ (0, Q.jsx)(Ha, {
+========
+function Ra({ data: e, receipt: t, panel: n }) {
+	return /* @__PURE__ */ (0, Q.jsxs)("div", {
+		...fr(n),
+		children: [
+			e.updates ? /* @__PURE__ */ (0, Q.jsx)(Fa, {
+				initial: e.updates,
+				initialJob: e.update_job
+			}) : null,
+			/* @__PURE__ */ (0, Q.jsx)(La, {}),
+			e.automatic_updates ? /* @__PURE__ */ (0, Q.jsx)(Oa, {
+				initial: e.automatic_updates,
+				receipt: t
+			}) : null,
+			e.startup ? /* @__PURE__ */ (0, Q.jsx)(za, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				startup: e.startup,
 				receipt: t
 			}) : null
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ha({ startup: e, receipt: t }) {
+========
+function za({ startup: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e.enabled), [i, a] = (0, Z.useState)(e.silent), [o, s] = (0, Z.useState)(e.desktop), c = Y(), l = e.available && !e.desktop_message;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "startup",
@@ -2740,7 +3617,11 @@ function Ha({ startup: e, receipt: t }) {
 	});
 }
 // src/react/restart-redirect.ts
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Ua = 8e3, Wa = [
+========
+var Ba = 8e3, Va = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	{
 		name: "机械硬盘，或内存 8 GB 以内",
 		cache: "10–20 GiB",
@@ -2759,12 +3640,20 @@ var Ua = 8e3, Wa = [
 		read: "256 / 128 KB",
 		task: "2 个起步"
 	}
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 ], Ga = [
+========
+], Ha = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["cache", "缓存上限"],
 	["read", "读取长度（默认 / 最小）"],
 	["task", "同时处理视频"]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ka() {
+========
+function Ua() {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)("div", {
 		className: "@container flex flex-col gap-3",
 		children: /* @__PURE__ */ (0, Q.jsxs)(O, {
@@ -2779,14 +3668,22 @@ function Ka() {
 				/* @__PURE__ */ (0, Q.jsx)("ul", {
 					"aria-label": "按缓存所在硬盘分档",
 					className: "flex flex-col gap-2",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					children: Wa.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
+========
+					children: Va.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						className: "flex flex-col gap-2 rounded-2lg border border-separator-border bg-background-primary-default p-3",
 						children: [/* @__PURE__ */ (0, Q.jsx)("p", {
 							className: "text-body-medium text-text-primary",
 							children: e.name
 						}), /* @__PURE__ */ (0, Q.jsx)("dl", {
 							className: "inline-grid grid-cols-1 gap-2 @md:grid-cols-3",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							children: Ga.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
+========
+							children: Ha.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 								className: "flex flex-col",
 								children: [/* @__PURE__ */ (0, Q.jsx)("dt", {
 									className: "text-caption-1-regular text-text-secondary",
@@ -2816,15 +3713,25 @@ function Ka() {
 	});
 }
 // src/react/settings/cloud-proxy-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var qa = "/api/configuration/cloud-proxies", Ja = [
+========
+var Wa = "/api/configuration/cloud-proxies", Ga = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["direct", "直连"],
 	["system", "跟随系统"],
 	["http", "HTTP 代理"],
 	["socks5", "SOCKS5 代理"]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ya({ receipt: e }) {
 	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(!0), a = (0, Z.useRef)(/* @__PURE__ */ new Set()), o = (0, Z.useRef)(/* @__PURE__ */ new Set()), [s, c] = (0, Z.useState)(!1), l = (0, Z.useRef)(() => void 0), u = Y(), d = () => {
 		o.current.size || u.run("refresh", (e) => W(qa, e), (e) => {
+========
+function Ka({ receipt: e }) {
+	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(!0), a = (0, Z.useRef)(/* @__PURE__ */ new Set()), o = (0, Z.useRef)(/* @__PURE__ */ new Set()), [s, c] = (0, Z.useState)(!1), l = (0, Z.useRef)(() => void 0), u = Y(), d = () => {
+		o.current.size || u.run("refresh", (e) => W(Wa, e), (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			a.current.clear(), n(e), i(!1);
 		}, (e) => {
 			i(!1), u.setError(e instanceof Error ? e.message : "无法读取网盘代理");
@@ -2875,10 +3782,17 @@ function Ya({ receipt: e }) {
 					className: "flex min-w-0 flex-col gap-1",
 					children: [/* @__PURE__ */ (0, Q.jsx)(dt, { children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 						className: "inline-flex items-center gap-2",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 						children: [/* @__PURE__ */ (0, Q.jsx)(Ht, { mark: ir(e.location) }), e.name]
 					}) }), /* @__PURE__ */ (0, Q.jsx)(N, { children: "尚未匹配 CloudDrive 账号" })]
 				}, e.root)),
 				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(Xa, {
+========
+						children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ar(e.location) }), e.name]
+					}) }), /* @__PURE__ */ (0, Q.jsx)(N, { children: "尚未匹配 CloudDrive 账号" })]
+				}, e.root)),
+				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(qa, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					initial: t,
 					receipt: e,
 					onDirty: () => a.current.add(t.id),
@@ -2902,7 +3816,11 @@ function Ya({ receipt: e }) {
 		}) })]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Xa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
+========
+function qa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [a, o] = (0, Z.useState)(e), [s, c] = (0, Z.useState)([]), l = a.libraries?.map((e) => e.name).join("、") || a.name, u = Y(), d = (e, t) => {
 		o((n) => ({
 			...n,
@@ -2912,7 +3830,11 @@ function Xa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("form", {
 		"aria-label": `${l} 代理`,
 		onSubmit: (e) => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			e.preventDefault(), i(!0), u.run("save", (e) => G(qa, {
+========
+			e.preventDefault(), i(!0), u.run("save", (e) => G(Wa, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				id: a.id,
 				revision: a.revision,
 				...s.includes("api") ? { api: a.api } : {},
@@ -2925,20 +3847,32 @@ function Xa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)(dt, { children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 				className: "inline-flex items-center gap-2",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: [/* @__PURE__ */ (0, Q.jsx)(Ht, { mark: ir(a.libraries?.[0]?.location || (a.cloud === "115open" ? "115" : a.cloud.toLowerCase())) }), l]
+========
+				children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ar(a.libraries?.[0]?.location || (a.cloud === "115open" ? "115" : a.cloud.toLowerCase())) }), l]
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			}) }),
 			/* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 				a.name,
 				" · ",
 				a.path
 			] }),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Za, {
+========
+			/* @__PURE__ */ (0, Q.jsx)(Ja, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				label: "数据代理",
 				value: a.data,
 				disabled: !a.writable || !!u.busy,
 				onChange: (e) => d("data", e)
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Za, {
+========
+			/* @__PURE__ */ (0, Q.jsx)(Ja, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				label: "API 代理",
 				value: a.api,
 				disabled: !a.writable || !!u.busy,
@@ -2962,7 +3896,11 @@ function Xa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Za({ label: e, value: t, disabled: n, onChange: r }) {
+========
+function Ja({ label: e, value: t, disabled: n, onChange: r }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let i = t.mode === "http" || t.mode === "socks5";
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-w-0 flex-col gap-3",
@@ -2981,7 +3919,11 @@ function Za({ label: e, value: t, disabled: n, onChange: r }) {
 				children: [t.mode === "unknown" ? /* @__PURE__ */ (0, Q.jsx)(z, {
 					id: "unknown",
 					children: "无法识别的代理类型"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				}) : null, Ja.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+========
+				}) : null, Ga.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					id: e,
 					children: t
 				}, e))]
@@ -3049,7 +3991,11 @@ function Za({ label: e, value: t, disabled: n, onChange: r }) {
 	});
 }
 // src/react/settings/library-icon-picker.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Qa = [
+========
+var Ya = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["", "自动识别"],
 	["hard-drive", "磁盘"],
 	["database", "资料库"],
@@ -3093,6 +4039,7 @@ var Qa = [
 	["star", "收藏"],
 	["tags", "主题"]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function $a(e) {
 	let t = e === "local" ? "" : St[e];
 	return t ? [t, "自动识别"] : ["hard-drive", "默认"];
@@ -3100,6 +4047,15 @@ function $a(e) {
 var eo = "auto";
 function to({ value: e, label: t, kind: n = "local", onChange: r }) {
 	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = $a(n);
+========
+function Xa(e) {
+	let t = e === "local" ? "" : xt[e];
+	return t ? [t, "自动识别"] : ["hard-drive", "默认"];
+}
+var Za = "auto";
+function Qa({ value: e, label: t, kind: n = "local", onChange: r }) {
+	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = Xa(n);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(E, {
 		ref: i,
 		variant: "secondary",
@@ -3113,7 +4069,11 @@ function to({ value: e, label: t, kind: n = "local", onChange: r }) {
 		children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 			"data-icon-choice": !0,
 			className: "flex items-center gap-2",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			children: [/* @__PURE__ */ (0, Q.jsx)(Ht, { mark: e || l }), ((e) => e && Qa.find(([t]) => t === e)?.[1] || u)(e)]
+========
+			children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l }), ((e) => e && Ya.find(([t]) => t === e)?.[1] || u)(e)]
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		})
 	}), /* @__PURE__ */ (0, Q.jsx)(ze, {
 		triggerRef: i,
@@ -3133,6 +4093,7 @@ function to({ value: e, label: t, kind: n = "local", onChange: r }) {
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(We, {
 					"aria-label": "可选图标",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					value: s || eo,
 					onChange: (e) => c(e === eo ? "" : e),
 					className: "inline-grid grid-cols-7 gap-1",
@@ -3142,6 +4103,17 @@ function to({ value: e, label: t, kind: n = "local", onChange: r }) {
 						className: "flex h-10 cursor-pointer items-center justify-center rounded-lg text-foreground-icon-secondary outline-none hover:bg-dropdown-item-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:bg-dropdown-item-hover-background data-selected:text-text-primary",
 						children: /* @__PURE__ */ (0, Q.jsx)(Ht, { mark: e || l })
 					}, e || eo))
+========
+					value: s || Za,
+					onChange: (e) => c(e === Za ? "" : e),
+					className: "inline-grid grid-cols-7 gap-1",
+					children: Ya.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
+						value: e || Za,
+						"aria-label": e ? t : u,
+						className: "flex h-10 cursor-pointer items-center justify-center rounded-lg text-foreground-icon-secondary outline-none hover:bg-dropdown-item-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:bg-dropdown-item-hover-background data-selected:text-text-primary",
+						children: /* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l })
+					}, e || Za))
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				}),
 				/* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex justify-end gap-2 border-t border-separator-border pt-2.5",
@@ -3162,19 +4134,31 @@ function to({ value: e, label: t, kind: n = "local", onChange: r }) {
 	})] });
 }
 // src/react/settings/library-policy-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var no = [
+========
+var $a = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["probe", "读取视频信息"],
 	["metadata", "联网补资料"],
 	["cover", "联网补封面"],
 	["people", "联网补人物图片"],
 	["preview", "生成九宫格预览"]
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 ], ro = [
+========
+], eo = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	"probe",
 	"metadata",
 	"cover",
 	"people",
 	"preview"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 ], io = [
+========
+], to = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	[
 		"auto",
 		"自动补全",
@@ -3191,7 +4175,11 @@ var no = [
 		"逐项选择要做的步骤"
 	]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ao() {
+========
+function no() {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"data-policy-legend": "",
 		className: "flex flex-col gap-1",
@@ -3223,8 +4211,13 @@ function ao() {
 		})]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function oo({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(Rt, {
+========
+function ro({ name: e, value: t, onChange: n }) {
+	return /* @__PURE__ */ (0, Q.jsx)(Lt, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		"data-guide-target": "library-policy",
 		className: "w-full",
 		"aria-label": `${e} 处理方式`,
@@ -3232,10 +4225,17 @@ function oo({ name: e, value: t, onChange: n }) {
 		prefix: "处理方式",
 		renderValue: /* @__PURE__ */ (0, Q.jsx)("span", {
 			className: "truncate",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			children: io.find(([e]) => e === t)?.[1]
 		}),
 		onSelectionChange: (e) => n(String(e)),
 		children: io.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+========
+			children: to.find(([e]) => e === t)?.[1]
+		}),
+		onSelectionChange: (e) => n(String(e)),
+		children: to.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			id: e,
 			textValue: t,
 			children: /* @__PURE__ */ (0, Q.jsxs)("span", {
@@ -3248,15 +4248,26 @@ function oo({ name: e, value: t, onChange: n }) {
 		}, e))
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function so({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(O, {
 		defaultOpen: !0,
 		summary: `${e} 的处理步骤（${t.length}/${no.length}）`,
+========
+function io({ name: e, value: t, onChange: n }) {
+	return /* @__PURE__ */ (0, Q.jsx)(O, {
+		defaultOpen: !0,
+		summary: `${e} 的处理步骤（${t.length}/${$a.length}）`,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		children: /* @__PURE__ */ (0, Q.jsx)("div", {
 			className: "flex flex-wrap gap-x-6 gap-y-2",
 			role: "group",
 			"aria-label": `${e} 处理步骤`,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			children: no.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
+========
+			children: $a.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				isSelected: t.includes(e),
 				onChange: (r) => n(r ? [...t, e] : t.filter((t) => t !== e)),
 				children: r
@@ -3264,7 +4275,11 @@ function so({ name: e, value: t, onChange: n }) {
 		})
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function co({ id: e, name: t, value: n, onChange: r }) {
+========
+function ao({ id: e, name: t, value: n, onChange: r }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), s = Ke.find(([e]) => e === n)?.[1] || "无颜色", c = (t) => {
 		r(t), Tn(e, t), o(!1);
 	};
@@ -3347,8 +4362,13 @@ function co({ id: e, name: t, value: n, onChange: r }) {
 	})] });
 }
 // src/react/settings/push-discovery-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var lo = "/api/configuration/push-discovery", uo = "/api/configuration/push-discovery/secret";
 function fo({ initial: e, receipt: t }) {
+========
+var oo = "/api/configuration/push-discovery", so = "/api/configuration/push-discovery/secret";
+function co({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.prefixes), [o, s] = (0, Z.useState)(""), c = Y(), l = n.media_roots, [u, d] = (0, Z.useState)(e), f = (e, n) => {
 		r(e), d(e), a(e.prefixes), s(""), t(n);
 	}, p = (e, t) => a((n) => n.map((n, r) => r === e ? {
@@ -3362,9 +4382,15 @@ function fo({ initial: e, receipt: t }) {
 			cloud: n.cloud,
 			prefixes: i
 		};
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		c.run("save", (e) => G(lo, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
 	}, h = () => {
 		c.run("secret", (e) => G(uo, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
+========
+		c.run("save", (e) => G(oo, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
+	}, h = () => {
+		c.run("secret", (e) => G(so, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	}, g = `已入库 ${u.queue.ingested} 个文件` + (u.queue.failed ? `，${u.queue.failed} 个入库失败` : "") + (u.queue.pending ? `，队列里还有 ${u.queue.pending} 条` : ""), _ = u.local_running ? `正在监视 ${u.local_roots.join("、")}` : u.local_message || "没有运行";
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "pushDiscovery",
@@ -3441,7 +4467,11 @@ function fo({ initial: e, receipt: t }) {
 					className: "flex flex-col gap-3",
 					children: /* @__PURE__ */ (0, Q.jsxs)(O, {
 						summary: "查看配置",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 						children: [/* @__PURE__ */ (0, Q.jsx)(Yn, {
+========
+						children: [/* @__PURE__ */ (0, Q.jsx)(Xn, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 							code: u.config_toml,
 							language: "toml",
 							label: "CloudDrive2 配置",
@@ -3527,7 +4557,11 @@ function fo({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/media-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 async function po(e) {
+========
+async function lo(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t;
 	try {
 		t = await mn();
@@ -3542,14 +4576,22 @@ async function po(e) {
 	});
 	return n;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var mo = (e) => $n.find(([t]) => t === e)?.[1] ?? e, ho = [...$n, ["smb", "SMB 共享"]], go = (e) => e.library_icon || $a(e.transport === "smb" ? "smb" : e.location)[0], _o = async (e) => (await G(wt, { initial: e })).path, vo = (e) => ({
+========
+var uo = (e) => er.find(([t]) => t === e)?.[1] ?? e, fo = [...er, ["smb", "SMB 共享"]], po = (e) => e.library_icon || Xa(e.transport === "smb" ? "smb" : e.location)[0], mo = async (e) => (await G(Ct, { initial: e })).path, ho = (e) => ({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	library_id: e.library_id,
 	library: e.library,
 	library_icon: e.library_icon,
 	library_color: e.library_color,
 	library_policy: e.library_policy,
 	library_stages: e.library_stages
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }), yo = (e) => e.library_stages ? ro.filter((t) => e.library_stages.split(",").includes(t)) : [], bo = (e = "") => ({
+========
+}), go = (e) => e.library_stages ? eo.filter((t) => e.library_stages.split(",").includes(t)) : [], _o = (e = "") => ({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	path: e,
 	transport: e.startsWith("smb://") ? "smb" : "filesystem",
 	location: "local",
@@ -3562,8 +4604,13 @@ var mo = (e) => $n.find(([t]) => t === e)?.[1] ?? e, ho = [...$n, ["smb", "SMB �
 	library_stages: "",
 	cost: "free"
 });
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function xo(e) {
 	let t = e.media_sources?.filter((e) => $n.some(([t]) => t === e.location));
+========
+function vo(e) {
+	let t = e.media_sources?.filter((e) => er.some(([t]) => t === e.location));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return t?.length ? t.map((e) => ({
 		transport: e.transport === "smb" || e.path.startsWith("smb://") ? "smb" : "filesystem",
 		smb_username: e.smb_username,
@@ -3579,6 +4626,7 @@ function xo(e) {
 		library_policy: e.library_policy || "auto",
 		library_stages: e.library_stages || "",
 		root_id: e.root_id,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		library_id: e.library_id || kn(),
 		cost: e.cost ?? zn(e.location)
 	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => bo(e));
@@ -3591,6 +4639,20 @@ function Co({ data: e, receipt: t, panel: n }) {
 			let t = /* @__PURE__ */ new Map();
 			for (let n of xo(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
 			An("media", {
+========
+		library_id: e.library_id || On(),
+		cost: e.cost ?? Rn(e.location)
+	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => _o(e));
+}
+var yo = (e) => !(e instanceof qe) || e.status !== 400 ? null : e.body?.errors ?? null;
+function bo({ data: e, receipt: t, panel: n }) {
+	let r = !!e.media_sources?.some((e) => ir(e.location));
+	return (0, Z.useEffect)(() => {
+		if (e.editable) {
+			let t = /* @__PURE__ */ new Map();
+			for (let n of vo(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
+			kn("media", {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				folders: [...t.values()],
 				cloud: r
 			});
@@ -3604,9 +4666,15 @@ function Co({ data: e, receipt: t, panel: n }) {
 			prefixes: t.prefixes.length
 		});
 	}, [e, r]), /* @__PURE__ */ (0, Q.jsxs)("div", {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		...dr(n),
 		children: [
 			e.editable ? /* @__PURE__ */ (0, Q.jsx)(wo, {
+========
+		...fr(n),
+		children: [
+			e.editable ? /* @__PURE__ */ (0, Q.jsx)(xo, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				data: e,
 				receipt: t
 			}) : /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -3614,20 +4682,34 @@ function Co({ data: e, receipt: t, panel: n }) {
 				title: "只读",
 				children: e.notice
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(Eo, { data: e }),
 			r ? /* @__PURE__ */ (0, Q.jsx)(Ya, { receipt: t }) : null,
 			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)(fo, {
+========
+			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(Co, { data: e }),
+			r ? /* @__PURE__ */ (0, Q.jsx)(Ka, { receipt: t }) : null,
+			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)(co, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				initial: e.push_discovery,
 				receipt: t
 			}) : null
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function wo({ data: e, receipt: t }) {
 	let { rows: n, edit: r, add: i, remove: a, errors: o, setErrors: s, picking: c, pick: l, inputRef: u } = ar({
 		initial: () => xo(e),
 		blank: () => bo(),
 		pickFolder: _o,
+========
+function xo({ data: e, receipt: t }) {
+	let { rows: n, edit: r, add: i, remove: a, errors: o, setErrors: s, picking: c, pick: l, inputRef: u } = or({
+		initial: () => vo(e),
+		blank: () => _o(),
+		pickFolder: mo,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		describe: q
 	}), [d, f] = (0, Z.useState)(!1), [p, m] = (0, Z.useState)(!1), [h, g] = (0, Z.useState)(""), [_, v] = (0, Z.useState)({}), [y, b] = (0, Z.useState)(null), x = (0, Z.useRef)(e.revision), S = (0, Z.useRef)(!1), C = Y();
 	Vn();
@@ -3644,7 +4726,11 @@ function wo({ data: e, receipt: t }) {
 	let ne = (e, t) => {
 		let i = n.find((e) => e.library_id === t);
 		if (i) {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			r(e, vo(i));
+========
+			r(e, ho(i));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			return;
 		}
 		let a = kn();
@@ -3659,7 +4745,11 @@ function wo({ data: e, receipt: t }) {
 	};
 	(0, Z.useEffect)(() => {
 		if (!y) return;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		let e = setTimeout(() => location.assign(y.url), Ua);
+========
+		let e = setTimeout(() => location.assign(y.url), Ba);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		return () => clearTimeout(e);
 	}, [y]);
 	let re = (e) => {
@@ -3669,7 +4759,11 @@ function wo({ data: e, receipt: t }) {
 			m(!0);
 			let n = e.currentTarget;
 			requestAnimationFrame(() => n.querySelector(`[data-media-read-policy="${t}"] button`)?.focus());
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		} else C.busy || S.current || (g(""), S.current = !0, po(d).then((e) => {
+========
+		} else C.busy || S.current || (g(""), S.current = !0, lo(d).then((e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			S.current = !1, e && ie();
 		}));
 	}, ie = () => {
@@ -3682,7 +4776,11 @@ function wo({ data: e, receipt: t }) {
 		}, "POST", t), (e) => {
 			x.current = e.revision, s([]), t("已保存配置"), b(e);
 		}, (e) => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			let t = So(e);
+========
+			let t = yo(e);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			s(t?.media_dirs ?? []), (!t || t.port) && g(t?.port || q(e));
 		});
 	};
@@ -3703,13 +4801,21 @@ function wo({ data: e, receipt: t }) {
 			]
 		}) })
 	});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	let ae = (t) => e.media_sources?.find((e) => e.root_id === t.root_id && e.path === t.path), oe = n.some((e) => rr(e.location)), se = oe ? (e.mount_dependencies ?? []).filter((e) => !e.available) : [];
+========
+	let ae = (t) => e.media_sources?.find((e) => e.root_id === t.root_id && e.path === t.path), oe = n.some((e) => ir(e.location)), se = oe ? (e.mount_dependencies ?? []).filter((e) => !e.available) : [];
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "media",
 		title: "媒体库与目录",
 		onSubmit: re,
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(ao, {}),
+========
+			/* @__PURE__ */ (0, Q.jsx)(no, {}),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			/* @__PURE__ */ (0, Q.jsx)("div", {
 				role: "group",
 				"aria-label": "媒体库与目录",
@@ -3732,7 +4838,11 @@ function wo({ data: e, receipt: t }) {
 							/* @__PURE__ */ (0, Q.jsxs)("div", {
 								"data-library-head": "",
 								children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 									/* @__PURE__ */ (0, Q.jsx)(to, {
+========
+									/* @__PURE__ */ (0, Q.jsx)(Qa, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 										label: `${f} 图标`,
 										value: e.library_icon,
 										kind: e.transport === "smb" ? "smb" : e.location,
@@ -3746,32 +4856,55 @@ function wo({ data: e, receipt: t }) {
 										value: e.library,
 										onChange: (e) => w(t, { library: e })
 									}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 									/* @__PURE__ */ (0, Q.jsx)(co, {
+========
+									/* @__PURE__ */ (0, Q.jsx)(ao, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 										id: e.library_id,
 										name: e.library,
 										value: e.library_color,
 										onChange: (e) => w(t, { library_color: e })
 									}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 									/* @__PURE__ */ (0, Q.jsx)(oo, {
+========
+									/* @__PURE__ */ (0, Q.jsx)(ro, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 										name: f,
 										value: d,
 										onChange: (n) => w(t, {
 											library_policy: n,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 											library_stages: n === "custom" ? e.library_stages || ro.join(",") : ""
+========
+											library_stages: n === "custom" ? e.library_stages || eo.join(",") : ""
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 										})
 									})
 								]
 							}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(so, {
 								name: f,
 								value: yo(e),
 								onChange: (e) => w(t, { library_stages: ro.filter((t) => e.includes(t)).join(",") })
+========
+							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(io, {
+								name: f,
+								value: go(e),
+								onChange: (e) => w(t, { library_stages: eo.filter((t) => e.includes(t)).join(",") })
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 							}) : null,
 							/* @__PURE__ */ (0, Q.jsxs)("div", {
 								"data-library-folders": "",
 								role: "group",
 								"aria-label": `${f} 的文件夹`,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 								children: [s.map(({ row: t, index: i }) => /* @__PURE__ */ (0, Q.jsxs)(Qn, {
+========
+								children: [s.map(({ row: t, index: i }) => /* @__PURE__ */ (0, Q.jsxs)($n, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 									label: `媒体目录 ${i + 1}`,
 									path: t.path,
 									onPath: (e) => r(i, {
@@ -3783,12 +4916,21 @@ function wo({ data: e, receipt: t }) {
 									picking: c === i,
 									onPick: () => void l(i),
 									onRemove: n.length > 1 ? () => a(i) : void 0,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(To, { online: ae(t)?.online }) : null,
 									children: [/* @__PURE__ */ (0, Q.jsxs)(Zn, { children: [
 										/* @__PURE__ */ (0, Q.jsx)(nr, {
 											index: i,
 											value: t.transport === "smb" ? "smb" : t.location,
 											options: ho,
+========
+									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(So, { online: ae(t)?.online }) : null,
+									children: [/* @__PURE__ */ (0, Q.jsxs)(Qn, { children: [
+										/* @__PURE__ */ (0, Q.jsx)(rr, {
+											index: i,
+											value: t.transport === "smb" ? "smb" : t.location,
+											options: fo,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 											onChange: (e) => {
 												let n = e === "smb";
 												r(i, {
@@ -3802,13 +4944,21 @@ function wo({ data: e, receipt: t }) {
 												});
 											}
 										}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 										/* @__PURE__ */ (0, Q.jsx)(er, {
+========
+										/* @__PURE__ */ (0, Q.jsx)(tr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 											index: i,
 											cost: t.cost,
 											onChange: (e) => r(i, { cost: e }),
 											error: p && !t.cost ? "请选择媒体读取策略" : void 0
 										}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 										t.root_id && !ae(t) ? /* @__PURE__ */ (0, Q.jsx)(Xn, {
+========
+										t.root_id && !ae(t) ? /* @__PURE__ */ (0, Q.jsx)(Zn, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 											label: "变更方式",
 											className: "w-full @lg:w-auto @lg:flex-1",
 											children: /* @__PURE__ */ (0, Q.jsxs)(R, {
@@ -3832,7 +4982,11 @@ function wo({ data: e, receipt: t }) {
 												})]
 											})
 										}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 										T.length > 1 ? /* @__PURE__ */ (0, Q.jsx)(Xn, {
+========
+										T.length > 1 ? /* @__PURE__ */ (0, Q.jsx)(Zn, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 											label: "移到媒体库",
 											className: "w-full @lg:w-48",
 											children: /* @__PURE__ */ (0, Q.jsxs)(R, {
@@ -3841,7 +4995,11 @@ function wo({ data: e, receipt: t }) {
 												selectedKey: t.library_id,
 												renderValue: /* @__PURE__ */ (0, Q.jsxs)("span", {
 													className: "flex min-w-0 items-center gap-2",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 													children: [/* @__PURE__ */ (0, Q.jsx)(Ht, { mark: go(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
+========
+													children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: po(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 														className: "truncate",
 														children: f
 													})]
@@ -3854,7 +5012,11 @@ function wo({ data: e, receipt: t }) {
 													textValue: e.library || "未命名媒体库",
 													children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 														className: "flex min-w-0 items-center gap-2",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 														children: [/* @__PURE__ */ (0, Q.jsx)(Ht, { mark: go(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
+========
+														children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: po(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 															className: "truncate",
 															children: e.library || "未命名媒体库"
 														})]
@@ -3872,7 +5034,11 @@ function wo({ data: e, receipt: t }) {
 									] }), t.transport === "smb" ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 										className: "flex w-full flex-col gap-2",
 										children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 											/* @__PURE__ */ (0, Q.jsxs)(Zn, { children: [/* @__PURE__ */ (0, Q.jsx)(Xn, {
+========
+											/* @__PURE__ */ (0, Q.jsxs)(Qn, { children: [/* @__PURE__ */ (0, Q.jsx)(Zn, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 												label: "SMB 账号",
 												className: "w-full @lg:flex-1",
 												children: /* @__PURE__ */ (0, Q.jsx)(P, {
@@ -3881,7 +5047,11 @@ function wo({ data: e, receipt: t }) {
 													autoComplete: "off",
 													onChange: (e) => r(i, { smb_username: e })
 												})
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 											}), /* @__PURE__ */ (0, Q.jsx)(Xn, {
+========
+											}), /* @__PURE__ */ (0, Q.jsx)(Zn, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 												label: "SMB 密码",
 												className: "w-full @lg:flex-1",
 												children: /* @__PURE__ */ (0, Q.jsx)(P, {
@@ -3951,7 +5121,11 @@ function wo({ data: e, receipt: t }) {
 										"aria-label": `给 ${f} 添加文件夹`,
 										onClick: () => {
 											i(), r(n.length, {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 												...vo(e),
+========
+												...ho(e),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 												location: e.location,
 												cost: e.cost
 											});
@@ -3970,8 +5144,13 @@ function wo({ data: e, receipt: t }) {
 				onClick: i,
 				children: "添加媒体库"
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(N, { children: mt }),
 			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(tr, {}), /* @__PURE__ */ (0, Q.jsx)(Ka, {})] }) : null,
+========
+			/* @__PURE__ */ (0, Q.jsx)(N, { children: pt }),
+			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(nr, {}), /* @__PURE__ */ (0, Q.jsx)(Ua, {})] }) : null,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			se.map((e) => /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 				"未检测到 ",
 				e.name,
@@ -4001,18 +5180,31 @@ function wo({ data: e, receipt: t }) {
 		})]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function To({ online: e }) {
 	return /* @__PURE__ */ (0, Q.jsx)(or, { online: e });
 }
 function Eo({ data: e }) {
+========
+function So({ online: e }) {
+	return /* @__PURE__ */ (0, Q.jsx)(sr, { online: e });
+}
+function Co({ data: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = e.media_sources, n = Y();
 	return t ? /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "mounts",
 		title: "挂载状态",
 		children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(ut, { children: t.map((e, t) => /* @__PURE__ */ (0, Q.jsxs)(j, {
 				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Ht, { mark: ir(e.location) }), mo(e.location)] }),
 				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(To, { online: e.online })]
+========
+			/* @__PURE__ */ (0, Q.jsx)(lt, { children: t.map((e, t) => /* @__PURE__ */ (0, Q.jsxs)(j, {
+				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ar(e.location) }), uo(e.location)] }),
+				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(So, { online: e.online })]
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			}, t)) }),
 			n.error ? /* @__PURE__ */ (0, Q.jsx)(V, {
 				divided: !0,
@@ -4028,12 +5220,20 @@ function Eo({ data: e }) {
 	}) : null;
 }
 // src/react/settings/service-preferences.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Do = [
+========
+var wo = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["off", "关闭"],
 	["precise", "每 10 秒一张"],
 	["coarse", "每 30 秒一张"]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Oo({ epoch: e = 0, disabled: t = !1 }) {
+========
+function To({ epoch: e = 0, disabled: t = !1 }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let n = X({
 		queryKey: Ut,
 		queryFn: ({ signal: e }) => _n(e),
@@ -4056,7 +5256,11 @@ function Oo({ epoch: e = 0, disabled: t = !1 }) {
 					onSelectionChange: (e) => {
 						e !== null && r.mutate(String(e));
 					},
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					children: Do.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+========
+					children: wo.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						id: e,
 						children: t
 					}, e))
@@ -4076,8 +5280,13 @@ function Oo({ epoch: e = 0, disabled: t = !1 }) {
 		}) : null
 	] });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ko({ receipt: e }) {
 	let t = Zt();
+========
+function Eo({ receipt: e }) {
+	let t = Xt();
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	(0, Z.useSyncExternalStore)(t.subscribe, t.version);
 	let n = X({
 		queryKey: Pt,
@@ -4088,8 +5297,13 @@ function ko({ receipt: e }) {
 		guide: "follow-options",
 		title: "关注采集",
 		children: [/* @__PURE__ */ (0, Q.jsxs)(I, { children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Ao, {}),
 			/* @__PURE__ */ (0, Q.jsx)(jo, {}),
+========
+			/* @__PURE__ */ (0, Q.jsx)(Do, {}),
+			/* @__PURE__ */ (0, Q.jsx)(Oo, {}),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			/* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "首次采集范围",
 				description: "新关注的来源第一次回看多久以前的内容。",
@@ -4134,13 +5348,22 @@ function ko({ receipt: e }) {
 		}) : null]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ao() {
+========
+function Do() {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let e = X({
 		queryKey: lt,
 		queryFn: ({ signal: e }) => pn(e),
 		refetchOnMount: "always",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		refetchInterval: (e) => Fn(e.state.data)
 	}), t = Gn(), n = e.data, r = (0, Z.useRef)(Qt(Number(localStorage.getItem("peach.number.followScheduleSetting")), 15, 10080, 60)), [i, a] = (0, Z.useState)("60"), [o, s] = (0, Z.useState)(!1);
+========
+		refetchInterval: (e) => Pn(e.state.data)
+	}), t = Gn(), n = e.data, r = (0, Z.useRef)(Zt(Number(localStorage.getItem("peach.number.followScheduleSetting")), 15, 10080, 60)), [i, a] = (0, Z.useState)("60"), [o, s] = (0, Z.useState)(!1);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	(0, Z.useEffect)(() => {
 		n?.enabled && (r.current = n.interval_minutes, a(String(n.interval_minutes)));
 	}, [n]);
@@ -4193,7 +5416,11 @@ function Ao() {
 			role: "status",
 			children: t.isPending ? "正在保存…" : "正在检查来源更新…"
 		}) }) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		/* @__PURE__ */ (0, Q.jsx)(Mo, {
+========
+		/* @__PURE__ */ (0, Q.jsx)(ko, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			kind: "follow",
 			status: n,
 			title: "上次自动检查失败"
@@ -4201,7 +5428,11 @@ function Ao() {
 		u ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: q(u) }) }) : null
 	] });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function jo() {
+========
+function Oo() {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let e = X({
 		queryKey: ot,
 		queryFn: ({ signal: e }) => fn(e),
@@ -4230,14 +5461,22 @@ function jo() {
 			role: "status",
 			children: "正在拉取订阅源…"
 		}) }) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		/* @__PURE__ */ (0, Q.jsx)(Mo, {
+========
+		/* @__PURE__ */ (0, Q.jsx)(ko, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			kind: "feed",
 			status: t,
 			title: "上次自动拉取失败"
 		})
 	] });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Mo({ kind: e, status: t, title: n }) {
+========
+function ko({ kind: e, status: t, title: n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let r = Wn(e);
 	if (!t?.enabled || t.running || !t.last_error) return null;
 	let i = t.consecutive_failures ?? 0, a = xn(t.next_run_at), o = [i > 1 ? `已连续失败 ${i} 次` : "", a ? `下一轮 ${a}` : ""].filter(Boolean).join("，"), s = [
@@ -4260,7 +5499,11 @@ function Mo({ kind: e, status: t, title: n }) {
 	}) });
 }
 // src/react/settings/media-processing-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function No({ receipt: e }) {
+========
+function Ao({ receipt: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = X({
 		queryKey: bt,
 		queryFn: ({ signal: e }) => hn(e)
@@ -4281,7 +5524,11 @@ function No({ receipt: e }) {
 					})
 				})
 			}) }),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Oo, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
+========
+			/* @__PURE__ */ (0, Q.jsx)(To, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "抽帧解码方式",
 				description: "用于生成封面、九宫格和时间轴。",
@@ -4320,7 +5567,11 @@ function No({ receipt: e }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Po({ receipt: e }) {
+========
+function jo({ receipt: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = X({
 		queryKey: bt,
 		queryFn: ({ signal: e }) => hn(e)
@@ -4368,7 +5619,11 @@ function Po({ receipt: e }) {
 	});
 }
 // src/react/boardui/components/base/textarea/textarea.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Fo = Rn({
+========
+var Mo = Ln({
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	field: "relative flex w-full flex-col rounded-2lg bg-background-tertiary-default text-foreground-icon-tertiary ring-2 ring-inset ring-transparent transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms)] ease",
 	fieldSize: {
 		medium: "p-2",
@@ -4381,9 +5636,15 @@ var Fo = Rn({
 	},
 	footer: "flex w-full items-start justify-between gap-3",
 	count: "ms-auto shrink-0 pt-px text-caption-1-medium text-text-tertiary tabular-nums"
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 }), Io = 20;
 function Lo({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
 	let d = (0, Z.useContext)(Kt), f = e ?? d.size ?? "medium", p = (0, Z.useRef)(null), m = (e) => {
+========
+}), No = 20;
+function Po({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
+	let d = (0, Z.useContext)(Gt), f = e ?? d.size ?? "medium", p = (0, Z.useRef)(null), m = (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		p.current = e, typeof s == "function" ? s(e) : s && (s.current = e);
 	}, h = () => {
 		let e = p.current;
@@ -4392,14 +5653,22 @@ function Lo({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = 
 			e.style.height = "", e.style.maxHeight = "", e.style.overflowY = "";
 			return;
 		}
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		let i = parseFloat(window.getComputedStyle(e).lineHeight) || Io, a = r ? r * i : Infinity;
+========
+		let i = parseFloat(window.getComputedStyle(e).lineHeight) || No, a = r ? r * i : Infinity;
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		e.style.height = "0px";
 		let o = Math.max(e.scrollHeight, t * i);
 		e.style.height = `${Math.min(o, a)}px`, e.style.maxHeight = r ? `${a}px` : "", e.style.overflowY = o > a ? "auto" : "hidden";
 	};
 	return (0, Z.useLayoutEffect)(h), /* @__PURE__ */ (0, Q.jsx)(Re, {
 		ref: c,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => sn(Fo.field, Fo.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
+========
+		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => on(Mo.field, Mo.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		children: /* @__PURE__ */ (0, Q.jsx)(Ve, {
 			ref: m,
 			rows: t,
@@ -4407,12 +5676,21 @@ function Lo({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = 
 			onInput: (e) => {
 				h(), l?.(e);
 			},
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			className: sn(Fo.textarea, Fo.resize[n ? "none" : i], d.inputClassName, o)
 		})
 	});
 }
 Lo.displayName = "TextareaBase";
 function Ro({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
+========
+			className: on(Mo.textarea, Mo.resize[n ? "none" : i], d.inputClassName, o)
+		})
+	});
+}
+Po.displayName = "TextareaBase";
+function Fo({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [v, y] = (0, Z.useState)(() => (h ?? "").length), b = m === void 0 ? v : m.length;
 	return /* @__PURE__ */ (0, Q.jsx)(Gt, {
 		..._,
@@ -4430,7 +5708,11 @@ function Ro({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize
 				tooltip: n,
 				children: e
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Lo, {
+========
+			/* @__PURE__ */ (0, Q.jsx)(Po, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				ref: d,
 				groupRef: f,
 				placeholder: r,
@@ -4442,22 +5724,38 @@ function Ro({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize
 				fieldClassName: u
 			}),
 			(t || l) && /* @__PURE__ */ (0, Q.jsxs)("div", {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				className: Fo.footer,
 				children: [t && /* @__PURE__ */ (0, Q.jsx)(ft, {
 					isInvalid: m,
 					children: t
 				}), l && /* @__PURE__ */ (0, Q.jsx)("span", {
 					className: sn(Fo.count, m && "text-text-error-primary"),
+========
+				className: Mo.footer,
+				children: [t && /* @__PURE__ */ (0, Q.jsx)(dt, {
+					isInvalid: m,
+					children: t
+				}), l && /* @__PURE__ */ (0, Q.jsx)("span", {
+					className: on(Mo.count, m && "text-text-error-primary"),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					children: c ? `${b}/${c}` : b
 				})]
 			})
 		] })
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 Ro.displayName = "Textarea";
 // src/react/settings/code-pattern-settings.tsx
 var zo = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
 function Bo({ receipt: e }) {
+========
+Fo.displayName = "Textarea";
+// src/react/settings/code-pattern-settings.tsx
+var Io = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
+function Lo({ receipt: e }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = X({
 		queryKey: Pt,
 		queryFn: ({ signal: e }) => gn(e)
@@ -4472,7 +5770,11 @@ function Bo({ receipt: e }) {
 				On.setQueryData(Pt, t), r(null), e("已保存配置");
 			});
 		},
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(Ro, {
+========
+		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(Fo, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			id: "codePatternSetting",
 			"aria-label": "番号识别规则",
 			rows: 3,
@@ -4480,7 +5782,11 @@ function Bo({ receipt: e }) {
 			maxRows: 12,
 			spellCheck: "false",
 			autoComplete: "off",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			placeholder: zo,
+========
+			placeholder: Io,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			value: a,
 			isDisabled: !t.data,
 			isInvalid: !!o,
@@ -4494,7 +5800,11 @@ function Bo({ receipt: e }) {
 	});
 }
 // src/react/settings/password-pair.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Vo({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
+========
+function Ro({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
 		id: "access-password",
 		type: "password",
@@ -4524,28 +5834,38 @@ function Vo({ label: e, password: t, confirmation: n, onPassword: r, onConfirmat
 	})] });
 }
 // src/react/settings/access-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Ho = {
+========
+var zo = {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	legacy: "当前使用系统生成的访问口令。改设自己的密码，或关闭登录要求。",
 	locked: "访问设置无法读取，请在本机检查配置文件。",
 	password: "已设置密码。新设备需要登录，登录时勾选「保持登录」可保持 30 天。"
 };
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Uo({ initial: e, receipt: t, devices: n }) {
 	let [r, i] = (0, Z.useState)(e), [a, o] = (0, Z.useState)(""), [s, c] = (0, Z.useState)(""), [l, u] = (0, Z.useState)(""), [d, f] = (0, Z.useState)(!1), [p, m] = (0, Z.useState)({}), h = (0, Z.useRef)(null), g = Y(), _ = (e) => {
+========
+function Bo({ initial: e, receipt: t, devices: n, after: r }) {
+	let [i, a] = (0, Z.useState)(e), [o, s] = (0, Z.useState)(""), [c, l] = (0, Z.useState)(""), [u, d] = (0, Z.useState)(""), [f, p] = (0, Z.useState)(!1), [m, h] = (0, Z.useState)({}), g = (0, Z.useRef)(null), _ = Y(), v = (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		e.preventDefault();
 		let n = {};
-		r.mode === "password" && !a && (n.current_password = "请输入当前访问密码"), d || ((s.length < 8 || s.length > 256) && (n.password = "访问密码需为 8–256 个字符"), s !== l && (n.confirmation = "两次输入的密码不一致")), m(n), Object.keys(n).length ? requestAnimationFrame(() => h.current?.querySelector("input[aria-invalid=\"true\"]")?.focus()) : g.run("save", (e) => G("/api/configuration/access", {
-			revision: r.revision,
-			action: d ? "disable" : "set",
-			confirm_disable: d,
-			current_password: a,
-			password: d ? "" : s,
-			confirmation: d ? "" : l
+		i.mode === "password" && !o && (n.current_password = "请输入当前访问密码"), f || ((c.length < 8 || c.length > 256) && (n.password = "访问密码需为 8–256 个字符"), c !== u && (n.confirmation = "两次输入的密码不一致")), h(n), Object.keys(n).length ? requestAnimationFrame(() => g.current?.querySelector("input[aria-invalid=\"true\"]")?.focus()) : _.run("save", (e) => G("/api/configuration/access", {
+			revision: i.revision,
+			action: f ? "disable" : "set",
+			confirm_disable: f,
+			current_password: o,
+			password: f ? "" : c,
+			confirmation: f ? "" : u
 		}, "POST", e), (e) => {
-			i(e), o(""), c(""), u(""), f(!1), m({}), t(e.mode === "open" ? "已关闭访问密码" : "已保存配置");
+			a(e), s(""), l(""), d(""), p(!1), h({}), t(e.mode === "open" ? "已关闭访问密码" : "已保存配置");
 		}, (e) => {
 			let t = e instanceof qe ? e.body : null, n = t?.errors || t?.detail?.errors;
-			n ? m(n) : g.setError(q(e));
+			n ? h(n) : _.setError(q(e));
 		});
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}, v = Ho[r.mode], y = r.mode !== "locked";
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "access",
@@ -4629,12 +5949,242 @@ var Wo = "/api/configuration/access/sessions", Go = (e) => e.device || "未识�
 	ChromeOS: {
 		platform: { browser: "chrome" },
 		terminal: Jn
+========
+	}, y = zo[i.mode], b = i.mode !== "locked";
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
+		/* @__PURE__ */ (0, Q.jsxs)(L, {
+			guide: "access",
+			title: "访问密码",
+			onSubmit: v,
+			children: [/* @__PURE__ */ (0, Q.jsx)("div", {
+				ref: g,
+				children: /* @__PURE__ */ (0, Q.jsxs)(V, { children: [
+					y ? /* @__PURE__ */ (0, Q.jsx)(N, { children: y }) : null,
+					i.mode === "open" ? /* @__PURE__ */ (0, Q.jsx)(F, {
+						tone: "warning",
+						title: "未设置访问密码",
+						children: "能连接到 Peach 的设备打开地址就能看馆藏，不需要登录。"
+					}) : null,
+					i.mode === "password" || i.mode === "legacy" ? /* @__PURE__ */ (0, Q.jsx)(D, {
+						isSelected: f,
+						onChange: p,
+						children: "关闭访问密码"
+					}) : null,
+					i.mode === "password" ? /* @__PURE__ */ (0, Q.jsx)(P, {
+						id: "access-current",
+						type: "password",
+						label: "当前访问密码",
+						autoComplete: "current-password",
+						maxLength: 256,
+						value: o,
+						onChange: s,
+						isRequired: !0,
+						validationBehavior: "aria",
+						isInvalid: !!m.current_password,
+						hint: m.current_password
+					}) : null,
+					b && !f ? /* @__PURE__ */ (0, Q.jsx)(Ro, {
+						label: i.mode === "password" ? "新访问密码" : "设置访问密码",
+						password: c,
+						confirmation: u,
+						onPassword: l,
+						onConfirmation: d,
+						passwordError: m.password,
+						confirmationError: m.confirmation,
+						passwordHint: "至少 8 个字符。保存后其他设备需要重新登录。"
+					}) : null,
+					f ? /* @__PURE__ */ (0, Q.jsx)(F, {
+						tone: "warning",
+						title: "访问范围",
+						children: "保存后，能连接到 Peach 的设备将直接访问馆藏。"
+					}) : null,
+					_.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: _.error }) : null
+				] })
+			}), b ? /* @__PURE__ */ (0, Q.jsx)(M, { children: /* @__PURE__ */ (0, Q.jsx)(E, {
+				type: "submit",
+				...K(_.busy === "save"),
+				children: "保存配置"
+			}) }) : null]
+		}),
+		n && (i.mode === "password" || i.mode === "legacy") ? n(i) : null,
+		r ? r(i) : null
+	] });
+}
+// src/react/settings/api-token-settings.tsx
+var Vo = "/api/configuration/access/token/rotate";
+function Ho(e, t) {
+	let n = "用旧口令的脚本和 API 调用会立即失效。", r = e === "legacy" ? `其他浏览器现在用这串口令登录，会全部退出，需要输入新口令重新登录；本机保持登录。${n}` : e === "open" ? `浏览器不需要登录，不受影响。${n}` : `用访问密码登录的浏览器不受影响。${n}`;
+	return t ? `${r}另一台电脑要换成同一份口令文件，两台之间才能继续互取复核结果。` : r;
+}
+function Uo({ initial: e, mode: t, receipt: n }) {
+	let [r, i] = (0, Z.useState)(e), [a, o] = (0, Z.useState)(null), s = Y(), c = Hn();
+	return /* @__PURE__ */ (0, Q.jsxs)(L, {
+		title: "访问口令",
+		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
+			/* @__PURE__ */ (0, Q.jsx)(N, { children: "脚本和 API 调用在 X-Token 请求头里携带访问口令。口令只存在这台电脑上，页面不显示。" }),
+			a ? /* @__PURE__ */ (0, Q.jsxs)("div", {
+				className: "flex min-w-0 flex-col gap-2",
+				children: [
+					/* @__PURE__ */ (0, Q.jsxs)("div", {
+						className: "flex min-w-0 flex-wrap items-end gap-2",
+						children: [/* @__PURE__ */ (0, Q.jsx)(P, {
+							className: "min-w-0 flex-1",
+							label: "新访问口令",
+							value: a.token,
+							isReadOnly: !0,
+							autoComplete: "off"
+						}), /* @__PURE__ */ (0, Q.jsx)(E, {
+							variant: "secondary",
+							"aria-label": "复制新访问口令",
+							onClick: () => void s.run("copy", () => navigator.clipboard.writeText(a.token), () => n("已复制口令")),
+							children: "复制口令"
+						})]
+					}),
+					s.error ? /* @__PURE__ */ (0, Q.jsx)(N, {
+						role: "status",
+						children: "复制失败，请选中口令复制。"
+					}) : null,
+					/* @__PURE__ */ (0, Q.jsx)(F, {
+						tone: "info",
+						title: "新口令只显示这一次",
+						children: "已经生效，不用重启。离开本页后不再显示，之后在终端运行 peach token 查看。"
+					})
+				]
+			}) : null,
+			a?.relogin ? /* @__PURE__ */ (0, Q.jsx)(F, {
+				tone: "warning",
+				title: "本机需要重新登录",
+				children: "刷新页面后用新口令登录。"
+			}) : null,
+			r.rotatable ? null : /* @__PURE__ */ (0, Q.jsx)(N, { children: r.reason })
+		] }), r.rotatable ? /* @__PURE__ */ (0, Q.jsx)(M, {
+			status: "更换后立即生效。",
+			children: /* @__PURE__ */ (0, Q.jsx)(E, {
+				variant: "secondary",
+				onClick: () => void nn({
+					title: "更换访问口令",
+					body: Ho(t, r.paired),
+					confirmLabel: "更换口令",
+					onConfirm: async () => {
+						let e = await G(Vo, {});
+						i(e), o(e), e.mode === "legacy" && c.invalidateQueries({ queryKey: ["access-sessions"] }), n(e.signed_out ? `已更换访问口令，${e.signed_out} 台设备需要重新登录` : "已更换访问口令");
+					}
+				}),
+				children: "更换口令"
+			})
+		}) : null]
+	});
+}
+// src/react/settings/certificate-trust.tsx
+function Wo({ rows: e, label: t }) {
+	let n = e.length + 8, r = e.flatMap((e, t) => [...e].flatMap((e, n) => e === "1" ? [`M${n + 4} ${t + 4}h1v1h-1z`] : [])).join("");
+	return /* @__PURE__ */ (0, Q.jsx)("svg", {
+		role: "img",
+		"aria-label": t,
+		viewBox: `0 0 ${n} ${n}`,
+		shapeRendering: "crispEdges",
+		className: "size-40 shrink-0 rounded-lg bg-white text-black",
+		children: /* @__PURE__ */ (0, Q.jsx)("path", {
+			d: r,
+			fill: "currentColor"
+		})
+	});
+}
+var Go = [
+	["iPhone／iPad", "用相机扫码，在 Safari 中允许下载描述文件；到「设置 → 通用 → VPN 与设备管理」安装它，再到「设置 → 通用 → 关于本机 → 证书信任设置」打开这张证书的完全信任。"],
+	["Android", "扫码下载后，到「设置 → 安全 → 加密与凭据 → 安装证书 → CA 证书」选择下载的文件。菜单名称因厂商而异。"],
+	["电脑", "点「下载证书」。Windows 双击文件，安装到「受信任的根证书颁发机构」；macOS 在「钥匙串访问」里把它设为「始终信任」。"]
+];
+function Ko({ initial: e }) {
+	let t = X({
+		queryKey: ["ca-certificate"],
+		initialData: e,
+		queryFn: ({ signal: e }) => W("/api/configuration/certificate", e),
+		staleTime: Infinity,
+		refetchInterval: Math.max(60, e.expires_in - 60) * 1e3
+	}).data, n = t.fingerprint.split(":"), r = [
+		0,
+		8,
+		16,
+		24
+	].map((e) => n.slice(e, e + 8).join(":"));
+	return /* @__PURE__ */ (0, Q.jsxs)(L, {
+		title: "其他设备信任 HTTPS 证书",
+		children: [
+			/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "手机、平板和其他电脑第一次打开 HTTPS 地址时会提示证书不受信任。在那台设备上安装并信任本机 CA 证书后不再提示。证书只含公开部分，不含私钥。" }), /* @__PURE__ */ (0, Q.jsxs)("div", {
+				className: "flex min-w-0 flex-wrap items-start gap-4",
+				children: [/* @__PURE__ */ (0, Q.jsx)(Wo, {
+					rows: t.qr,
+					label: "手机扫码下载本机 CA 证书"
+				}), /* @__PURE__ */ (0, Q.jsxs)("div", {
+					className: "flex min-w-0 flex-1 basis-64 flex-col gap-2",
+					children: [/* @__PURE__ */ (0, Q.jsxs)(lt, { children: [/* @__PURE__ */ (0, Q.jsx)(j, {
+						term: "SHA-256 指纹",
+						children: /* @__PURE__ */ (0, Q.jsx)("span", {
+							className: "flex max-w-sm flex-wrap justify-end gap-x-2 font-mono text-caption-1-regular",
+							children: r.map((e, t) => /* @__PURE__ */ (0, Q.jsx)("span", {
+								className: "whitespace-nowrap",
+								children: e
+							}, t))
+						})
+					}), /* @__PURE__ */ (0, Q.jsx)(j, {
+						term: "有效期至",
+						children: t.not_after
+					})] }), /* @__PURE__ */ (0, Q.jsx)(N, { children: "二维码 10 分钟内有效，页面开着时会自动更新。Android 打不开 .local 地址时，在这台电脑上改用局域网 IP 打开本页再扫码。" })]
+				})]
+			})] }),
+			/* @__PURE__ */ (0, Q.jsx)(I, { children: Go.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(B, {
+				label: e,
+				description: t
+			}, e)) }),
+			/* @__PURE__ */ (0, Q.jsx)(V, {
+				divided: !0,
+				children: /* @__PURE__ */ (0, Q.jsx)(N, { children: "装好后在设备的证书详情里核对 SHA-256 指纹，与上面一致才算装对。" })
+			}),
+			/* @__PURE__ */ (0, Q.jsx)(M, { children: /* @__PURE__ */ (0, Q.jsx)(Je, {
+				href: t.download,
+				download: "peach-local-ca.crt",
+				leadingIcon: Jn,
+				children: "下载证书"
+			}) })
+		]
+	});
+}
+// src/react/settings/device-sessions.tsx
+var qo = "/api/configuration/access/sessions", Jo = (e) => e.device || "未识别的浏览器", Yo = {
+	glyph: ft,
+	brand: "apple"
+}, Xo = {
+	glyph: yn,
+	brand: "android"
+}, Zo = {
+	iPhone: {
+		platform: Yo,
+		terminal: Jt
+	},
+	iPad: {
+		platform: Yo,
+		terminal: it
+	},
+	Android: {
+		platform: Xo,
+		terminal: Jt
+	},
+	"Android 平板": {
+		platform: Xo,
+		terminal: it
+	},
+	ChromeOS: {
+		platform: { browser: "chrome" },
+		terminal: Yn
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	},
 	Windows: {
 		platform: {
 			glyph: qt,
 			brand: "windows"
 		},
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		terminal: Jn
 	},
 	macOS: {
@@ -4647,11 +6197,26 @@ function Xo({ platform: e }) {
 	if ("browser" in e) return /* @__PURE__ */ (0, Q.jsx)(cr, {
 		name: e.browser,
 		className: Yo
+========
+		terminal: Yn
+	},
+	macOS: {
+		platform: Yo,
+		terminal: Yn
+	},
+	Linux: { terminal: Yn }
+}, Qo = "inline size-4 -mt-0.5 mr-1 align-middle";
+function $o({ platform: e }) {
+	if ("browser" in e) return /* @__PURE__ */ (0, Q.jsx)(lr, {
+		name: e.browser,
+		className: Qo
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	});
 	let { glyph: t, brand: n } = e;
 	return /* @__PURE__ */ (0, Q.jsx)(t, {
 		"aria-hidden": !0,
 		"data-platform-mark": n,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		className: Yo
 	});
 }
@@ -4669,16 +6234,40 @@ function Zo({ row: e }) {
 }
 function Qo({ row: e }) {
 	let t = Jo[e.device.split(" · ").at(-1) ?? ""]?.terminal ?? cn;
+========
+		className: Qo
+	});
+}
+function es({ row: e }) {
+	if (!e.device) return Jo(e);
+	let t = e.device.split(" · "), n = Zo[t.at(-1) ?? ""] ? t.pop() : "", r = t.join(" · "), i = n ? Zo[n].platform : void 0;
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
+		r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [ur(r) ? /* @__PURE__ */ (0, Q.jsx)(lr, {
+			name: r,
+			className: Qo
+		}) : null, r] }) : null,
+		r && n ? " · " : null,
+		n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [i ? /* @__PURE__ */ (0, Q.jsx)($o, { platform: i }) : null, n] }) : null
+	] });
+}
+function ts({ row: e }) {
+	let t = Zo[e.device.split(" · ").at(-1) ?? ""]?.terminal ?? sn;
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)(t, {
 		"aria-hidden": !0,
 		className: "size-5 shrink-0 text-foreground-icon-secondary"
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function $o({ row: e, children: t }) {
+========
+function ns({ row: e, children: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-h-13 w-full items-center justify-between gap-4 border-b border-separator-border py-2.5 pr-2.5 last:border-b-0",
 		children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "flex min-w-0 items-center gap-3",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			children: [/* @__PURE__ */ (0, Q.jsx)(Qo, { row: e }), /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex min-w-0 flex-col",
 				children: [/* @__PURE__ */ (0, Q.jsx)("p", {
@@ -4687,11 +6276,22 @@ function $o({ row: e, children: t }) {
 				}), /* @__PURE__ */ (0, Q.jsx)("p", {
 					className: "text-body-2-regular text-text-secondary",
 					children: ns(e)
+========
+			children: [/* @__PURE__ */ (0, Q.jsx)(ts, { row: e }), /* @__PURE__ */ (0, Q.jsxs)("div", {
+				className: "flex min-w-0 flex-col",
+				children: [/* @__PURE__ */ (0, Q.jsx)("p", {
+					className: "text-body-regular text-text-primary",
+					children: /* @__PURE__ */ (0, Q.jsx)(es, { row: e })
+				}), /* @__PURE__ */ (0, Q.jsx)("p", {
+					className: "text-body-2-regular text-text-secondary",
+					children: as(e)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				})]
 			})]
 		}), t]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function es(e, t = Date.now() / 1e3) {
 	let n = Math.max(0, t - e);
 	return n < 60 ? "刚刚" : n < 3600 ? `${Math.floor(n / 60)} 分钟前` : n < 86400 ? `${Math.floor(n / 3600)} 小时前` : n < 2592e3 ? `${Math.floor(n / 86400)} 天前` : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleDateString("zh-CN");
@@ -4705,19 +6305,43 @@ function rs({ revision: e, receipt: t }) {
 		queryKey: ["access-sessions", e],
 		refetchOnMount: "always",
 		queryFn: ({ signal: e }) => W(Wo, e)
+========
+function rs(e, t = Date.now() / 1e3) {
+	let n = Math.max(0, t - e);
+	return n < 60 ? "刚刚" : n < 3600 ? `${Math.floor(n / 60)} 分钟前` : n < 86400 ? `${Math.floor(n / 3600)} 小时前` : n < 2592e3 ? `${Math.floor(n / 86400)} 天前` : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleDateString("zh-CN");
+}
+function is(e) {
+	return e.network === "loopback" ? "运行 Peach 的电脑" : e.network ? e.remote ? `公网入口 · ${e.network}` : e.network : "";
+}
+var as = (e) => [`最近活动 ${rs(e.last_seen)}`, is(e)].filter(Boolean).join(" · ");
+function os({ revision: e, receipt: t }) {
+	let n = X({
+		queryKey: ["access-sessions", e],
+		refetchOnMount: "always",
+		queryFn: ({ signal: e }) => W(qo, e)
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	});
 	return n.error ? /* @__PURE__ */ (0, Q.jsx)(L, {
 		title: "已登录的设备",
 		children: /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: q(n.error) }) })
 	}) : n.isFetching || !n.data ? /* @__PURE__ */ (0, Q.jsx)(It, {
 		label: "正在读取已登录的设备",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		html: ln
 	}) : /* @__PURE__ */ (0, Q.jsx)(is, {
+========
+		html: cn
+	}) : /* @__PURE__ */ (0, Q.jsx)(ss, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		initial: n.data,
 		receipt: t
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function is({ initial: e, receipt: t }) {
+========
+function ss({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e);
 	(0, Z.useEffect)(() => r(e), [e]);
 	let i = n.sessions.filter((e) => !e.current);
@@ -4729,10 +6353,17 @@ function is({ initial: e, receipt: t }) {
 	}, [n, i.length]);
 	let a = (e) => void rn({
 		title: "撤销这台设备的登录",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		body: `${Go(e)}（${ns(e)}）下次打开 Peach 需要重新输入访问密码。`,
 		confirmLabel: "撤销登录",
 		onConfirm: async () => {
 			r(await G(`${Wo}/revoke`, {
+========
+		body: `${Jo(e)}（${as(e)}）下次打开 Peach 需要重新输入访问密码。`,
+		confirmLabel: "撤销登录",
+		onConfirm: async () => {
+			r(await G(`${qo}/revoke`, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				revision: n.revision,
 				id: e.id
 			})), t("已撤销登录");
@@ -4741,7 +6372,11 @@ function is({ initial: e, receipt: t }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		title: "已登录的设备",
 		children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			n.sessions.length ? /* @__PURE__ */ (0, Q.jsx)(I, { children: n.sessions.map((e) => /* @__PURE__ */ (0, Q.jsx)($o, {
+========
+			n.sessions.length ? /* @__PURE__ */ (0, Q.jsx)(I, { children: n.sessions.map((e) => /* @__PURE__ */ (0, Q.jsx)(ns, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				row: e,
 				children: e.current ? /* @__PURE__ */ (0, Q.jsx)(et, {
 					color: "blue",
@@ -4750,7 +6385,11 @@ function is({ initial: e, receipt: t }) {
 				}) : n.manageable ? /* @__PURE__ */ (0, Q.jsx)(E, {
 					size: "small",
 					variant: "secondary",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					"aria-label": `撤销 ${Go(e)} 的登录`,
+========
+					"aria-label": `撤销 ${Jo(e)} 的登录`,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					onClick: () => a(e),
 					children: "撤销"
 				}) : null
@@ -4768,7 +6407,11 @@ function is({ initial: e, receipt: t }) {
 						body: `除本机以外的 ${i.length} 台设备下次打开 Peach 需要重新输入访问密码。`,
 						confirmLabel: "撤销登录",
 						onConfirm: async () => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 							let e = await G(`${Wo}/revoke`, {
+========
+							let e = await G(`${qo}/revoke`, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 								revision: n.revision,
 								scope: "others"
 							});
@@ -4782,7 +6425,11 @@ function is({ initial: e, receipt: t }) {
 	});
 }
 // src/react/components/configuration-fields.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function as({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
+========
+function cs({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let c = `${e}-label`;
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex flex-col gap-1.5",
@@ -4811,7 +6458,11 @@ function as({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a,
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function os({ prefix: e, suffix: t, ...n }) {
+========
+function ls({ prefix: e, suffix: t, ...n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let r = () => /* @__PURE__ */ (0, Q.jsx)("span", {
 		className: "shrink-0 pr-1 text-body-regular text-text-secondary",
 		children: t
@@ -4826,18 +6477,30 @@ function os({ prefix: e, suffix: t, ...n }) {
 	});
 }
 // src/react/settings/port-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var ss = [{
+========
+var us = [{
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	value: "0.0.0.0",
 	label: "同一局域网的设备"
 }, {
 	value: "127.0.0.1",
 	label: "只有这台电脑"
 }];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function cs({ data: e, receipt: t }) {
 	let n = e.network, r = n ? n.editable : e.editable && e.port_editable !== !1, [i, a] = (0, Z.useState)(n?.host ?? "127.0.0.1"), [o, s] = (0, Z.useState)(n?.mdns_name ?? "peach"), [c, l] = (0, Z.useState)(String(e.port)), [u, d] = (0, Z.useState)({}), [f, p] = (0, Z.useState)(null), m = Y();
 	return (0, Z.useEffect)(() => {
 		if (!f) return;
 		let e = setTimeout(() => location.assign(f.url), Ua);
+========
+function ds({ data: e, receipt: t }) {
+	let n = e.network, r = n ? n.editable : e.editable && e.port_editable !== !1, [i, a] = (0, Z.useState)(n?.host ?? "127.0.0.1"), [o, s] = (0, Z.useState)(n?.mdns_name ?? "peach"), [c, l] = (0, Z.useState)(String(e.port)), [u, d] = (0, Z.useState)({}), [f, p] = (0, Z.useState)(null), m = Y();
+	return (0, Z.useEffect)(() => {
+		if (!f) return;
+		let e = setTimeout(() => location.assign(f.url), Ba);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		return () => clearTimeout(e);
 	}, [f]), f ? /* @__PURE__ */ (0, Q.jsx)(L, {
 		guide: "port",
@@ -4873,33 +6536,57 @@ function cs({ data: e, receipt: t }) {
 			});
 		} : void 0,
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(ls, {
+========
+			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(fs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				label: "本机地址",
 				value: n.local_url,
 				receipt: t
 			}), n.lan_url || n.ip_url ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				/* @__PURE__ */ (0, Q.jsx)(ls, {
+========
+				/* @__PURE__ */ (0, Q.jsx)(fs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					label: "手机连接地址",
 					value: n.lan_url || n.ip_url,
 					receipt: t
 				}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(ls, {
+========
+				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(fs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					label: "备用 IP 地址",
 					value: n.ip_url,
 					receipt: t
 				}) : null,
 				/* @__PURE__ */ (0, Q.jsxs)(N, { children: ["手机与电脑连接同一 Wi-Fi。", n.ip_url && n.lan_url ? "名称地址打不开时，可尝试备用 IP 地址。" : ""] })
 			] }) : /* @__PURE__ */ (0, Q.jsx)(N, { children: n.scope === "local" ? "当前只允许这台电脑访问，手机无法连接。" : "局域网连接地址未取得，请检查电脑的网络连接和服务启动配置。" })] }) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(as, {
+========
+			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(cs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				id: "configHost",
 				label: "谁可以访问",
 				value: i,
 				onChange: a,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				options: ss,
 				isDisabled: !!m.busy,
 				isInvalid: !!u.host,
 				children: u.host ? /* @__PURE__ */ (0, Q.jsx)(k, { children: u.host }) : null
 			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(os, {
+========
+				options: us,
+				isDisabled: !!m.busy,
+				isInvalid: !!u.host,
+				children: u.host ? /* @__PURE__ */ (0, Q.jsx)(k, { children: u.host }) : null
+			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(ls, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				id: "configMdnsName",
 				label: "局域网访问地址",
 				value: o,
@@ -4913,7 +6600,11 @@ function cs({ data: e, receipt: t }) {
 				validationBehavior: "aria",
 				isInvalid: !!u.mdns_name,
 				hint: u.mdns_name || void 0
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(os, {
+========
+			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(ls, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				id: "configPort",
 				label: "端口",
 				prefix: "localhost:",
@@ -4941,7 +6632,11 @@ function cs({ data: e, receipt: t }) {
 		}) : null]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ls({ label: e, value: t, receipt: n }) {
+========
+function fs({ label: e, value: t, receipt: n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let r = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-w-0 flex-col gap-2",
@@ -4966,12 +6661,20 @@ function ls({ label: e, value: t, receipt: n }) {
 	});
 }
 // src/react/settings/peach-proxy-fields.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var us = [
+========
+var ps = [
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	["environment", "跟随环境"],
 	["direct", "直连"],
 	["proxy", "自定义"]
 ];
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ds({ mode: e, onChange: t, labelledBy: n }) {
+========
+function ms({ mode: e, onChange: t, labelledBy: n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)(R, {
 		"aria-label": n ? void 0 : "连接方式",
 		"aria-labelledby": n,
@@ -4979,13 +6682,21 @@ function ds({ mode: e, onChange: t, labelledBy: n }) {
 		onSelectionChange: (e) => {
 			e !== null && t(String(e));
 		},
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		children: us.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+========
+		children: ps.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			id: e,
 			children: t
 		}, e))
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function fs({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
+========
+function hs({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)(P, {
 		id: e,
 		type: "password",
@@ -5001,11 +6712,19 @@ function fs({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 	});
 }
 // src/react/settings/tunnel-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var ps = 2e3, ms = [["quick", "临时链接"], ["named", "命名隧道"]], hs = {
 	quick: "临时预览用，地址随机，重启后会变。启动前要先设置访问密码。",
 	named: "使用你在 Cloudflare 绑定的固定域名。启动前要先设置访问密码。"
 };
 function gs({ revision: e, initial: t, receipt: n }) {
+========
+var gs = 2e3, _s = [["quick", "临时链接"], ["named", "命名隧道"]], vs = {
+	quick: "临时预览用，地址随机，重启后会变。启动前要先设置访问密码。",
+	named: "使用你在 Cloudflare 绑定的固定域名。启动前要先设置访问密码。"
+};
+function ys({ revision: e, initial: t, receipt: n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [r, i] = (0, Z.useState)(t), [a, o] = (0, Z.useState)(e), [s, c] = (0, Z.useState)(t.mode), [l, u] = (0, Z.useState)(t.hostname), [d, f] = (0, Z.useState)(""), [p, m] = (0, Z.useState)({}), h = Y(), g = r.state === "starting" || r.state === "running", _ = r.named_available && s === "named";
 	(0, Z.useEffect)(() => {
 		if (r.state !== "starting") return;
@@ -5013,7 +6732,11 @@ function gs({ revision: e, initial: t, receipt: n }) {
 			un(e.signal).then((t) => {
 				!e.signal.aborted && t.tunnel && (On.setQueryData(Ze, t), i(t.tunnel), o(t.revision));
 			}).catch(() => void 0);
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		}, ps);
+========
+		}, gs);
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		return () => {
 			e.abort(), window.clearInterval(t);
 		};
@@ -5049,14 +6772,23 @@ function gs({ revision: e, initial: t, receipt: n }) {
 				value: s,
 				isDisabled: g,
 				onChange: (e) => c(e),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				className: Nt,
 				children: ms.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
+========
+				className: Mt,
+				children: _s.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					value: e,
 					className: Mt,
 					children: t
 				}, e))
 			}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(N, { children: hs[_ ? "named" : "quick"] }),
+========
+			/* @__PURE__ */ (0, Q.jsx)(N, { children: vs[_ ? "named" : "quick"] }),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			_ ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
 				id: "tunnel-hostname",
 				label: "公开主机名",
@@ -5116,6 +6848,7 @@ function gs({ revision: e, initial: t, receipt: n }) {
 	});
 }
 // src/react/settings/network-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function _s({ data: e, receipt: t, panel: n, issues: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...dr(n),
@@ -5129,23 +6862,56 @@ function _s({ data: e, receipt: t, panel: n, issues: r }) {
 				initial: e.access,
 				receipt: t,
 				devices: (e) => /* @__PURE__ */ (0, Q.jsx)(rs, {
+========
+function bs({ data: e, receipt: t, panel: n, issues: r }) {
+	return /* @__PURE__ */ (0, Q.jsxs)("div", {
+		...fr(n),
+		children: [
+			r,
+			e.network || e.editable && e.port_editable !== !1 && !e.section_errors?.media_sources ? /* @__PURE__ */ (0, Q.jsx)(ds, {
+				data: e,
+				receipt: t
+			}) : null,
+			e.access ? /* @__PURE__ */ (0, Q.jsx)(Bo, {
+				initial: e.access,
+				receipt: t,
+				devices: (e) => /* @__PURE__ */ (0, Q.jsx)(os, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					revision: e.revision,
 					receipt: t
-				})
+				}),
+				after: e.api_token ? (n) => /* @__PURE__ */ (0, Q.jsx)(Uo, {
+					initial: e.api_token,
+					mode: n.mode,
+					receipt: t
+				}) : void 0
 			}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)(gs, {
+========
+			e.certificate ? /* @__PURE__ */ (0, Q.jsx)(Ko, { initial: e.certificate }) : null,
+			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)(ys, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				revision: e.revision,
 				initial: e.tunnel,
 				receipt: t
 			}) : null,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(vs, {
+========
+			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(xs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				initial: e.peach_proxy,
 				receipt: t
 			}) : null
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function vs({ initial: e, receipt: t }) {
+========
+function xs({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.mode), [o, s] = (0, Z.useState)(""), c = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "peachProxy",
@@ -5163,7 +6929,11 @@ function vs({ initial: e, receipt: t }) {
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "连接方式",
 				description: "Peach 访问外网和采集来源时使用。",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: /* @__PURE__ */ (0, Q.jsx)(ds, {
+========
+				children: /* @__PURE__ */ (0, Q.jsx)(ms, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					mode: i,
 					onChange: a
 				})
@@ -5171,7 +6941,11 @@ function vs({ initial: e, receipt: t }) {
 			i === "proxy" || n.needs_selection || c.error ? /* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(fs, {
+========
+					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(hs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						id: "peachProxyAddress",
 						value: o,
 						onChange: s,
@@ -5194,12 +6968,21 @@ function vs({ initial: e, receipt: t }) {
 	});
 }
 // src/react/follow-manage/credentials.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var ys = "将清除这个来源在本机和共享副本中的登录凭据。", bs = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
 function xs(e, t) {
 	return (e.shared_fields || []).includes(t) ? "来自共享，留空表示不改" : e.fields.includes(t) ? "已保存，留空表示不改" : "未填写";
 }
 function Ss({ row: e }) {
 	if (an(e)) return /* @__PURE__ */ (0, Q.jsx)(et, {
+========
+var Ss = "将清除这个来源在本机和共享副本中的登录凭据。", Cs = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
+function ws(e, t) {
+	return (e.shared_fields || []).includes(t) ? "来自共享，留空表示不改" : e.fields.includes(t) ? "已保存，留空表示不改" : "未填写";
+}
+function Ts({ row: e }) {
+	if (rn(e)) return /* @__PURE__ */ (0, Q.jsx)(et, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		variant: "caption",
 		color: "lime",
 		children: "已配置"
@@ -5211,9 +6994,15 @@ function Ss({ row: e }) {
 		children: $e[e.requirement] || ""
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Cs({ row: e, readOnly: t, toast: n }) {
 	let [r, i] = (0, Z.useState)({}), [a, o] = (0, Z.useState)(""), s = an(e), c = Hn({
 		mutationFn: (t) => Pn(e.provider, t),
+========
+function Es({ row: e, readOnly: t, toast: n }) {
+	let [r, i] = (0, Z.useState)({}), [a, o] = (0, Z.useState)(""), s = rn(e), c = Vn({
+		mutationFn: (t) => Nn(e.provider, t),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		onSuccess: (e, t) => {
 			e.note ? o(e.note) : (o(""), i({}), On.invalidateQueries({
 				queryKey: st,
@@ -5238,7 +7027,11 @@ function Cs({ row: e, readOnly: t, toast: n }) {
 				children: (e.needs || []).map((n) => /* @__PURE__ */ (0, Q.jsx)(P, {
 					type: "password",
 					label: n,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					placeholder: xs(e, n),
+========
+					placeholder: ws(e, n),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					autoComplete: "off",
 					spellCheck: "false",
 					isDisabled: t,
@@ -5258,7 +7051,11 @@ function Cs({ row: e, readOnly: t, toast: n }) {
 					...K(c.isPending),
 					onClick: () => void rn({
 						title: "清除来源凭据",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 						body: ys,
+========
+						body: Ss,
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						confirmLabel: "清除来源凭据",
 						danger: !0,
 						onConfirm: () => c.mutateAsync({})
@@ -5285,19 +7082,31 @@ function Cs({ row: e, readOnly: t, toast: n }) {
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ws({ row: e, readOnly: t, toast: n }) {
+========
+function Ds({ row: e, readOnly: t, toast: n }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let r = /* @__PURE__ */ (0, Q.jsxs)("span", {
 		className: "flex min-w-0 flex-wrap items-center gap-2",
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)("span", {
 				className: "inline-flex size-3.5 shrink-0 items-center justify-center",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: /* @__PURE__ */ (0, Q.jsx)(sr, { provider: e.provider })
+========
+				children: /* @__PURE__ */ (0, Q.jsx)(cr, { provider: e.provider })
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			}),
 			/* @__PURE__ */ (0, Q.jsx)("b", {
 				className: "min-w-0 text-body-medium wrap-anywhere text-text-primary",
 				children: e.provider_label
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(Ss, { row: e }),
+========
+			/* @__PURE__ */ (0, Q.jsx)(Ts, { row: e }),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			e.missing.map((e) => /* @__PURE__ */ (0, Q.jsx)(et, {
 				variant: "caption",
 				color: "rose",
@@ -5313,9 +7122,15 @@ function ws({ row: e, readOnly: t, toast: n }) {
 		children: [
 			r,
 			/* @__PURE__ */ (0, Q.jsx)(O, {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				summary: an(e) ? "修改凭据" : "填写凭据",
 				defaultOpen: e.requirement === "required" && !an(e),
 				children: /* @__PURE__ */ (0, Q.jsx)(Cs, {
+========
+				summary: rn(e) ? "修改凭据" : "填写凭据",
+				defaultOpen: e.requirement === "required" && !rn(e),
+				children: /* @__PURE__ */ (0, Q.jsx)(Es, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 					row: e,
 					readOnly: t,
 					toast: n
@@ -5324,13 +7139,22 @@ function ws({ row: e, readOnly: t, toast: n }) {
 			e.world_readable ? /* @__PURE__ */ (0, Q.jsx)(F, {
 				tone: "error",
 				title: "凭据文件权限过宽",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				children: bs
+========
+				children: Cs
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 			}) : null
 		]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ts({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 	let i = e.providers || [], a = i.filter((e) => e.requirement === "required" && !an(e));
+========
+function Os({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
+	let i = e.providers || [], a = i.filter((e) => e.requirement === "required" && !rn(e));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	if ((0, Z.useEffect)(() => {
 		An("credentials", { done: i.filter(an).map((e) => e.provider) });
 	}, [e]), !i.length) return /* @__PURE__ */ (0, Q.jsx)(it, {
@@ -5367,7 +7191,11 @@ function Ts({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 				padding: "none",
 				className: "flex flex-col overflow-hidden"
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(ws, {
+========
+			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(Ds, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				row: e,
 				readOnly: t,
 				toast: n
@@ -5397,7 +7225,11 @@ function Ts({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 	});
 }
 // src/react/settings/entry-links-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Es({ initial: e, receipt: t }) {
+========
+function ks({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e.sites), i = Y(), a = (e, t) => r((n) => n.map((n) => n.key === e ? {
 		...n,
 		host: t
@@ -5437,31 +7269,54 @@ function Es({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/indexer-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Ds = "/api/configuration/indexers";
 function Os({ receipt: e }) {
 	let t = X({
 		queryKey: ["indexers"],
 		queryFn: ({ signal: e }) => W(Ds, e),
+========
+var As = "/api/configuration/indexers";
+function js({ receipt: e }) {
+	let t = X({
+		queryKey: ["indexers"],
+		queryFn: ({ signal: e }) => W(As, e),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		refetchOnMount: "always"
 	});
 	return t.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(t.error) }) : t.isFetching ? /* @__PURE__ */ (0, Q.jsx)(It, {
 		label: "正在读取资源搜索设置",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		html: vn
 	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(js, {
+========
+		html: _n
+	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(Ps, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		initial: t.data,
 		receipt: e
 	}) : null;
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function ks(e) {
+========
+function Ms(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	try {
 		return new globalThis.URL(e).host;
 	} catch {
 		return e;
 	}
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function As({ row: e, index: t }) {
 	let n = [
 		e.url ? ks(e.url) : "未填地址",
+========
+function Ns({ row: e, index: t }) {
+	let n = [
+		e.url ? Ms(e.url) : "未填地址",
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		e.enabled ? "已启用" : "已停用",
 		e.api_key_set && !e.clear_api_key ? "已保存 API key" : e.api_key ? "API key 待保存" : "没有 API key"
 	];
@@ -5476,7 +7331,11 @@ function As({ row: e, index: t }) {
 		})]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function js({ initial: e, receipt: t }) {
+========
+function Ps({ initial: e, receipt: t }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let [n, r] = (0, Z.useState)(e.indexers), i = Y();
 	(0, Z.useEffect)(() => {
 		An("indexers", { open: e.indexers.map((e) => !e.url) });
@@ -5489,7 +7348,11 @@ function js({ initial: e, receipt: t }) {
 		guide: "indexers",
 		title: "资源搜索",
 		onSubmit: (e) => {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			e.preventDefault(), i.run("save", (e) => G(Ds, { indexers: n }, "POST", e), (e) => {
+========
+			e.preventDefault(), i.run("save", (e) => G(As, { indexers: n }, "POST", e), (e) => {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				r(e.indexers), t("已保存索引器");
 			});
 		},
@@ -5509,7 +7372,11 @@ function js({ initial: e, receipt: t }) {
 				className: "min-w-0 border-t border-separator-border pt-2",
 				children: /* @__PURE__ */ (0, Q.jsx)(O, {
 					defaultOpen: !e.url,
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					summary: /* @__PURE__ */ (0, Q.jsx)(As, {
+========
+					summary: /* @__PURE__ */ (0, Q.jsx)(Ns, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						row: e,
 						index: t
 					}),
@@ -5594,7 +7461,11 @@ function js({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/source-settings.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ms({ data: e, receipt: t, panel: n, issues: r }) {
+========
+function Fs({ data: e, receipt: t, panel: n, issues: r }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let i = X({
 		queryKey: st,
 		queryFn: ({ signal: e }) => dn(e),
@@ -5602,7 +7473,11 @@ function Ms({ data: e, receipt: t, panel: n, issues: r }) {
 		refetchOnMount: "always"
 	});
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 		...dr(n),
+========
+		...fr(n),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		children: [
 			r,
 			/* @__PURE__ */ (0, Q.jsx)("div", {
@@ -5613,7 +7488,11 @@ function Ms({ data: e, receipt: t, panel: n, issues: r }) {
 					children: "采集来源与登录状态"
 				})
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			i.data ? /* @__PURE__ */ (0, Q.jsx)(Ts, {
+========
+			i.data ? /* @__PURE__ */ (0, Q.jsx)(Os, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				data: i.data,
 				readOnly: !!e.ledger_read_only,
 				toast: t,
@@ -5626,9 +7505,15 @@ function Ms({ data: e, receipt: t, panel: n, issues: r }) {
 				label: "正在读取来源凭据",
 				html: on
 			}),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			/* @__PURE__ */ (0, Q.jsx)(ko, { receipt: t }),
 			/* @__PURE__ */ (0, Q.jsx)(Os, { receipt: t }),
 			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(Es, {
+========
+			/* @__PURE__ */ (0, Q.jsx)(Eo, { receipt: t }),
+			/* @__PURE__ */ (0, Q.jsx)(js, { receipt: t }),
+			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(ks, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				initial: e.entry_links,
 				receipt: t
 			}) : null
@@ -5636,7 +7521,11 @@ function Ms({ data: e, receipt: t, panel: n, issues: r }) {
 	});
 }
 // src/react/settings/configuration-shape.ts
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ns(e) {
+========
+function Is(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = e.downloads;
 	if (!t) return null;
 	let n = t.media_sources ?? [];
@@ -5649,7 +7538,11 @@ function Ns(e) {
 		browserLogin: t.pikpak_browser.available
 	};
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ps(e) {
+========
+function Ls(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = e.tunnel;
 	return {
 		port: !!(e.editable && e.port_editable !== !1),
@@ -5663,7 +7556,11 @@ function Ps(e) {
 		tunnelNote: !!(t && (!t.available || t.state === "starting" || t.state === "running" && t.url))
 	};
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Fs(e) {
+========
+function Rs(e) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let t = e.updates, n = e.update_job?.state ?? "idle", r = !t || t.state === "unchecked" && !t.checked_at && n === "idle", i = +!!t?.package_kind + (r ? 0 : +!!t?.checked_at + (t?.state === "unchecked" ? 0 : 1) + (n === "idle" ? 0 : 1)), a = e.automatic_updates, o = e.storage;
 	return {
 		releaseFacts: t?.package_kind ? 5 : 4,
@@ -5684,12 +7581,20 @@ function Fs(e) {
 	};
 }
 // src/react/settings/configuration-page.tsx
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Is({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
+========
+function zs({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	let i = X({
 		queryKey: Ze,
 		queryFn: ({ signal: e }) => un(e)
 	}), a = i.data;
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	return a ? /* @__PURE__ */ (0, Q.jsx)(zs, {
+========
+	return a ? /* @__PURE__ */ (0, Q.jsx)(Hs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		data: a,
 		receipt: e,
 		reopenTutorial: t,
@@ -5708,7 +7613,11 @@ function Is({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) 
 		})
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 function Ls({ data: e, sections: t, reload: n, refreshing: r }) {
+========
+function Bs({ data: e, sections: t, reload: n, refreshing: r }) {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	return /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => {
 		let i = e.section_errors?.[t];
 		return i ? /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -5725,6 +7634,7 @@ function Ls({ data: e, sections: t, reload: n, refreshing: r }) {
 		}, t) : null;
 	}) });
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 var Rs = 0;
 function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
 	let [s] = (0, Z.useState)(() => `board-tabs-${++Rs}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
@@ -5733,6 +7643,16 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 	}, [r]), (0, Z.useEffect)(() => {
 		let t = Ns(e);
 		t && An("downloads", t), An("network", Ps(e)), An("maintenance", Fs(e));
+========
+var Vs = 0;
+function Hs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
+	let [s] = (0, Z.useState)(() => `board-tabs-${++Vs}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
+	(0, Z.useEffect)(() => {
+		l(r);
+	}, [r]), (0, Z.useEffect)(() => {
+		let t = Is(e);
+		t && kn("downloads", t), kn("network", Ls(e)), kn("maintenance", Rs(e));
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 	}, [e]), (0, Z.useLayoutEffect)(() => {
 		if (d.current === c) return;
 		d.current = c;
@@ -5756,7 +7676,11 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 	let h = (0, Z.useRef)([]), g = {
 		data: e,
 		receipt: t
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(Ls, {
+========
+	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(Bs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 		data: e,
 		sections: t,
 		reload: a,
@@ -5771,22 +7695,36 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		{
 			title: "媒体库与入库",
 			body: (n) => /* @__PURE__ */ (0, Q.jsxs)("div", {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				...dr(n),
+========
+				...fr(n),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				children: [
 					_([
 						"media_sources",
 						"library_count",
 						"mount_dependencies"
 					]),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(Co, { ...g }) : null,
 					/* @__PURE__ */ (0, Q.jsx)(Bo, { receipt: t }),
 					/* @__PURE__ */ (0, Q.jsx)(No, { receipt: t })
+========
+					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(bo, { ...g }) : null,
+					/* @__PURE__ */ (0, Q.jsx)(Lo, { receipt: t }),
+					/* @__PURE__ */ (0, Q.jsx)(Ao, { receipt: t })
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				]
 			})
 		},
 		{
 			title: "来源与订阅",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Ms, {
+========
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Fs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				...g,
 				panel: e,
 				issues: _(["entry_links"])
@@ -5794,7 +7732,11 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		},
 		...b || e.section_errors?.downloads ? [{
 			title: "下载渠道",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Er, {
+========
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Dr, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				initial: b,
 				receipt: t,
 				panel: e,
@@ -5803,7 +7745,11 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		}] : [],
 		...y ? [{
 			title: "网络与访问",
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 			body: (e) => /* @__PURE__ */ (0, Q.jsx)(_s, {
+========
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(bs, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				...g,
 				panel: e,
 				issues: _(v)
@@ -5812,7 +7758,11 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		{
 			title: "应用与维护",
 			body: (e) => /* @__PURE__ */ (0, Q.jsxs)("div", {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				...dr(e),
+========
+				...fr(e),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				children: [
 					_([
 						"startup",
@@ -5825,9 +7775,15 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 						"automatic_updates",
 						"facts"
 					]),
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 					/* @__PURE__ */ (0, Q.jsx)(Va, { ...g }),
 					/* @__PURE__ */ (0, Q.jsx)(Po, { receipt: t }),
 					/* @__PURE__ */ (0, Q.jsx)(Ta, {
+========
+					/* @__PURE__ */ (0, Q.jsx)(Ra, { ...g }),
+					/* @__PURE__ */ (0, Q.jsx)(jo, { receipt: t }),
+					/* @__PURE__ */ (0, Q.jsx)(Ea, {
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 						...g,
 						reopenTutorial: n
 					})
@@ -5837,7 +7793,11 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		{
 			title: "系统诊断",
 			body: (e) => /* @__PURE__ */ (0, Q.jsx)("div", {
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 				...dr(e),
+========
+				...fr(e),
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
 				children: e.active ? i : null
 			})
 		}
@@ -5888,6 +7848,12 @@ function zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		})] }, e))]
 	});
 }
+<<<<<<<< HEAD:web/dist/peach-app.configuration-page-DnmSyP33.js
 export { Is as ConfigurationPage };
 
 //# debugId=291b0207-ad40-4fe7-a5a3-8833eac94686
+========
+export { zs as ConfigurationPage };
+
+//# debugId=0cbc915c-23a0-4243-9174-f396365068ce
+>>>>>>>> refs/heads/agent/claude/token-rotate-ca-trust:web/dist/peach-app.configuration-page-DmOBlOLt.js
