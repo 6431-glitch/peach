@@ -44,11 +44,15 @@ function problemWith(shortcut: Shortcut): string {
   return '';
 }
 
+export function isModifierCode(code: string): boolean {
+  return MODIFIER_CODES.test(code);
+}
+
 export type Recorded = { state: 'waiting' } | { state: 'invalid'; problem: string } | { state: 'done'; shortcut: Shortcut };
 
 /** 录制时的一次按键：只按了修饰键还在等，主键不支持或组合不能用给出原因。 */
 export function recordShortcut(event: Pick<KeyboardEvent, 'code' | 'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey'>): Recorded {
-  if (MODIFIER_CODES.test(event.code)) return { state: 'waiting' };
+  if (isModifierCode(event.code)) return { state: 'waiting' };
   if (!MAIN_KEY.test(event.code)) return { state: 'invalid', problem: '只支持字母、数字和 F1–F12 作主键' };
   const shortcut = { code: event.code, ctrl: event.ctrlKey, alt: event.altKey, shift: event.shiftKey, meta: event.metaKey };
   const problem = problemWith(shortcut);
@@ -66,16 +70,27 @@ export function isApplePlatform(source: Pick<Navigator, 'platform'> & { userAgen
   return /mac|iphone|ipad|ipod/i.test(source.userAgentData?.platform || source.platform || '');
 }
 
+const KEY_LABELS: Record<string, string> = {
+  ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓', Space: 'Space', Enter: 'Enter', Escape: 'Esc',
+  Backspace: 'Backspace', Tab: 'Tab',
+};
+
 function keyLabel(code: string): string {
-  return code.replace(/^Key|^Digit/, '');
+  return KEY_LABELS[code] ?? code.replace(/^Key|^Digit|^Numpad/, '');
 }
 
-/** Mac 按 Apple 的次序 ⌃⌥⇧⌘ 连写字形（`⇧S`）；其余平台写成 `Ctrl+Alt+Shift+S`，Meta 在那边是 Win 键。 */
+export type Modifiers = Pick<Shortcut, 'ctrl' | 'alt' | 'shift' | 'meta'>;
+
+/** 一个键一枚键帽：修饰键按 Apple 的次序 Control、Option、Shift、Command 排在前，主键在最后。
+ *  Mac 上修饰键写 ⌃⌥⇧⌘ 字形，其余平台写名字，Meta 在那边是 Win 键。`code` 为 null 时只有修饰键，
+ *  用于录制中还没按主键的那一刻。 */
+export function shortcutKeys(modifiers: Modifiers, code: string | null, apple = isApplePlatform()): string[] {
+  const names = apple ? ['⌃', '⌥', '⇧', '⌘'] : ['Ctrl', 'Alt', 'Shift', 'Win'];
+  const held = [modifiers.ctrl, modifiers.alt, modifiers.shift, modifiers.meta];
+  return [...names.filter((_, index) => held[index]), ...(code ? [keyLabel(code)] : [])];
+}
+
+/** 写成一串给读屏与提示用：Mac 连写（`⇧S`），其余平台用加号连（`Shift+S`）。 */
 export function formatShortcut(shortcut: Shortcut, apple = isApplePlatform()): string {
-  if (apple) {
-    return [shortcut.ctrl && '⌃', shortcut.alt && '⌥', shortcut.shift && '⇧', shortcut.meta && '⌘'].filter(Boolean).join('')
-      + keyLabel(shortcut.code);
-  }
-  return [shortcut.ctrl && 'Ctrl', shortcut.alt && 'Alt', shortcut.shift && 'Shift', shortcut.meta && 'Win', keyLabel(shortcut.code)]
-    .filter(Boolean).join('+');
+  return shortcutKeys(shortcut, shortcut.code, apple).join(apple ? '' : '+');
 }

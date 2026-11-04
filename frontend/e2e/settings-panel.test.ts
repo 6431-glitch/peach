@@ -171,7 +171,7 @@ describe('设置面板', () => {
       assert.equal(await censored(), true);
       await openPanel(page);
       await page.locator(PANEL).getByRole('tab', { name: '内容显示', exact: true }).click();
-      assert.equal(await page.locator(`${PANEL} [data-setting-shortcut] kbd`).innerText(), 'Alt+H');
+      assert.equal(await page.locator(`${PANEL} [data-shortcut-keys]`).innerText(), 'Alt+H');
       assert.deepEqual(opened.problems, []);
     } finally { await opened.close() }
   });

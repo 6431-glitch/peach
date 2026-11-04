@@ -301,21 +301,37 @@ describe('设置面板与壳的接缝', () => {
     const current = await setup();
     const panel = await open(current, '内容显示');
     const row = [...panel.querySelectorAll<HTMLElement>('[data-setting-row]')].find((node) => node.textContent?.includes('SFW 快捷键'))!;
-    expect(row.querySelector('kbd')?.textContent).toBe('Shift+S');
+    // 平时是一枚胶囊；录制时换成一排键帽，每枚带着自己的状态。
+    const pill = () => row.querySelector('[data-shortcut-keys]')?.textContent;
+    const caps = () => [...row.querySelectorAll<HTMLElement>('[data-keycap]')]
+      .map((cap) => `${cap.textContent}:${cap.dataset.state}`);
+    expect(pill()).toBe('Shift+S');
+    expect(caps()).toEqual([]);
     const reachedPage = vi.fn();
     document.addEventListener('keydown', reachedPage);
-    const press = async (init: KeyboardEventInit) => {
-      await act(async () => { document.body.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...init })) });
+    const press = async (init: KeyboardEventInit, type = 'keydown') => {
+      await act(async () => { document.body.dispatchEvent(new KeyboardEvent(type, { bubbles: true, cancelable: true, ...init })) });
     };
     const change = [...row.querySelectorAll('button')].find((button) => button.textContent === '更改')!;
     await click(change);
-    await press({ code: 'ShiftLeft', key: 'Shift', shiftKey: true });
+    expect(caps()).toEqual(['修饰键:slot', '键:slot']);
+    // 按住修饰键时键帽实时下沉，松开就撤掉；主键还没按时留一个空位。
+    await press({ code: 'ControlLeft', key: 'Control', ctrlKey: true });
+    await press({ code: 'ShiftLeft', key: 'Shift', ctrlKey: true, shiftKey: true });
+    expect(caps()).toEqual(['Ctrl:down', 'Shift:down', '键:slot']);
     expect(row.querySelector('small')?.textContent).toBe('按下新的组合键，Esc 取消');
+    await press({ code: 'ControlLeft', key: 'Control', shiftKey: true }, 'keyup');
+    expect(caps()).toEqual(['Shift:down', '键:slot']);
+    await press({ code: 'ShiftLeft', key: 'Shift' }, 'keyup');
+    expect(caps()).toEqual(['修饰键:slot', '键:slot']);
     await press({ code: 'KeyS', key: 's' });
+    expect(caps()).toEqual(['S:invalid']);
     expect(row.querySelector('small')?.textContent).toContain('至少要带一个修饰键');
-    // Mac 上 Option+S 打出来的是「ß」，记的仍是 KeyS。
+    // Mac 上 Option+S 打出来的是「ß」，记的仍是 KeyS；录好的那一组亮一下成功色。
     await press({ code: 'KeyS', key: 'ß', altKey: true });
     expect(current.setSfwShortcut.mock.calls).toEqual([[{ code: 'KeyS', ctrl: false, alt: true, shift: false, meta: false }]]);
+    expect(caps()).toEqual(['Alt:done', 'S:done']);
+    expect(row.querySelector('small')?.textContent).toBe('已改为 Alt+S');
     expect(reachedPage).not.toHaveBeenCalled();
     await click([...row.querySelectorAll('button')].find((button) => button.textContent === '更改')!);
     await press({ code: 'Escape', key: 'Escape' });

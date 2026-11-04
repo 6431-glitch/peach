@@ -2,6 +2,7 @@ import { expect, it } from 'vitest';
 
 import {
   DEFAULT_SFW_SHORTCUT, formatShortcut, isApplePlatform, matchesShortcut, parseShortcut, recordShortcut, serializeShortcut,
+  shortcutKeys,
 } from '../src/keyboard-shortcut';
 
 const press = (code: string, mods: Partial<Record<'ctrlKey' | 'altKey' | 'shiftKey' | 'metaKey', boolean>> = {}) =>
@@ -47,4 +48,12 @@ it('平台判断先看 Client Hints，再看 navigator.platform', () => {
   expect(isApplePlatform({ platform: 'Win32', userAgentData: { platform: 'macOS' } })).toBe(true);
   expect(isApplePlatform({ platform: 'MacIntel' })).toBe(true);
   expect(isApplePlatform({ platform: 'Win32', userAgentData: { platform: 'Windows' } })).toBe(false);
+});
+
+it('键帽一个键一枚：修饰键在前、主键在后，只按修饰键时没有主键', () => {
+  const held = { ctrl: true, alt: false, shift: true, meta: false };
+  expect(shortcutKeys(held, 'KeyK', false)).toEqual(['Ctrl', 'Shift', 'K']);
+  expect(shortcutKeys(held, 'KeyK', true)).toEqual(['⌃', '⇧', 'K']);
+  expect(shortcutKeys(held, null, false)).toEqual(['Ctrl', 'Shift']);
+  expect(shortcutKeys({ ctrl: false, alt: false, shift: false, meta: false }, 'ArrowLeft', false)).toEqual(['←']);
 });
