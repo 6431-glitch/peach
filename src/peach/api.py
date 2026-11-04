@@ -530,6 +530,8 @@ def create_app(
         try:
             yield
         finally:
+            # 外部播放器的最后一段观看要赶在账本收尾前落下。
+            await asyncio.to_thread(_app.state.playback_trackers.stop)
             await activation.stop()
             _app.state.ledger_background_ready = False
             aggregate_stop.set()
@@ -610,6 +612,8 @@ def create_app(
     app.state.strm_resources = StrmResources()
     import secrets
     app.state.external_playback_key = secrets.token_bytes(32)
+    from .playback_tracking import PlaybackTrackers
+    app.state.playback_trackers = PlaybackTrackers()
     app.state.sync = sync
     app.state.tunnel = tunnel_manager
 
