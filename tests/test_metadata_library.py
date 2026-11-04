@@ -269,7 +269,8 @@ class LibraryNfoTests(unittest.TestCase):
         self.assertEqual(result['checked'], 2)
 
     @windows_ledger_roots
-    def test_a_later_source_requires_review_to_replace_a_field_filled_during_the_run(self):
+    def test_a_later_source_only_adds_tags_to_a_field_filled_during_the_run(self):
+        """本轮先补上的标签，后来的来源只按并集补新增的（ADR-0137），一个不删、不进复核页。"""
         media = self.root / 'media'
         media.mkdir()
         (media / 'SSIS-057.mp4').write_bytes(b'video')
@@ -290,7 +291,7 @@ class LibraryNfoTests(unittest.TestCase):
         def query(code, source='r18dev', **kwargs):
             if source == 'javdb':
                 self.assertIn('巨乳', tags())
-                return {'id': code, 'genres': ['高跟鞋', '絲襪']}
+                return {'id': code, 'genres': ['高跟鞋', '絲襪'], 'javdb_rule': 2, 'source_id': 'Ssis057'}
             if source == 'dmm':
                 raise NotFound('没有')
             return {'id': code, 'title': '本地标题', 'maker': 'Prestige', 'release_date': '2023-05-26',
@@ -302,20 +303,16 @@ class LibraryNfoTests(unittest.TestCase):
             process_library(config, db, self.root / 'generated', self.root / 'covers',
                             provider_factory=lambda: provider, database=database,
                             route_overrides='censored=r18dev,javdb')
-        self.assertEqual(tags(), {'巨乳'})
+        self.assertEqual(tags(), {'巨乳', '高跟', '丝袜'})
         group = next(row for row in read_rows(self.root / 'generated/library-metadata-field-candidates.csv')
                      if row['field'] == 'tags')
         choice = next(item for item in json.loads(group['candidates_json']) if item['source'] == 'javdb')
         self.assertTrue(choice['requires_review'])
         from peach.web_contract import WebContract
-        from peach.web_review import q_review, w_review_decision
+        from peach.web_review import q_review
         contract = WebContract(db, candidate_root=self.root / 'generated', database=database)
         pending = q_review(contract)['sections']['metadata_fields']
-        decision = next(item for item in pending if item['field'] == 'tags')
-        w_review_decision(contract, {'category': 'metadata_fields', 'item_key': decision['item_key'],
-            'status': 'approved', 'candidate_key': choice['candidate_key'],
-            'expected_revision': decision['asset_mutation_revision']})
-        self.assertEqual(tags(), {'高跟', '丝袜'})
+        self.assertNotIn('tags', [item['field'] for item in pending])
 
     @windows_ledger_roots
     def test_a_confirmed_site_is_visible_before_another_site_reaches_its_deadline(self):

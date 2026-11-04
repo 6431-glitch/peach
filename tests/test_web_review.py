@@ -2229,7 +2229,8 @@ class ReviewQueueTests(unittest.TestCase):
             {"source": "javdb", "value": "2024-01-05", "requires_review": True}])
         self.assertEqual(self.queue_keys("metadata_fields"), [])
 
-    def test_user_review_community_and_unowned_values_stay_in_the_queue(self):
+    def test_community_verification_dissent_leaves_every_owner_alone_and_off_the_queue(self):
+        """核查带回的社区异议只补空不挑战（ADR-0033、ADR-0137），现值归谁都不进队列、不写。"""
         cases = (("OWN-001", USER_MANUAL), ("OWN-002", review_owner("javdb")),
                  ("OWN-003", auto_owner("avbase")))
         keys = []
@@ -2246,7 +2247,15 @@ class ReviewQueueTests(unittest.TestCase):
             "item_key": key, "code": key.split(":")[0], "field": "studio", "current": "官方厂牌",
             "candidates": [{"source": "javdb", "value": "社区写法", "requires_review": True}],
         } for key in keys])
-        self.assertEqual(sorted(self.queue_keys("metadata_fields")), sorted(keys))
+        self.assertEqual(self.queue_keys("metadata_fields"), [])
+        self._auto()
+        con = sqlite3.connect(self.db_path)
+        try:
+            self.assertEqual({row[0] for row in con.execute("SELECT studio FROM asset WHERE id>=510")},
+                             {"官方厂牌"})
+            self.assertEqual(con.execute("SELECT count(*) FROM review_decision").fetchone()[0], 0)
+        finally:
+            con.close()
 
     def test_official_candidate_in_the_row_keeps_it_for_review(self):
         self._owned(520, "OFF-003", auto_owner("r18dev"))
@@ -2272,7 +2281,7 @@ class ReviewQueueTests(unittest.TestCase):
                          "field_label": "studio", "current_value": "官方厂牌",
                          "candidates_json": json.dumps([self._candidate(
                              {"item_key": key, "code": "LIB-001"}, 0, "javdb",
-                             {"source": "javdb", "value": "社区写法", "requires_review": True})],
+                             {"source": "javdb", "value": "社区写法"})],
                              ensure_ascii=False),
                          "source_count": "1", "source_profile": "library", "status": "candidate",
                          "size_gb": "", "videos": "1", "fetched_at": ""})

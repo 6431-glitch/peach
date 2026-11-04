@@ -149,7 +149,9 @@ class UpgradeRepairTests(unittest.TestCase):
             row=connection.execute('SELECT catalog_title,field_owners FROM asset WHERE id=1').fetchone()
             self.assertEqual(row[0], '元の題名')
             self.assertEqual(json.loads(row[1])['catalog_title'], 'auto:dmm')
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 2)
+            self.assertEqual(connection.execute(
+                "SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT GLOB 'verification-settlement-*'"
+            ).fetchone()[0], 2)
             self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
         self.assertEqual(upgrade_repairs._read(self.service.receipt)['text_media_ids'], [1])
@@ -288,7 +290,9 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code,duration FROM asset ORDER BY id').fetchall()
             self.assertEqual([tuple(row) for row in rows], [(1, 'SSIS-123', None), (2, 'BAD-001', None)])
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 1)
+            self.assertEqual(connection.execute(
+                "SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT GLOB 'verification-settlement-*'"
+            ).fetchone()[0], 1)
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 1)
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(receipt['local']['before'], receipt['local']['after'])
@@ -327,6 +331,37 @@ class UpgradeRepairTests(unittest.TestCase):
             self.assertEqual(connection.execute('SELECT code FROM asset').fetchone()[0], 'BAD-001')
             self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 0)
         self.assertFalse(self.service.receipt.exists())
+
+    def test_verification_rows_already_on_disk_settle_once_after_upgrade(self):
+        """升级前落盘的核查候选（ADR-0137）由升级补修结算一次，官方一致的日期写入，备份先行。"""
+        import csv
+        with self.database.write_transaction() as connection:
+            connection.execute("INSERT INTO asset(id,location,path,name,medium,code,release_date) "
+                               "VALUES(7,'local','DASS-468.mp4','DASS-468.mp4','video','DASS-468','2024-09-06')")
+        self.contract.candidate_root.mkdir(parents=True)
+        candidates = [{'candidate_key': f'k{index}', 'source': source, 'value': '2024-09-10',
+                       'display_value': '2024-09-10', 'confidence': 0.75, 'provider_id': 'DASS-468',
+                       'requires_review': True, **extra}
+                      for index, (source, extra) in enumerate((
+                          ('makers', {}), ('javdb', {'javdb_rule': 2, 'source_id': 'Fixture'})))]
+        with (self.contract.candidate_root / 'library-metadata-field-candidates.csv').open(
+                'w', encoding='utf-8-sig', newline='') as handle:
+            writer = csv.DictWriter(handle, fieldnames=['item_key', 'code', 'query', 'field', 'current_value',
+                                                        'candidates_json', 'status'])
+            writer.writeheader()
+            writer.writerow({'item_key': 'DASS-468:release_date', 'code': 'DASS-468', 'query': 'DASS-468',
+                             'field': 'release_date', 'current_value': '2024-09-06', 'status': 'candidate',
+                             'candidates_json': json.dumps(candidates)})
+        self.service.prepare()
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual(connection.execute('SELECT release_date FROM asset WHERE id=7').fetchone()[0],
+                             '2024-09-10')
+            settled = connection.execute("SELECT result_json FROM ledger_upgrade_repair "
+                                         "WHERE id GLOB 'verification-settlement-*'").fetchall()
+        self.assertEqual(len(settled), 1)
+        self.assertEqual(json.loads(settled[0][0])['applied'], 1)
+        self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
 
     def test_stale_receipt_cannot_hide_a_restored_database(self):
         self.asset(1)

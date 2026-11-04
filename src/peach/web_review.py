@@ -47,9 +47,11 @@ from .metadata_auto_apply import (
     _row_candidates,
     _split_multi,
     genres_still_pending,
+    VERIFY_REVIEW,
+    code_assets,
     metadata_decision_is_stale,
-    overwrite_requires_review,
     refresh_current_values,
+    verification_outcome,
 )
 from .metadata_policy import (
     CHAIN_OFFICIAL,
@@ -345,11 +347,18 @@ def _metadata_queue_rows(connection, rows: list[dict],
     # MIB 官网（kmib）的候选是例外：那是这批番号自己的发行方。
     rows = [row for row in rows
             if not is_korean_mib_code(str(row.get("code") or "")) or _only_mib_official(row)]
-    overrides = {row['item_key'] for row in rows if overwrite_requires_review(connection, row)}
+    # 核查差异（ADR-0108）的去向只由 `verification_outcome` 定（ADR-0137）：要人判的
+    # 绕过下面几道过滤留在队列里，保留现值、并集与覆盖的那些不占队列——后两种由处理任务
+    # 落库，判据与这里是同一份。
+    assets = code_assets(connection, rows)
+    verified = {row['item_key']: outcome for row in rows
+                if (outcome := verification_outcome(connection, row, assets=assets)) is not None}
+    overrides = {key for key, outcome in verified.items() if outcome.kind == VERIFY_REVIEW}
     filtered = _drop_community_challenges_to_official(connection, rows)
     filtered = _drop_fallback_challenges(_drop_shop_side_dissent(filtered))
     # 社区源对 official 自动落库值的异议，连 NFO 核查的覆盖复核标记也不放行。
     dismissed = _community_challenges_to_official_owner(connection, rows)
+    dismissed |= set(verified) - overrides
     kept = ({row['item_key'] for row in filtered} | overrides) - dismissed
     return [row for row in rows if row['item_key'] in kept], genre_decisions
 
