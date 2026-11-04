@@ -14,7 +14,7 @@ import {
   reviewWindow, type ReviewCandidate, type ReviewData, type ReviewRow,
   type DecisionResult,
 } from '../../src/react/review/review';
-import { AUTO_LANDINGS_URL, type AutoLandingBatch } from '../../src/react/review/auto-landings';
+import { AUTO_LANDINGS_URL, type AutoLandingWrite } from '../../src/react/review/auto-landings';
 import { ReviewPage } from '../../src/react/review/review-page';
 
 import { actionOrder, choose, click, mountRoot, settle } from './render';
@@ -59,8 +59,8 @@ interface Plan {
   data?: ReviewData;
   /** 判定的回答：给一串就按顺序一条一条回（最后一条之后一直回它）。 */
   decisions?: DecisionResult[];
-  /** 「自动写入的资料」列出的批次；缺省没有，那一块不出现。 */
-  autoLandings?: AutoLandingBatch[];
+  /** 「自动写入的资料」列出的条目；缺省没有，那一块不出现。 */
+  autoLandings?: AutoLandingWrite[];
 }
 
 function serve(plan: Plan = {}) {
@@ -472,22 +472,26 @@ it('没有可采纳候选的卡仍可忽略或稍后处理，通过键不可用'
     .toEqual(['忽略', '稍后处理', '不可通过']);
 });
 
-const BATCHES: AutoLandingBatch[] = [
-  { rule: 'adr-0139-official-replaces-verified', label: '官方来源覆盖标题与日期',
-    batch: 'adr-0139-official-replaces-verified@20261104T141053', at: 1793772653, items: 4, assets: 3, tags: 0 },
-  { rule: 'adr-0139-verified-tags-union', label: '补齐来源多给的标签',
-    batch: 'auto:metadata-tags@20261104T141053', at: 1793772653, items: 2, assets: 0, tags: 5 },
+const WRITES: AutoLandingWrite[] = [
+  { item_key: 'DASS-468:release_date', rule: 'adr-0139-official-replaces-verified', label: '官方来源一致，覆盖原值',
+    batch: 'adr-0139-official-replaces-verified@20261104T141053', at: 1793772653, field: '发行日期',
+    value: '2024-09-10', previous: ['2024-09-06'], tags: [], assets: 1,
+    asset_id: 7, code: 'DASS-468', name: '某部作品的标题', preview_url: '' },
+  { item_key: 'ROYD-083:tags', rule: 'adr-0139-verified-tags-union', label: '补上来源多给的标签',
+    batch: 'auto:metadata-tags@20261104T141053', at: 1793772653, field: '标签',
+    value: '痴女、姐弟', previous: [], tags: ['痴女', '姐弟'], assets: 1,
+    asset_id: 8, code: 'ROYD-083', name: '另一部作品', preview_url: '' },
 ];
 
-it('元数据字段下列出自动写入的批次与影响面，只读端也能浏览', async () => {
-  const { host } = await open({ autoLandings: BATCHES }, { readOnly: true });
+it('元数据字段下逐条列出自动写入：作品、写了什么、原来是什么，只读端也能浏览', async () => {
+  const { host } = await open({ autoLandings: WRITES }, { readOnly: true });
   const section = host.querySelector('[aria-labelledby="auto-landings-title"]')!;
-  expect(section.textContent).toContain('自动写入的资料');
-  expect(section.textContent).toContain('4 项资料 · 3 部作品');
-  expect(section.textContent).toContain('2 项资料 · 5 个标签');
+  const text = section.textContent ?? '';
+  for (const expected of ['自动写入的资料', 'DASS-468', '某部作品的标题', '发行日期：2024-09-10', '原为 「2024-09-06」',
+    'ROYD-083', '标签：痴女、姐弟', '原有标签保留']) expect(text).toContain(expected);
 });
 
-it('没有自动写入的批次时不出现那一块', async () => {
+it('没有自动写入时不出现那一块', async () => {
   const { host } = await open();
   expect(host.querySelector('[aria-labelledby="auto-landings-title"]')).toBeNull();
 });

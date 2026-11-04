@@ -2076,12 +2076,14 @@ def _land_verified_union(connection, item_key: str, prior: dict | None, row: dic
     return summary
 
 
-def planned_verified_revert(connection, source: str, batch: str = "") -> list[dict]:
+def planned_verified_revert(connection, source: str, batch: str = "",
+                            item_keys: set[str] | None = None) -> list[dict]:
     """`revert_auto_landing.py --source <规则名>` 要撤的核查结算（ADR-0139）。
 
     覆盖那条按 note 的 `previous` 还原每条资产的旧值与旧归属；之后被别人改过的资产
     （值或归属已不是这次写下的）不动，计划里记 `changed`。并集那条删掉这次补进的标签。
     两条都删掉决定，行回到核查前的样子，下一轮按那时的判据重判。
+    `item_keys` 给了就只认这几行决定：复核页逐条勾选撤回（ADR-0140）。
     """
     if source not in (VERIFIED_REPLACE_RULE, VERIFIED_UNION_RULE):
         return []
@@ -2092,6 +2094,8 @@ def planned_verified_revert(connection, source: str, batch: str = "") -> list[di
         note = _decision_note({"note": row["note"]})
         batches = note.get("batches") or [note.get("batch", "")]
         if note.get("rule") != source or (batch and batch not in batches):
+            continue
+        if item_keys is not None and row["item_key"] not in item_keys:
             continue
         entry = {"item_key": row["item_key"], "rule": source, "batch": note.get("batch", ""),
                  "value": note.get("value", ""), "source": note.get("source", "")}

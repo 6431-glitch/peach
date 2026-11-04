@@ -317,38 +317,46 @@ class VerificationSettlementTests(unittest.TestCase):
 
     # ---- 复核页撤回（ADR-0140） ----
 
-    def test_review_page_previews_and_reverts_a_settlement_batch(self):
+    def auto_landings(self, **args):
+        return rm_web.dispatch_api_get(self.contract, "/api/review/auto-landings", args)
+
+    def revert(self, items, token):
+        return rm_web.dispatch_api_post(self.contract, "/api/review/auto-landings/revert",
+                                        {"items": items, "token": token})
+
+    def test_review_page_lists_each_write_by_work_and_reverts_the_chosen_ones(self):
         replaced = self.asset("DASS-468", release_date="2024-09-06")
         edited = self.asset("DASS-469", release_date="2024-09-07")
         tagged = self.asset("ROYD-083", tags=("中出内射",))
-        self.row("DASS-468", "release_date", "2024-09-06", ("makers", "2024-09-10"))
-        self.row("DASS-469", "release_date", "2024-09-07", ("makers", "2024-09-12"))
-        self.row("ROYD-083", "tags", "中出内射", ("makers", ["中出内射", "痴女"]))
+        first = self.row("DASS-468", "release_date", "2024-09-06", ("makers", "2024-09-10"))
+        second = self.row("DASS-469", "release_date", "2024-09-07", ("makers", "2024-09-12"))
+        union = self.row("ROYD-083", "tags", "中出内射", ("makers", ["中出内射", "痴女"]))
         self.settle()
         with contextlib.closing(sqlite3.connect(self.db_path)) as connection, connection:
             write_owned_fields(connection, [edited], {"release_date": "2024-09-13"}, USER_MANUAL)
 
-        listed = rm_web.dispatch_api_get(self.contract, "/api/review/auto-landings", {})["items"]
-        self.assertEqual([(item["rule"], item["items"], item["assets"], item["tags"]) for item in listed],
-                         [(rm_auto.VERIFIED_REPLACE_RULE, 2, 2, 0), (rm_auto.VERIFIED_UNION_RULE, 1, 0, 1)])
+        listed = {item["item_key"]: item for item in self.auto_landings()["items"]}
+        self.assertEqual(set(listed), {first, second, union})
+        self.assertEqual({key: (item["asset_id"], item["code"], item["field"], item["value"], item["previous"])
+                          for key, item in listed.items() if key != union},
+                         {first: (replaced, "DASS-468", "发行日期", "2024-09-10", ["2024-09-06"]),
+                          second: (edited, "DASS-469", "发行日期", "2024-09-12", ["2024-09-07"])})
+        self.assertEqual((listed[union]["asset_id"], listed[union]["tags"]), (tagged, ["痴女"]))
         # 一次结算一个运行时刻：覆盖与并集的批次号带同一个时刻。
-        self.assertEqual(len({item["batch"].rpartition("@")[2] for item in listed}), 1)
-        self.assertIsNotNone(listed[0]["at"])
-        batch = listed[0]["batch"]
+        self.assertEqual(len({item["batch"].rpartition("@")[2] for item in listed.values()}), 1)
+        self.assertIsNotNone(listed[first]["at"])
 
-        preview = rm_web.dispatch_api_get(self.contract, "/api/review/auto-landings", {"batches": batch})
+        preview = self.auto_landings(items="\n".join([first, second]))
         self.assertEqual([(row["asset_id"], row["code"], row["current"], row["previous"])
                           for row in preview["restores"]], [(replaced, "DASS-468", "2024-09-10", "2024-09-06")])
         self.assertEqual([row["asset_id"] for row in preview["changed"]], [edited])
         self.assertEqual((preview["decisions"], preview["tags"]), (2, []))
 
         with self.assertRaisesRegex(ValueError, "重新预览"):
-            rm_web.dispatch_api_post(self.contract, "/api/review/auto-landings/revert",
-                                     {"batches": [batch], "token": "stale"})
+            self.revert([first, second], "stale")
         self.assertEqual(self.value(replaced, "release_date"), ("2024-09-10", "auto:makers"))
 
-        result = rm_web.dispatch_api_post(self.contract, "/api/review/auto-landings/revert",
-                                          {"batches": [batch], "token": preview["token"]})
+        result = self.revert([first, second], preview["token"])
         self.assertEqual((result["restored"], result["decisions"]), (1, 2))
         self.assertEqual([row["asset_id"] for row in result["changed"]], [edited])
         self.assertEqual(self.value(replaced, "release_date"), ("2024-09-06", ""))
@@ -357,27 +365,23 @@ class VerificationSettlementTests(unittest.TestCase):
         backup = Path(self.db_path).with_name(result["backup"])
         self.assertTrue(backup.is_file())
         self.assertEqual(ledger_backups.describe(backup, "database")["purpose"], "撤回自动写入前")
-        self.assertEqual([item["rule"] for item in rm_web.dispatch_api_get(
-            self.contract, "/api/review/auto-landings", {})["items"]], [rm_auto.VERIFIED_UNION_RULE])
+        self.assertEqual([item["item_key"] for item in self.auto_landings()["items"]], [union])
 
     def test_review_page_reverts_union_tags_like_the_script(self):
         tagged = self.asset("ROYD-083", tags=("中出内射",))
-        self.row("ROYD-083", "tags", "中出内射", ("makers", ["中出内射", "痴女"]))
+        key = self.row("ROYD-083", "tags", "中出内射", ("makers", ["中出内射", "痴女"]))
         self.settle()
-        batch = rm_web.dispatch_api_get(self.contract, "/api/review/auto-landings", {})["items"][0]["batch"]
-        preview = rm_web.dispatch_api_get(self.contract, "/api/review/auto-landings", {"batches": batch})
+        preview = self.auto_landings(items=key)
         self.assertEqual([(row["code"], row["tag"]) for row in preview["tags"]], [("ROYD-083", "痴女")])
-        result = rm_web.dispatch_api_post(self.contract, "/api/review/auto-landings/revert",
-                                          {"batches": [batch], "token": preview["token"]})
+        result = self.revert([key], preview["token"])
         self.assertEqual((result["removed_tags"], result["decisions"]), (1, 1))
         self.assertEqual(self.tags(tagged), {"中出内射"})
         self.assertEqual(self.decisions(), {})
 
-    def test_review_page_refuses_batches_it_does_not_list(self):
-        for batches in ([], ["auto:western-artwork@20261008T000000Z"]):
-            with self.subTest(batches=batches), self.assertRaises(ValueError):
-                rm_web.dispatch_api_post(self.contract, "/api/review/auto-landings/revert",
-                                         {"batches": batches, "token": ""})
+    def test_review_page_refuses_writes_it_does_not_list(self):
+        for items in ([], ["ROYD-083:tags"]):
+            with self.subTest(items=items), self.assertRaises(ValueError):
+                self.revert(items, "")
 
     def test_batch_time_reads_both_stamp_formats(self):
         self.assertEqual(web_auto_landings.batch_time(f"{rm_auto.VERIFIED_REPLACE_RULE}@2026-11-04T06:10:56Z"),
