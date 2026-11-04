@@ -227,6 +227,28 @@ it('看过那一层有播放时间的两张热力图，指到一格读数换成�
   expect(liked?.nextElementSibling?.textContent).toBe('1');
 });
 
+it('一张热力图只占一个 Tab 停靠点，方向键在格子之间挪', async () => {
+  const { host } = await open();
+  await click(tabNamed(host, '看过'));
+  const card = host.querySelector('[role=tabpanel] svg[role=img]')!.closest('section')!;
+  const stops = () => [...card.querySelectorAll<SVGRectElement>('rect[tabindex="0"]')];
+  expect(card.querySelectorAll('rect').length).toBe(168);
+  expect(stops().map((cell) => cell.dataset.cell)).toEqual(['0']);
+  const first = stops()[0]!;
+  await act(async () => { first.focus(); });
+  await act(async () => {
+    first.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', bubbles: true }));
+  });
+  expect(document.activeElement?.getAttribute('data-cell')).toBe('24');
+  expect(stops().map((cell) => cell.dataset.cell)).toEqual(['24']);
+  expect(card.querySelector('header small')?.textContent).toBe(
+    document.activeElement?.getAttribute('aria-label')?.split('，')[0]);
+  await act(async () => {
+    document.activeElement!.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+  });
+  expect(document.activeElement?.getAttribute('data-cell')).toBe('47');
+});
+
 it('没有播放时间记录时看过那一层不出热力图，留一张说明卡', async () => {
   const { host } = await open(payload({ play_activity: { timezone: 'UTC+08:00', days: [], hours: [] } }));
   await click(tabNamed(host, '看过'));
