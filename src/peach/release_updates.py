@@ -129,7 +129,8 @@ def check(*, transport=None, system: str | None = None, machine: str | None = No
             latest = tag.removeprefix("v")
             if state == "available" and not docker_update.published(client, latest):
                 state, message = "pending", f"Peach {latest} 的镜像尚未发布，请稍后再检查。"
-            return dict(result, latest_version=latest, state=state, release_url=release_url,
+            extra = {"one_click": docker_update.status()} if state == "available" else {}
+            return dict(result, latest_version=latest, state=state, release_url=release_url, **extra,
                         message="有新镜像可拉取。" if state == "available" else message)
         return dict(result, latest_version=tag.removeprefix("v"), state=state, message=message,
                     asset_url=f"{directory}/{asset['name']}",

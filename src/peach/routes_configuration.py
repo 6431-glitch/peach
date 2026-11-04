@@ -265,8 +265,6 @@ def snapshot(config) -> dict[str, Any]:
         ("mount_dependencies", "挂载依赖", media_configuration.mount_dependencies),
         ("facts", "运行信息", lambda: runtime_fact_entries(config)),
     )
-    if distribution.docker():
-        readers += (("docker_update", "一键更新设置", lambda: docker_update.describe(config.directory("secrets"))),)
     for key, title, reader in readers:
         _read_section(result, key, title, reader)
     return result
@@ -808,29 +806,15 @@ def upgrade_repairs_review(request: Request, _args=Depends(require_auth)):
                     headers={'Content-Disposition': 'attachment; filename="upgrade-review.json"'})
 
 
-def _docker_secrets():
+@router.post("/api/configuration/docker-update")
+def run_docker_update(request: Request, _args=Depends(require_auth)):
+    """请同一 compose 里的 Watchtower 拉取新镜像并重建容器（ADR-0140）。"""
+    local_only(request)
+    same_origin(request)
     if not distribution.docker():
         raise HTTPException(404, "只有 Docker 镜像有一键更新")
-    return settings_file.load_config().directory("secrets")
-
-
-@router.post("/api/configuration/docker-update")
-def save_docker_update(request: Request, body: dict = Body(...), _args=Depends(require_auth)):
-    """保存 Watchtower 地址与令牌；回应里只有地址和令牌存没存过。"""
-    local_only(request)
-    same_origin(request)
     try:
-        return docker_update.save(_docker_secrets(), body)
-    except (ValueError, OSError) as exc:
-        raise HTTPException(400, str(exc)) from exc
-
-
-@router.post("/api/configuration/docker-update/run")
-def run_docker_update(request: Request, _args=Depends(require_auth)):
-    local_only(request)
-    same_origin(request)
-    try:
-        return docker_update.trigger(_docker_secrets())
+        return docker_update.trigger()
     except (ValueError, OSError) as exc:
         raise HTTPException(409, str(exc)) from exc
 

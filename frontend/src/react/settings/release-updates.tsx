@@ -8,7 +8,7 @@ import { confirmModal } from '@peach/legacy/ui';
 import { Button, ButtonLink } from '@/components/base/buttons/button';
 
 import { apiGet, apiSend, errorMessage } from '../../api';
-import type { DockerUpdateState, ReleaseState, UpdateJob } from '../bundle';
+import type { ReleaseState, UpdateJob } from '../bundle';
 import { Note } from '../components/note';
 import { Progress } from '../components/progress';
 import { StatusLabel } from '../components/status-label';
@@ -22,9 +22,7 @@ const MAX_FAILURES = 120;
 /** 服务端没给发布页时的去处；检查到新版本后服务端给的是那一版自己的发布页。 */
 const RELEASES_URL = 'https://github.com/peach-mitao/peach/releases';
 
-export function ReleaseUpdates({ initial, initialJob, docker }: {
-  initial: ReleaseState; initialJob?: UpdateJob | undefined; docker?: DockerUpdateState | undefined;
-}) {
+export function ReleaseUpdates({ initial, initialJob }: { initial: ReleaseState; initialJob?: UpdateJob | undefined }) {
   const [data, setData] = useState(initial);
   const [job, setJob] = useState<UpdateJob>(initialJob || { state: 'idle', progress: 0 });
   const [pollError, setPollError] = useState('');
@@ -33,7 +31,7 @@ export function ReleaseUpdates({ initial, initialJob, docker }: {
   const mounted = useRef(true);
   const running = ACTIVE.has(job.state);
   const container = useDockerUpdate(initial.current_version);
-  const oneClick = data.state === 'available' && !!docker?.token_set && !!docker.rolling;
+  const oneClick = data.state === 'available' && !!data.one_click?.available;
   const rebuilding = container.job.state === 'updating';
   const confirmDockerUpdate = () => void confirmModal({
     title: '一键更新', body: `Watchtower 会拉取 Peach ${data.latest_version || ''} 的镜像并重建容器，/data 数据卷保留。`
@@ -124,9 +122,12 @@ export function ReleaseUpdates({ initial, initialJob, docker }: {
           : error || data.state === 'error'
             ? <ErrorText>{error || data.message}</ErrorText>
             : data.state === 'unchecked' ? null : <Help role="status">{data.message}</Help>}
-        {/* 容器没配 Watchtower 时没有应用内更新：在宿主机上拉镜像、重建容器。 */}
+        {/* 容器没启用 Watchtower 时没有应用内更新：在宿主机上拉镜像、重建容器，并说明怎样才能一键更新。 */}
         {data.state === 'available' && !error && !oneClick && container.job.state === 'idle' && data.steps?.length
-          ? <CommandSteps label="在宿主机上更新" steps={data.steps} /> : null}
+          ? <>
+              <CommandSteps label="在宿主机上更新" steps={data.steps} />
+              <Help>{data.one_click?.reason || '用 compose 的 watchtower profile 启动 Watchtower 后，可以在这里一键更新，启用前先读 Docker 部署说明。'}</Help>
+            </> : null}
         <DockerUpdateProgress job={container.job} />
         {job.state === 'error' ? <ErrorText>{job.message}</ErrorText> : null}
         {job.state !== 'idle' && job.state !== 'error' ? (

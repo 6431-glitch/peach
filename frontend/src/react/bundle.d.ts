@@ -256,15 +256,8 @@ export interface ReleaseState {
   in_app_update?: boolean;
   /** 容器换新版要在宿主机上做的几步；其他安装方式是空表。 */
   steps?: { text: string; command: string }[];
-}
-
-/** Docker 一键更新经 Watchtower（ADR-0140）。令牌不回传，只有存没存过。 */
-export interface DockerUpdateState {
-  url: string;
-  token_set: boolean;
-  /** compose 传进来的镜像标签；不是 edge 时 Watchtower 换不到新版本。 */
-  image_tag: string;
-  rolling: boolean;
+  /** Docker 镜像检查到新镜像时才有：能否经 Watchtower 一键更新（ADR-0140），不能时 `reason` 说明为什么。 */
+  one_click?: { available: boolean; reason: string };
 }
 
 export interface UpdateJob {
@@ -300,7 +293,6 @@ export interface ConfigurationData {
   downloads?: DownloadSettingsState;
   updates?: ReleaseState;
   update_job?: UpdateJob;
-  docker_update?: DockerUpdateState;
   automatic_updates?: AutomaticUpdateState;
   access?: AccessState;
   tunnel?: TunnelState;

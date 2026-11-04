@@ -170,18 +170,15 @@ docker compose cp peach:/tmp/peach-support.zip ./peach-support.zip
 
 Watchtower 挂着宿主机的 Docker socket，能创建、停止任何容器，等于宿主机 root 权限。只在信任这台宿主机上的 compose 配置时启用。Peach 容器本身不挂 socket，只持有 Watchtower 更新接口的令牌。
 
-启用步骤，在 `compose.yaml` 所在目录执行：
+启用只需一步，不用在配置页填写任何内容：在 `compose.yaml` 所在目录运行 `docker compose --profile watchtower up -d`。之后的 `docker compose` 命令都带上 `--profile watchtower`，或在 `.env` 写 `COMPOSE_PROFILES=watchtower`。`.env` 不要把 `PEACH_VERSION` 固定成版本号：Watchtower 只会换同一标签的新镜像，标签是版本号时配置页会改为列出两步命令。
 
-1. 生成令牌文件：`mkdir -p secrets && openssl rand -hex 32 > secrets/watchtower-token`。文件放在其他位置时，在 `.env` 设置 `PEACH_WATCHTOWER_TOKEN_FILE`。
-2. 确认 `.env` 没有把 `PEACH_VERSION` 固定成版本号。Watchtower 只会换同一标签的新镜像，标签是版本号时一键更新换不到新版本，配置页会改为列出两步命令。
-3. 启动：`docker compose --profile watchtower up -d`。之后的 `docker compose` 命令都带上 `--profile watchtower`，或在 `.env` 写 `COMPOSE_PROFILES=watchtower`。
-4. 在配置页「应用与维护 → 一键更新」填写地址 `http://watchtower:8080` 与令牌文件的内容，保存配置。令牌只保存在 `/data/secrets`，页面不再显示。
+令牌由 Peach 首次启动时生成，放在 `peach-update` 卷里，之后不再更换。Watchtower 等 Peach 健康后才启动，只读挂这个卷，读不到 `/data`。`/data` 改成宿主机目录时不用改 Watchtower 的配置。不启用 profile 的部署只多一个装着令牌文件的小卷。点「一键更新」提示令牌不一致时，运行 `docker compose restart watchtower` 让它重新读取。
 
 检查更新发现新镜像后，「一键更新」替代两步命令。点击并确认后，Peach 会断开一会儿；新版本启动后页面提示刷新。15 分钟内没有看到新版本时，用 `docker compose logs watchtower` 和 `docker compose logs peach` 查看原因。已经在宿主机上 `docker compose pull` 过新镜像、还没 `up -d` 时，旧容器的镜像可能已失去标签，Watchtower 日志显示 `Failed to retrieve image info` 并跳过；这时直接运行 `docker compose up -d`。
 
 Watchtower 不在新容器起不来时自动回退。换上新镜像后它删除被替下的旧镜像，免得每次更新在 NAS 上多留一份；指向同一镜像的其他本地标签也一起删除。Docker Hub 保留每个版本号标签，回滚时重新拉取。回滚到旧版本前，先停下 Peach，用升级时生成的 `ledger.pre-migrate-<时间>.db` 替换 `ledger.db`，再把 `.env` 的 `PEACH_VERSION` 设为旧版本号并 `docker compose up -d`；旧版本不会写入它不认识的数据库结构。方案取舍见 [ADR-0140](adr/0140-docker-one-click-update-via-watchtower.md)。
 
-2026-11-04 在 Windows 的 Docker Desktop（Engine 29.9.2，containerd 镜像库）上，运行中容器的镜像只有 `edge` 一个本机标签，把本地 registry 的 `edge` 换成版本号更高、多一个空表迁移的测试镜像，经配置页触发后通过验收：Watchtower 自己拉取新镜像，按 75 秒停止超时停下旧容器，11 秒内起了新容器；`/data` 里的标记文件保留，启动前生成 `ledger.pre-migrate-*.db` 并执行了新迁移，`/healthz?ready=1` 通过，旧镜像已清理。不带 profile、没有令牌文件时 `docker compose up -d` 照常启动。Docker Hub 的真实拉取、ARM NAS 与 Docker Desktop 以外的 Linux 宿主机未取得。
+2026-11-04 在 Windows 的 Docker Desktop（Engine 29.9.2，containerd 镜像库）上，运行中容器的镜像只有 `edge` 一个本机标签，把本地 registry 的 `edge` 换成版本号更高、多一个空表迁移的测试镜像，经配置页触发后通过验收：Watchtower 自己拉取新镜像，按 75 秒停止超时停下旧容器，11 秒内起了新容器；`/data` 里的标记文件保留，启动前生成 `ledger.pre-migrate-*.db` 并执行了新迁移，`/healthz?ready=1` 通过，旧镜像已清理。全新启动时 Watchtower 在 Peach 首次健康的同一秒启动，令牌文件属主为 `peach`、权限 600；两个容器同时重启后令牌仍然一致；改掉卷里的令牌后点「一键更新」得到要求重启 Watchtower 的提示，`docker compose restart watchtower` 后恢复。不带 profile 时 `docker compose up -d` 照常启动。Docker Hub 的真实拉取、ARM NAS 与 Docker Desktop 以外的 Linux 宿主机未取得。
 
 Linux 容器不读取用户电脑上的浏览历史，也不包含交互式浏览器；需要本机浏览器完成验证的来源在此环境不可用。CloudDrive2 的真实账号登录、网盘流量与 NAS 实机挂载需在目标机器验证。
 

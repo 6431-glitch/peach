@@ -8,7 +8,6 @@ import { Switch } from '@/components/base/switch/switch';
 import { apiSend } from '../../api';
 import type { ConfigurationGroupProps, StartupState } from '../bundle';
 import { groupRoot } from './configuration-panel';
-import { DockerUpdateSettings } from './docker-update';
 import { AutomaticUpdates } from './maintenance-settings';
 import { ReleaseUpdates } from './release-updates';
 import { UpgradeRepairs } from './upgrade-repairs';
@@ -16,12 +15,9 @@ import { ErrorText, Footer, Help, Rows, Section, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
 export function GeneralSettings({ data, receipt, panel }: ConfigurationGroupProps) {
-  // 一键更新的连接只有 Docker 镜像有；保存后检查更新那一块要立刻知道配好了没有。
-  const [docker, setDocker] = useState(data.docker_update);
   return (
     <div {...groupRoot(panel)}>
-      {data.updates ? <ReleaseUpdates initial={data.updates} initialJob={data.update_job} docker={docker} /> : null}
-      {docker ? <DockerUpdateSettings state={docker} onSaved={setDocker} receipt={receipt} /> : null}
+      {data.updates ? <ReleaseUpdates initial={data.updates} initialJob={data.update_job} /> : null}
       <UpgradeRepairs />
       {data.automatic_updates ? <AutomaticUpdates initial={data.automatic_updates} receipt={receipt} /> : null}
       {data.startup ? <StartupSettings startup={data.startup} receipt={receipt} /> : null}

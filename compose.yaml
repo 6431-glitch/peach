@@ -17,6 +17,8 @@ services:
       - "${PEACH_BIND:-127.0.0.1}:${PEACH_PORT:-8900}:8900"
     volumes:
       - peach-data:/data
+      # 只装一键更新的令牌：Peach 首次启动时生成，watchtower 只读这一个卷，看不到 /data。
+      - peach-update:/update
       - type: bind
         source: ${PEACH_MEDIA_ROOT:-./media}
         target: /media
@@ -31,20 +33,20 @@ services:
     image: nickfedor/watchtower:1.23.2
     profiles: [watchtower]
     restart: unless-stopped
+    depends_on:
+      # 令牌在 Peach 起服务前写好；等它就绪再启动，Watchtower 启动时读到的就是那份文件。
+      peach:
+        condition: service_healthy
     environment:
       WATCHTOWER_HTTP_API_ENDPOINTS: update
-      WATCHTOWER_HTTP_API_TOKEN: /run/secrets/watchtower_token
+      WATCHTOWER_HTTP_API_TOKEN: /peach-update/watchtower-token
       WATCHTOWER_LABEL_ENABLE: "true"
       # 换下的旧镜像已失去 edge 标签，留着只占盘；回滚按版本号标签从 Docker Hub 重新拉。
       WATCHTOWER_CLEANUP: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-    secrets:
-      - watchtower_token
-
-secrets:
-  watchtower_token:
-    file: ${PEACH_WATCHTOWER_TOKEN_FILE:-./secrets/watchtower-token}
+      - peach-update:/peach-update:ro
 
 volumes:
   peach-data:
+  peach-update:

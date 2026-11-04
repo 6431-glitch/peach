@@ -178,7 +178,8 @@ class ReleaseUpdateTests(unittest.TestCase):
             return HttpResponse(200, {}, json.dumps([release("1.0.0")]).encode())
 
         with patch.dict("os.environ", {"PEACH_DISTRIBUTION": "docker"}), \
-                patch.object(release_updates, "__version__", "0.9.0"):
+                patch.object(release_updates, "__version__", "0.9.0"), \
+                patch.object(docker_update, "status", return_value={"available": True, "reason": ""}):
             return release_updates.check(transport=transport, system="linux", machine="x86_64"), calls
 
     def test_docker_image_reports_itself_and_gives_host_steps_instead_of_a_package(self):
@@ -193,6 +194,7 @@ class ReleaseUpdateTests(unittest.TestCase):
         self.assertEqual(result["release_url"], release_updates.RELEASES_URL + "/tag/v1.0.0")
         self.assertNotIn("package_kind", result, "容器不下载 Windows 发行包")
         self.assertNotIn("asset_url", result)
+        self.assertEqual(result["one_click"], {"available": True, "reason": ""})
         manifests = [request for request in calls if "/manifests/" in request.url]
         self.assertEqual({request.method for request in manifests}, {"HEAD"}, "只读摘要，不下载 manifest 正文与镜像层")
         self.assertTrue(all(request.headers["Authorization"] == "Bearer anonymous" for request in manifests))
@@ -209,6 +211,7 @@ class ReleaseUpdateTests(unittest.TestCase):
                 self.assertEqual(result["state"], "pending", "Release 已建、镜像还没推送时不能提示拉取")
                 self.assertEqual(result["latest_version"], "1.0.0")
                 self.assertIn("镜像尚未发布", result["message"])
+                self.assertNotIn("one_click", result, "镜像没推送时不给一键更新")
         result, _ = self.docker_check({"1.0.0": new, "edge": new}, auth_status=503)
         self.assertEqual(result["state"], "error", "读不到镜像仓库就是没查成，不当成有新版")
 
@@ -222,49 +225,63 @@ class ReleaseUpdateTests(unittest.TestCase):
 class DockerUpdateTests(unittest.TestCase):
     def setUp(self):
         self.root = Path(self.enterContext(tempfile.TemporaryDirectory()))
-        self.enterContext(patch.dict("os.environ", {docker_update.IMAGE_TAG_ENV: "edge"}))
+        self.enterContext(patch.dict("os.environ", {docker_update.IMAGE_TAG_ENV: "edge",
+                                                    docker_update.UPDATE_DIR_ENV: str(self.root)}))
 
-    def watchtower(self, status):
+    def watchtower(self, post_status, *, reachable=True):
+        """假 Watchtower：探测（GET）回 401 表示在线，更新请求（POST）回 `post_status`。"""
         requests = []
 
         def handler(request):
             requests.append(request)
-            return httpx.Response(status)
+            if not reachable:
+                raise httpx.ConnectError("Name or service not known", request=request)
+            return httpx.Response(401 if request.method == "GET" else post_status)
         return httpx.MockTransport(handler), requests
 
-    def test_token_is_kept_locally_and_never_echoed(self):
-        state = docker_update.describe(self.root)
-        self.assertEqual((state["url"], state["token_set"], state["rolling"]), (docker_update.DEFAULT_URL, False, True))
-        saved = docker_update.save(self.root, {"url": "http://watchtower:8080/", "token": "s3cret"})
-        self.assertEqual(saved, {"url": "http://watchtower:8080", "token_set": True, "image_tag": "edge", "rolling": True})
-        self.assertNotIn("s3cret", json.dumps(saved))
-        docker_update.save(self.root, {"url": "http://watchtower:8080", "token": ""})
-        self.assertEqual(docker_update.values(self.root)["token"], "s3cret", "留空表示不改")
-        self.assertFalse(docker_update.save(self.root, {"url": "http://watchtower:8080", "clear_token": True})["token_set"])
-        for url in ("watchtower:8080", "http://watchtower:8080/v1/update", "http://user@watchtower:8080", "ftp://watchtower"):
-            with self.subTest(url=url), self.assertRaises(ValueError):
-                docker_update.save(self.root, {"url": url, "token": "x"})
+    def test_token_is_generated_once_and_kept(self):
+        docker_update.ensure_token()
+        path = self.root / docker_update.TOKEN_NAME
+        first = path.read_text(encoding="utf-8")
+        self.assertGreaterEqual(len(first), 40)
+        docker_update.ensure_token()
+        self.assertEqual(path.read_text(encoding="utf-8"), first, "Watchtower 只在启动时读一次，换了就对不上")
+        with patch.dict("os.environ", {docker_update.UPDATE_DIR_ENV: ""}):
+            docker_update.ensure_token()  # 不在官方镜像里：没有令牌目录，什么也不做
 
-    def test_trigger_posts_an_async_update_with_the_saved_token(self):
-        docker_update.save(self.root, {"url": "http://watchtower:8080", "token": "s3cret"})
-        transport, requests = self.watchtower(202)
-        self.assertEqual(docker_update.trigger(self.root, transport=transport)["state"], "updating")
-        [request] = requests
-        self.assertEqual((request.method, str(request.url)), ("POST", "http://watchtower:8080/v1/update?async=true"),
-                         "同步请求的响应会被 Watchtower 停容器打断")
-        self.assertEqual(request.headers["Authorization"], "Bearer s3cret")
-        for status, message in ((401, "令牌"), (429, "另一次更新"), (500, "HTTP 500")):
-            with self.subTest(status=status), self.assertRaisesRegex((ValueError, OSError), message):
-                docker_update.trigger(self.root, transport=self.watchtower(status)[0])
-
-    def test_trigger_refuses_without_a_token_or_a_rolling_tag(self):
-        transport, requests = self.watchtower(202)
-        with self.assertRaisesRegex(ValueError, "令牌"):
-            docker_update.trigger(self.root, transport=transport)
-        docker_update.save(self.root, {"url": "http://watchtower:8080", "token": "s3cret"})
-        for tag, message in (("0.53.0", "edge"), ("", "compose.yaml")):
+    def test_one_click_needs_a_rolling_tag_a_token_and_a_reachable_watchtower(self):
+        transport, _ = self.watchtower(202)
+        self.assertIn("令牌", docker_update.status(transport=transport)["reason"])
+        docker_update.ensure_token()
+        self.assertEqual(docker_update.status(transport=transport), {"available": True, "reason": ""})
+        self.assertEqual(docker_update.status(transport=self.watchtower(202, reachable=False)[0]),
+                         {"available": False, "reason": ""}, "没启用 watchtower profile 时照常给两步命令，不报错")
+        for tag, message in (("0.53.0", ".env"), ("", "compose.yaml")):
             with self.subTest(tag=tag), patch.dict("os.environ", {docker_update.IMAGE_TAG_ENV: tag}):
-                self.assertFalse(docker_update.ready(self.root))
-                with self.assertRaisesRegex(ValueError, message, msg="旧 compose 没传标签时要指向 compose 文件，不是 .env"):
-                    docker_update.trigger(self.root, transport=transport)
+                state = docker_update.status(transport=transport)
+                self.assertFalse(state["available"])
+                self.assertIn(message, state["reason"], "旧 compose 没传标签时要指向 compose 文件，不是 .env")
+
+    def test_trigger_posts_an_async_update_with_the_generated_token(self):
+        docker_update.ensure_token()
+        token = (self.root / docker_update.TOKEN_NAME).read_text(encoding="utf-8")
+        transport, requests = self.watchtower(202)
+        self.assertEqual(docker_update.trigger(transport=transport)["state"], "updating")
+        posted = [request for request in requests if request.method == "POST"]
+        self.assertEqual([str(request.url) for request in posted], [docker_update.WATCHTOWER_URL + "/v1/update?async=true"],
+                         "同步请求的响应会被 Watchtower 停容器打断")
+        self.assertEqual(posted[0].headers["Authorization"], f"Bearer {token}")
+        self.assertFalse(any("Authorization" in request.headers for request in requests if request.method == "GET"),
+                         "探测不带令牌")
+        for status, message in ((401, "docker compose restart watchtower"), (429, "另一次更新"), (500, "HTTP 500")):
+            with self.subTest(status=status), self.assertRaisesRegex((ValueError, OSError), message):
+                docker_update.trigger(transport=self.watchtower(status)[0])
+
+    def test_trigger_refuses_before_contacting_watchtower_when_it_cannot_update(self):
+        transport, requests = self.watchtower(202)
+        docker_update.ensure_token()
+        with patch.dict("os.environ", {docker_update.IMAGE_TAG_ENV: "0.53.0"}), self.assertRaisesRegex(ValueError, "edge"):
+            docker_update.trigger(transport=transport)
         self.assertEqual(requests, [], "换不到新版本时不打扰 Watchtower")
+        with self.assertRaisesRegex(ValueError, "watchtower profile"):
+            docker_update.trigger(transport=self.watchtower(202, reachable=False)[0])
