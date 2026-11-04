@@ -246,8 +246,8 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
     async def test_each_login_is_its_own_row_and_the_file_keeps_only_digests(self):
         desk = await self.sign_in(self.device(CHROME_WINDOWS))
         with patch.object(access.time, "time", return_value=access.time.time()):
-            phone = await self.sign_in(self.device(SAFARI_IPHONE, ("192.168.31.20", 5000)))
-            twin = await self.sign_in(self.device(SAFARI_IPHONE, ("192.168.31.21", 5000)))
+            phone = await self.sign_in(self.device(SAFARI_IPHONE, ("198.51.100.20", 5000)))
+            twin = await self.sign_in(self.device(SAFARI_IPHONE, ("198.51.100.21", 5000)))
         self.assertNotEqual(phone.cookies.get(access.COOKIE), twin.cookies.get(access.COOKIE),
                             "同一秒、同一时长的两次登录也是两个令牌")
         listing = await self.listing(desk)
@@ -255,7 +255,7 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(rows), 3)
         self.assertEqual((rows[0]["device"], rows[0]["current"], rows[0]["network"]), ("Chrome · Windows", True, "loopback"))
         self.assertEqual({row["device"] for row in rows[1:]}, {"Safari · iPhone"})
-        self.assertEqual({row["network"] for row in rows[1:]}, {"192.168.31.0/24"})
+        self.assertEqual({row["network"] for row in rows[1:]}, {"198.51.100.0/24"})
         self.assertTrue(listing["manageable"])
         stored = access.sessions_path(self.path).read_text(encoding="utf-8")
         for client in (desk, phone, twin):
@@ -266,7 +266,7 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_revoking_one_device_signs_out_only_that_device(self):
         desk = await self.sign_in(self.device(CHROME_WINDOWS))
-        phone = await self.sign_in(self.device(SAFARI_IPHONE, ("192.168.31.20", 5000)))
+        phone = await self.sign_in(self.device(SAFARI_IPHONE, ("198.51.100.20", 5000)))
         rows = (await self.listing(desk))["sessions"]
         own, other = rows[0]["id"], rows[1]["id"]
         self.assertFalse((await self.listing(phone))["manageable"])
@@ -283,7 +283,7 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_revoke_others_keeps_this_browser(self):
         desk = await self.sign_in(self.device(CHROME_WINDOWS))
-        phones = [await self.sign_in(self.device(SAFARI_IPHONE, (f"192.168.31.{n}", 5000))) for n in (20, 21)]
+        phones = [await self.sign_in(self.device(SAFARI_IPHONE, (f"198.51.100.{n}", 5000))) for n in (20, 21)]
         response = await self.revoke(desk, scope="others")
         self.assertEqual(response.json()["removed"], 2)
         self.assertEqual([row["current"] for row in response.json()["sessions"]], [True])
@@ -303,7 +303,7 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_password_change_revokes_every_device_and_lists_only_the_new_session(self):
         desk = await self.sign_in(self.device(CHROME_WINDOWS))
-        phone = await self.sign_in(self.device(SAFARI_IPHONE, ("192.168.31.20", 5000)))
+        phone = await self.sign_in(self.device(SAFARI_IPHONE, ("198.51.100.20", 5000)))
         response = await desk.post("/api/configuration/access", json={
             "revision": self.policy["revision"], "action": "set", "current_password": "correct-password",
             "password": "another-password", "confirmation": "another-password"})
@@ -314,7 +314,7 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([(row["device"], row["current"]) for row in rows], [("Chrome · Windows", True)])
 
     async def test_tokens_from_before_the_upgrade_are_adopted_once_and_stay_revoked(self):
-        legacy = self.device(SAFARI_IPHONE, ("192.168.31.20", 5000))
+        legacy = self.device(SAFARI_IPHONE, ("198.51.100.20", 5000))
         legacy.cookies.set(access.COOKIE, self.legacy_token(int(access.time.time()) + 86400 * 20))
         self.assertEqual((await legacy.get("/private")).status_code, 200, "升级不把已登录的设备登出")
         desk = await self.sign_in(self.device(CHROME_WINDOWS))
@@ -361,8 +361,8 @@ class DeviceSessionTests(unittest.IsolatedAsyncioTestCase):
         for agent, name in cases.items():
             with self.subTest(agent=agent):
                 self.assertEqual(access.device_name(agent), name)
-        self.assertEqual(access.network_of("192.168.31.20"), "192.168.31.0/24")
-        self.assertEqual(access.network_of("::ffff:10.0.0.7"), "10.0.0.0/24")
+        self.assertEqual(access.network_of("198.51.100.20"), "198.51.100.0/24")
+        self.assertEqual(access.network_of("::ffff:192.0.2.7"), "192.0.2.0/24")
         self.assertEqual(access.network_of("2001:db8:1:2:3:4:5:6"), "2001:db8:1:2::/64")
         self.assertEqual(access.network_of("::1"), "loopback")
         self.assertEqual(access.network_of("unknown"), "")

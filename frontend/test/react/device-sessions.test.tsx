@@ -18,7 +18,7 @@ const row = (fields: Partial<DeviceSession>): DeviceSession => ({
   created_at: now - 7200, last_seen: now - 10, expires: now + 86400, legacy: false, current: false, ...fields,
 });
 const desk = row({ id: 'aaaaaaaaaaaaaaaa', current: true });
-const phone = row({ id: 'bbbbbbbbbbbbbbbb', device: 'Safari · iPhone', network: '192.168.31.0/24', last_seen: now - 300 });
+const phone = row({ id: 'bbbbbbbbbbbbbbbb', device: 'Safari · iPhone', network: '198.51.100.0/24', last_seen: now - 300 });
 const laptop = row({ id: 'cccccccccccccccc', device: '', network: '203.0.113.0/24', remote: true, last_seen: now - 3 * 86400, legacy: true });
 const listing = (sessions: DeviceSession[], manageable = true): DeviceSessionList => ({ revision: 'one', sessions, manageable });
 
@@ -56,7 +56,7 @@ it('列出设备：本机排第一并标「本机」，其余写最近活动与�
   const card = section(host, '已登录的设备')!;
   expect(card.textContent).toContain('本机');
   expect(card.textContent).toContain('最近活动 刚刚 · 运行 Peach 的电脑');
-  expect(card.textContent).toContain('最近活动 5 分钟前 · 192.168.31.0/24');
+  expect(card.textContent).toContain('最近活动 5 分钟前 · 198.51.100.0/24');
   expect(card.textContent).toContain('最近活动 3 天前 · 公网入口 · 203.0.113.0/24');
   expect(card.querySelector('button[aria-label="撤销 Chrome · Windows 的登录"]')).toBeNull();
   expect(card.querySelector('button[aria-label="撤销 Safari · iPhone 的登录"]')).not.toBeNull();
@@ -102,7 +102,7 @@ it('撤销一台先确认，确认后按这一行的 id 发请求并换上服务
   await click(host.querySelector('button[aria-label="撤销 Safari · iPhone 的登录"]'));
   await settle();
   expect(seen[0]).toMatchObject({ title: '撤销这台设备的登录', confirmLabel: '撤销登录' });
-  expect(seen[0]!.body).toContain('Safari · iPhone（最近活动 5 分钟前 · 192.168.31.0/24）');
+  expect(seen[0]!.body).toContain('Safari · iPhone（最近活动 5 分钟前 · 198.51.100.0/24）');
   const [url, options] = fetcher.mock.calls.at(-1)!;
   expect(url).toBe('/api/configuration/access/sessions/revoke');
   expect(JSON.parse(String(options?.body))).toEqual({ revision: 'one', id: 'bbbbbbbbbbbbbbbb' });
