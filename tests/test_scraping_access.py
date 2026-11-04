@@ -795,3 +795,50 @@ class BrowserFallbackTests(unittest.TestCase):
         with patch("peach.browser_transport.shared", side_effect=AssertionError("avwikidb 不走浏览器")), \
                 self.assertRaises(SourcePaused):
             transport(HttpRequest("GET", "https://avwikidb.com/actor/x/", {}), 1, 100)
+
+
+class SourcePreflightTests(unittest.TestCase):
+    def test_batch_deduplicates_and_preserves_target_failures(self):
+        from peach.source_preflight import check_sources
+        def check(root, source, **options):
+            self.assertTrue(options['preflight'])
+            return {'results': [{'label': '来源页面', 'ok': source == 'dmm'},
+                                {'label': '高清图片 CDN', 'ok': False, 'reason': 'network'}]}
+        with patch('peach.source_preflight.check_source', side_effect=check) as checked:
+            result = check_sources(Path('/unused'), ['dmm', 'javdb', 'dmm'])
+        self.assertEqual(checked.call_count, 2)
+        self.assertEqual([row['source'] for row in result['sources']], ['dmm', 'javdb'])
+        self.assertFalse(result['ok'])
+        self.assertTrue(all(not row['session_verified'] for row in result['sources']))
+        with patch('peach.source_preflight.check_source') as checked:
+            for selected in ([], ['unknown'], ['dmm', 'unknown']):
+                with self.assertRaises(ValueError):
+                    check_sources(Path('/unused'), selected)
+            checked.assert_not_called()
+
+    def test_preflight_bounds_requests_and_uses_no_browser(self):
+        from peach.web_scraping import check_source
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            with patch('peach.web_scraping.SourceTransport') as factory:
+                factory.return_value.return_value = HttpResponse(200, {}, b'<html></html>')
+                result = check_source(root, 'javdb', preflight=True)
+            self.assertTrue(result['results'][0]['ok'])
+            factory.assert_called_once_with(root, max_requests=12, max_bytes=12 * 65536,
+                                            max_seconds=15, allow_browser=False)
+            factory.return_value.close.assert_called_once()
+
+    def test_http_only_transport_does_not_launch_or_fix_browser_route(self):
+        from peach.scraping_access import SourcePaused, fix_to_browser, fixed_to_browser
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fix_to_browser(root, 'minnano-av')
+            transport = SourceTransport(root, allow_browser=False)
+            with patch.object(transport, '_browser_for', side_effect=AssertionError('不能启动浏览器')), \
+                    patch('peach.scraping_access.client_for') as client:
+                client.return_value = httpx.Client(transport=httpx.MockTransport(
+                    lambda request: httpx.Response(403, content=b'blocked')))
+                with self.assertRaises(SourcePaused):
+                    transport(HttpRequest('GET', 'https://www.minnano-av.com/', {}), 1, 1024)
+            transport.close()
+            self.assertTrue(fixed_to_browser(root, 'minnano-av'))

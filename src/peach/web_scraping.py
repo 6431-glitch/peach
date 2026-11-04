@@ -190,8 +190,12 @@ def _connection_message(detail, reason):
 
 
 def w_scraping_check(contract, body):
+    return check_source(contract.follow_secrets_root, str(body.get("source", "")))
+
+
+def check_source(secrets_root, source, *, preflight=False):
+    """复用来源连接与图片 CDN 判据；安装检查只使用有界 HTTP 请求。"""
     from .metadata import auth_wall_reason
-    source = str(body.get("source", ""))
     if source not in SOURCES:
         raise ValueError("未知采集来源")
     if not SOURCES[source]["login"]:
@@ -202,7 +206,9 @@ def w_scraping_check(contract, body):
     if source == "dmm":
         targets.append(("高清图片 CDN", "https://awsimgsrc.dmm.co.jp/pics_dig/digital/video/gyan00017/gyan00017pl.jpg"))
     results = []
-    transport = SourceTransport(contract.follow_secrets_root)
+    transport = (SourceTransport(secrets_root, max_requests=12, max_bytes=12 * 65536,
+                                 max_seconds=15, allow_browser=False)
+                 if preflight else SourceTransport(secrets_root))
     try:
         for label, url in targets:
             result = {"label": label, "ok": False}
@@ -241,7 +247,7 @@ def w_scraping_check(contract, body):
                 result.update(_connection_failure(exc, label))
             result.update(checked_at=time.time(), elapsed_s=round(time.monotonic() - started, 2))
             if label == "来源页面":
-                record_source_check(contract.follow_secrets_root, source, "connection", result)
+                record_source_check(secrets_root, source, "connection", result)
             results.append(result)
     finally:
         transport.close()

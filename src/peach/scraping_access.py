@@ -404,8 +404,9 @@ class SourceTransport:
     """公开采集按来源复用连接池；登录会话由特定来源消费者显式建立。"""
 
     def __init__(self, secrets_root: Path, *, max_requests: int = 0,
-                 max_bytes: int = 0, max_seconds: float = 0):
+                 max_bytes: int = 0, max_seconds: float = 0, allow_browser: bool = True):
         self.root = secrets_root
+        self.allow_browser = allow_browser
         self.transports: dict[str | None, HttpxTransport] = {}
         self.max_requests, self.max_bytes = max_requests, max_bytes
         from .processing_control import deadline_after
@@ -482,7 +483,7 @@ class SourceTransport:
                                                SOURCES[source]["blocked_pause"]), blocks, via)
             raise SourcePaused("来源的人机验证没有在限时内通过，暂停向它请求一段时间；"
                                "浏览器窗口再弹出时点一下验证即可；已有图片保留")
-        if via == VIA_HTTP and source and SOURCES[source].get("browser_fallback") and _refused(response):
+        if self.allow_browser and via == VIA_HTTP and source and SOURCES[source].get("browser_fallback") and _refused(response):
             verified = self._verify_in_browser(source, request, timeout, max_bytes)
             if verified is not None:
                 # HTTP 客户端那条路攒下的账不压到浏览器上：清掉，之后按浏览器那条路重新数。
@@ -527,7 +528,7 @@ class SourceTransport:
 
     def _via(self, source: str | None) -> str:
         """这个来源这次走哪条路。该走浏览器的来源要先选出传输才知道（不发请求、不起进程）。"""
-        if source and source not in self.transports and wants_browser(self.root, source):
+        if self.allow_browser and source and source not in self.transports and wants_browser(self.root, source):
             self.transports[source] = self._transport_for(source)
         transport = self.transports.get(source)
         return VIA_BROWSER if isinstance(transport, browser_transport.BrowserTransport) else VIA_HTTP
@@ -572,7 +573,7 @@ class SourceTransport:
 
     def _transport_for(self, source: str | None):
         """这个来源的请求走哪条路：该走浏览器（`wants_browser`）且本机有浏览器就走浏览器页面，否则 httpx。"""
-        if source and wants_browser(self.root, source):
+        if self.allow_browser and source and wants_browser(self.root, source):
             browser = self._browser_for(source)
             if browser is not None:
                 return browser
