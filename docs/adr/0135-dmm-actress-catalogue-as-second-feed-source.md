@@ -63,6 +63,8 @@ provider 为 `dmm`、`r18dev`，`external_kind='performer'`，纯数字的编号
 
 **七、请求、限流与失败分类沿用刮削链。** 走同一条 `SourceTransport` 加主机限流，包在 `SiteSource.holding` 里：
 验证页、封禁、地区限制与限流让 DMM 整站进冷却；任何失败按原因写进那一行的 `last_error`，下次时间照写。
+[ADR-0134](0134-feed-and-follow-checks-stagger-by-source.md) 的错峰与冷却顺延照用，只是顺延按来源分：
+一轮里 JavDB 在冷却，只顺延 JavDB 演员页那几条，DMM 片单照拉，反过来也一样。
 片单为零是正常结果（这位在 DMM 上没有配信作品），不当失败。结果只产生番号壳，取资料、落库规则不变（ADR-0052）。
 
 ## 被否决的方案

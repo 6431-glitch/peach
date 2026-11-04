@@ -506,6 +506,22 @@ class FeedWebTest(FeedWebFixture):
         self.assertTrue(all(row["last_fetched_at"] is None and row["last_error"] is None
                             for row in self._rows().values()))
 
+    def test_a_javdb_cooldown_does_not_defer_the_dmm_catalogue(self):
+        """冷却按来源记：JavDB 在冷却，DMM 片单照拉（ADR-0135）。"""
+        from peach import scraping_access
+        javdb = self._add()
+        with self.contract.database.write_transaction() as connection:
+            dmm = feeds.add_source(connection, url=feeds.dmm_actress_url("1051912"))
+        self.transport.responses[DMM_ENDPOINT] = dmm_catalogue(
+            [("mikr00133", "2026-11-13", True, 1)], {"mikr00133": "MIKR-133"})
+        scraping_access.pause_source(self.contract.follow_secrets_root, "javdb", refused=True)
+        result = self._check()
+        reports = {row["source"]: row for row in result["results"]}
+        self.assertEqual(result["deferred"], 1)
+        self.assertEqual(reports[javdb]["error"], "JavDB 正在冷却，这一轮没有拉")
+        self.assertEqual((reports[dmm]["ok"], reports[dmm]["codes"]), (True, ["MIKR-133"]))
+        self.assertTrue(all(request.url == DMM_ENDPOINT for request in self.transport.requests))
+
     def test_a_scheduled_tick_without_due_sources_starts_nothing(self):
         """定时每半小时一跳；没有到期的源时不起任务，任务中心里不留空跑的一行。"""
         self._add()

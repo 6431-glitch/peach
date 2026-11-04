@@ -50,6 +50,13 @@ def _cooling_until(contract, url: str) -> datetime | None:
     return datetime.fromtimestamp(until, timezone.utc) if until else None
 
 
+def _same_source(url: str, other: str) -> bool:
+    """两个订阅地址是不是同一个来源的：冷却按来源记，顺延也只顺延同一来源的那几个。"""
+    from .scraping_access import source_for
+
+    return source_for(url) == source_for(other)
+
+
 def _paused_by_source(error: Exception) -> bool:
     """来源冷却挡下的这一次；本趟预算耗尽（`SourceBudgetExhausted`）不算来源冷却。"""
     from .scraping_access import SourceBudgetExhausted, SourcePaused
@@ -174,8 +181,13 @@ def _poll_dmm(contract, transport, source, report: dict) -> dict:
         message = error.message if isinstance(error, SourceFailure) else str(error)
         report.update(ok=False, error=message,
                       reason=str(error.reason) if isinstance(error, SourceFailure) else None)
+        # 和演员页同一条：整站冷却挡回来的，冷却一过就重拉（ADR-0134）。
+        retry_at = _cooling_until(contract, source["url"]) if _paused_by_source(error) else None
+        if retry_at is not None:
+            report["paused"] = True
         with contract.database.write_transaction() as connection:
-            feeds.settle(connection, source_id, error=message, interval_minutes=interval)
+            feeds.settle(connection, source_id, error=message, interval_minutes=interval,
+                         retry_at=retry_at)
         return report
     parsed = feeds.parse_dmm_actress(works)
     hidden = web_settings.hidden_compilations(contract.database)
@@ -259,19 +271,23 @@ def _execute_check(contract, body, job_id: str) -> dict:
     codes = [code for row in results for code in row.get('codes') or []]
     if not contract.feed_job.checkpoint(job_id, source_ids=[int(row['id']) for row in rows]):
         raise InterruptedError('订阅检查已停止')
-    deferred = 0
+    deferred, held = 0, set()
     try:
         for index, source in enumerate(rows):
-            if int(source['id']) in completed:
+            if int(source['id']) in completed | held:
                 continue
             until = _cooling_until(contract, source["url"])
             if until is not None:
-                pending = [row for row in rows[index:] if int(row['id']) not in completed]
-                results, deferred = _defer_round(contract, pending, until, results)
+                # 只顺延同一来源的：JavDB 冷却挡不住 DMM 片单，反过来也一样（ADR-0135）。
+                pending = [row for row in rows[index:] if int(row['id']) not in completed | held
+                           and _same_source(row["url"], source["url"])]
+                results, count = _defer_round(contract, pending, until, results)
+                deferred += count
+                held.update(int(row['id']) for row in pending)
                 if not contract.feed_job.checkpoint(job_id, results=results, checked=len(results),
                                                     total=len(rows), added=len(set(codes))):
                     raise InterruptedError('订阅检查已停止')
-                break
+                continue
             if not contract.feed_job.update(job_id, checked=len(results), total=len(rows),
                                             current=source["name"] or source["url"]):
                 raise InterruptedError('订阅检查已停止')
