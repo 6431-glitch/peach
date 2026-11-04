@@ -483,7 +483,7 @@ class SourceTransport:
                                                SOURCES[source]["blocked_pause"]), blocks, via)
             raise SourcePaused("来源的人机验证没有在限时内通过，暂停向它请求一段时间；"
                                "浏览器窗口再弹出时点一下验证即可；已有图片保留")
-        if self.allow_browser and via == VIA_HTTP and source and SOURCES[source].get("browser_fallback") and _refused(response):
+        if via == VIA_HTTP and source and SOURCES[source].get("browser_fallback") and _refused(response):
             verified = self._verify_in_browser(source, request, timeout, max_bytes)
             if verified is not None:
                 # HTTP 客户端那条路攒下的账不压到浏览器上：清掉，之后按浏览器那条路重新数。
@@ -539,6 +539,8 @@ class SourceTransport:
         取到 200 且不是验证页：这个来源固定到浏览器（`fix_to_browser`），本趟之后的请求也走浏览器，返回这一页。
         本机没有浏览器、浏览器没取到或同样被拦：返回 None，调用方照 HTTP 客户端被拦那样冷却。
         """
+        if not self.allow_browser:
+            return None
         from .processing_control import checkpoint
         checkpoint('network')
         browser = self._browser_for(source)
