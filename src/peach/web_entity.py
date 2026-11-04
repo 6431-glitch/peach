@@ -159,10 +159,13 @@ def _performer_entries(contract: WebContract, c, d: dict, alias_rows) -> dict:
     """
     metadata = d.get("metadata") or {}
     localization = metadata.get("name_localization") if isinstance(metadata, dict) else None
+    # 选艺名与排入口要看引用资料（记下的现名、作品页署名），资料不随页面下发。
+    refs = [dict(r) for r in c.execute(
+        "SELECT provider,external_kind,external_id,metadata_json FROM entity_external_ref "
+        "WHERE entity_id=? ORDER BY provider,external_kind,external_id", (d["id"],))]
     out = {"entry_links": entry_links.entry_links(
-        contract.entry_links_root, d["canonical_name"], d["external_refs"], alias_rows,
-        localization)}
-    if (entry_links.javdb_actor_pages(d["canonical_name"], d["external_refs"])
+        contract.entry_links_root, d["canonical_name"], refs, alias_rows, localization)}
+    if (entry_links.javdb_actor_pages(d["canonical_name"], refs)
             or feeds.dmm_actress_ids(c, d["id"])):
         out["feed"] = {"following": feeds.entity_following(c, d["id"])}
     return out

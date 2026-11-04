@@ -627,6 +627,24 @@ it('同类父任务有独立控制范围时分别显示，按钮只提交对应�
   expect(posts).toEqual(['/api/tasks/1/control', '/api/tasks/2/control']);
 });
 
+it('同类父任务控制状态相同时并成一张卡，一次操作提交给每一批', async () => {
+  const batch = (id: number) => run({ id, task_key: 'upgrade-repairs', task_label: '自动修复', status: 'succeeded',
+    control: { state: 'running', actions: ['pause', 'cancel'] } });
+  const children = [followup(1, { id: 90, status: 'pending' }), followup(2, { id: 91, status: 'pending' })];
+  const posts: string[] = [];
+  stubFetch(async (input, init) => {
+    if (init?.method === 'POST') posts.push(input);
+    return { ok: true, status: 200, json: async () => payload({ running: children, finished: [batch(2), batch(1)] }) };
+  });
+  await prefetchTasks(new AbortController().signal);
+  const host = await mount(page());
+  const cards = host.querySelectorAll('[data-task-key="upgrade-repairs"]');
+  expect(cards).toHaveLength(1);
+  expect(cards[0]!.textContent).toContain('2 批');
+  await click(controlButton('暂停后续任务', cards[0]!));
+  await vi.waitFor(() => expect(posts).toEqual(['/api/tasks/2/control', '/api/tasks/1/control']));
+});
+
 it('服务端未给出控制能力时不按任务种类自行增加按钮', async () => {
   const { host } = await open(payload({ running: [run()] }));
   expect(host.querySelector('[data-task-controls]')).toBeNull();

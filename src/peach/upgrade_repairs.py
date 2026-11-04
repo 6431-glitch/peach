@@ -154,9 +154,15 @@ def _catalog_apply(connection, plan: dict) -> dict:
 
 
 def _stale_previews(contract, row):
-    """本地配套海报和九宫格分别按所属规则校验。"""
+    """本地配套海报和九宫格分别按所属规则校验。
+
+    只看本机影片：影片补全只给本机影片重抽九宫格、重读配套海报。网盘影片的九宫格是
+    `scripts/sheets.py` 抽的，没有规则签名，算它过期就每次换版都把整个网盘库派一遍，派完照旧过期。
+    """
     from .media_processing_policy import metadata_only
     from .platform import translate_ledger_path
+    if row['location'] != 'local':
+        return False
     poster = Path(getattr(contract, 'poster_root', Path(contract.candidate_root) / 'posters')) / f'{row["id"]}_4.jpg'
     if poster.is_file() and not (artifact_rules.current(poster, source_required=True) or artifact_rules.current(
             poster, upgrade_rules.LOCAL_POSTERS, source_required=True)):
@@ -360,7 +366,14 @@ class UpgradeRepairs:
                                (encoded, REVISION, encoded))
         atomic_write_text(self.receipt, encoded)
 
-    def _plan(self, receipt: dict):
+    def _media_backlog(self) -> int:
+        """已经派出、还没轮到的影片补全条数。"""
+        with self.contract.database.read_connection() as connection:
+            return connection.execute("SELECT count(*) FROM task_run WHERE task_key=? AND status='pending'",
+                                      (MEDIA_TASK,)).fetchone()[0]
+
+    def _plan(self, receipt: dict, *, media: bool = True):
+        """`media` 为假时只排资料与人物后继，影片补全等前面那批跑下去再派。"""
         from . import (avatar_followup, creator_identity_followup, performer_alias_followup,
                        performer_profile_followup, seed_followup, studio_followup)
         from .library_processing import _people_allowed
@@ -392,6 +405,8 @@ class UpgradeRepairs:
                     args.append(self.contract.avatar_root)
                 args.append(attempts)
                 planned.extend(planner.stock(*args, limit=min(16, remaining), skip=seen))
+            if not media:
+                return planned[:MAX_FOLLOWUPS]
             rows = connection.execute("SELECT id,code,name,path,location,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
         from .followups import Followup
@@ -431,7 +446,12 @@ class UpgradeRepairs:
                     if not receipt.get('deferred') and not any(row.key not in receipt.get('queued', {}) for row in seed):
                         return
                     receipt['dispatch_complete'] = False
-                planned = self._plan(receipt)
+                # 影片补全只有一条通道、一次一部；不等前面那批跑下去就每分钟再派一批，
+                # 整个库会在一两个小时里全堆进队列，任务中心满屏都是「已处理 0 / 64」。
+                media = self._media_backlog() < MAX_FOLLOWUPS
+                planned = self._plan(receipt, media=media)
+                if not planned and not media:
+                    return
                 if not planned:
                     receipt['dispatch_complete'] = True
                 else:
