@@ -1250,6 +1250,9 @@ class PerformerFeedSwitchTest(FeedWebFixture):
         result = self._switch(True)
         self.assertEqual(len(result["sources"]), 2)
         reports = {report["source"]: report for report in self._settled()["results"]}
+        # 同一个人的几条源挨在一起，JavDB 演员页在前。
+        self.assertEqual([source["kind"] for source in self._sources()],
+                         [feeds.KIND_JAVDB_ACTOR, feeds.KIND_DMM_ACTRESS])
         sources = {source["kind"]: source for source in self._sources()}
         dmm = sources[feeds.KIND_DMM_ACTRESS]
         self.assertEqual((dmm["url"], dmm["kind_label"], dmm["page_name"], dmm["name"]),

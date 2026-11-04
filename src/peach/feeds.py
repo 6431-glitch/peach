@@ -402,12 +402,13 @@ def sources(connection: sqlite3.Connection) -> list[dict]:
 
     `page_name` 是上次拉取时这一页在站上挂的名字（`settle` 写进 `feed_source.name`）。
     同一个人的两页在表里名字一样，只有它说得出哪一行是旧艺名那页。排序按人物走，
-    同一个人的几页挨在一起，不被页名拆开。"""
+    同一个人的几页挨在一起，不被页名或类型拆开；同一个人里 JavDB 演员页在前、DMM 片单在后。"""
     rows = connection.execute(
         "SELECT s.*, e.canonical_name AS entity_name,"
         " (SELECT count(*) FROM feed_item i WHERE i.source_id=s.id) AS seen"
         " FROM feed_source s LEFT JOIN entity e ON e.id=s.entity_id"
-        " ORDER BY s.kind, coalesce(e.canonical_name, s.name), s.id").fetchall()
+        " ORDER BY coalesce(e.canonical_name, s.name), s.kind<>?, s.id",
+        (KIND_JAVDB_ACTOR,)).fetchall()
     return [{
         "id": int(row["id"]),
         "kind": row["kind"],
