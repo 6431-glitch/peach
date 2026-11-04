@@ -637,6 +637,15 @@ class DetailProjectionTests(unittest.TestCase):
         self.assertEqual(result['items'][0]['attributes'], ['中字', '高清'])
         self.assertEqual(result['source_url'], 'https://javdb.com/v/Exact')
 
+    def test_resource_sizes_are_mebibytes_written_with_units(self):
+        rows = [{'hash': 'a' * 40, 'size': 4219}, {'hash': 'b' * 40, 'size': 700},
+                {'hash': 'c' * 40, 'size': 0}, {'hash': 'd' * 40, 'size': '3 GB'}]
+        with patch('peach.web_jav_detail.PUBLIC_API.movie', return_value={'id': 'Exact'}), \
+                patch('peach.web_jav_detail.PUBLIC_API.magnets', return_value=rows), \
+                patch('peach.web_jav_detail.PUBLIC_API.reviews', return_value=[]):
+            result = q_jav_resources(self.contract, {'code': 'EXM-001'})
+        self.assertEqual([item['size'] for item in result['items']], ['4.12GB', '700MB', '', '3 GB'])
+
     def test_resources_include_comment_ed2k_magnets_and_urls_with_origins(self):
         digest = 'a' * 40
         ed2k = 'ed2k://|file|www.98T.la@MIKR-096-U_1_chf3_prob4.mp4|19735225787|0936618B7ED1E5A0235FC6FBE27E104A|h=U5OZKZ4TELDTNANYLRNGQX5LCTDKAM52|/'

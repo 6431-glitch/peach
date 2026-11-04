@@ -1546,11 +1546,13 @@ class WebDataTests(unittest.TestCase):
             "/api/media-processing",
             "/api/thumbnail-jobs", "/api/timeline", "/api/media-repair",
             "/api/scraping", "/api/scraping/cover", "/api/scraping/amane-bridge",
+            "/api/scraping/check-all",
             "/api/items", "/api/item", "/api/entity", "/api/entity/shapes", "/api/entity/latest", "/api/photos", "/api/photo-set",
             "/api/index", "/api/parts", "/api/editions", "/api/duplicates", "/api/quality-goals",
             "/api/stats", "/api/tops", "/api/ads", "/api/related", "/api/facets",
             "/api/suggest",
-            "/api/search-history", "/api/search/recommendations", "/api/review", "/api/playlists", "/api/playlist",
+            "/api/search-history", "/api/search/recommendations", "/api/review", "/api/review/auto-landings",
+            "/api/playlists", "/api/playlist",
             "/api/post-setup-tutorial",
             "/api/tutorial-progress", "/api/performer/delete-candidates", "/api/performer/delete-plan",
             "/api/library-shortcuts", "/api/folders",
@@ -1572,7 +1574,8 @@ class WebDataTests(unittest.TestCase):
             "/api/downloads", "/api/downloads/cancel", "/api/downloads/postprocess",
             "/api/library-processing", "/api/thumbnail-jobs", "/api/media-repair",
             "/api/media-processing",
-            "/api/scraping/settings", "/api/scraping/check", "/api/scraping/cover", "/api/jav/cover",
+            "/api/scraping/settings", "/api/scraping/check", "/api/scraping/check-all",
+            "/api/scraping/cover", "/api/jav/cover",
             "/api/scraping/amane-bridge/check", "/api/scraping/amane-bridge/rebuild",
             "/api/activity", "/api/play", "/api/feedback", "/api/watch-later",
             "/api/playlist",
@@ -1581,7 +1584,7 @@ class WebDataTests(unittest.TestCase):
             "/api/custom-metadata",
             "/api/preference", "/api/quality-goal", "/api/item-tag", "/api/batch",
             "/api/search-history", "/api/trash/empty",
-            "/api/review/decision", "/api/review/genre",
+            "/api/review/decision", "/api/review/genre", "/api/review/auto-landings/revert",
             "/api/purge-missing", "/api/orphan-records/attach",
             "/api/links/check", "/api/links/prune",
             "/api/resource-sync/scan", "/api/resource-sync/apply",
@@ -1714,7 +1717,7 @@ class WebDataTests(unittest.TestCase):
         con.commit(); con.close()
         groups = rm_web._edition_groups(self.contract, ["ABF-234"])
         self.assertEqual(list(groups), ["ABF-234"])
-        self.assertEqual([item["edition"] for item in groups["ABF-234"]], ["有码", "无码"])
+        self.assertEqual([item["edition"] for item in groups["ABF-234"]], ["有码", "无码破解"])
         # 正片在前只是要一个稳定的锚点：次序一变，卡片标题就跟着换。
         self.assertEqual(groups["ABF-234"][0]["id"], 9001)
 
@@ -2964,7 +2967,8 @@ class JavModeAndCoverTests(unittest.TestCase):
         })
         self.assertEqual(advertised["display_title"], "")
         self.assertEqual(uncensored["display_title"], "Hinata Mio")
-        self.assertEqual(uncensored["edition_badges"], ["无码"])
+        # 有码片商的番号上，`Uncen` 说的是破解版。
+        self.assertEqual(uncensored["edition_badges"], ["无码破解"])
         self.assertEqual(cracked["edition_badges"], ["无码破解"])
 
     def test_uncensored_release_names_are_not_shown_as_titles(self):
@@ -3038,12 +3042,35 @@ class JavModeAndCoverTests(unittest.TestCase):
             self.assertEqual(row["display_title"], "", name)
             self.assertEqual(row["edition_badges"], ["中字"], name)
         # `-UN` 和 `-U`／`-UC` 是同一个意思；标题判空后不认它就等于丢掉这条信息。
+        # 有码片商的番号上，它说的是破解版。
         self.assertEqual(
             rm_web.jav_display_metadata("ABF-158-UN.mp4", "ABF-158")["edition_badges"],
-            ["无码"])
+            ["无码破解"])
         # 相邻字母不能被当成版次标记吞掉。
         self.assertEqual(
             rm_web.jav_display_metadata("ABC-123CHAPTER.mp4", "ABC-123")["edition_badges"], [])
+
+    def test_uncensored_editions_split_into_native_leaked_and_cracked(self):
+        """无码片商的片是无码，明写流出的是流出，有码番号上其余的无码标记都是破解。"""
+        badges = catalog_rules.jav_edition_badges
+        for name, code, tags, expected in (
+            ("SSIS-698-UC.mp4", "SSIS-698", (), ["无码破解"]),
+            ("www.98T.la@ABW-358-U.mp4", "ABW-358", (), ["无码破解"]),
+            ("300MIUM-123-U.mp4", "300MIUM-123", (), ["无码破解"]),
+            ("ABP-123.mp4", "ABP-123", ("无码",), ["无码破解"]),
+            # `-C-U` 整个是破解标记，不另算中字；`-UMR` 同理。
+            ("ABP-123-C-U.mp4", "ABP-123", (), ["无码破解"]),
+            ("ABP-123-UMR.mp4", "ABP-123", (), ["无码破解"]),
+            ("STARS-141 UNCENSORED leaked 演员名.mp4", "STARS-141", (), ["无码流出"]),
+            ("STARS-160_UNCENSORED_Leaked.mp4", "STARS-160", (), ["无码流出"]),
+            ("ABP-123-流出.mp4", "ABP-123", (), ["无码流出"]),
+            # 无码片商与 FC2 这类本身可能无码的片，`-U` 不改成破解。
+            ("SMBD-120-U.mp4", "SMBD-120", (), ["无码"]),
+            ("010124-001-carib.mp4", "010124-001", (), ["无码"]),
+            ("FC2-PPV-1234567-U.mp4", "FC2-PPV-1234567", (), ["无码"]),
+            ("FC2-PPV-1234567.mp4", "FC2-PPV-1234567", ("无码",), ["无码"]),
+        ):
+            self.assertEqual(badges(name, code, tags), expected, name)
 
     def test_download_source_names_supply_edition_evidence_the_filename_lost(self):
         """网盘离线下载的文件名只剩番号，`ch`、「中文字幕」留在种子名或任务名上。"""
@@ -3051,7 +3078,7 @@ class JavModeAndCoverTests(unittest.TestCase):
         self.assertEqual(badges("SONE-804 作品标题.mp4", "SONE-804", (),
                                 ("+++ [FHDC] SONE-804 作品标题", "SONE-804ch")), ["中字"])
         self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123 中文字幕",)), ["中字"])
-        self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123-U",)), ["无码"])
+        self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123-U",)), ["无码破解"])
         # 磁力名与任务名各给一半证据时取并集，不看先后。
         self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123-U", "ABP-123 无码破解")),
                          ["无码破解"])
@@ -3062,8 +3089,9 @@ class JavModeAndCoverTests(unittest.TestCase):
 
     def test_filename_wins_when_it_and_the_download_source_disagree(self):
         badges = catalog_rules.jav_edition_badges
-        # 无码与无码破解只认文件侧：文件名写 `-U`，种子名写「破解」，还是无码。
-        self.assertEqual(badges("ABP-123-U.mp4", "ABP-123", (), ("ABP-123 无码破解",)), ["无码"])
+        # 文件名只有泛泛的 `-U` 时，种子名里明说的流出压过它；文件名明说了的，种子名改不动。
+        self.assertEqual(badges("ABP-123-U.mp4", "ABP-123", (), ("ABP-123 流出",)), ["无码流出"])
+        self.assertEqual(badges("ABP-123-LTX.mp4", "ABP-123", (), ("ABP-123 流出",)), ["无码破解"])
         self.assertEqual(badges("ABP-123.mp4", "ABP-123", ["AI去码"], ("ABP-123-U",)),
                          ["无码破解"])
         # 无码片商的番号本身就是文件侧证据，种子名上的「破解」不覆盖它，但中字照样补。
@@ -3595,6 +3623,30 @@ class DuplicateDetectionTests(unittest.TestCase):
         group = self.groups()["groups"][0]
         self.assertTrue(group["cross_drive"])
         self.assertEqual(group["drives"], ["A:", "B:"])
+
+    def test_kept_group_leaves_the_list_until_its_members_change(self):
+        first = self.add("SSIS-057", 7200, 5_000_000_000, drive="A")
+        second = self.add("SSIS-057", 7200, 4_000_000_000, drive="B")
+        other = [self.add("ABW-232", 7200, 5_000_000_000), self.add("ABW-232", 7200, 3_000_000_000)]
+        rm_web.w_batch(self.contract, {"ids": [second, first], "operation": "keep-duplicates"})
+        result = self.groups()
+        self.assertEqual([group["code"] for group in result["groups"]], ["ABW-232"])
+        self.assertEqual((result["total"], result["files"], result["kept"]), (1, 2, 1),
+                         "标过都保留的组不计入组数、文件数与可回收")
+        self.assertEqual(result["reclaimable"], 3_000_000_000)
+
+        third = self.add("SSIS-057", 7200, 3_000_000_000, drive="C")
+        result = self.groups()
+        self.assertEqual(result["kept"], 0, "多出一份副本，这组要重新列出")
+        regrouped = next(group for group in result["groups"] if group["code"] == "SSIS-057")
+        self.assertEqual({item["id"] for item in regrouped["files"]}, {first, second, third})
+
+        rm_web.w_batch(self.contract, {"ids": [first, second, third], "operation": "keep-duplicates"})
+        self.assertEqual(self.groups()["kept"], 1)
+        rm_web.w_batch(self.contract, {"ids": [first, second, third], "operation": "reconsider-duplicates"})
+        self.assertEqual(self.groups()["total"], 2, "撤销后这组回到列表")
+        with self.assertRaises(ValueError):
+            rm_web.w_batch(self.contract, {"ids": other[:1], "operation": "keep-duplicates"})
 
     def test_duplicate_rows_keep_the_full_path_for_review(self):
         self.add("SSIS-057", 7200, 5_000_000_000, drive="A")
@@ -4386,9 +4438,11 @@ class DownloadSourceEditionTests(unittest.TestCase):
                              "SONE-804 作品标题.mp4")
             self.assertEqual(connection.execute("SELECT count(*) FROM asset_entity").fetchone()[0], 0)
 
-    def test_filename_marker_wins_over_a_conflicting_torrent_name(self):
-        self.bind(1, 3, "ABP-123 无码破解", "ABP-123 无码破解")
-        self.assertEqual(self.badges(3), ["无码"])
+    def test_torrent_name_settles_a_bare_uncensored_marker(self):
+        # 文件名只有 `-U`，有码番号上默认是破解；种子名明说流出时听种子名的。
+        self.assertEqual(self.badges(3), ["无码破解"])
+        self.bind(1, 3, "ABP-123 流出", "ABP-123 流出")
+        self.assertEqual(self.badges(3), ["无码流出"])
 
     def test_assets_without_a_download_task_keep_filename_badges(self):
         self.bind(1, None, "SONE-804-C", "SONE-804-C")

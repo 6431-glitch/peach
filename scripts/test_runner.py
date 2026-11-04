@@ -260,6 +260,10 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     # 失效标记由资料页、网页链接体检、维护脚本与种子导出共用。
     "src/peach/link_status.py": ("catalog", "metadata", "tooling", "web"),
     "scripts/revert_auto_landing.py": ("catalog", "metadata", "tooling"),
+    # 撤回的实现与复核页入口（ADR-0141）：脚本用例散在 catalog、metadata、tooling，网页用例在
+    # `test_metadata_verification.py`，路由登记在 `test_rm_web.py`。
+    "src/peach/auto_landing_revert.py": ("catalog", "metadata", "tooling"),
+    "src/peach/web_auto_landings.py": ("catalog", "metadata", "web"),
     # 实体事实种子包（ADR-0073）：导出导入的逻辑与命令行，测试都在 `test_seed_pack.py`；
     # 扫描结算后自动导入的后继（ADR-0075）在 `test_seed_followup.py`。
     "src/peach/seed_pack.py": ("metadata", "tooling"),
@@ -293,6 +297,8 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     ".dockerignore": ("packaging", "tooling"),
     "compose.yaml": ("packaging", "tooling"),
     "src/peach/server.py": ("packaging", "tooling"),
+    # 一键更新的用例和镜像仓库核对一起放在 `test_release_updates.py`。
+    "src/peach/docker_update.py": ("tooling",),
     "scripts/smoke_docker.py": ("packaging", "tooling"),
     # GitLab 流水线：构建、发布与 CI 验证的编排，本机测试不执行它；`test_version_bump.py`
     # 读它判补丁版本。主线 CI 改它时由 `ci_scope` 让三个平台跑全量。

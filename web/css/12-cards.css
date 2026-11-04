@@ -200,13 +200,17 @@ body .card:focus-within{background:var(--hover);box-shadow:0 0 0 8px var(--hover
    子元素就不截，iOS 上长标题会整段摊开，把「接着看」那一排撑得老高。 */
 .meta .t{font-size:var(--fs-md);line-height:1.35;min-height:2.7em;max-height:2.7em;overflow:hidden;display:-webkit-box;
   -webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-all}
+/* 徽章字样永远一行：放进挤窄的 flex 行里时不收缩、不折字，宁可整枚换到下一行。 */
 .javedition{display:inline-flex;align-items:center;min-height:18px;padding:0 5px;border:1px solid currentColor;
-  border-radius:var(--badge-radius);font-size:var(--fs-xs);line-height:16px;font-weight:600;letter-spacing:0;vertical-align:1px}
+  border-radius:var(--badge-radius);font-size:var(--fs-xs);line-height:16px;font-weight:600;letter-spacing:0;vertical-align:1px;
+  white-space:nowrap;flex-shrink:0}
 .javedition.subtitle{color:var(--ink-2)}
 .javedition.uncensored{color:var(--meter)}
-.javedition.cracked{color:var(--drop)}
+.javedition.leaked{color:var(--loupe)}
+/* 破解不用 `--drop`：那是删除与出错的颜色，放在版次上像是文件坏了。紫色取 Board UI 状态色，明暗各一套。 */
+.javedition.cracked{color:var(--color-status-purple-text)}
 .javedition.censored{color:var(--muted)}
-/* 卷号说的是「这是第几份文件」，不是版次，用中性灰和三种版次色区分开。 */
+/* 卷号说的是「这是第几份文件」，不是版次，用中性灰和各版次色区分开。 */
 .javedition.partlabel{color:var(--muted);margin-left:6px}
 .meta .s{display:flex;gap:8px;color:var(--muted);align-items:center;flex-wrap:wrap}
 .meta .who{color:var(--ink-2);min-width:0;max-width:100%;display:inline-block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}

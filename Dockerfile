@@ -49,9 +49,11 @@ COPY --from=build /app/.venv /app/.venv
 COPY --from=build /app/amane-runtime /app/amane-runtime
 COPY --from=build /app/tools/amane-bridge /app/tools/amane-bridge
 RUN /app/amane-runtime/.venv/bin/python -X utf8 /app/tools/amane-bridge/bridge.py --self-check
+# 一键更新的令牌目录：compose 在这里挂 peach-update 卷，空卷首次挂载时照搬这个目录的属主（ADR-0140）。
+RUN mkdir /update && chown peach:peach /update
 ENV PATH="/app/.venv/bin:$PATH" PEACH_DATA_ROOT=/data PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=utf-8 PYTHONUTF8=1 PEACH_FACE_MODELS=/app/tools/face-models PEACH_DISTRIBUTION=docker \
-    PEACH_AMANE_RUNTIME=/app/amane-runtime
+    PEACH_AMANE_RUNTIME=/app/amane-runtime PEACH_UPDATE_DIR=/update
 WORKDIR /data
 USER peach
 EXPOSE 8900

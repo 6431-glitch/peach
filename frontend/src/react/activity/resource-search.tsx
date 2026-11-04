@@ -26,7 +26,7 @@ function SearchSpinner({ className }: { className?: string }) {
 
 function preferredGoal(reason: string | undefined): string {
   if (['中字', '中文字幕'].includes(reason?.trim() ?? '')) return 'chinese';
-  if (['无码', '无码破解'].includes(reason?.trim() ?? '')) return 'uncensored';
+  if (['无码', '无码流出', '无码破解'].includes(reason?.trim() ?? '')) return 'uncensored';
   return 'quality';
 }
 

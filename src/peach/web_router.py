@@ -103,13 +103,14 @@ from .web_playlists import q_playlist, q_playlists, w_playlist
 from .web_custom_metadata import q_custom_metadata, w_custom_metadata
 from .web_resource_sync import w_purge_missing, w_resource_sync_apply, w_resource_sync_scan
 from .web_review import q_review, w_review_decision, w_review_genre
+from .web_auto_landings import q_auto_landings, w_auto_landing_revert
 from .web_settings import q_settings, w_settings
 from .web_library_shortcuts import q_library_shortcuts, w_library_shortcuts
 from .web_tutorial import q_tutorial_progress, w_tutorial_progress
 from .web_folders import q_folders, w_folder_preview, w_folder_rule
 from .web_scraping import (
     q_scraping, q_scraping_amane_bridge, w_scraping_amane_check, w_scraping_amane_rebuild,
-    w_scraping_check, w_scraping_cover, w_scraping_settings,
+    w_scraping_check, w_scraping_check_all, w_scraping_cover, w_scraping_settings,
 )
 from .web_state import WebContract, path_version
 from .web_tasks import q_tasks
@@ -365,6 +366,7 @@ GET_HANDLERS = {
     "/api/scraping": q_scraping,
     "/api/scraping/cover": lambda contract, args: contract.scraping_cover_job.snapshot() or {"status": "idle"},
     "/api/scraping/amane-bridge": q_scraping_amane_bridge,
+    "/api/scraping/check-all": lambda contract, args: contract.source_check_job.snapshot() or {"status": "idle"},
     "/api/settings": q_settings,
     "/api/library-shortcuts": q_library_shortcuts,
     "/api/tutorial-progress": q_tutorial_progress,
@@ -418,6 +420,7 @@ GET_HANDLERS = {
     "/api/search/recommendations": q_search_recommendations,
     "/api/taste": _get_taste,
     "/api/review": _get_review,
+    "/api/review/auto-landings": q_auto_landings,
     "/api/post-setup-tutorial": _get_post_setup_tutorial,
 }
 
@@ -436,6 +439,7 @@ POST_HANDLERS = {
     "/api/scraping/cover": w_scraping_cover,
     "/api/jav/cover": w_jav_cover,
     "/api/scraping/check": w_scraping_check,
+    "/api/scraping/check-all": w_scraping_check_all,
     "/api/scraping/amane-bridge/check": w_scraping_amane_check,
     "/api/scraping/amane-bridge/rebuild": w_scraping_amane_rebuild,
     "/api/feeds/check": w_feed_check,
@@ -484,6 +488,7 @@ POST_HANDLERS = {
     "/api/media-repair": w_media_repair,
     "/api/review/decision": w_review_decision,
     "/api/review/genre": w_review_genre,
+    "/api/review/auto-landings/revert": w_auto_landing_revert,
     "/api/settings": w_settings,
     "/api/library-shortcuts": w_library_shortcuts,
     "/api/tutorial-progress": w_tutorial_progress,
