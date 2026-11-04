@@ -326,7 +326,7 @@ it('类别名放不下就截断加省略号，轴宽跟着最长的名字走并�
 it('覆盖率那一层的每条进度用同一对分子分母，不另算一遍', async () => {
   const { host } = await open();
   await click(tabNamed(host, '内容标签'));
-  const bars = [...host.querySelectorAll('[role=progressbar]')];
+  const bars = [...host.querySelectorAll('[role=meter]')];
   expect(bars.map((bar) => bar.getAttribute('aria-label'))).toEqual([
     '有创作者：3 / 4', '有番号：2 / 4', '有厂牌：1 / 4', '已抽帧：4 / 4', '已探测时长：4 / 4',
   ]);
@@ -341,7 +341,7 @@ it('取不到容量的卷不画使用率，只说取不到', async () => {
   const panel = host.querySelectorAll('[role=tabpanel]')[0]!;
   expect(panel.textContent).toContain('容量未取得');
   expect(panel.textContent).toContain('未映射');
-  expect(panel.querySelector('[role=progressbar]')).toBeNull();
+  expect(panel.querySelector('[role=meter]')).toBeNull();
 });
 
 it('按字节计的卷在百格画布上按真实比例画出已用那一段，读屏值仍是字节', async () => {
@@ -352,7 +352,7 @@ it('按字节计的卷在百格画布上按真实比例画出已用那一段，�
     storage_summary: { volumes: 1, online: 1, measured: 1, free: total - used, used, total },
   }));
   await click(tabNamed(host, '使用空间'));
-  const bar = host.querySelectorAll('[role=tabpanel]')[0]!.querySelector('[role=progressbar]')!;
+  const bar = host.querySelectorAll('[role=tabpanel]')[0]!.querySelector('[role=meter]')!;
   expect(bar.getAttribute('aria-valuemax')).toBe(String(total));
   expect(bar.getAttribute('aria-valuenow')).toBe(String(used));
   expect(bar.getAttribute('viewBox')).toBe('0 0 100 1');

@@ -8,6 +8,7 @@ import { foldName, icon } from '@peach/legacy/core';
 import { apiGet } from '../../api';
 import { pickerSections, recentTags, type DetailTag, type TagCount } from '../item-detail/item-detail';
 import { TagEditor, type ManagedTag, type TagScope } from '../index/tag-operations';
+import { composingKey } from './ime';
 import { Note } from './note';
 import { useOverlayScrollbar } from './overlay-scrollbar';
 import { useAction, busyProps } from '../settings/use-action';
@@ -122,7 +123,7 @@ function TagPicker({ tags, candidates, label, onAdd, adding, scope, onOpen, load
   };
   const keydown = (event: KeyboardEvent<HTMLInputElement>) => {
     /* 选字那一下的回车是定字，不是「新建这个标签」——半截拼音会真的建成标签。 */
-    if (event.nativeEvent.isComposing) return;
+    if (composingKey(event.nativeEvent)) return;
     if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); plus.current?.focus(); return }
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();

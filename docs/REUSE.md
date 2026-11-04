@@ -667,6 +667,12 @@ MGS 专属发行先查自营商品目录，Prestige 番号复用 `metadata_route
 
 馆藏与新作取图共用 `cover_artwork.metadata_snapshots` 和 `best_cover`，片商官网、发行方、R18 与 DMM 的官方候选均参与尺寸比较。馆藏采集将长边 1600px 作为高清重探界限，社区转存图可由官方封面替换；同类官方图按像素面积升级，FC2 保留商品图的来源保护。`scripts/audit_cover_artwork.py` 逐张核对尺寸、来源、版次与取景框，输出 CSV；`scripts/upgrade_audited_covers.py` 按已有官方快照逐番号重探，`--live` 经同一官方链在线补查，保存原件备份与结果检查点。两者只处理可重建图片和边车，不写 ledger。
 
+## 快捷键
+
+SFW 开关键可在偏好设置的「内容显示」里改。主键按 `KeyboardEvent.code` 记录与匹配，Mac 上 Option 改写的字符（Option+S 是「ß」）和键盘布局都不影响；绑定至少带一个修饰键，Ctrl 或 ⌘ 加 W、T、N、Q 这类浏览器自己处理的组合不收。显示按平台分两套：苹果设备用 ⌃⌥⇧⌘ 字形，其余平台写 `Ctrl+Alt+Shift+Win`。绑定存在本机 `localStorage`，不进同步设置，⌘ 换到 Windows 上是 Win 键。
+
+平时的按键胶囊直接用 BoardUI 注册表的 `kbd` 条目（逐字副本见 `frontend/src/react/boardui/ORIGIN.md`），颜色取主题已有的 `kbd` token。录制时换成一排拟物键帽（`frontend/src/react/components/keycap.tsx`）：BoardUI 的 Kbd 是一个组合一枚胶囊，只适合做提示；Vercel Geist Keyboard Input 一个键一枚但只有细描边，open-claude-ui 设计手册只写了「键帽、4px 圆角、阴影衬底」没有实现，所以按两者的共同点自己组合，颜色全取主题变量。录制、匹配与显示在 `frontend/src/keyboard-shortcut.ts`，不引快捷键库：tinykeys、hotkeys-js 能替掉的只有匹配那几行，录制和按平台显示仍要自写；react-hotkeys-hook 的录制钩子只给 React 用，而全局监听在遗留的 `application/search.js`。React Aria 的平台判断只在内部私有路径，不作为公开接口依赖，平台判断沿用 `browser-diagnostics.ts` 先读 User-Agent Client Hints 的写法。
+
 ## 复用决策门槛
 
 每次决定「用现成的还是自己写」都按这四条走，本节其余各条是按这四条做出的具体决定：
