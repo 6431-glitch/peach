@@ -356,8 +356,9 @@ minnano-av 也在 Cloudflare 后面，但对 HTTP 客户端是间歇拦截：202
 `resync_performer_agency.py` 都经 `SourceTransport` 取 minnano-av，共用同一份冷却与固定状态。2026-10-01 实测：
 临时 profile 的 Chrome 取检索页，跟到资料页 `actress695633.html`，资料表解析正常。
 
-候选备援（未接入）：OpenAver 0.16.13 拔掉 minnano-av 后按 xcity → 维基 → graphis 逐字段合并女优资料；只作 minnano-av
-取不到时的补位，不替换它，因为它是目前唯一能从名字走到事务所名册的入口（调研见 ADR-0092）。
+资料的补位已接入 avbase 女优页（ADR-0136，见下文「女优别名与资料的自动登记」）。它只在 minnano-av 上没有她时写，
+不替换 minnano-av，因为后者是目前唯一能从名字走到事务所名册的入口。OpenAver 另有 xcity → 维基 → graphis 的逐字段合并，
+仍未接入（调研见 ADR-0092）。
 
 ### JavArchive
 
@@ -604,12 +605,17 @@ Instagram 的独立用户登录会话未取得，自动适配器不进正式依�
   - `サイズ` 形如 `T156 / B86( Eカップ ) / W58 / H85 / S`，数字就是厘米；末尾那个 `S` 含义未取得，只留原文。
     资料没填的页没有生年月日、血液型、出身地那几行。
   - `ブログ` 那格显示 `http://`、`href` 是 `https://`，取 `href`。站内头像 `/p_actress_125_125/` 只有 125×125。
+  - avbase 女优页 `/talents/<名字>`（ADR-0136）：直连 httpx 带 Chrome UA 就回 200，名字站上没有回 404。
+    `__NEXT_DATA__` 的 `pageProps.talent.actors[]` 是站上归到她名下的名义，资料取 `meta.basic_info`；
+    `actors[].meta.fanza` 是另一份可能过时的 FANZA 资料，只留原文。没有出道年、活动期、博客与官网。一页
+    650～750 KB，缓存只存 `compact_talent_page` 裁出的 `talent` 与同名列表。冷却与作品采集共用 `avbase` 那一份。
+    它写的行不算 minnano-av 的「未过期」，minnano-av 取到就整行换掉。
   - avwikidb.com 直连 httpx 带 Chrome UA 就回整页（登记在 `scraping_access.SOURCES`，拒绝访问停 6 小时）。作品页
     `/work/<番号>/` 头里的 JSON-LD `Movie.actor` 每项给 `name`、罗马字 `alternateName` 与 `/actor/<编号>/`，编号
     从这里取。女优页 JSON-LD `Person.alternateName` 前两项是读音与罗马字，后面混着站上归并的其他名义（含男优
     名），不收。三围只在正文「身長・スリーサイズ」一格（`T148 B83(B) W55 H85`）。女优图是 DMM `actjpgs` 的
     125×125，不作头像；站内搜索是 `⌘K` 弹层，地址形态未取得。
-  - 出生日期与身高和 minnano-av 不一致时，只记进外部编号的 `metadata_json.conflicts`。
+  - 出生日期与身高和资料表那一行（minnano-av 或 avbase 写的）不一致时，只记进外部编号的 `metadata_json.conflicts`。
 
 ## 番号目录、创作者与水印
 
