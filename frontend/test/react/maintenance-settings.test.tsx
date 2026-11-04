@@ -147,6 +147,20 @@ describe('检查更新', () => {
     expect(link?.getAttribute('href')).toBe(dmg);
   });
 
+  it('Docker 镜像有新版时列出宿主机上的两步命令，不给下载或安装键', async () => {
+    const steps = [{ text: '拉取新镜像', command: 'docker compose pull' }, { text: '重建容器', command: 'docker compose up -d' }];
+    const docker = { ...release, installation: 'Docker 镜像', in_app_update: false, steps };
+    const host = await mount(<ReleaseUpdates initial={{ ...docker, state: 'available', latest_version: '1.0.0', message: '有新镜像可拉取。' }} />);
+    const updates = section(host, '检查更新')!;
+    expect(updates.textContent).toContain('Docker 镜像');
+    const list = updates.querySelector('ol[aria-label="在宿主机上更新"]');
+    expect([...list!.querySelectorAll('code')].map((code) => code.textContent)).toEqual(['docker compose pull', 'docker compose up -d']);
+    expect(buttonNamed('下载并安装', updates)).toBeNull();
+    expect([...updates.querySelectorAll('a')].some((a) => a.textContent === '下载新版本')).toBe(false);
+    const current = await mount(<ReleaseUpdates initial={{ ...docker, state: 'current', latest_version: '0.9.0', message: '已是最新测试版。' }} />);
+    expect(current.querySelector('ol[aria-label="在宿主机上更新"]')).toBeNull();
+  });
+
   it('已是最新就不再提示可用更新，也不给安装键', async () => {
     const current = await mount(<ReleaseUpdates initial={{ ...release, latest_version: '0.9.0', state: 'current', message: '已是最新测试版。' }} />);
     expect(current.textContent).not.toContain('有可用更新');

@@ -162,6 +162,22 @@ class ReleaseUpdateTests(unittest.TestCase):
             with patch.object(distribution, "sys", SimpleNamespace(platform="win32")):
                 self.assertTrue(release_updates.snapshot()["in_app_update"])
 
+    def test_docker_image_reports_itself_and_gives_host_steps_instead_of_a_package(self):
+        transport = Mock(return_value=HttpResponse(200, {}, json.dumps([release("1.0.0")]).encode()))
+        with patch.dict("os.environ", {"PEACH_DISTRIBUTION": "docker"}), \
+                patch.object(release_updates, "__version__", "0.9.0"):
+            snapshot = release_updates.snapshot()
+            result = release_updates.check(transport=transport, system="linux", machine="x86_64")
+        self.assertEqual(snapshot["installation"], "Docker 镜像", "此前显示成「源码运行」")
+        self.assertEqual([step["command"] for step in snapshot["steps"]],
+                         ["docker compose pull", "docker compose up -d"])
+        self.assertEqual((result["state"], result["latest_version"]), ("available", "1.0.0"))
+        self.assertEqual(result["release_url"], release_updates.RELEASES_URL + "/tag/v1.0.0")
+        self.assertNotIn("package_kind", result, "容器不下载 Windows 发行包")
+        self.assertNotIn("asset_url", result)
+        with patch.dict("os.environ", {"PEACH_DISTRIBUTION": ""}):
+            self.assertEqual(release_updates.snapshot()["steps"], [])
+
     def test_macos_skips_releases_without_its_dmg(self):
         transport = Mock(return_value=HttpResponse(200, {}, json.dumps([release("1.0.0")]).encode()))
         with patch.object(release_updates, "__version__", "0.9.0"):

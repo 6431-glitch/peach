@@ -89,6 +89,22 @@ export function ErrorText({ children }: { children: ReactNode }) {
   return <p role="alert" className="text-body-2-regular text-text-error-primary">{children}</p>;
 }
 
+/** 设置页做不了、要在宿主机上照抄执行的几步：每步一句说明加一条命令（容器的迁移与更新）。 */
+export function CommandSteps({ label, steps }: { label: string; steps: { text: string; command: string }[] }) {
+  return (
+    <ol className="flex list-decimal flex-col gap-2 pl-5 text-body-2-regular text-text-secondary" aria-label={label}>
+      {steps.map((step) => (
+        <li key={step.command}>
+          {step.text}
+          <code className="mt-1 block rounded-md bg-background-tertiary-default px-2 py-1 text-caption-1-regular break-all text-text-primary">
+            {step.command}
+          </code>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 /** 字段上方的名字，外观同 BoardUI `Label`；控件自己的无障碍名称由 `aria-label` 给。 */
 export function FieldLabel({ children }: { children: ReactNode }) {
   return <p className="text-body-medium text-text-primary">{children}</p>;

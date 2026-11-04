@@ -28,10 +28,22 @@ def download_sources(url: str) -> tuple[str, ...]:
     return (url,)
 
 
+#: 容器换新版在宿主机上做：拉镜像、重建容器，`/data` 卷保留。每步一句说明加一条命令，
+#: 命令按仓库的 compose.yaml 写（镜像标签取 `.env` 的 `PEACH_VERSION`，缺省是 `edge`）。
+DOCKER_STEPS = (
+    ("在 compose.yaml 所在目录拉取新镜像；.env 里把 PEACH_VERSION 固定成版本号的，先改成新版本",
+     "docker compose pull"),
+    ("重建容器，/data 数据卷保留", "docker compose up -d"),
+)
+
+
 def snapshot() -> dict:
+    docker = distribution.docker()
+    installation = "Docker 镜像" if docker else "独立测试包" if distribution.standalone() else "源码运行"
     return {"current_version": __version__, "latest_version": None,
-            "channel": "测试版", "installation": "独立测试包" if distribution.standalone() else "源码运行",
+            "channel": "测试版", "installation": installation,
             "in_app_update": distribution.in_app_update(),
+            "steps": [{"text": text, "command": command} for text, command in DOCKER_STEPS] if docker else [],
             "state": "unchecked", "message": "尚未检查", "release_url": RELEASES_URL}
 
 
@@ -111,6 +123,10 @@ def check(*, transport=None, system: str | None = None, machine: str | None = No
             raise ValueError("current version required")
         state = "available" if version > current else "ahead" if version < current else "current"
         message = {"available": "有新版本可下载。", "ahead": "当前版本高于已发布测试版。", "current": "已是最新测试版。"}[state]
+        if distribution.docker():
+            # 版本号跟着 Windows 包判，镜像在同一次发布里推送；容器不下载发行包，只给版本与发布页。
+            return dict(result, latest_version=tag.removeprefix("v"), state=state, release_url=release_url,
+                        message="有新镜像可拉取。" if state == "available" else message)
         return dict(result, latest_version=tag.removeprefix("v"), state=state, message=message,
                     asset_url=f"{directory}/{asset['name']}",
                     asset_size=asset.get("size", 0), asset_digest=asset.get("digest"),

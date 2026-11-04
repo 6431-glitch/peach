@@ -254,6 +254,8 @@ export interface ReleaseState {
   asset_size?: number;
   /** 能在页面里下载并重启安装；只有 Windows 独立包是 true。 */
   in_app_update?: boolean;
+  /** 容器换新版要在宿主机上做的几步；其他安装方式是空表。 */
+  steps?: { text: string; command: string }[];
 }
 
 export interface UpdateJob {

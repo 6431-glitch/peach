@@ -280,6 +280,39 @@ class UpgradeRepairTests(unittest.TestCase):
                                "VALUES(?,'local',?,?,'video',?,?,?)",
                                (key, f'{key}.mp4', 'SSIS-123.mp4', code, json.dumps({'code': owner}), duration))
 
+    def test_codes_misread_from_old_filenames_are_cleared_once_with_a_receipt(self):
+        rows = [
+            # 手机录像的时间戳与被截断的「名字_日期」：现行规则都不认，账本里还记着旧值。
+            (1, r'R:\media\某人\VID_20220818_125735_816.mp4', '125735-816', None, None),
+            (2, r'A:\pen\KUZU_250103-U_iris3.mp4', 'KUZU-25010', None, None),
+            # 现行规则认不出文件名，但番号完整写在文件名里：保留。
+            (3, r'B:\x\(アリスJAPAN)(DVAJ-185)标题.mp4', 'DVAJ-185', None, None),
+            # 番号不在文件名里，可这一行有刮削资料：是按另一份身份改过的，保留。
+            (4, r'B:\一本道\092415-001\1pon-092415-001-fhd2_(new).mp4', '092415_159', '另一部的标题', None),
+            # 用户自己填的番号不碰。
+            (5, r'A:\pen\KUZU_142-U_iris3.mp4', 'KUZU-142', None, 'user:manual'),
+        ]
+        with self.database.write_transaction() as connection:
+            for key, path, code, title, owner in rows:
+                connection.execute(
+                    'INSERT INTO asset(id,location,path,name,medium,code,catalog_title,field_owners) '
+                    "VALUES(?,'local',?,?,'video',?,?,?)",
+                    (key, path, path.rsplit('\\', 1)[1], code, title, json.dumps({'code': owner}) if owner else None))
+        self.service._clear_stale_codes()
+        with self.database.read_connection() as connection:
+            codes = dict(connection.execute('SELECT id,code FROM asset ORDER BY id').fetchall())
+            receipt = connection.execute(f"SELECT result_json FROM ledger_upgrade_repair "
+                                         f"WHERE id='{upgrade_repairs.STALE_CODES_KEY}'").fetchone()
+        self.assertEqual(codes, {1: None, 2: None, 3: 'DVAJ-185', 4: '092415_159', 5: 'KUZU-142'})
+        self.assertEqual(json.loads(receipt[0]), {'cleared': [{'id': 1, 'code': '125735-816'},
+                                                              {'id': 2, 'code': 'KUZU-25010'}]})
+        # 只做一次：之后再记上的旧值不再清。
+        with self.database.write_transaction() as connection:
+            connection.execute("UPDATE asset SET code='125735-816' WHERE id=1")
+        self.service._clear_stale_codes()
+        with self.database.read_connection() as connection:
+            self.assertEqual(connection.execute('SELECT code FROM asset WHERE id=1').fetchone()[0], '125735-816')
+
     def test_old_studio_misses_are_released_only_once(self):
         from peach.followups import Attempts, attempts_root
         root = attempts_root(self.contract.candidate_root)
