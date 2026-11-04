@@ -420,6 +420,12 @@ class TokyoHotShapeTests(unittest.TestCase):
                 'edition_badges': ['中字', '无码']})
         self.assertEqual(jav_fallback_title('MKD-S118.mp4', 'MKD-S118'), '')
 
+    def test_uncensored_only_labels_get_the_uncensored_badge(self):
+        for name, code in (('SMBD-120.mp4', 'SMBD-120'), ('SKYHD-050-C.mp4', 'SKYHD-050')):
+            with self.subTest(code=code):
+                self.assertIn('无码', jav_display_metadata(name, code)['edition_badges'])
+        self.assertEqual(jav_display_metadata('MCDV-024.mp4', 'MCDV-024')['edition_badges'], [])
+
     def test_a_bare_number_is_read_only_at_the_head_of_the_name(self):
         self.assertEqual(release_code_from_filename("n1032.mkv"), "n1032")
         self.assertEqual(release_code_from_filename("n0762.mkv"), "n0762")
