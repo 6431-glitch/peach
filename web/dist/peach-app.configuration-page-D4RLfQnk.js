@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "7c927ff5-aa33-4e88-966f-0205dce8a01d", e._sentryDebugIdIdentifier = "sentry-dbid-7c927ff5-aa33-4e88-966f-0205dce8a01d");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "770b4510-7eee-4a27-b7cc-d1d9e0797798", e._sentryDebugIdIdentifier = "sentry-dbid-770b4510-7eee-4a27-b7cc-d1d9e0797798");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-BGeaXdeB.js";
@@ -171,6 +171,7 @@ function cr({ initial: e, receipt: t }) {
 		});
 	}, u = n.providers.some((e) => e.key === i && e.configured && e.target);
 	return /* @__PURE__ */ X(L, {
+		guide: "browser",
 		title: "浏览器添加 JAV",
 		children: [/* @__PURE__ */ X(V, { children: [/* @__PURE__ */ X("div", {
 			className: "flex min-w-0 flex-col gap-4",
@@ -325,6 +326,7 @@ function yr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 		};
 		b.run("auto", (e) => qt(ur, e), (e) => te(e, t), (e) => _(K(e)));
 	}, []), /* @__PURE__ */ X(L, {
+		guide: "download",
 		title: "云下载",
 		onSubmit: (e) => {
 			if (e.preventDefault(), ee) {
@@ -649,6 +651,7 @@ function Sr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 		children: "登录"
 	}), T = _.state === "timeout" || _.state === "failed";
 	return /* @__PURE__ */ X(L, {
+		guide: "pikpak",
 		title: "PikPak 账号",
 		icon: /* @__PURE__ */ Y(gr, {}),
 		onSubmit: x,
@@ -1972,6 +1975,7 @@ function ca({ initial: e, receipt: t }) {
 	});
 	return /* @__PURE__ */ X(L, {
 		id: "storageSettings",
+		guide: "storage",
 		title: "存储空间",
 		children: [
 			/* @__PURE__ */ X(ct, { children: [/* @__PURE__ */ Y(j, {
@@ -2075,6 +2079,7 @@ function ua({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 			}) : null,
 			e.remote_reporting || e.library_sharing ? /* @__PURE__ */ X(L, {
 				id: "librarySharing",
+				guide: "reporting",
 				title: "数据上传",
 				children: [e.remote_reporting ? /* @__PURE__ */ Y(Tr, {
 					initial: e.remote_reporting,
@@ -2099,20 +2104,19 @@ function ua({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 		]
 	});
 }
-function da({ receipt: e, reopenTutorial: t }) {
-	let n = Z();
+function da({ reopenTutorial: e }) {
 	return /* @__PURE__ */ Y("section", {
-		"aria-label": "安装教程",
+		"aria-label": "新手教程",
 		className: "w-full",
-		children: /* @__PURE__ */ X(Lt, { children: [/* @__PURE__ */ Y(I, { children: /* @__PURE__ */ Y(B, {
-			label: "安装教程",
+		children: /* @__PURE__ */ Y(Lt, { children: /* @__PURE__ */ Y(I, { children: /* @__PURE__ */ Y(B, {
+			label: "新手教程",
+			description: "在所有设备上恢复右上角教程入口，保留已读进度",
 			children: /* @__PURE__ */ Y(E, {
 				variant: "secondary",
-				onClick: () => void n.run("reopen", () => t(), () => e("已重新打开安装教程")),
-				...G(n.busy === "reopen"),
-				children: "重新打开教程"
+				onClick: () => void e(),
+				children: "重新打开"
 			})
-		}) }), n.error ? /* @__PURE__ */ Y(V, { children: /* @__PURE__ */ Y(k, { children: n.error }) }) : null] })
+		}) }) })
 	});
 }
 function fa({ initial: e, receipt: t }) {
@@ -2124,6 +2128,7 @@ function fa({ initial: e, receipt: t }) {
 	}, c = e.available ? e.download_available ? "下载完成后在这里确认重启安装。" : void 0 : "自动更新需要由托盘管理的服务。";
 	return /* @__PURE__ */ X(L, {
 		id: "automaticUpdates",
+		guide: "automatic-updates",
 		title: "自动更新",
 		onSubmit: s,
 		children: [
@@ -2178,6 +2183,7 @@ function fa({ initial: e, receipt: t }) {
 }
 function pa({ facts: e }) {
 	return /* @__PURE__ */ Y(L, {
+		guide: "facts",
 		title: "运行信息",
 		children: /* @__PURE__ */ Y(ct, { children: e.map((e) => /* @__PURE__ */ X(j, {
 			term: e.term,
@@ -2204,6 +2210,7 @@ function ma({ uninstall: e, receipt: t }) {
 	}), s = i || e.message, c = [.../* @__PURE__ */ new Set([e.data_root, ...e.directories])];
 	return /* @__PURE__ */ X(L, {
 		id: "uninstallPeach",
+		guide: "uninstall",
 		title: "卸载 Peach",
 		children: [
 			e.available ? /* @__PURE__ */ Y(V, { children: /* @__PURE__ */ Y(N, { children: "卸载移除 Peach 程序本身，原始媒体文件保留。" }) }) : null,
@@ -2308,6 +2315,7 @@ function ya({ initial: e, initialJob: t }) {
 	}), g = c.error || o, _ = i.state === "downloading" && i.total ? `${((i.downloaded || 0) / 1048576).toFixed(1)} / ${(i.total / 1048576).toFixed(1)} MB` : `${i.progress}%`;
 	return /* @__PURE__ */ X(L, {
 		id: "releaseUpdates",
+		guide: "updates",
 		title: "检查更新",
 		aside: /* @__PURE__ */ Y(H, {
 			tone: g || n.state === "error" || i.state === "error" ? "error" : d ? "progress" : n.state === "available" ? "warning" : n.state === "unchecked" ? "neutral" : "success",
@@ -2333,10 +2341,10 @@ function ya({ initial: e, initialJob: t }) {
 				}),
 				n.package_kind ? /* @__PURE__ */ X(j, {
 					term: "下载内容",
-					children: [n.package_kind === "update" ? "应用更新包" : "应用与工具", n.asset_size ? ` · ${(n.asset_size / 1048576).toFixed(1)} MB` : ""]
+					children: [n.package_kind === "update" ? "应用更新包" : n.package_kind === "installer" ? "macOS 安装镜像" : "应用与工具", n.asset_size ? ` · ${(n.asset_size / 1048576).toFixed(1)} MB` : ""]
 				}) : null
 			] }),
-			n.package_kind === "update" ? /* @__PURE__ */ Y(N, { children: "应用更新包复用已安装工具；工具缺失、损坏或版本变化时会另行下载所需工具包。" }) : n.package_kind === "full" ? /* @__PURE__ */ Y(N, { children: "本次更新包含媒体工具。" }) : null,
+			n.package_kind === "update" ? /* @__PURE__ */ Y(N, { children: "应用更新包复用已安装工具；工具缺失、损坏或版本变化时会另行下载所需工具包。" }) : n.package_kind === "full" ? /* @__PURE__ */ Y(N, { children: "本次更新包含媒体工具。" }) : n.package_kind === "installer" ? /* @__PURE__ */ Y(N, { children: "下载后打开镜像，把 Peach 拖入「应用程序」替换旧版本，数据目录与设置保留；提示已损坏时按发布页说明移除隔离标记。" }) : null,
 			n.state === "unchecked" && !n.checked_at && !g && i.state === "idle" ? null : /* @__PURE__ */ X(V, {
 				divided: !0,
 				children: [
@@ -2391,11 +2399,15 @@ function ya({ initial: e, initialJob: t }) {
 						...G(c.busy === "check"),
 						children: "检查更新"
 					}),
-					n.state === "available" && n.installation === "独立测试包" && i.state !== "ready" ? /* @__PURE__ */ Y(E, {
+					n.state === "available" && n.in_app_update && i.state !== "ready" ? /* @__PURE__ */ Y(E, {
 						variant: "primary",
 						onClick: m,
 						...G(d || c.busy === "download"),
 						children: "下载并安装"
+					}) : n.state === "available" && n.installation === "独立测试包" && n.asset_url ? /* @__PURE__ */ Y(Je, {
+						variant: "primary",
+						href: n.asset_url,
+						children: "下载新版本"
 					}) : null,
 					i.state === "ready" ? /* @__PURE__ */ Y(E, {
 						variant: "primary",
@@ -2515,6 +2527,7 @@ function Ca({ data: e, receipt: t, panel: n }) {
 function wa({ startup: e, receipt: t }) {
 	let [n, r] = (0, Q.useState)(e.enabled), [i, a] = (0, Q.useState)(e.silent), [o, s] = (0, Q.useState)(e.desktop), c = Z(), l = e.available && !e.desktop_message;
 	return /* @__PURE__ */ X(L, {
+		guide: "startup",
 		title: "开机自启",
 		onSubmit: (r) => {
 			r.preventDefault(), e.available && c.run("save", (e) => W("/api/configuration/startup", {
@@ -2676,6 +2689,7 @@ function ja({ receipt: e }) {
 		label: "正在读取网盘代理",
 		html: Zt
 	}) : /* @__PURE__ */ X(L, {
+		guide: "cloud-proxy",
 		title: "CloudDrive 代理",
 		children: [/* @__PURE__ */ X(V, { children: [/* @__PURE__ */ Y(N, { children: Xe }), /* @__PURE__ */ X("div", {
 			className: "flex min-w-0 flex-col gap-4",
@@ -3052,6 +3066,7 @@ function Va() {
 }
 function Ha({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ Y(It, {
+		"data-guide-target": "library-policy",
 		className: "w-full",
 		"aria-label": `${e} 处理方式`,
 		selectedKey: t,
@@ -3194,6 +3209,7 @@ function qa({ initial: e, receipt: t }) {
 	}, g = `已入库 ${u.queue.ingested} 个文件` + (u.queue.failed ? `，${u.queue.failed} 个入库失败` : "") + (u.queue.pending ? `，队列里还有 ${u.queue.pending} 条` : ""), _ = u.local_running ? `正在监视 ${u.local_roots.join("、")}` : u.local_message || "没有运行";
 	return /* @__PURE__ */ X(L, {
 		id: "pushDiscovery",
+		guide: "discovery",
 		title: "自动发现新文件",
 		onSubmit: m,
 		children: [
@@ -3492,6 +3508,7 @@ function io({ data: e, receipt: t }) {
 		});
 	};
 	if (y) return /* @__PURE__ */ Y(L, {
+		guide: "media",
 		title: "媒体库与目录",
 		children: /* @__PURE__ */ Y(V, { children: /* @__PURE__ */ X(F, {
 			tone: "success",
@@ -3509,6 +3526,7 @@ function io({ data: e, receipt: t }) {
 	});
 	let re = (t) => e.media_sources?.find((e) => e.root_id === t.root_id && e.path === t.path), ie = n.some((e) => Xn(e.location)), ae = ie ? (e.mount_dependencies ?? []).filter((e) => !e.available) : [];
 	return /* @__PURE__ */ X(L, {
+		guide: "media",
 		title: "媒体库与目录",
 		onSubmit: ne,
 		children: [/* @__PURE__ */ X(V, { children: [
@@ -3810,6 +3828,7 @@ function ao({ online: e }) {
 function oo({ data: e }) {
 	let t = e.media_sources, n = Z();
 	return t ? /* @__PURE__ */ X(L, {
+		guide: "mounts",
 		title: "挂载状态",
 		children: [
 			/* @__PURE__ */ Y(ct, { children: t.map((e, t) => /* @__PURE__ */ X(j, {
@@ -3887,6 +3906,7 @@ function lo({ receipt: e }) {
 		refetchOnMount: "always"
 	}), r = Bn(), i = n.data?.followInitialDays ?? t.value.followInitialDays, a = r.error || n.error;
 	return /* @__PURE__ */ X(L, {
+		guide: "follow-options",
 		title: "关注采集",
 		children: [/* @__PURE__ */ X(I, { children: [
 			/* @__PURE__ */ Y(uo, {}),
@@ -4056,6 +4076,7 @@ function mo({ receipt: e }) {
 		queryFn: ({ signal: e }) => ln(e)
 	}), n = Z(), r = n.error || (t.error ? K(t.error) : ""), i = !t.data || t.isFetching || !!n.busy;
 	return /* @__PURE__ */ X(L, {
+		guide: "preview",
 		title: "视频预览",
 		children: [
 			/* @__PURE__ */ Y(I, { children: /* @__PURE__ */ Y(B, {
@@ -4115,6 +4136,7 @@ function ho({ receipt: e }) {
 		queryFn: ({ signal: e }) => ln(e)
 	}), n = Z(), r = n.error || (t.error ? K(t.error) : "");
 	return /* @__PURE__ */ X(L, {
+		guide: "transcode",
 		title: "视频播放",
 		children: [
 			/* @__PURE__ */ Y(I, { children: /* @__PURE__ */ Y(B, {
@@ -4251,6 +4273,7 @@ function xo({ receipt: e }) {
 		queryFn: ({ signal: e }) => un(e)
 	}), [n, r] = (0, Q.useState)(null), i = Z(), a = n ?? (t.data?.codePatterns ?? []).join("\n"), o = i.error || (t.error ? K(t.error) : "");
 	return /* @__PURE__ */ X(L, {
+		guide: "codes",
 		title: "番号识别规则",
 		onSubmit: (t) => {
 			t.preventDefault();
@@ -4335,6 +4358,7 @@ function wo({ initial: e, receipt: t }) {
 		});
 	}, _ = Co[n.mode], v = n.mode !== "locked";
 	return /* @__PURE__ */ X(L, {
+		guide: "access",
 		title: "访问密码",
 		onSubmit: g,
 		children: [/* @__PURE__ */ Y("div", {
@@ -4447,6 +4471,7 @@ function Oo({ data: e, receipt: t }) {
 		let e = setTimeout(() => location.assign(f.url), Ta);
 		return () => clearTimeout(e);
 	}, [f]), f ? /* @__PURE__ */ Y(L, {
+		guide: "port",
 		title: "访问地址",
 		children: /* @__PURE__ */ Y(V, { children: /* @__PURE__ */ X(F, {
 			tone: "success",
@@ -4458,6 +4483,7 @@ function Oo({ data: e, receipt: t }) {
 			})]
 		}) })
 	}) : /* @__PURE__ */ X(L, {
+		guide: "port",
 		title: "访问地址",
 		onSubmit: r ? (r) => {
 			r.preventDefault(), d({}), m.run("save", (t) => W(Qe, {
@@ -4639,6 +4665,7 @@ function Io({ revision: e, initial: t, receipt: n }) {
 	};
 	return /* @__PURE__ */ X(L, {
 		id: "tunnel",
+		guide: "tunnel",
 		title: "Cloudflare 公网入口",
 		onSubmit: (e) => {
 			e.preventDefault(), v("save", g, () => n("已保存配置"));
@@ -4749,6 +4776,7 @@ function Ro({ initial: e, receipt: t }) {
 	let [n, r] = (0, Q.useState)(e), [i, a] = (0, Q.useState)(e.mode), [o, s] = (0, Q.useState)(""), c = Z();
 	return /* @__PURE__ */ X(L, {
 		id: "peachProxy",
+		guide: "proxy",
 		title: "Peach 代理",
 		onSubmit: (e) => {
 			e.preventDefault(), c.run("save", (e) => W("/api/configuration/peach-proxy", {
@@ -4973,6 +5001,7 @@ function Go({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 		})]
 	}, e.title)) });
 	return r ? /* @__PURE__ */ Y(L, {
+		guide: "credentials",
 		title: "来源凭据",
 		aside: o || void 0,
 		children: /* @__PURE__ */ Y(V, { children: /* @__PURE__ */ Y("div", {
@@ -5000,6 +5029,7 @@ function Ko({ initial: e, receipt: t }) {
 		host: t
 	} : n));
 	return /* @__PURE__ */ X(L, {
+		guide: "entry-links",
 		title: "作品资料站点",
 		onSubmit: (e) => {
 			e.preventDefault();
@@ -5082,6 +5112,7 @@ function Zo({ initial: e, receipt: t }) {
 		...t
 	} : n));
 	return /* @__PURE__ */ X(L, {
+		guide: "indexers",
 		title: "资源搜索",
 		onSubmit: (e) => {
 			e.preventDefault(), i.run("save", (e) => W(qo, { indexers: n }, "POST", e), (e) => {
@@ -5200,11 +5231,14 @@ function Qo({ data: e, receipt: t, panel: n, issues: r }) {
 		...nr(n),
 		children: [
 			r,
-			/* @__PURE__ */ Y("div", { children: /* @__PURE__ */ Y(Je, {
-				href: "/sources",
-				variant: "secondary",
-				children: "采集来源与登录状态"
-			}) }),
+			/* @__PURE__ */ Y("div", {
+				"data-guide-target": "sources",
+				children: /* @__PURE__ */ Y(Je, {
+					href: "/sources",
+					variant: "secondary",
+					children: "采集来源与登录状态"
+				})
+			}),
 			i.data ? /* @__PURE__ */ Y(Go, {
 				data: i.data,
 				readOnly: !!e.ledger_read_only,
@@ -5482,4 +5516,4 @@ function as({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { ns as ConfigurationPage };
 
-//# debugId=7c927ff5-aa33-4e88-966f-0205dce8a01d
+//# debugId=770b4510-7eee-4a27-b7cc-d1d9e0797798

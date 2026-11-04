@@ -1,20 +1,19 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "1cb56f0e-0ec6-4284-8e6d-97713fbbf0ed", e._sentryDebugIdIdentifier = "sentry-dbid-1cb56f0e-0ec6-4284-8e6d-97713fbbf0ed");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "fd72c303-47ef-4e44-8eba-27ad2c86b67d", e._sentryDebugIdIdentifier = "sentry-dbid-fd72c303-47ef-4e44-8eba-27ad2c86b67d");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
 import { createSortedRowModel as t, useTableSelection as n } from "./peach-app.use-table-selection-BSdXI_Nc.js";
-import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as r, $542a13ca2fa5b484$export$5b6b19405a83ff9d as i, $76d00c5a4edb230a$export$76ccd210b9029917 as a, $76d00c5a4edb230a$export$816b5d811295e6bc as o, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as s, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as c, $76d00c5a4edb230a$export$f850895b287ef28e as l, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as u, $b4f18e3395fe64d7$export$3e41faf802a29e71 as d, $b4f18e3395fe64d7$export$b2539bed5023c21c as f, $ea3928288112382f$export$439d29a4e110a164 as p, $l as m, Button as h, ButtonLink as ee, Bx as g, Checkbox as _, ChevronSortDown as te, Chip as v, DataTableFooter as y, DataTableFrame as ne, DataTableSort as b, EmptyFocusButton as x, EmptyState as S, ErrorText as C, ExternalLink as w, FEEDS_KEY as re, FOLLOW_CREDENTIALS_KEY as ie, FOLLOW_MANAGE_KEY as T, FOLLOW_MANAGE_NAV as E, FOLLOW_RESOLVE_KEY as D, FieldLabel as O, Help as k, Input as A, LoadingDots as j, M6 as M, MENU_ITEM as N, MENU_ITEM_INTERACTIVE as P, MENU_POPOVER_SURFACE as F, ModalFrame as I, Note as L, P7 as ae, SORT_DEFAULT_DIR as R, SelectionDock as z, SelectionPopover as B, SiteLabel as V, Switch as oe, Table as se, TableColumnControls as ce, TableColumnResizer as le, TableSelectionHeader as ue, TagManager as de, TaskProgress as H, Wt as fe, Xf as pe, __toESM as U, addAlias as me, addSource as he, avatarInner as ge, busyProps as W, cardClass as G, checkFeeds as K, columnVisibilityFeature as _e, confirmModal as ve, createColumnHelper as ye, credentialDone as be, cx as q, dZ as xe, errorHeadline as Se, errorMessage as J, feedIntervalText as Y, fetchCredentials as Ce, fetchFeeds as we, fetchFollow as Te, fetchResolveJob as Ee, fetchSuggestions as De, flexRender as Oe, followFeedByName as ke, followSuggestKey as Ae, groupByAuthor as je, import_jsx_runtime as Me, isBroken as Ne, isLayout as Pe, jsx as X, jsxs as Z, keepSelected as Fe, localTime as Ie, lookupFeedActor as Le, mapLimit as Re, pageSizeOf as ze, pageWindow as Be, pv as Ve, queryClient as He, reloadFollowManage as Ue, removeAlias as We, removeFeed as Ge, renameAliasGroup as Ke, require_react as qe, resolveFollowSort as Je, rowPaginationFeature as Ye, rowSelectionFeature as Xe, rowSortingFeature as Ze, setFeedEnabled as Qe, startCheck as $e, startResolve as et, tableFeatures as tt, useAction as nt, useBackgroundJob as rt, useMutation as it, useQuery as at, useTable as ot, useTablePreferences as st } from "./peach-app.js";
-import { Page as ct } from "./peach-app.page-CW3QRN2N.js";
-import { STAT_STRIP_SIX as lt } from "./peach-app.stat-card-4sRHYGSD.js";
+import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as r, $542a13ca2fa5b484$export$5b6b19405a83ff9d as i, $76d00c5a4edb230a$export$76ccd210b9029917 as a, $76d00c5a4edb230a$export$816b5d811295e6bc as o, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as s, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as c, $76d00c5a4edb230a$export$f850895b287ef28e as l, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as u, $b4f18e3395fe64d7$export$3e41faf802a29e71 as d, $b4f18e3395fe64d7$export$b2539bed5023c21c as f, $ea3928288112382f$export$439d29a4e110a164 as p, $l as m, Button as h, ButtonLink as g, Bx as _, Checkbox as v, ChevronSortDown as ee, Chip as y, DataTableFooter as b, DataTableFrame as te, DataTableSort as x, EmptyFocusButton as S, EmptyState as C, ErrorText as w, ExternalLink as T, FEEDS_KEY as ne, FOLLOW_CREDENTIALS_KEY as re, FOLLOW_MANAGE_KEY as E, FOLLOW_MANAGE_NAV as D, FOLLOW_RESOLVE_KEY as O, FieldLabel as k, Help as A, Input as j, LoadingDots as M, M6 as N, MENU_ITEM as P, MENU_ITEM_INTERACTIVE as F, MENU_POPOVER_SURFACE as I, ModalFrame as L, Note as R, P7 as ie, SORT_DEFAULT_DIR as z, STAT_STRIP_SIX as B, SelectionDock as V, SelectionPopover as H, SiteLabel as ae, Switch as oe, Table as se, TableColumnControls as ce, TableColumnResizer as le, TableSelectionHeader as ue, TagManager as U, TaskProgress as W, Wt as de, Xf as fe, __toESM as pe, addAlias as me, addSource as he, avatarInner as G, busyProps as K, cardClass as ge, checkFeeds as _e, columnVisibilityFeature as ve, confirmModal as ye, createColumnHelper as be, credentialDone as xe, cx as q, dZ as Se, errorHeadline as J, errorMessage as Y, feedIntervalText as Ce, fetchCredentials as we, fetchFeeds as Te, fetchFollow as Ee, fetchResolveJob as De, fetchSuggestions as Oe, flexRender as ke, followFeedByName as Ae, followSuggestKey as je, groupByAuthor as Me, import_jsx_runtime as Ne, isBroken as Pe, isLayout as Fe, jsx as X, jsxs as Z, keepSelected as Ie, localTime as Le, lookupFeedActor as Re, mapLimit as ze, pageSizeOf as Be, pageWindow as Ve, pv as He, queryClient as Ue, reloadFollowManage as We, removeAlias as Ge, removeFeed as Ke, renameAliasGroup as qe, require_react as Je, resolveFollowSort as Ye, rowPaginationFeature as Xe, rowSelectionFeature as Ze, rowSortingFeature as Qe, setFeedEnabled as $e, startCheck as et, startResolve as tt, tableFeatures as nt, useAction as rt, useBackgroundJob as it, useMutation as at, useQuery as ot, useTable as st, useTablePreferences as ct } from "./peach-app.js";
+import { Page as lt } from "./peach-app.page-CW3QRN2N.js";
 import { LEGACY_AVATAR_IMG as ut } from "./peach-app.legacy-avatar-NSITxLRS.js";
 import { PillAriaTabList as dt } from "./peach-app.pill-aria-tab-list-Byrq5vdA.js";
 import { AuthorAvatar as ft, SourceIcon as pt } from "./peach-app.source-view-CRZESleF.js";
 import { SourceList as mt } from "./peach-app.source-list-Dg_PaGs6.js";
 // src/react/follow-manage/add-source.tsx
-var Q = /* @__PURE__ */ U(qe(), 1), ht = q(N, P, "text-body-2-medium"), gt = "粘贴来源链接，或输入创作者名、id…", _t = "添加创作者关注", vt = "查找中（首次按名字查要下载创作者索引，可能几十秒）", yt = "识别中", bt = "站内没有查到来源", xt = "/settings/subscriptions", St = (e, t) => `${e}:${t.url}`;
+var Q = /* @__PURE__ */ pe(Je(), 1), ht = q(P, F, "text-body-2-medium"), gt = "粘贴来源链接，或输入创作者名、id…", _t = "添加创作者关注", vt = "查找中（首次按名字查要下载创作者索引，可能几十秒）", yt = "识别中", bt = "站内没有查到来源", xt = "/settings/subscriptions", St = (e, t) => `${e}:${t.url}`;
 function Ct({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onClose: s }) {
 	return (0, Q.useEffect)(() => {
 		t.current?.querySelector("[aria-current=\"true\"]")?.scrollIntoView({ block: "nearest" });
@@ -30,10 +29,10 @@ function Ct({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onCl
 		placement: "bottom start",
 		offset: 4,
 		"aria-label": "来源建议",
-		className: q(F, "flex w-(--trigger-width) flex-col gap-1 overscroll-contain"),
+		className: q(I, "flex w-(--trigger-width) flex-col gap-1 overscroll-contain"),
 		children: [a && !n.length ? /* @__PURE__ */ X("div", {
 			className: "px-2 py-1.5",
-			children: /* @__PURE__ */ X(j, { label: "正在查找建议" })
+			children: /* @__PURE__ */ X(M, { label: "正在查找建议" })
 		}) : null, n.map((e, t) => /* @__PURE__ */ Z(Q.Fragment, { children: [e.group === n[t - 1]?.group ? null : /* @__PURE__ */ X("div", {
 			className: "px-2 pt-1 text-caption-1-regular text-text-tertiary",
 			children: e.group
@@ -62,7 +61,7 @@ function Ct({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onCl
 }
 function wt({ credentials: e, hidden: t, onHidden: n }) {
 	let r = (e.providers || []).filter((e) => e.followable), i = r.filter((e) => !t.has(e.provider_label)).length, a = i === r.length ? "全部来源" : `${i}/${r.length} 个来源`;
-	return /* @__PURE__ */ X(B, {
+	return /* @__PURE__ */ X(H, {
 		label: "来源筛选",
 		triggerLabel: a,
 		leadingIcon: m,
@@ -98,14 +97,14 @@ function wt({ credentials: e, hidden: t, onHidden: n }) {
 	});
 }
 function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
-	if (e.kind === "error") return /* @__PURE__ */ X(L, {
+	if (e.kind === "error") return /* @__PURE__ */ X(R, {
 		tone: "error",
 		title: e.line,
 		children: e.error || "查找失败"
 	});
 	let a = (e.candidates || []).filter((e) => !n.has(e.provider_label || "")), o = Object.entries(e.failures || {});
 	return /* @__PURE__ */ Z("div", {
-		className: G({
+		className: ge({
 			variant: "outlined",
 			padding: "none",
 			className: "flex flex-col gap-2 p-4"
@@ -117,7 +116,7 @@ function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 			}),
 			a.length ? a.map((e) => {
 				let n = St(t, e);
-				return /* @__PURE__ */ X(_, {
+				return /* @__PURE__ */ X(v, {
 					isSelected: !e.known && !r.has(n),
 					isDisabled: e.known,
 					onChange: (e) => i(n, e),
@@ -140,23 +139,23 @@ function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 						]
 					})
 				}, n);
-			}) : /* @__PURE__ */ X(k, { children: bt }),
+			}) : /* @__PURE__ */ X(A, { children: bt }),
 			(e.external_searches || []).map((e) => /* @__PURE__ */ Z("div", {
 				className: "flex flex-wrap items-center gap-2",
 				children: [/* @__PURE__ */ X("small", {
 					className: "text-caption-1-regular text-text-secondary",
 					children: e.evidence
-				}), /* @__PURE__ */ X(w, {
+				}), /* @__PURE__ */ X(T, {
 					href: e.url,
 					children: `${e.label}：${e.query}`
 				})]
 			}, e.url)),
-			o.length ? /* @__PURE__ */ X(k, { children: o.map(([e, t]) => `${e}：${t}`).join("；") }) : null
+			o.length ? /* @__PURE__ */ X(A, { children: o.map(([e, t]) => `${e}：${t}`).join("；") }) : null
 		]
 	});
 }
 function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
-	let [i, a] = (0, Q.useState)(""), [o, s] = (0, Q.useState)(!1), [c, l] = (0, Q.useState)(""), [u, d] = (0, Q.useState)(""), [f, p] = (0, Q.useState)(!1), [m, ee] = (0, Q.useState)(null), [g, _] = (0, Q.useState)(-1), te = (0, Q.useRef)(null), v = (0, Q.useRef)(null), [y, ne] = (0, Q.useState)(/* @__PURE__ */ new Set()), [b, x] = (0, Q.useState)(/* @__PURE__ */ new Set()), [S, C] = (0, Q.useState)(""), [w, re] = (0, Q.useState)(0);
+	let [i, a] = (0, Q.useState)(""), [o, s] = (0, Q.useState)(!1), [c, l] = (0, Q.useState)(""), [u, d] = (0, Q.useState)(""), [f, p] = (0, Q.useState)(!1), [m, g] = (0, Q.useState)(null), [_, v] = (0, Q.useState)(-1), ee = (0, Q.useRef)(null), y = (0, Q.useRef)(null), [b, te] = (0, Q.useState)(/* @__PURE__ */ new Set()), [x, S] = (0, Q.useState)(/* @__PURE__ */ new Set()), [C, w] = (0, Q.useState)(""), [T, ne] = (0, Q.useState)(0);
 	(0, Q.useEffect)(() => {
 		let e = i.trim();
 		if (o || !e || e.includes("/")) {
@@ -166,65 +165,65 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 		let t = setTimeout(() => d(e), 250);
 		return () => clearTimeout(t);
 	}, [i, o]);
-	let ie = at({
-		queryKey: Ae(u),
-		queryFn: ({ signal: e }) => De(u, e),
+	let re = ot({
+		queryKey: je(u),
+		queryFn: ({ signal: e }) => Oe(u, e),
 		enabled: u.length > 0 && f && !o && m !== i
-	}), T = (0, Q.useMemo)(() => (ie.data?.groups || []).flatMap((e) => e.items.map((t) => ({
+	}), E = (0, Q.useMemo)(() => (re.data?.groups || []).flatMap((e) => e.items.map((t) => ({
 		value: t.value,
 		matched: t.matched || "",
 		n: t.n || 0,
 		group: e.label
-	}))), [ie.data]), { job: E, running: k, outcome: j, start: M, dismiss: N } = rt({
-		queryKey: D,
-		queryFn: ({ signal: e }) => Ee(e),
-		start: (e) => et([e]),
-		onStarted: () => x(/* @__PURE__ */ new Set()),
-		onError: (e) => C(J(e)),
+	}))), [re.data]), { job: D, running: A, outcome: M, start: N, dismiss: P } = it({
+		queryKey: O,
+		queryFn: ({ signal: e }) => De(e),
+		start: (e) => tt([e]),
+		onStarted: () => S(/* @__PURE__ */ new Set()),
+		onError: (e) => w(Y(e)),
 		onFinish: (e) => {
-			e.status === "failed" && C(e.error || "查找失败");
+			e.status === "failed" && w(e.error || "查找失败");
 		}
-	}), P = (e) => {
+	}), F = (e) => {
 		let t = e.trim();
-		!t || n || o || k || M.isPending || (C(""), _(-1), l(t), a(t), d(""), ee(t), M.mutate(t));
-	}, F = ie.isFetching, I = f && !o && m !== i && (T.length > 0 || F), ae = () => {
-		_(-1), ee(i);
-	}, R = (e) => {
+		!t || n || o || A || N.isPending || (w(""), v(-1), l(t), a(t), d(""), g(t), N.mutate(t));
+	}, I = re.isFetching, L = f && !o && m !== i && (E.length > 0 || I), ie = () => {
+		v(-1), g(i);
+	}, z = (e) => {
 		if (!(o || e.nativeEvent.isComposing || e.nativeEvent.keyCode === 229)) {
-			if (e.key === "Escape" && I) ae();
+			if (e.key === "Escape" && L) ie();
 			else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-				if (!T.length) return;
-				if (e.preventDefault(), !I) {
-					ee(null);
+				if (!E.length) return;
+				if (e.preventDefault(), !L) {
+					g(null);
 					return;
 				}
 				let t = e.key === "ArrowDown" ? 1 : -1;
-				_((e) => {
+				v((e) => {
 					let n = e + t;
-					return n < 0 ? T.length - 1 : n >= T.length ? 0 : n;
+					return n < 0 ? E.length - 1 : n >= E.length ? 0 : n;
 				});
-			} else e.key === "Enter" && (e.preventDefault(), P(T[g]?.value || i));
+			} else e.key === "Enter" && (e.preventDefault(), F(E[_]?.value || i));
 		}
-	}, z = j?.results || [], B = z.flatMap((e, t) => (e.candidates || []).filter((e) => !e.known && !y.has(e.provider_label || "")).map((e) => ({
+	}, B = M?.results || [], V = B.flatMap((e, t) => (e.candidates || []).filter((e) => !e.known && !b.has(e.provider_label || "")).map((e) => ({
 		candidate: e,
 		key: St(t, e)
-	})).filter((e) => !b.has(e.key))), V = it({
+	})).filter((e) => !x.has(e.key))), H = at({
 		mutationFn: async (e) => {
 			let t = [], n = [];
-			re(0);
+			ne(0);
 			for (let r of e) {
 				try {
 					let e = await he(r.candidate);
 					n.push(e.source);
 				} catch (e) {
-					t.push(`${r.candidate.label}：${J(e)}`);
+					t.push(`${r.candidate.label}：${Y(e)}`);
 				}
-				re((e) => e + 1);
+				ne((e) => e + 1);
 			}
 			if (n.length) try {
-				await $e(n);
+				await et(n);
 			} catch (e) {
-				t.push(J(e));
+				t.push(Y(e));
 			}
 			return {
 				failures: t,
@@ -232,13 +231,13 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 			};
 		},
 		onSuccess: (e) => {
-			Ue(), e.failures.length ? C(e.failures.join("；")) : (C(""), N(), r(`已添加 ${e.sources.length} 个关注来源`));
+			We(), e.failures.length ? w(e.failures.join("；")) : (w(""), P(), r(`已添加 ${e.sources.length} 个关注来源`));
 		},
-		onError: (e) => C(J(e))
-	}), oe = e.suggestions || [], se = !c.includes("/");
+		onError: (e) => w(Y(e))
+	}), ae = e.suggestions || [], oe = !c.includes("/");
 	return /* @__PURE__ */ Z("section", {
 		"aria-label": _t,
-		className: G({
+		className: ge({
 			padding: "none",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 		}),
@@ -251,48 +250,48 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 				className: "flex flex-wrap items-end gap-2",
 				children: [
 					/* @__PURE__ */ Z("div", {
-						ref: te,
+						ref: ee,
 						className: "min-w-64 grow",
 						onFocus: () => p(!0),
 						onBlur: (e) => {
 							let t = e.relatedTarget;
-							!e.currentTarget.contains(t) && !v.current?.contains(t) && p(!1);
+							!e.currentTarget.contains(t) && !y.current?.contains(t) && p(!1);
 						},
-						children: [/* @__PURE__ */ X(A, {
+						children: [/* @__PURE__ */ X(j, {
 							"aria-label": "来源链接、名字或 id",
 							placeholder: gt,
 							value: i,
-							leadingIcon: Ve,
+							leadingIcon: He,
 							enterKeyHint: "search",
 							isDisabled: n,
 							onChange: a,
 							onCompositionStart: () => {
-								s(!0), _(-1);
+								s(!0), v(-1);
 							},
 							onCompositionEnd: (e) => {
 								s(!1), a(e.currentTarget.value);
 							},
-							onKeyDown: R
-						}), I ? /* @__PURE__ */ X(Ct, {
-							field: te,
-							menu: v,
-							options: T,
-							active: g,
-							busy: F,
-							onPick: P,
-							onClose: ae
+							onKeyDown: z
+						}), L ? /* @__PURE__ */ X(Ct, {
+							field: ee,
+							menu: y,
+							options: E,
+							active: _,
+							busy: I,
+							onPick: F,
+							onClose: ie
 						}) : null]
 					}),
 					/* @__PURE__ */ X(wt, {
 						credentials: t,
-						hidden: y,
-						onHidden: ne
+						hidden: b,
+						onHidden: te
 					}),
 					/* @__PURE__ */ X(h, {
 						variant: "primary",
 						disabled: n || !i.trim(),
-						...W(k || M.isPending),
-						onClick: () => P(i),
+						...K(A || N.isPending),
+						onClick: () => F(i),
 						children: "查找"
 					})
 				]
@@ -300,29 +299,29 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 			/* @__PURE__ */ Z("div", {
 				"aria-live": "polite",
 				className: "flex flex-col gap-3 empty:hidden",
-				children: [k || M.isPending ? /* @__PURE__ */ X(H, {
+				children: [A || N.isPending ? /* @__PURE__ */ X(W, {
 					embedded: !0,
-					label: E?.message || (E?.total ? `查找中：${E.checked || 0}/${E.total}` : se ? vt : yt),
-					value: E?.checked,
-					total: E?.total
-				}) : null, S ? /* @__PURE__ */ X(L, {
+					label: D?.message || (D?.total ? `查找中：${D.checked || 0}/${D.total}` : oe ? vt : yt),
+					value: D?.checked,
+					total: D?.total
+				}) : null, C ? /* @__PURE__ */ X(R, {
 					tone: "error",
 					title: "这一次没有完成",
-					children: S
+					children: C
 				}) : null]
 			}),
-			z.length ? /* @__PURE__ */ Z("div", {
+			B.length ? /* @__PURE__ */ Z("div", {
 				className: "flex flex-col gap-3",
 				children: [
-					/* @__PURE__ */ X(O, { children: "查找结果" }),
-					z.map((e, t) => /* @__PURE__ */ X(Tt, {
+					/* @__PURE__ */ X(k, { children: "查找结果" }),
+					B.map((e, t) => /* @__PURE__ */ X(Tt, {
 						row: e,
 						at: t,
-						hidden: y,
-						unpicked: b,
+						hidden: b,
+						unpicked: x,
 						onPick: (e, t) => {
-							let n = new Set(b);
-							t ? n.delete(e) : n.add(e), x(n);
+							let n = new Set(x);
+							t ? n.delete(e) : n.add(e), S(n);
 						}
 					}, `${e.line}-${t}`)),
 					/* @__PURE__ */ Z("div", {
@@ -331,37 +330,37 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 							/* @__PURE__ */ X(h, {
 								variant: "secondary",
 								size: "small",
-								onClick: () => N(),
+								onClick: () => P(),
 								children: "关闭"
 							}),
 							/* @__PURE__ */ X(h, {
 								variant: "primary",
 								size: "small",
-								disabled: n || !B.length,
-								...W(V.isPending),
-								onClick: () => V.mutate(B),
-								children: `添加选中（${B.length}）`
+								disabled: n || !V.length,
+								...K(H.isPending),
+								onClick: () => H.mutate(V),
+								children: `添加选中（${V.length}）`
 							}),
-							V.isPending ? /* @__PURE__ */ X("span", {
+							H.isPending ? /* @__PURE__ */ X("span", {
 								role: "status",
 								className: "text-body-2-regular text-text-secondary",
-								children: `添加中… ${w}/${B.length}`
+								children: `添加中… ${T}/${V.length}`
 							}) : null
 						]
 					})
 				]
 			}) : null,
-			oe.length ? /* @__PURE__ */ Z("div", {
+			ae.length ? /* @__PURE__ */ Z("div", {
 				className: "flex flex-wrap items-center gap-2",
 				children: [/* @__PURE__ */ X("span", {
 					className: "text-body-2-regular text-text-secondary",
 					children: "猜你喜欢"
-				}), oe.map((e) => /* @__PURE__ */ X(h, {
+				}), ae.map((e) => /* @__PURE__ */ X(h, {
 					variant: "secondary",
 					size: "small",
 					disabled: n,
 					title: `浏览历史里出现 ${e.visits} 次${e.origin ? ` · ${e.origin}` : ""}`,
-					onClick: () => P(e.name),
+					onClick: () => F(e.name),
 					children: e.name
 				}, e.name))]
 			}) : null
@@ -392,7 +391,7 @@ function kt(e, t) {
 function At({ card: e, picked: t, onPick: n }) {
 	return /* @__PURE__ */ Z("div", {
 		className: "flex flex-wrap items-center gap-2",
-		children: [/* @__PURE__ */ X(_, {
+		children: [/* @__PURE__ */ X(v, {
 			isSelected: t,
 			onChange: n,
 			children: /* @__PURE__ */ Z("span", {
@@ -402,7 +401,7 @@ function At({ card: e, picked: t, onPick: n }) {
 						className: "min-w-0 break-words",
 						children: e.names.join("、")
 					}),
-					e.record ? /* @__PURE__ */ X(v, {
+					e.record ? /* @__PURE__ */ X(y, {
 						variant: "caption",
 						color: "neutral",
 						children: e.record
@@ -413,16 +412,16 @@ function At({ card: e, picked: t, onPick: n }) {
 					}) : null
 				]
 			})
-		}), /* @__PURE__ */ X(w, {
+		}), /* @__PURE__ */ X(T, {
 			href: e.url,
 			children: e.id
 		})]
 	});
 }
 function jt({ readOnly: e, toast: t, onAdded: n }) {
-	let [r, i] = (0, Q.useState)(""), [a, o] = (0, Q.useState)(null), [s, c] = (0, Q.useState)(/* @__PURE__ */ new Set()), l = nt(), u = () => {
+	let [r, i] = (0, Q.useState)(""), [a, o] = (0, Q.useState)(null), [s, c] = (0, Q.useState)(/* @__PURE__ */ new Set()), l = rt(), u = () => {
 		let t = r.trim();
-		t && !e && l.run("lookup", (e) => Le(t, e), (e) => {
+		t && !e && l.run("lookup", (e) => Re(t, e), (e) => {
 			o(e), c(new Set(e.suggested));
 		});
 	}, d = (e) => {
@@ -430,13 +429,13 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 	}, f = () => {
 		o(null), c(/* @__PURE__ */ new Set()), l.setError("");
 	}, p = () => {
-		a && l.run("follow", (e) => ke(a.q, [...s], e), (e) => {
+		a && l.run("follow", (e) => Ae(a.q, [...s], e), (e) => {
 			t(e.created ? `已新建「${e.entity_name}」并订阅她的新作` : `已订阅「${e.entity_name}」的新作`), i(""), f(), n();
 		});
 	}, m = a ? kt(a, s) : null;
 	return /* @__PURE__ */ Z("section", {
 		"aria-label": Ot,
-		className: G({
+		className: ge({
 			padding: "none",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 		}),
@@ -449,11 +448,11 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 				className: "flex flex-wrap items-end gap-2",
 				children: [/* @__PURE__ */ X("div", {
 					className: "min-w-64 grow",
-					children: /* @__PURE__ */ X(A, {
+					children: /* @__PURE__ */ X(j, {
 						"aria-label": "女优名",
 						placeholder: Dt,
 						value: r,
-						leadingIcon: Ve,
+						leadingIcon: He,
 						enterKeyHint: "search",
 						isDisabled: e,
 						onChange: i,
@@ -462,12 +461,12 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 				}), /* @__PURE__ */ X(h, {
 					variant: "primary",
 					disabled: e || !r.trim(),
-					...W(l.busy === "lookup"),
+					...K(l.busy === "lookup"),
 					onClick: u,
 					children: "查找"
 				})]
 			}),
-			l.error ? /* @__PURE__ */ X(L, {
+			l.error ? /* @__PURE__ */ X(R, {
 				tone: "error",
 				title: "这一次没有完成",
 				children: l.error
@@ -475,7 +474,7 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 			a ? /* @__PURE__ */ Z("div", {
 				className: "flex flex-col gap-3",
 				children: [
-					/* @__PURE__ */ X(O, { children: "JavDB 上的演员卡" }),
+					/* @__PURE__ */ X(k, { children: "JavDB 上的演员卡" }),
 					a.candidates.length ? a.candidates.map((e) => /* @__PURE__ */ X(At, {
 						card: e,
 						picked: s.has(e.id),
@@ -483,8 +482,8 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 							let r = new Set(n);
 							return t ? r.add(e.id) : r.delete(e.id), r;
 						})
-					}, e.id)) : /* @__PURE__ */ X(k, { children: "JavDB 上没有搜到这个名字。" }),
-					a.candidates.length ? /* @__PURE__ */ X(k, {
+					}, e.id)) : /* @__PURE__ */ X(A, { children: "JavDB 上没有搜到这个名字。" }),
+					a.candidates.length ? /* @__PURE__ */ X(A, {
 						role: "status",
 						children: s.size ? m.text : "勾选她的演员卡；有碼与無碼两条记录都是她的话，两张都勾。"
 					}) : null,
@@ -499,7 +498,7 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 							variant: "primary",
 							size: "small",
 							disabled: e || !s.size || m.blocked,
-							...W(l.busy === "follow"),
+							...K(l.busy === "follow"),
 							onClick: p,
 							children: `添加订阅（${s.size}）`
 						}) : null]
@@ -511,7 +510,7 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 }
 // src/react/follow-manage/alias-rename-dialog.tsx
 function Mt({ group: e, close: t, receipt: n }) {
-	return /* @__PURE__ */ X(I, {
+	return /* @__PURE__ */ X(L, {
 		isOpen: !!e,
 		onOpenChange: (e) => {
 			e || t();
@@ -526,11 +525,11 @@ function Mt({ group: e, close: t, receipt: n }) {
 	});
 }
 function Nt({ group: e, close: t, receipt: n }) {
-	let [i, a] = (0, Q.useState)(e.canonical_name), o = nt();
+	let [i, a] = (0, Q.useState)(e.canonical_name), o = rt();
 	return /* @__PURE__ */ Z("form", {
 		onSubmit: (r) => {
-			r.preventDefault(), i.trim() && i.trim() !== e.canonical_name && o.run("rename", (t) => Ke(e.canonical_key, i.trim(), t), () => {
-				Ue(), n(`已把统一名称改为 ${i.trim()}`), t();
+			r.preventDefault(), i.trim() && i.trim() !== e.canonical_name && o.run("rename", (t) => qe(e.canonical_key, i.trim(), t), () => {
+				We(), n(`已把统一名称改为 ${i.trim()}`), t();
 			});
 		},
 		className: "flex min-h-0 flex-col gap-4 p-5",
@@ -544,7 +543,7 @@ function Nt({ group: e, close: t, receipt: n }) {
 				className: "text-body-2-regular wrap-anywhere text-text-secondary",
 				children: ["当前名称：", e.canonical_name]
 			}),
-			/* @__PURE__ */ X(A, {
+			/* @__PURE__ */ X(j, {
 				"aria-label": "统一名称",
 				autoFocus: !0,
 				value: i,
@@ -552,7 +551,7 @@ function Nt({ group: e, close: t, receipt: n }) {
 			}),
 			/* @__PURE__ */ Z("div", {
 				className: "flex flex-col gap-2",
-				children: [/* @__PURE__ */ X(O, { children: "选择已有别名" }), /* @__PURE__ */ X("div", {
+				children: [/* @__PURE__ */ X(k, { children: "选择已有别名" }), /* @__PURE__ */ X("div", {
 					className: "flex flex-wrap gap-2",
 					children: e.aliases.map((e) => /* @__PURE__ */ X(h, {
 						variant: "secondary",
@@ -566,7 +565,7 @@ function Nt({ group: e, close: t, receipt: n }) {
 				className: "text-body-2-regular text-text-secondary",
 				children: "原名称保留为别名，关联档案和作品署名会同步更新。"
 			}),
-			o.error ? /* @__PURE__ */ X(L, {
+			o.error ? /* @__PURE__ */ X(R, {
 				tone: "error",
 				children: o.error
 			}) : null,
@@ -580,7 +579,7 @@ function Nt({ group: e, close: t, receipt: n }) {
 					type: "submit",
 					variant: "primary",
 					disabled: !i.trim() || i.trim() === e.canonical_name,
-					...W(!!o.busy),
+					...K(!!o.busy),
 					children: "修改统一名称"
 				})]
 			})
@@ -588,11 +587,11 @@ function Nt({ group: e, close: t, receipt: n }) {
 	});
 }
 // src/react/follow-manage/alias-manager.tsx
-var Pt = (e) => `将移除别名「${e}」，对应来源恢复为独立创作者组。`, Ft = tt({
-	rowSelectionFeature: Xe,
-	rowSortingFeature: Ze,
-	rowPaginationFeature: Ye,
-	columnVisibilityFeature: _e,
+var Pt = (e) => `将移除别名「${e}」，对应来源恢复为独立创作者组。`, Ft = nt({
+	rowSelectionFeature: Ze,
+	rowSortingFeature: Qe,
+	rowPaginationFeature: Xe,
+	columnVisibilityFeature: ve,
 	sortedRowModel: t(),
 	paginatedRowModel: e()
 }), It = Ft, Lt = {
@@ -659,26 +658,26 @@ function Ut({ sources: e, name: t, canonicalKey: n }) {
 	});
 }
 function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u }) {
-	let d = st("alias-suggestions", zt), f = st("alias-saved", Bt), [p, m] = (0, Q.useState)(null), [ee, g] = (0, Q.useState)({}), [v, w] = (0, Q.useState)({}), re = n(() => g({})), ie = n(() => w({})), [T, E] = (0, Q.useState)([]), [D, k] = (0, Q.useState)([]), [j, M] = (0, Q.useState)({
+	let d = ct("alias-suggestions", zt), f = ct("alias-saved", Bt), [p, m] = (0, Q.useState)(null), [g, _] = (0, Q.useState)({}), [y, T] = (0, Q.useState)({}), ne = n(() => _({})), re = n(() => T({})), [E, D] = (0, Q.useState)([]), [O, A] = (0, Q.useState)([]), [M, N] = (0, Q.useState)({
 		pageIndex: 0,
 		pageSize: 20
-	}), [N, P] = (0, Q.useState)({
+	}), [P, F] = (0, Q.useState)({
 		pageIndex: 0,
 		pageSize: 20
-	}), F = {
-		...j,
-		pageIndex: Math.min(j.pageIndex, Math.max(0, Math.ceil(t.length / j.pageSize) - 1))
-	}, I = {
-		...N,
-		pageIndex: Math.min(N.pageIndex, Math.max(0, Math.ceil(e.length / N.pageSize) - 1))
-	}, [L, R] = (0, Q.useState)(""), [B, V] = (0, Q.useState)(""), [oe, de] = (0, Q.useState)(""), H = it({
+	}), I = {
+		...M,
+		pageIndex: Math.min(M.pageIndex, Math.max(0, Math.ceil(t.length / M.pageSize) - 1))
+	}, L = {
+		...P,
+		pageIndex: Math.min(P.pageIndex, Math.max(0, Math.ceil(e.length / P.pageSize) - 1))
+	}, [R, z] = (0, Q.useState)(""), [B, H] = (0, Q.useState)(""), [ae, oe] = (0, Q.useState)(""), U = at({
 		mutationFn: async (e) => {
 			let t = 0;
 			for (let n of e) {
 				try {
 					await me(n.canonical, n.alias);
 				} catch (n) {
-					throw t && Ue(), Error(`${J(n)}（还有 ${e.length - t} 组没有合并）`);
+					throw t && We(), Error(`${Y(n)}（还有 ${e.length - t} 组没有合并）`);
 				}
 				t += 1;
 			}
@@ -688,62 +687,62 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 			};
 		},
 		onSuccess: (e) => {
-			R(""), g({}), Ue(), u(`已合并 ${e.done} 组创作者别名`);
+			z(""), _({}), We(), u(`已合并 ${e.done} 组创作者别名`);
 		},
-		onError: (e) => R(J(e))
-	}), fe = it({
+		onError: (e) => z(Y(e))
+	}), W = at({
 		mutationFn: (e) => me(e.canonical, e.alias),
 		onSuccess: () => {
-			R(""), V(""), de(""), Ue(), u("已保存创作者别名");
+			z(""), H(""), oe(""), We(), u("已保存创作者别名");
 		},
-		onError: (e) => R(J(e))
-	}), U = it({
+		onError: (e) => z(Y(e))
+	}), de = at({
 		mutationFn: async (e) => {
 			let t = typeof e == "string" ? [e] : e, n = 0;
 			try {
-				for (let e of t) await We(e), n += 1;
+				for (let e of t) await Ge(e), n += 1;
 			} catch (e) {
-				throw Error(`${J(e)}（已移除 ${n} 个别名，还有 ${t.length - n} 个未移除）`);
+				throw Error(`${Y(e)}（已移除 ${n} 个别名，还有 ${t.length - n} 个未移除）`);
 			} finally {
-				Ue();
+				We();
 			}
 		},
 		onSuccess: () => {
-			R(""), w({}), u("已移除创作者别名");
+			z(""), T({}), u("已移除创作者别名");
 		},
-		onError: (e) => R(J(e))
-	}), he = (e, t) => {
-		e.length && ve({
+		onError: (e) => z(Y(e))
+	}), pe = (e, t) => {
+		e.length && ye({
 			title: t ? "合并全部创作者别名" : "合并所选创作者别名",
 			body: `将合并以下 ${e.length} 组创作者：${e.map((e) => `「${e.alias}」归入「${e.canonical}」`).join("；")}。`,
 			confirmLabel: t ? "合并全部别名" : "合并所选别名",
-			onConfirm: () => H.mutateAsync(e)
+			onConfirm: () => U.mutateAsync(e)
 		});
-	}, ge = (e) => void ve({
+	}, he = (e) => void ye({
 		title: "移除创作者别名",
 		body: Pt(e),
 		confirmLabel: "移除创作者别名",
-		onConfirm: () => U.mutateAsync(e)
-	}), K = (0, Q.useRef)({
+		onConfirm: () => de.mutateAsync(e)
+	}), G = (0, Q.useRef)({
 		sources: r,
 		readOnly: i,
-		merging: H.isPending,
-		removing: U.isPending,
-		merge: he,
-		remove: ge,
+		merging: U.isPending,
+		removing: de.isPending,
+		merge: pe,
+		remove: he,
 		rename: m
 	});
-	K.current = {
+	G.current = {
 		sources: r,
 		readOnly: i,
-		merging: H.isPending,
-		removing: U.isPending,
-		merge: he,
-		remove: ge,
+		merging: U.isPending,
+		removing: de.isPending,
+		merge: pe,
+		remove: he,
 		rename: m
 	};
 	let _e = (0, Q.useMemo)(() => {
-		let e = ye();
+		let e = be();
 		return e.columns([
 			e.display({
 				id: "select",
@@ -751,7 +750,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 					table: e.table,
 					label: "全选待合并别名"
 				}),
-				cell: (e) => /* @__PURE__ */ X(_, {
+				cell: (e) => /* @__PURE__ */ X(v, {
 					slot: null,
 					isSelected: e.row.getIsSelected(),
 					"aria-label": `选择别名 ${e.row.original.alias}，归入 ${e.row.original.canonical}`,
@@ -761,7 +760,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 			e.accessor("canonical", {
 				header: "统一名称",
 				cell: (e) => /* @__PURE__ */ X(Ut, {
-					sources: K.current.sources,
+					sources: G.current.sources,
 					name: e.getValue()
 				})
 			}),
@@ -782,15 +781,15 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 				cell: (e) => /* @__PURE__ */ X(h, {
 					variant: "secondary",
 					size: "small",
-					disabled: K.current.readOnly,
-					...W(K.current.merging),
-					onClick: () => K.current.merge([e.row.original], !1),
+					disabled: G.current.readOnly,
+					...K(G.current.merging),
+					onClick: () => G.current.merge([e.row.original], !1),
 					children: "合并"
 				})
 			})
 		]);
-	}, []), be = (0, Q.useMemo)(() => {
-		let e = ye();
+	}, []), ve = (0, Q.useMemo)(() => {
+		let e = be();
 		return e.columns([
 			e.display({
 				id: "select",
@@ -798,7 +797,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 					table: e,
 					label: "全选已保存别名"
 				}),
-				cell: ({ row: e }) => /* @__PURE__ */ X(_, {
+				cell: ({ row: e }) => /* @__PURE__ */ X(v, {
 					slot: null,
 					"aria-label": `选择已保存别名 ${e.original.canonical_name}`,
 					isSelected: e.getIsSelected(),
@@ -809,7 +808,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 				id: "canonical",
 				header: "统一名称",
 				cell: (e) => /* @__PURE__ */ X(Ut, {
-					sources: K.current.sources,
+					sources: G.current.sources,
 					name: e.getValue(),
 					canonicalKey: e.row.original.canonical_key
 				})
@@ -825,11 +824,11 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 							variant: "ghost",
 							size: "xs",
 							iconOnly: !0,
-							leadingIcon: ae,
+							leadingIcon: ie,
 							"aria-label": `移除别名 ${e.name}`,
-							disabled: K.current.readOnly,
-							...W(K.current.removing),
-							onClick: () => K.current.remove(e.name)
+							disabled: G.current.readOnly,
+							...K(G.current.removing),
+							onClick: () => G.current.remove(e.name)
 						})]
 					}, e.key))
 				})
@@ -840,62 +839,62 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 				cell: ({ row: e }) => /* @__PURE__ */ X(h, {
 					variant: "secondary",
 					size: "small",
-					disabled: K.current.readOnly,
+					disabled: G.current.readOnly,
 					"aria-label": `修改 ${e.original.canonical_name} 的统一名称`,
-					onClick: () => K.current.rename(e.original),
+					onClick: () => G.current.rename(e.original),
 					children: "修改统一名称"
 				})
 			})
 		]);
-	}, []), q = ot({
+	}, []), xe = st({
 		features: Ft,
 		data: t,
 		columns: _e,
 		getRowId: Vt,
 		state: {
-			rowSelection: ee,
-			sorting: T,
-			pagination: F,
+			rowSelection: g,
+			sorting: E,
+			pagination: I,
 			columnVisibility: d.visibility
 		},
 		onColumnVisibilityChange: d.change,
 		onRowSelectionChange: (e) => {
-			re(), g(e);
+			ne(), _(e);
 		},
 		onSortingChange: (e) => {
-			E(e), M((e) => ({
+			D(e), N((e) => ({
 				...e,
 				pageIndex: 0
 			}));
 		},
-		onPaginationChange: M,
+		onPaginationChange: N,
 		enableRowSelection: !0
-	}), xe = ot({
+	}), q = st({
 		features: It,
 		data: e,
-		columns: be,
+		columns: ve,
 		getRowId: (e) => e.canonical_key,
 		state: {
-			rowSelection: v,
-			sorting: D,
-			pagination: I,
+			rowSelection: y,
+			sorting: O,
+			pagination: L,
 			columnVisibility: f.visibility
 		},
 		onColumnVisibilityChange: f.change,
 		onRowSelectionChange: (e) => {
-			ie(), w(e);
+			re(), T(e);
 		},
 		enableRowSelection: !0,
 		onSortingChange: (e) => {
-			k(e), P((e) => ({
+			A(e), F((e) => ({
 				...e,
 				pageIndex: 0
 			}));
 		},
-		onPaginationChange: P
-	}), Se = q.getSelectedRowModel().rows.map((e) => e.original), Y = xe.getSelectedRowModel().rows.flatMap((e) => e.original.aliases.map((e) => e.name)), Ce = W(H.isPending);
+		onPaginationChange: F
+	}), Se = xe.getSelectedRowModel().rows.map((e) => e.original), J = q.getSelectedRowModel().rows.flatMap((e) => e.original.aliases.map((e) => e.name)), Ce = K(U.isPending);
 	return /* @__PURE__ */ Z("div", {
-		className: G({
+		className: ge({
 			padding: "none",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 		}),
@@ -906,39 +905,39 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 			}),
 			/* @__PURE__ */ Z("div", {
 				className: "flex flex-col gap-2",
-				children: [/* @__PURE__ */ X(O, { children: "手动添加别名" }), /* @__PURE__ */ Z("div", {
+				children: [/* @__PURE__ */ X(k, { children: "手动添加别名" }), /* @__PURE__ */ Z("div", {
 					className: "flex flex-wrap items-end gap-2",
 					children: [
-						/* @__PURE__ */ X(A, {
+						/* @__PURE__ */ X(j, {
 							"aria-label": "统一名称",
 							placeholder: "在 Peach 中统一显示的名称",
 							value: B,
-							onChange: V,
+							onChange: H,
 							isDisabled: i,
 							className: "w-56"
 						}),
-						/* @__PURE__ */ X(A, {
+						/* @__PURE__ */ X(j, {
 							"aria-label": "平台别名",
 							placeholder: "平台别名",
-							value: oe,
-							onChange: de,
+							value: ae,
+							onChange: oe,
 							isDisabled: i,
 							className: "w-56"
 						}),
 						/* @__PURE__ */ X(h, {
 							variant: "primary",
-							disabled: i || !B.trim() || !oe.trim(),
-							...W(fe.isPending),
-							onClick: () => fe.mutate({
+							disabled: i || !B.trim() || !ae.trim(),
+							...K(W.isPending),
+							onClick: () => W.mutate({
 								canonical: B.trim(),
-								alias: oe.trim()
+								alias: ae.trim()
 							}),
 							children: "保存别名"
 						})
 					]
 				})]
 			}),
-			L ? /* @__PURE__ */ X(C, { children: L }) : null,
+			R ? /* @__PURE__ */ X(w, { children: R }) : null,
 			t.length ? /* @__PURE__ */ Z("div", {
 				className: "flex flex-col gap-2",
 				children: [
@@ -946,7 +945,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 						"data-responsive-toolbar": "",
 						children: [/* @__PURE__ */ Z("div", {
 							"data-toolbar-heading": "",
-							children: [/* @__PURE__ */ X(O, { children: "待合并" }), /* @__PURE__ */ X("span", {
+							children: [/* @__PURE__ */ X(k, { children: "待合并" }), /* @__PURE__ */ X("span", {
 								className: "text-body-2-regular text-text-secondary",
 								children: `${t.length} 组`
 							})]
@@ -958,12 +957,12 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 									size: "small",
 									disabled: i,
 									...Ce,
-									onClick: () => he(t, !0),
+									onClick: () => pe(t, !0),
 									children: `全部合并（${t.length}）`
 								}),
-								/* @__PURE__ */ X(b, {
+								/* @__PURE__ */ X(x, {
 									label: "待合并创作者别名",
-									sorting: T,
+									sorting: E,
 									options: [
 										{
 											id: "canonical",
@@ -979,7 +978,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 										}
 									],
 									onChange: (e) => {
-										E(e), M((e) => ({
+										D(e), N((e) => ({
 											...e,
 											pageIndex: 0
 										}));
@@ -992,7 +991,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 							]
 						})]
 					}),
-					/* @__PURE__ */ Z(z, {
+					/* @__PURE__ */ Z(V, {
 						label: "待合并别名批量操作",
 						visible: Se.length > 0,
 						count: `已选 ${Se.length} 组`,
@@ -1001,38 +1000,38 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 							size: "small",
 							disabled: i,
 							...Ce,
-							onClick: () => he(Se, !1),
+							onClick: () => pe(Se, !1),
 							children: `合并所选（${Se.length}）`
 						}), /* @__PURE__ */ X(h, {
 							variant: "ghost",
 							size: "small",
-							onClick: () => g({}),
+							onClick: () => _({}),
 							children: "取消选择"
 						})]
 					}),
-					/* @__PURE__ */ X(ne, {
+					/* @__PURE__ */ X(te, {
 						follow: !0,
 						preferences: d,
-						onRowClick: (e) => q.getRow(e)?.toggleSelected(),
+						onRowClick: (e) => xe.getRow(e)?.toggleSelected(),
 						children: /* @__PURE__ */ Z(se, {
 							"aria-label": "待合并创作者别名",
 							size: "sm",
-							sortDescriptor: T[0] ? {
-								column: T[0].id,
-								direction: T[0].desc ? "descending" : "ascending"
+							sortDescriptor: E[0] ? {
+								column: E[0].id,
+								direction: E[0].desc ? "descending" : "ascending"
 							} : void 0,
-							onSortChange: (e) => q.getColumn(String(e.column))?.toggleSorting(e.direction === "descending"),
-							children: [/* @__PURE__ */ Z(l, { children: [q.getHeaderGroups()[0].headers.map((e) => /* @__PURE__ */ X(o, {
+							onSortChange: (e) => xe.getColumn(String(e.column))?.toggleSorting(e.direction === "descending"),
+							children: [/* @__PURE__ */ Z(l, { children: [xe.getHeaderGroups()[0].headers.map((e) => /* @__PURE__ */ X(o, {
 								id: e.id,
 								isRowHeader: e.column.id === "canonical",
 								allowsSorting: e.column.getCanSort(),
 								...d.columnProps(e.id),
-								children: ({ sortDirection: t }) => /* @__PURE__ */ Z(Me.Fragment, { children: [/* @__PURE__ */ Z("span", {
+								children: ({ sortDirection: t }) => /* @__PURE__ */ Z(Ne.Fragment, { children: [/* @__PURE__ */ Z("span", {
 									className: "flex items-center gap-0.5",
-									children: [Oe(e.column.columnDef.header, e.getContext()), e.column.getCanSort() ? /* @__PURE__ */ X("span", {
+									children: [ke(e.column.columnDef.header, e.getContext()), e.column.getCanSort() ? /* @__PURE__ */ X("span", {
 										"data-sort-indicator": !0,
 										"data-direction": t || void 0,
-										children: /* @__PURE__ */ X(te, {})
+										children: /* @__PURE__ */ X(ee, {})
 									}) : null]
 								}), /* @__PURE__ */ X(le, {
 									preferences: d,
@@ -1044,19 +1043,19 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 								"data-table-space": "",
 								width: d.spaceWidth,
 								minWidth: 0
-							})] }), /* @__PURE__ */ X(a, { children: q.getRowModel().rows.map((e) => /* @__PURE__ */ Z(s, {
+							})] }), /* @__PURE__ */ X(a, { children: xe.getRowModel().rows.map((e) => /* @__PURE__ */ Z(s, {
 								id: e.id,
 								"data-board-selected": e.getIsSelected() || void 0,
-								children: [e.getVisibleCells().map((e) => /* @__PURE__ */ X(c, { children: Oe(e.column.columnDef.cell, e.getContext()) }, e.id)), /* @__PURE__ */ X(c, { "data-table-space": "" })]
+								children: [e.getVisibleCells().map((e) => /* @__PURE__ */ X(c, { children: ke(e.column.columnDef.cell, e.getContext()) }, e.id)), /* @__PURE__ */ X(c, { "data-table-space": "" })]
 							}, e.id)) })]
 						})
 					}),
-					/* @__PURE__ */ X(y, {
+					/* @__PURE__ */ X(b, {
 						label: "待合并创作者别名",
 						unit: "组",
 						total: t.length,
-						pagination: F,
-						onChange: M
+						pagination: I,
+						onChange: N
 					})
 				]
 			}) : null,
@@ -1067,15 +1066,15 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 						"data-responsive-toolbar": "",
 						children: [/* @__PURE__ */ Z("div", {
 							"data-toolbar-heading": "",
-							children: [/* @__PURE__ */ X(O, { children: "已保存别名" }), /* @__PURE__ */ X("span", {
+							children: [/* @__PURE__ */ X(k, { children: "已保存别名" }), /* @__PURE__ */ X("span", {
 								className: "text-body-2-regular text-text-secondary",
 								children: `${e.length} 组`
 							})]
 						}), /* @__PURE__ */ Z("div", {
 							"data-toolbar-actions": "",
-							children: [/* @__PURE__ */ X(b, {
+							children: [/* @__PURE__ */ X(x, {
 								label: "已保存创作者别名",
-								sorting: D,
+								sorting: O,
 								options: [{
 									id: "canonical",
 									label: "统一名称"
@@ -1084,7 +1083,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 									label: "平台别名"
 								}],
 								onChange: (e) => {
-									k(e), P((e) => ({
+									A(e), F((e) => ({
 										...e,
 										pageIndex: 0
 									}));
@@ -1095,53 +1094,53 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 							})]
 						})]
 					}),
-					/* @__PURE__ */ Z(z, {
+					/* @__PURE__ */ Z(V, {
 						label: "已保存别名批量操作",
-						visible: Y.length > 0,
-						count: `已选 ${Y.length} 个别名`,
+						visible: J.length > 0,
+						count: `已选 ${J.length} 个别名`,
 						children: [/* @__PURE__ */ X(h, {
 							variant: "secondary",
 							size: "small",
 							disabled: i,
-							...W(U.isPending),
-							onClick: () => void ve({
+							...K(de.isPending),
+							onClick: () => void ye({
 								title: "移除所选创作者别名",
-								body: `将移除以下 ${Y.length} 个别名，对应来源恢复为独立创作者组。`,
-								items: Y,
+								body: `将移除以下 ${J.length} 个别名，对应来源恢复为独立创作者组。`,
+								items: J,
 								confirmLabel: "移除所选别名",
-								onConfirm: () => U.mutateAsync(Y)
+								onConfirm: () => de.mutateAsync(J)
 							}),
-							children: `移除所选别名（${Y.length}）`
+							children: `移除所选别名（${J.length}）`
 						}), /* @__PURE__ */ X(h, {
 							variant: "ghost",
 							size: "small",
-							onClick: () => w({}),
+							onClick: () => T({}),
 							children: "取消选择"
 						})]
 					}),
-					e.length ? /* @__PURE__ */ Z(Me.Fragment, { children: [/* @__PURE__ */ X(ne, {
+					e.length ? /* @__PURE__ */ Z(Ne.Fragment, { children: [/* @__PURE__ */ X(te, {
 						follow: !0,
 						preferences: f,
-						onRowClick: (e) => xe.getRow(e)?.toggleSelected(),
+						onRowClick: (e) => q.getRow(e)?.toggleSelected(),
 						children: /* @__PURE__ */ Z(se, {
 							"aria-label": "已保存创作者别名",
 							size: "sm",
-							sortDescriptor: D[0] ? {
-								column: D[0].id,
-								direction: D[0].desc ? "descending" : "ascending"
+							sortDescriptor: O[0] ? {
+								column: O[0].id,
+								direction: O[0].desc ? "descending" : "ascending"
 							} : void 0,
-							onSortChange: (e) => xe.getColumn(String(e.column))?.toggleSorting(e.direction === "descending"),
-							children: [/* @__PURE__ */ Z(l, { children: [xe.getHeaderGroups()[0].headers.map((e) => /* @__PURE__ */ X(o, {
+							onSortChange: (e) => q.getColumn(String(e.column))?.toggleSorting(e.direction === "descending"),
+							children: [/* @__PURE__ */ Z(l, { children: [q.getHeaderGroups()[0].headers.map((e) => /* @__PURE__ */ X(o, {
 								id: e.id,
 								isRowHeader: e.column.id === "canonical",
 								allowsSorting: e.column.getCanSort(),
 								...f.columnProps(e.id),
-								children: ({ sortDirection: t }) => /* @__PURE__ */ Z(Me.Fragment, { children: [/* @__PURE__ */ Z("span", {
+								children: ({ sortDirection: t }) => /* @__PURE__ */ Z(Ne.Fragment, { children: [/* @__PURE__ */ Z("span", {
 									className: "flex items-center gap-0.5",
-									children: [Oe(e.column.columnDef.header, e.getContext()), e.column.getCanSort() ? /* @__PURE__ */ X("span", {
+									children: [ke(e.column.columnDef.header, e.getContext()), e.column.getCanSort() ? /* @__PURE__ */ X("span", {
 										"data-sort-indicator": !0,
 										"data-direction": t || void 0,
-										children: /* @__PURE__ */ X(te, {})
+										children: /* @__PURE__ */ X(ee, {})
 									}) : null]
 								}), /* @__PURE__ */ X(le, {
 									preferences: f,
@@ -1153,23 +1152,23 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 								"data-table-space": "",
 								width: f.spaceWidth,
 								minWidth: 0
-							})] }), /* @__PURE__ */ X(a, { children: xe.getRowModel().rows.map((e) => /* @__PURE__ */ Z(s, {
+							})] }), /* @__PURE__ */ X(a, { children: q.getRowModel().rows.map((e) => /* @__PURE__ */ Z(s, {
 								id: e.id,
 								"data-board-selected": e.getIsSelected() || void 0,
-								children: [e.getVisibleCells().map((e) => /* @__PURE__ */ X(c, { children: Oe(e.column.columnDef.cell, e.getContext()) }, e.id)), /* @__PURE__ */ X(c, { "data-table-space": "" })]
+								children: [e.getVisibleCells().map((e) => /* @__PURE__ */ X(c, { children: ke(e.column.columnDef.cell, e.getContext()) }, e.id)), /* @__PURE__ */ X(c, { "data-table-space": "" })]
 							}, e.id)) })]
 						})
-					}), /* @__PURE__ */ X(y, {
+					}), /* @__PURE__ */ X(b, {
 						label: "已保存创作者别名",
 						unit: "组",
 						total: e.length,
-						pagination: I,
-						onChange: P
-					})] }) : /* @__PURE__ */ X(S, {
+						pagination: L,
+						onChange: F
+					})] }) : /* @__PURE__ */ X(C, {
 						size: "compact",
-						icon: pe,
+						icon: fe,
 						title: "还没有保存创作者别名",
-						actions: i ? void 0 : /* @__PURE__ */ X(x, {
+						actions: i ? void 0 : /* @__PURE__ */ X(S, {
 							target: "input[aria-label=\"统一名称\"]",
 							children: "添加别名"
 						}),
@@ -1186,11 +1185,11 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 	});
 }
 // src/react/follow-manage/feed-sources.tsx
-var Gt = tt({
-	rowPaginationFeature: Ye,
-	rowSelectionFeature: Xe,
-	rowSortingFeature: Ze,
-	columnVisibilityFeature: _e,
+var Gt = nt({
+	rowPaginationFeature: Xe,
+	rowSelectionFeature: Ze,
+	rowSortingFeature: Qe,
+	columnVisibilityFeature: ve,
 	sortedRowModel: t(),
 	paginatedRowModel: e()
 }), Kt = {
@@ -1211,8 +1210,8 @@ var Gt = tt({
 	max: e === "select" ? 48 : e === "name" ? 2e3 : 800,
 	flex: e === "name",
 	required: e === "select" || e === "name"
-})), Yt = () => He.invalidateQueries({
-	queryKey: re,
+})), Yt = () => Ue.invalidateQueries({
+	queryKey: ne,
 	exact: !0
 }), $ = (e) => e.name || e.url;
 function Xt(e) {
@@ -1223,19 +1222,19 @@ function Xt(e) {
 	}
 }
 function Zt({ source: e }) {
-	return e.enabled ? e.last_error ? /* @__PURE__ */ X(v, {
+	return e.enabled ? e.last_error ? /* @__PURE__ */ X(y, {
 		variant: "caption",
 		color: "rose",
 		children: "拉取失败"
-	}) : e.last_fetched_at ? /* @__PURE__ */ X(v, {
+	}) : e.last_fetched_at ? /* @__PURE__ */ X(y, {
 		variant: "caption",
 		color: "lime",
 		children: "正常"
-	}) : /* @__PURE__ */ X(v, {
+	}) : /* @__PURE__ */ X(y, {
 		variant: "caption",
 		color: "gray",
 		children: "未检查"
-	}) : /* @__PURE__ */ X(v, {
+	}) : /* @__PURE__ */ X(y, {
 		variant: "caption",
 		color: "gray",
 		children: "已暂停"
@@ -1251,7 +1250,7 @@ function Qt({ source: e }) {
 	return /* @__PURE__ */ X("span", {
 		"aria-hidden": !0,
 		className: `relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background-tertiary-default text-caption-1-semibold text-text-secondary ${ut}`,
-		dangerouslySetInnerHTML: { __html: ge($(e), t, null, "performer") }
+		dangerouslySetInnerHTML: { __html: G($(e), t, null, "performer") }
 	});
 }
 var $t = (e, t) => e.entity_id !== null && t.has(e.entity_id) && e.page_name && e.page_name !== e.name ? e.page_name : "";
@@ -1262,7 +1261,7 @@ function en(e) {
 }
 function tn(e, t) {
 	let n = e.length === 1 ? e[0] : null;
-	return ve({
+	return ye({
 		title: n ? "移除订阅源" : `移除 ${e.length} 条订阅源`,
 		body: n ? `将移除订阅源「${$(n)}」，之后不再拉取它的新作；已经拉到的新作保留。` : "将移除所选订阅源，之后不再拉取它们的新作；已经拉到的新作保留。",
 		confirmLabel: n ? "移除订阅源" : "移除所选订阅源",
@@ -1271,22 +1270,22 @@ function tn(e, t) {
 	});
 }
 function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
-	let i = at({
-		queryKey: re,
-		queryFn: ({ signal: e }) => we(e)
-	}), u = nt(), d = st("jav-feeds", Jt), f = i.data, m = (0, Q.useMemo)(() => f?.sources ?? [], [f]), [ee, v] = (0, Q.useState)(/* @__PURE__ */ new Set()), x = r?.ids ?? ee, w = r?.onChange ?? v, [ie, T] = (0, Q.useState)(1), [E, D] = (0, Q.useState)(20), [O, A] = (0, Q.useState)([]), j = Be(m.length, E, ie);
+	let i = ot({
+		queryKey: ne,
+		queryFn: ({ signal: e }) => Te(e)
+	}), u = rt(), d = ct("jav-feeds", Jt), f = i.data, m = (0, Q.useMemo)(() => f?.sources ?? [], [f]), [g, y] = (0, Q.useState)(/* @__PURE__ */ new Set()), S = r?.ids ?? g, T = r?.onChange ?? y, [re, E] = (0, Q.useState)(1), [D, O] = (0, Q.useState)(20), [k, j] = (0, Q.useState)([]), M = Ve(m.length, D, re);
 	(0, Q.useEffect)(() => {
-		T((e) => Math.min(e, j.pages));
-	}, [j.pages]), (0, Q.useEffect)(() => {
-		w((e) => {
+		E((e) => Math.min(e, M.pages));
+	}, [M.pages]), (0, Q.useEffect)(() => {
+		T((e) => {
 			let t = new Set(m.map((e) => e.id)), n = new Set([...e].filter((e) => t.has(e)));
 			return n.size === e.size ? e : n;
 		});
-	}, [m, w]);
-	let N = it({
+	}, [m, T]);
+	let P = at({
 		mutationFn: async (e) => {
-			let t = await Re(e.ids, 4, async (t) => {
-				e.action === "remove" ? await Ge(t) : await Qe(t, e.action === "enabled");
+			let t = await ze(e.ids, 4, async (t) => {
+				e.action === "remove" ? await Ke(t) : await $e(t, e.action === "enabled");
 			});
 			return {
 				...e,
@@ -1295,32 +1294,32 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 		},
 		onSuccess: (e) => {
 			let n = e.results.filter((e) => !e.ok), r = e.ids.length - n.length;
-			if (w(/* @__PURE__ */ new Set()), Yt(), e.action === "remove" && r && t(`已移除 ${r} 条订阅源`), n.length) {
+			if (T(/* @__PURE__ */ new Set()), Yt(), e.action === "remove" && r && t(`已移除 ${r} 条订阅源`), n.length) {
 				let e = n[0];
-				u.setError(`${n.length} 条没有写入：${e.ok ? "" : J(e.error)}`);
+				u.setError(`${n.length} 条没有写入：${e.ok ? "" : Y(e.error)}`);
 			}
 		},
-		onError: (e) => u.setError(J(e))
-	}), P = (0, Q.useMemo)(() => en(m), [m]), F = (0, Q.useRef)({
+		onError: (e) => u.setError(Y(e))
+	}), F = (0, Q.useMemo)(() => en(m), [m]), I = (0, Q.useRef)({
 		readOnly: e,
-		shared: P,
+		shared: F,
 		busy: null,
 		toggle: () => {},
 		fetch: () => {},
 		remove: () => {}
 	});
-	F.current = {
+	I.current = {
 		readOnly: e,
-		shared: P,
+		shared: F,
 		busy: u.busy,
-		toggle: (e, t) => void u.run(`enabled-${e.id}`, (n) => Qe(e.id, t, n), () => void Yt()),
-		fetch: (e) => void u.run(`check-${e.id}`, (t) => K(t, [e.id]), () => void Yt()),
+		toggle: (e, t) => void u.run(`enabled-${e.id}`, (n) => $e(e.id, t, n), () => void Yt()),
+		fetch: (e) => void u.run(`check-${e.id}`, (t) => _e(t, [e.id]), () => void Yt()),
 		remove: (e) => void tn([e], async () => {
-			await Ge(e.id), t(`已移除订阅源「${$(e)}」`), Yt();
+			await Ke(e.id), t(`已移除订阅源「${$(e)}」`), Yt();
 		})
 	};
-	let I = (0, Q.useMemo)(() => {
-		let e = ye(), t = (e) => () => Kt[e] || e;
+	let L = (0, Q.useMemo)(() => {
+		let e = be(), t = (e) => () => Kt[e] || e;
 		return e.columns([
 			e.display({
 				id: "select",
@@ -1329,7 +1328,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 					label: "全选本页订阅源",
 					page: !0
 				}),
-				cell: (e) => /* @__PURE__ */ X(_, {
+				cell: (e) => /* @__PURE__ */ X(v, {
 					slot: null,
 					isSelected: e.row.getIsSelected(),
 					onChange: (t) => e.row.toggleSelected(t),
@@ -1340,7 +1339,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 				id: "name",
 				header: t("name"),
 				cell: (e) => {
-					let t = $t(e.row.original, F.current.shared);
+					let t = $t(e.row.original, I.current.shared);
 					return /* @__PURE__ */ Z("span", {
 						className: "flex items-center gap-2 whitespace-nowrap text-body-medium text-text-primary",
 						children: [
@@ -1372,10 +1371,10 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 					rel: "noopener noreferrer",
 					title: "打开来源页面",
 					className: "text-text-primary underline-offset-2 hover:underline",
-					children: [/* @__PURE__ */ X(V, {
+					children: [/* @__PURE__ */ X(ae, {
 						site: e.row.original.kind.startsWith("javdb") ? "javdb" : Xt(e.getValue()),
 						label: Xt(e.getValue())
-					}), /* @__PURE__ */ X(fe, {
+					}), /* @__PURE__ */ X(de, {
 						"aria-hidden": !0,
 						className: "size-(--icon-inline) shrink-0"
 					})]
@@ -1391,7 +1390,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 				header: t("interval"),
 				cell: (e) => /* @__PURE__ */ X("span", {
 					className: "whitespace-nowrap",
-					children: Y(e.getValue())
+					children: Ce(e.getValue())
 				})
 			}),
 			e.accessor((e) => e.last_fetched_at && Date.parse(e.last_fetched_at) || 0, {
@@ -1399,7 +1398,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 				header: t("fetched"),
 				cell: (e) => /* @__PURE__ */ X("span", {
 					className: "whitespace-nowrap tabular-nums",
-					children: e.row.original.last_fetched_at ? Ie(e.row.original.last_fetched_at) : "还没拉过"
+					children: e.row.original.last_fetched_at ? Le(e.row.original.last_fetched_at) : "还没拉过"
 				})
 			}),
 			e.accessor((e) => e.last_new_count, {
@@ -1419,73 +1418,73 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 						/* @__PURE__ */ X(oe, {
 							"aria-label": `启用 ${$(e.row.original)}`,
 							isSelected: e.row.original.enabled,
-							isDisabled: F.current.readOnly,
-							onChange: (t) => F.current.toggle(e.row.original, t)
+							isDisabled: I.current.readOnly,
+							onChange: (t) => I.current.toggle(e.row.original, t)
 						}),
 						/* @__PURE__ */ X(h, {
 							variant: "secondary",
 							size: "small",
 							iconOnly: !0,
-							leadingIcon: xe,
+							leadingIcon: Se,
 							"aria-label": `拉取 ${$(e.row.original)}`,
-							disabled: F.current.readOnly,
-							...W(F.current.busy === `check-${e.row.original.id}`),
-							onClick: () => F.current.fetch(e.row.original)
+							disabled: I.current.readOnly,
+							...K(I.current.busy === `check-${e.row.original.id}`),
+							onClick: () => I.current.fetch(e.row.original)
 						}),
 						/* @__PURE__ */ X(h, {
 							variant: "secondary",
 							size: "small",
 							iconOnly: !0,
-							leadingIcon: M,
+							leadingIcon: N,
 							"aria-label": `移除 ${$(e.row.original)}`,
-							disabled: F.current.readOnly,
-							onClick: () => F.current.remove(e.row.original)
+							disabled: I.current.readOnly,
+							onClick: () => I.current.remove(e.row.original)
 						})
 					]
 				})
 			})
 		]);
-	}, []), ae = (0, Q.useMemo)(() => Object.fromEntries([...x].map((e) => [String(e), !0])), [x]), R = ot({
+	}, []), ie = (0, Q.useMemo)(() => Object.fromEntries([...S].map((e) => [String(e), !0])), [S]), z = st({
 		features: Gt,
 		data: m,
-		columns: I,
+		columns: L,
 		getRowId: (e) => String(e.id),
 		state: {
-			rowSelection: ae,
-			sorting: O,
+			rowSelection: ie,
+			sorting: k,
 			pagination: {
-				pageIndex: j.page - 1,
-				pageSize: E
+				pageIndex: M.page - 1,
+				pageSize: D
 			},
 			columnVisibility: d.visibility
 		},
 		onColumnVisibilityChange: d.change,
 		onSortingChange: (e) => {
-			A(e), T(1);
+			j(e), E(1);
 		},
 		enableRowSelection: !0,
 		onRowSelectionChange: (e) => {
 			r?.onActivate();
-			let t = typeof e == "function" ? e(ae) : e;
-			w(new Set(Object.entries(t).filter(([, e]) => e).map(([e]) => Number(e))));
+			let t = typeof e == "function" ? e(ie) : e;
+			T(new Set(Object.entries(t).filter(([, e]) => e).map(([e]) => Number(e))));
 		}
 	});
-	if (!f) return i.error ? /* @__PURE__ */ X(L, {
+	if (!f) return i.error ? /* @__PURE__ */ X(R, {
 		tone: "error",
 		title: "打不开订阅源",
-		children: J(i.error)
-	}) : /* @__PURE__ */ X(k, { children: "正在读订阅源。" });
-	let B = () => void u.run("check", (e) => K(e), () => void Yt()), de = (e) => {
-		r?.onActivate(), w((t) => {
+		children: Y(i.error)
+	}) : /* @__PURE__ */ X(A, { children: "正在读订阅源。" });
+	let B = () => void u.run("check", (e) => _e(e), () => void Yt()), H = (e) => {
+		r?.onActivate(), T((t) => {
 			let n = new Set(t);
 			return n.has(e) ? n.delete(e) : n.add(e), n;
 		});
-	}, H = m.filter((e) => x.has(e.id)), pe = m.filter((e) => e.last_error);
+	}, U = m.filter((e) => S.has(e.id)), W = m.filter((e) => e.last_error);
 	return /* @__PURE__ */ X("div", {
 		className: "flex flex-col gap-3",
 		children: /* @__PURE__ */ Z("section", {
 			"aria-label": "JAV 订阅列表",
-			className: G({
+			className: ge({
 				padding: "none",
 				className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 			}),
@@ -1507,18 +1506,18 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 							/* @__PURE__ */ X(h, {
 								onClick: B,
 								disabled: e,
-								...W(u.busy === "check"),
+								...K(u.busy === "check"),
 								children: "立即拉取"
 							}),
 							/* @__PURE__ */ X(ce, {
 								preferences: d,
 								label: "JAV 订阅源"
 							}),
-							/* @__PURE__ */ X(b, {
+							/* @__PURE__ */ X(x, {
 								label: "JAV 订阅源",
-								sorting: O,
+								sorting: k,
 								onChange: (e) => {
-									A(e), T(1);
+									j(e), E(1);
 								},
 								options: [
 									"name",
@@ -1536,34 +1535,34 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 						]
 					})]
 				}),
-				pe.length || u.error ? /* @__PURE__ */ Z("div", {
+				W.length || u.error ? /* @__PURE__ */ Z("div", {
 					className: "flex flex-col gap-3",
-					children: [pe.length ? /* @__PURE__ */ X(L, {
+					children: [W.length ? /* @__PURE__ */ X(R, {
 						tone: "error",
-						title: `${pe.length.toLocaleString()} 条订阅源拉取失败`,
+						title: `${W.length.toLocaleString()} 条订阅源拉取失败`,
 						extra: /* @__PURE__ */ X("ul", {
 							className: "flex flex-col gap-0.5 text-body-2-regular",
-							children: pe.map((e) => /* @__PURE__ */ X("li", {
+							children: W.map((e) => /* @__PURE__ */ X("li", {
 								className: "min-w-0 truncate",
 								title: e.last_error || "",
-								children: `${$(e)}：${Se(e.last_error || "") || "未说明原因"}`
+								children: `${$(e)}：${J(e.last_error || "") || "未说明原因"}`
 							}, e.id))
 						}),
 						children: "这些订阅源这一轮没有取到新条目。"
-					}) : null, u.error ? /* @__PURE__ */ X(C, { children: u.error }) : null]
+					}) : null, u.error ? /* @__PURE__ */ X(w, { children: u.error }) : null]
 				}) : null,
-				/* @__PURE__ */ Z(z, {
-					visible: H.length > 0,
+				/* @__PURE__ */ Z(V, {
+					visible: U.length > 0,
 					label: "订阅源批量操作",
-					count: `已选 ${H.length} 条订阅源`,
+					count: `已选 ${U.length} 条订阅源`,
 					children: [
 						/* @__PURE__ */ X(h, {
 							variant: "secondary",
 							size: "small",
 							disabled: e,
-							...W(N.isPending),
-							onClick: () => N.mutate({
-								ids: H.map((e) => e.id),
+							...K(P.isPending),
+							onClick: () => P.mutate({
+								ids: U.map((e) => e.id),
 								action: "enabled"
 							}),
 							children: "启用"
@@ -1572,9 +1571,9 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 							variant: "secondary",
 							size: "small",
 							disabled: e,
-							...W(N.isPending),
-							onClick: () => N.mutate({
-								ids: H.map((e) => e.id),
+							...K(P.isPending),
+							onClick: () => P.mutate({
+								ids: U.map((e) => e.id),
 								action: "paused"
 							}),
 							children: "暂停"
@@ -1583,9 +1582,9 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 							variant: "danger",
 							size: "small",
 							disabled: e,
-							...W(N.isPending),
-							onClick: () => void tn(H, () => N.mutateAsync({
-								ids: H.map((e) => e.id),
+							...K(P.isPending),
+							onClick: () => void tn(U, () => P.mutateAsync({
+								ids: U.map((e) => e.id),
 								action: "remove"
 							})),
 							children: "移除"
@@ -1593,36 +1592,36 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 						/* @__PURE__ */ X(h, {
 							variant: "ghost",
 							size: "small",
-							onClick: () => w(/* @__PURE__ */ new Set()),
+							onClick: () => T(/* @__PURE__ */ new Set()),
 							children: "取消选择"
 						})
 					]
 				}),
-				m.length ? /* @__PURE__ */ X(ne, {
+				m.length ? /* @__PURE__ */ X(te, {
 					follow: !0,
 					preferences: d,
-					onRowClick: (e) => de(Number(e)),
+					onRowClick: (e) => H(Number(e)),
 					children: /* @__PURE__ */ Z(se, {
 						"aria-label": "JAV 订阅源",
 						size: "sm",
-						sortDescriptor: O[0] ? {
-							column: O[0].id,
-							direction: O[0].desc ? "descending" : "ascending"
+						sortDescriptor: k[0] ? {
+							column: k[0].id,
+							direction: k[0].desc ? "descending" : "ascending"
 						} : void 0,
-						onSortChange: (e) => R.getColumn(String(e.column))?.toggleSorting(e.direction === "descending"),
-						children: [/* @__PURE__ */ Z(l, { children: [R.getHeaderGroups()[0].headers.map((e) => {
-							let t = Oe(e.column.columnDef.header, e.getContext());
+						onSortChange: (e) => z.getColumn(String(e.column))?.toggleSorting(e.direction === "descending"),
+						children: [/* @__PURE__ */ Z(l, { children: [z.getHeaderGroups()[0].headers.map((e) => {
+							let t = ke(e.column.columnDef.header, e.getContext());
 							return /* @__PURE__ */ X(o, {
 								id: e.id,
 								isRowHeader: e.column.id === "name",
 								allowsSorting: e.column.getCanSort(),
 								...d.columnProps(e.id),
-								children: ({ sortDirection: n }) => /* @__PURE__ */ Z(Me.Fragment, { children: [qt.has(e.column.id) ? /* @__PURE__ */ X(p, { children: t }) : /* @__PURE__ */ Z("span", {
+								children: ({ sortDirection: n }) => /* @__PURE__ */ Z(Ne.Fragment, { children: [qt.has(e.column.id) ? /* @__PURE__ */ X(p, { children: t }) : /* @__PURE__ */ Z("span", {
 									className: "flex items-center gap-0.5",
 									children: [t, e.column.getCanSort() ? /* @__PURE__ */ X("span", {
 										"data-sort-indicator": !0,
 										"data-direction": n || void 0,
-										children: /* @__PURE__ */ X(te, {})
+										children: /* @__PURE__ */ X(ee, {})
 									}) : null]
 								}), /* @__PURE__ */ X(le, {
 									preferences: d,
@@ -1635,14 +1634,14 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 							"data-table-space": "",
 							width: d.spaceWidth,
 							minWidth: 0
-						})] }), /* @__PURE__ */ X(a, { children: R.getRowModel().rows.map((e) => /* @__PURE__ */ Z(s, {
+						})] }), /* @__PURE__ */ X(a, { children: z.getRowModel().rows.map((e) => /* @__PURE__ */ Z(s, {
 							id: e.id,
 							"data-follow-selected": e.getIsSelected() || void 0,
-							children: [e.getVisibleCells().map((e) => /* @__PURE__ */ X(c, { children: Oe(e.column.columnDef.cell, e.getContext()) }, e.id)), /* @__PURE__ */ X(c, { "data-table-space": "" })]
+							children: [e.getVisibleCells().map((e) => /* @__PURE__ */ X(c, { children: ke(e.column.columnDef.cell, e.getContext()) }, e.id)), /* @__PURE__ */ X(c, { "data-table-space": "" })]
 						}, e.id)) })]
 					})
-				}) : /* @__PURE__ */ X(S, {
-					icon: g,
+				}) : /* @__PURE__ */ X(C, {
+					icon: _,
 					title: "还没有订阅源",
 					size: "compact",
 					actions: e ? void 0 : /* @__PURE__ */ X(h, {
@@ -1652,16 +1651,16 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 					}),
 					children: "在「添加关注」按女优名添加，或在人物页点「订阅新作」。"
 				}),
-				m.length ? /* @__PURE__ */ X(y, {
+				m.length ? /* @__PURE__ */ X(b, {
 					label: "JAV 订阅",
-					total: j.total,
+					total: M.total,
 					unit: "个订阅源",
 					pagination: {
-						pageIndex: j.page - 1,
-						pageSize: E
+						pageIndex: M.page - 1,
+						pageSize: D
 					},
 					onChange: (e) => {
-						D(e.pageSize), T(e.pageIndex + 1);
+						O(e.pageSize), E(e.pageIndex + 1);
 					}
 				}) : null,
 				/* @__PURE__ */ X("footer", {
@@ -1677,10 +1676,10 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 	});
 }
 // src/react/follow-manage/follow-manage-page.tsx
-var rn = (e) => E.some(([t]) => t === e);
+var rn = (e) => D.some(([t]) => t === e);
 function an({ term: e, figure: t, unit: n }) {
 	return /* @__PURE__ */ Z("div", {
-		className: G({
+		className: ge({
 			padding: "none",
 			className: "flex flex-col gap-3 px-6 py-5 max-sm:gap-2 max-sm:p-4"
 		}),
@@ -1701,41 +1700,41 @@ function an({ term: e, figure: t, unit: n }) {
 	});
 }
 function on(e) {
-	let { route: t, savePreference: n, toast: r, openFollow: i, readOnly: a, readOnlyMessage: o, writerUrl: s } = e, [c, l] = (0, Q.useState)(rn(e.tab) ? e.tab : "list"), [p, m] = (0, Q.useState)(Math.max(1, Math.floor(e.page) || 1)), [h, g] = (0, Q.useState)(() => Je(e.sort, e.dir).sort), [_, te] = (0, Q.useState)(() => Je(e.sort, e.dir).dir), [v, y] = (0, Q.useState)(Pe(e.layout) ? e.layout : "default"), [ne, b] = (0, Q.useState)(ze(e.pageSize)), [x, S] = (0, Q.useState)(/* @__PURE__ */ new Set()), [C, D] = (0, Q.useState)(/* @__PURE__ */ new Set()), O = at({
-		queryKey: T,
-		queryFn: ({ signal: e }) => Te(e)
-	}), k = at({
-		queryKey: ie,
-		queryFn: ({ signal: e }) => Ce(e)
-	}), A = at({
+	let { route: t, savePreference: n, toast: r, openFollow: i, readOnly: a, readOnlyMessage: o, writerUrl: s } = e, [c, l] = (0, Q.useState)(rn(e.tab) ? e.tab : "list"), [p, m] = (0, Q.useState)(Math.max(1, Math.floor(e.page) || 1)), [h, _] = (0, Q.useState)(() => Ye(e.sort, e.dir).sort), [v, ee] = (0, Q.useState)(() => Ye(e.sort, e.dir).dir), [y, b] = (0, Q.useState)(Fe(e.layout) ? e.layout : "default"), [te, x] = (0, Q.useState)(Be(e.pageSize)), [S, C] = (0, Q.useState)(/* @__PURE__ */ new Set()), [w, O] = (0, Q.useState)(/* @__PURE__ */ new Set()), k = ot({
+		queryKey: E,
+		queryFn: ({ signal: e }) => Ee(e)
+	}), A = ot({
 		queryKey: re,
 		queryFn: ({ signal: e }) => we(e)
-	}), j = O.data || { sources: [] }, M = k.data || {
+	}), j = ot({
+		queryKey: ne,
+		queryFn: ({ signal: e }) => Te(e)
+	}), M = k.data || { sources: [] }, N = A.data || {
 		root: "",
 		providers: []
-	}, N = j.sources;
+	}, P = M.sources;
 	(0, Q.useEffect)(() => {
-		S((e) => {
-			let t = Fe(e, N);
+		C((e) => {
+			let t = Ie(e, P);
 			return t.size === e.size ? e : t;
 		});
-	}, [N]);
-	let P = (e) => {
-		let n = e.sort ?? h, r = e.dir ?? _;
+	}, [P]);
+	let F = (e) => {
+		let n = e.sort ?? h, r = e.dir ?? v;
 		t({
 			tab: e.tab ?? c,
 			page: e.page ?? p,
 			sort: n === "checked" ? "" : n,
-			dir: r === R[n] ? "" : r
+			dir: r === z[n] ? "" : r
 		});
-	}, F = je(N), I = N.filter(Ne).length, ae = N.filter((e) => e.enabled).length, z = (M.providers || []).filter((e) => e.requirement === "required" && !be(e)).length, B = new Set((A.data?.sources || []).map((e) => e.entity_id ?? `source-${e.id}`)).size;
-	return /* @__PURE__ */ Z(ct, { children: [
-		a ? /* @__PURE__ */ X(L, {
+	}, I = Me(P), L = P.filter(Pe).length, ie = P.filter((e) => e.enabled).length, V = (N.providers || []).filter((e) => e.requirement === "required" && !xe(e)).length, H = new Set((j.data?.sources || []).map((e) => e.entity_id ?? `source-${e.id}`)).size;
+	return /* @__PURE__ */ Z(lt, { children: [
+		a ? /* @__PURE__ */ X(R, {
 			tone: "warning",
 			title: "本机只能浏览",
 			extra: s ? /* @__PURE__ */ X("p", {
 				className: "text-body-2-regular",
-				children: /* @__PURE__ */ X(w, {
+				children: /* @__PURE__ */ X(T, {
 					href: s,
 					children: "前往写入端管理关注"
 				})
@@ -1743,37 +1742,37 @@ function on(e) {
 			children: o
 		}) : null,
 		/* @__PURE__ */ Z("div", {
-			className: lt,
+			className: B,
 			"aria-label": "关注概览",
 			children: [
 				/* @__PURE__ */ X(an, {
 					term: "关注创作者",
-					figure: F.length,
+					figure: I.length,
 					unit: "位"
 				}),
 				/* @__PURE__ */ X(an, {
 					term: "启用来源",
-					figure: ae,
-					unit: `/ ${N.length}`
+					figure: ie,
+					unit: `/ ${P.length}`
 				}),
 				/* @__PURE__ */ X(an, {
 					term: "检查失败",
-					figure: I,
+					figure: L,
 					unit: "个来源"
 				}),
 				/* @__PURE__ */ X(an, {
 					term: "未看更新",
-					figure: j.counts?.new || 0,
+					figure: M.counts?.new || 0,
 					unit: "条"
 				}),
 				/* @__PURE__ */ X(an, {
 					term: "JAV 订阅",
-					figure: B,
+					figure: H,
 					unit: "位"
 				}),
 				/* @__PURE__ */ X(an, {
 					term: "未看新作",
-					figure: A.data?.unread || 0,
+					figure: j.data?.unread || 0,
 					unit: "条"
 				})
 			]
@@ -1782,7 +1781,7 @@ function on(e) {
 			selectedKey: c,
 			onSelectionChange: (e) => {
 				let t = String(e);
-				rn(t) && (S(/* @__PURE__ */ new Set()), D(/* @__PURE__ */ new Set()), l(t), P({ tab: t }));
+				rn(t) && (C(/* @__PURE__ */ new Set()), O(/* @__PURE__ */ new Set()), l(t), F({ tab: t }));
 			},
 			className: "flex flex-col gap-6",
 			children: [
@@ -1791,7 +1790,7 @@ function on(e) {
 					"data-section-nav": !0,
 					"data-section-items": !0,
 					className: "flex max-w-full flex-nowrap overflow-x-auto",
-					children: E.map(([e, t]) => /* @__PURE__ */ X(d, {
+					children: D.map(([e, t]) => /* @__PURE__ */ X(d, {
 						id: e,
 						"data-pill-selected": c === e ? "" : void 0,
 						"data-pill-variant": "gray",
@@ -1806,45 +1805,45 @@ function on(e) {
 						readOnly: a,
 						toast: r,
 						onAdd: () => {
-							l("add"), P({ tab: "add" });
+							l("add"), F({ tab: "add" });
 						},
 						selection: {
-							ids: C,
-							onChange: D,
-							onActivate: () => S(/* @__PURE__ */ new Set())
+							ids: w,
+							onChange: O,
+							onActivate: () => C(/* @__PURE__ */ new Set())
 						}
 					}), /* @__PURE__ */ X(mt, {
-						data: j,
+						data: M,
 						sort: h,
-						dir: _,
+						dir: v,
 						page: p,
-						layout: v,
-						pageSize: ne,
-						selected: x,
+						layout: y,
+						pageSize: te,
+						selected: S,
 						readOnly: a,
 						toast: r,
 						openFollow: i,
 						onAdd: () => {
-							l("add"), P({ tab: "add" });
+							l("add"), F({ tab: "add" });
 						},
 						onSort: (e, t) => {
-							g(e), te(t), m(1), P({
+							_(e), ee(t), m(1), F({
 								sort: e,
 								dir: t,
 								page: 1
 							});
 						},
 						onPage: (e) => {
-							m(e), P({ page: e });
+							m(e), F({ page: e });
 						},
 						onSelected: (e) => {
-							S(e), D(/* @__PURE__ */ new Set());
+							C(e), O(/* @__PURE__ */ new Set());
 						},
 						onLayout: (e) => {
-							y(e), m(1), n({ layout: e }), P({ page: 1 });
+							b(e), m(1), n({ layout: e }), F({ page: 1 });
 						},
 						onPageSize: (e) => {
-							b(e), m(1), n({ pageSize: e }), P({ page: 1 });
+							x(e), m(1), n({ pageSize: e }), F({ page: 1 });
 						}
 					})]
 				}),
@@ -1853,8 +1852,8 @@ function on(e) {
 					className: "flex flex-col gap-8",
 					children: [
 						/* @__PURE__ */ X(Et, {
-							data: j,
-							credentials: M,
+							data: M,
+							credentials: N,
 							readOnly: a,
 							toast: r
 						}),
@@ -1862,32 +1861,32 @@ function on(e) {
 							readOnly: a,
 							toast: r,
 							onAdded: () => {
-								A.refetch(), l("list"), P({ tab: "list" });
+								j.refetch(), l("list"), F({ tab: "list" });
 							}
 						}),
 						/* @__PURE__ */ X(Wt, {
-							groups: j.author_aliases || [],
+							groups: M.author_aliases || [],
 							readOnly: a,
 							toast: r,
-							suggestions: j.alias_suggestions || [],
-							sources: j.sources
+							suggestions: M.alias_suggestions || [],
+							sources: M.sources
 						})
 					]
 				}),
 				/* @__PURE__ */ X(u, {
 					id: "tags",
 					className: "flex flex-col gap-4",
-					children: /* @__PURE__ */ X(de, { scope: "online" })
+					children: /* @__PURE__ */ X(U, { scope: "online" })
 				})
 			]
 		}),
-		/* @__PURE__ */ X("div", { children: /* @__PURE__ */ Z(ee, {
+		/* @__PURE__ */ X("div", { children: /* @__PURE__ */ Z(g, {
 			variant: "secondary",
 			href: "/settings/subscriptions",
-			children: ["来源与订阅设置", z ? `（${z}）` : ""]
+			children: ["来源与订阅设置", V ? `（${V}）` : ""]
 		}) })
 	] });
 }
 export { on as FollowManagePage };
 
-//# debugId=1cb56f0e-0ec6-4284-8e6d-97713fbbf0ed
+//# debugId=fd72c303-47ef-4e44-8eba-27ad2c86b67d

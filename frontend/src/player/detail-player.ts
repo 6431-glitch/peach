@@ -27,11 +27,13 @@ import { detailStreamSession, detailStreamSource, directDetailSource } from './s
 import { stopTelemetry, wireFollowTelemetry, wireTelemetry } from './telemetry';
 import type { MediaFacts, PlayerItem, PlayerSource, SourceQuality, VjsPlayer } from './types';
 import { ensureVideojs } from './videojs';
+import { isPlayerGuidePreview } from './guide-preview';
 
 /** 从小窗展开回来或带 `?t=` 深链进来时接着放的那一刻。 */
 export interface PlayerResume { time: number; autoplay: boolean }
 
 export interface DetailPlayerOptions {
+  guidePreview?: boolean;
   playbackKey?: string;
   /** 给定片源（关注条目的 `/follow-stream`）；不给就按作品的来源解析。 */
   source?: PlayerSource;
@@ -84,11 +86,13 @@ export async function mountDetailPlayer(
   const resume = options.resume ?? null;
   video.muted = true;
   if (resume?.autoplay) autoplay = true;
+  if (options.guidePreview) autoplay = false;
   const source = () => (options.source ? Promise.resolve(options.source) : detailStreamSource(item));
   /* 拉不到就退回原生 video，和「页面里没有 videojs」是同一个兜底出口。 */
   let videojs;
   try { videojs = await ensureVideojs() } catch {
     video.controls = true;
+    if (options.guidePreview) return null;
     source().then((next) => {
       video.addEventListener(options.deferResumeUntilPlay && !autoplay ? 'play' : 'loadedmetadata', () => {
         if (resume && resume.time > 0) video.currentTime = Math.min(resume.time, realDuration(video.duration) || resume.time);
@@ -234,13 +238,13 @@ export async function mountDetailPlayer(
       if (size > 0 && !mediaSize) { mediaSize = size; meter.bitrate = averageBitrate(size, item.duration) }
     }).catch(() => {});
     mountPlayerSeekPreview(player, item, { thumbnail: !options.source });
-    mountPlayerMediaSession(player, item);
+    if (!options.guidePreview) mountPlayerMediaSession(player, item);
     mountPlayerSpinner(player);
     if (!options.source) mountPlayerSubtitles(player, item.id);
     session.ready = true;
     if (session.chrome?.statsButton) session.chrome.statsButton.hidden = false;
   });
-  source().then((next) => {
+  if (!options.guidePreview) source().then((next) => {
     if (!live()) return;
     segmentedSource = String(next.type || '').includes('mpegurl');
     if (resume && resume.time > 0) player.one(options.deferResumeUntilPlay && !autoplay ? 'play' : 'loadedmetadata', () => {
@@ -345,11 +349,12 @@ export interface MountPlayerOptions {
 export function mountPlayer(video: HTMLVideoElement, options: MountPlayerOptions | ImmersePlayerOptions): () => void {
   if (options.kind === 'immerse') return mountImmersePlayer(video, options);
   const { kind, item, media = null, handedOff, onPlayer } = options;
+  const guidePreview = isPlayerGuidePreview();
   const host = playerHost();
   const frame = options.chrome === false ? null : video.parentElement;
   if (frame) preparePlayerFrame(frame, video);
   const key = playbackKey(kind, item, media?.index ?? null);
-  let detail: DetailPlayerOptions = { playbackKey: key, resume: options.resume ?? { time: playbackPosition(key, item), autoplay: false } };
+  let detail: DetailPlayerOptions = { guidePreview, playbackKey: key, resume: guidePreview ? null : options.resume ?? { time: playbackPosition(key, item), autoplay: false } };
   if (kind === 'follow') {
     detail = {
       ...detail,
@@ -371,11 +376,15 @@ export function mountPlayer(video: HTMLVideoElement, options: MountPlayerOptions
     if (detailPlayer() === player) { setDetailPlayer(null); stopPlayerPanels() }
     disposePlayer(player);
   };
-  void mountDetailPlayer(item, video, options.autoplay ?? host.settings().detailAutoplay, detail).then((mounted) => {
+  void mountDetailPlayer(item, video, guidePreview ? false : options.autoplay ?? host.settings().detailAutoplay, detail).then((mounted) => {
     player = mounted;
     // 挂载还没回来媒体区就换了：这一个一出来就拆掉。
     if (released) { release(); return }
     trackedVideo = mounted?.el().querySelector('video') ?? video;
+    if (guidePreview) {
+      mounted?.el().setAttribute('data-player-guide', '');
+      onPlayer?.(mounted); return;
+    }
     trackPlaybackPosition(key, trackedVideo);
     if (kind === 'follow') wireFollowTelemetry(item, trackedVideo);
     else {

@@ -1,14 +1,14 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "43902a66-b081-429f-85c2-a48cda58a21b", e._sentryDebugIdIdentifier = "sentry-dbid-43902a66-b081-429f-85c2-a48cda58a21b");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "35282da1-b05e-4594-9efb-d39544c76391", e._sentryDebugIdIdentifier = "sentry-dbid-35282da1-b05e-4594-9efb-d39544c76391");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
 import { createSortedRowModel as t, useTableSelection as n } from "./peach-app.use-table-selection-BSdXI_Nc.js";
-import { $76d00c5a4edb230a$export$76ccd210b9029917 as r, $76d00c5a4edb230a$export$816b5d811295e6bc as i, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as a, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as o, $76d00c5a4edb230a$export$f850895b287ef28e as s, Button as c, Checkbox as l, ChevronSortDown as u, DataTableFooter as d, DataTableFrame as f, DataTableSort as p, SelectionDock as m, Table as h, TableColumnControls as g, TableColumnResizer as _, TableSelectionHeader as v, __toESM as y, cardClass as b, columnVisibilityFeature as x, createColumnHelper as S, flexRender as C, import_jsx_runtime as w, jsx as T, jsxs as E, require_react as D, rowPaginationFeature as O, rowSelectionFeature as k, rowSortingFeature as A, tableFeatures as j, useTable as M, useTablePreferences as N } from "./peach-app.js";
+import { $76d00c5a4edb230a$export$76ccd210b9029917 as r, $76d00c5a4edb230a$export$816b5d811295e6bc as i, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as a, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as o, $76d00c5a4edb230a$export$f850895b287ef28e as s, Button as c, Checkbox as l, ChevronSortDown as u, DataTableFooter as d, DataTableFrame as f, DataTableSort as p, SelectionDock as m, Table as h, TableColumnControls as g, TableColumnResizer as _, TableSelectionHeader as v, __toESM as y, cardClass as b, columnVisibilityFeature as x, createColumnHelper as S, flexRender as C, import_jsx_runtime as w, jsx as T, jsxs as E, require_react as D, rowPaginationFeature as O, rowSelectionFeature as k, rowSortingFeature as A, tableFeatures as j, useTable as ee, useTablePreferences as M } from "./peach-app.js";
 // src/react/components/data-table.tsx
-var P = /* @__PURE__ */ y(D(), 1), F = j({
+var N = /* @__PURE__ */ y(D(), 1), P = j({
 	rowSortingFeature: A,
 	rowSelectionFeature: k,
 	rowPaginationFeature: O,
@@ -16,8 +16,8 @@ var P = /* @__PURE__ */ y(D(), 1), F = j({
 	sortedRowModel: t(),
 	paginatedRowModel: e()
 });
-function I({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O, onSelected: k, actions: A, title: j = e, titleId: I, description: L, footerActions: R, panel: z = !0, unit: B = "条记录" }) {
-	let [V, H] = (0, P.useState)([]), U = (0, P.useMemo)(() => [{
+function F({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O, onSelected: k, actions: A, title: j = e, titleId: F, description: I, footerActions: L, toolbarActions: R, panel: z = !0, unit: B = "条记录" }) {
+	let [V, H] = (0, N.useState)([]), U = (0, N.useMemo)(() => [{
 		id: "select",
 		label: "选择",
 		width: 48,
@@ -30,10 +30,10 @@ function I({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 		min: e.min ?? (t === 0 ? 320 : 96),
 		flex: e.flex ?? t === 0,
 		required: t === 0
-	}))], [y]), W = N(`data:${e}`, U), [G, K] = (0, P.useState)({
+	}))], [y]), W = M(`data:${e}`, U), [G, K] = (0, N.useState)({
 		pageIndex: 0,
 		pageSize: 20
-	}), q = n(() => k([])), J = Math.max(1, Math.ceil(t.length / G.pageSize)), Y = Math.min(G.pageIndex, J - 1), X = Object.fromEntries(O.map((e) => [e, !0])), Z = (0, P.useMemo)(() => {
+	}), q = n(() => k([])), J = Math.max(1, Math.ceil(t.length / G.pageSize)), Y = Math.min(G.pageIndex, J - 1), X = Object.fromEntries(O.map((e) => [e, !0])), Z = (0, N.useMemo)(() => {
 		let t = S();
 		return t.columns([t.display({
 			id: "select",
@@ -61,8 +61,8 @@ function I({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 		y,
 		e,
 		D
-	]), Q = M({
-		features: F,
+	]), Q = ee({
+		features: P,
 		data: t,
 		columns: Z,
 		getRowId: x,
@@ -104,7 +104,7 @@ function I({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 				children: [/* @__PURE__ */ E("div", {
 					"data-toolbar-heading": "",
 					children: [/* @__PURE__ */ T("h3", {
-						id: I,
+						id: F,
 						className: "text-title-2-medium text-text-primary",
 						children: j
 					}), /* @__PURE__ */ T("span", {
@@ -113,28 +113,32 @@ function I({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 					})]
 				}), /* @__PURE__ */ E("div", {
 					"data-toolbar-actions": "",
-					children: [/* @__PURE__ */ T(g, {
-						preferences: W,
-						label: e
-					}), /* @__PURE__ */ T(p, {
-						label: e,
-						options: y.filter((e) => e.value).map((e) => ({
-							id: e.id,
-							label: e.label
-						})),
-						sorting: V,
-						onChange: (e) => {
-							H(e), K((e) => ({
-								...e,
-								pageIndex: 0
-							}));
-						}
-					})]
+					children: [
+						R,
+						/* @__PURE__ */ T(g, {
+							preferences: W,
+							label: e
+						}),
+						/* @__PURE__ */ T(p, {
+							label: e,
+							options: y.filter((e) => e.value).map((e) => ({
+								id: e.id,
+								label: e.label
+							})),
+							sorting: V,
+							onChange: (e) => {
+								H(e), K((e) => ({
+									...e,
+									pageIndex: 0
+								}));
+							}
+						})
+					]
 				})]
 			}),
-			L ? /* @__PURE__ */ T("p", {
+			I ? /* @__PURE__ */ T("p", {
 				className: "text-body-2-regular text-text-secondary",
-				children: L
+				children: I
 			}) : null,
 			/* @__PURE__ */ E(m, {
 				label: `${e}批量操作`,
@@ -201,13 +205,13 @@ function I({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 				onChange: K,
 				unit: B
 			}),
-			R ? /* @__PURE__ */ T("div", {
+			L ? /* @__PURE__ */ T("div", {
 				className: "flex flex-wrap items-center justify-end gap-2 border-t border-separator-border pt-4",
-				children: R
+				children: L
 			}) : null
 		]
 	});
 }
-export { I as DataTable };
+export { F as DataTable };
 
-//# debugId=43902a66-b081-429f-85c2-a48cda58a21b
+//# debugId=35282da1-b05e-4594-9efb-d39544c76391

@@ -1,20 +1,19 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "5bb7c21d-fa38-473c-9ff1-e46006de017f", e._sentryDebugIdIdentifier = "sentry-dbid-5bb7c21d-fa38-473c-9ff1-e46006de017f");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "3d481375-9830-4f00-8e54-3319608ee923", e._sentryDebugIdIdentifier = "sentry-dbid-3d481375-9830-4f00-8e54-3319608ee923");
 	} catch {}
 })();
-import { ActivePoints as e, AnimatedItems as t, CHART_CARD as n, CHART_COLORS as r, CartesianLabelListContextProvider as i, CategoryTick as a, ChartBackground as o, ChartContainer as s, ChartHead as c, ChartLegend as l, ChartLegendContent as u, ChartTip as d, ChartTooltip as f, ChartTooltipContent as p, DefaultZIndexes as m, Dots as h, EvilBarChart as g, LabelListFromLabelProp as _, Layer as v, LoadingIndicator as y, PolarChart as b, PolarLabelContextProvider as x, PolarLabelFromLabelProp as S, RegisterGraphicalItemId as C, SetPolarGraphicalItem as ee, SetPolarLegendPayload as w, SetTooltipEntrySettings as te, Text as T, ZIndexLayer as E, adaptEventsOfChild as ne, addRadiusAxis as re, arrayTooltipSearcher as ie, categoryAxisWidth as ae, cn as oe, createSelector as D, defaultPolarChartProps as se, defaultPolarRadiusAxisProps as ce, fitLabel as le, getAxisTypeBasedOnLayout as ue, getBandSizeOfAxis as de, getClassNameFromUnknown as fe, getColorsCount as pe, getTooltipNameProp as me, getValueByDataKey as he, identity as ge, interpolate as _e, isArrayLike as ve, isCategoricalAxis as ye, isNullish as be, iteratee as xe, matchAnimationItems as Se, matchByIndex as Ce, noop as we, polarToCartesian as O, removeRadiusAxis as Te, resolveDefaultProps as Ee, selectAngleAxis as De, selectChartDataAndAlwaysIgnoreIndexes as Oe, selectChartLayout as ke, selectPolarViewBox as Ae, selectRadiusAxis as je, selectUnfilteredPolarItems as Me, svgPropertiesAndEvents as Ne, svgPropertiesNoEvents as k, svgPropertiesNoEventsFromUnknown as Pe, tone as Fe, useAnimationCallbacks as Ie, useAnimationStartSnapshot as Le, useAppDispatch as Re, useAppSelector as A, useIsPanorama as ze, usePolarChartLayout as Be } from "./peach-app.chart-tip-BGeaXdeB.js";
-import { $542a13ca2fa5b484$export$5b6b19405a83ff9d as Ve, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as He, $b4f18e3395fe64d7$export$3e41faf802a29e71 as Ue, $b4f18e3395fe64d7$export$b2539bed5023c21c as We, Button as j, ButtonLink as Ge, Disclosure as Ke, E3 as qe, EmptyState as M, FLOW_LABEL_X as Je, FLOW_VIEWBOX as Ye, Gg as Xe, IDLE_POLL_MS as Ze, Input as Qe, M6 as $e, MENU_ITEM as et, MENU_ITEM_INTERACTIVE as tt, MENU_POPOVER_SURFACE as nt, MenuDialog as rt, Note as N, OV as it, Progress as at, Rf as ot, SEGMENT as st, SEGMENTED_TRACK as ct, SegmentedTabList as lt, Select$1 as ut, SelectItem as dt, TASTE_REFRESH_KEY as ft, TASTE_WINDOWS as pt, TaskProgress as mt, Wt as ht, Xt as gt, _8 as _t, __toESM as vt, aB as yt, avatarInner as bt, busyProps as P, cB as xt, cardClass as F, clsx as I, configureTasteBrowser as St, confirmModal as Ct, cx as wt, errorMessage as L, f1 as Tt, fetchTaste as Et, fetchTasteJob as Dt, firstGrapheme as Ot, flowGraph as kt, flowLabel as At, fmtSize as jt, g4 as Mt, historySpan as Nt, importTasteExport as Pt, import_jsx_runtime as R, jsx as z, jsxs as B, keepPreviousData as Ft, mM as It, pv as V, queryClient as H, r2 as Lt, radarRows as Rt, rankDetail as zt, rankShares as Bt, removeTasteSource as Vt, require_react as Ht, siteMarkUrl as Ut, startTasteRefresh as Wt, tasteDate as Gt, tasteDimensions as Kt, tasteHours as qt, tasteKey as U, tasteRefetchInterval as Jt, tasteTime as Yt, topScores as Xt, uo as Zt, useBackgroundJob as Qt, useMutation as $t, useQuery as en } from "./peach-app.js";
-import { Page as tn } from "./peach-app.page-CW3QRN2N.js";
-import { STAT_STRIP as nn, StatCard as rn, statCardClass as an } from "./peach-app.stat-card-4sRHYGSD.js";
+import { ActivePoints as e, AnimatedItems as t, CHART_CARD as n, CHART_COLORS as r, CartesianLabelListContextProvider as i, CategoryTick as a, ChartBackground as o, ChartContainer as s, ChartHead as c, ChartLegend as l, ChartLegendContent as u, ChartTip as d, ChartTooltip as f, ChartTooltipContent as p, DefaultZIndexes as m, Dots as h, EvilBarChart as g, LabelListFromLabelProp as _, Layer as v, LoadingIndicator as y, PolarChart as b, PolarLabelContextProvider as x, PolarLabelFromLabelProp as S, RegisterGraphicalItemId as C, SetPolarGraphicalItem as ee, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Text as te, ZIndexLayer as E, adaptEventsOfChild as ne, addRadiusAxis as re, arrayTooltipSearcher as ie, categoryAxisWidth as ae, cn as oe, createSelector as D, defaultPolarChartProps as se, defaultPolarRadiusAxisProps as ce, fitLabel as le, getAxisTypeBasedOnLayout as ue, getBandSizeOfAxis as de, getClassNameFromUnknown as fe, getColorsCount as pe, getTooltipNameProp as me, getValueByDataKey as he, identity as ge, interpolate as _e, isArrayLike as ve, isCategoricalAxis as ye, isNullish as be, iteratee as xe, matchAnimationItems as Se, matchByIndex as Ce, noop as we, polarToCartesian as O, removeRadiusAxis as Te, resolveDefaultProps as Ee, selectAngleAxis as De, selectChartDataAndAlwaysIgnoreIndexes as Oe, selectChartLayout as ke, selectPolarViewBox as Ae, selectRadiusAxis as je, selectUnfilteredPolarItems as Me, svgPropertiesAndEvents as Ne, svgPropertiesNoEvents as k, svgPropertiesNoEventsFromUnknown as Pe, tone as Fe, useAnimationCallbacks as Ie, useAnimationStartSnapshot as Le, useAppDispatch as Re, useAppSelector as A, useIsPanorama as ze, usePolarChartLayout as Be } from "./peach-app.chart-tip-BGeaXdeB.js";
+import { $542a13ca2fa5b484$export$5b6b19405a83ff9d as Ve, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as He, $b4f18e3395fe64d7$export$3e41faf802a29e71 as Ue, $b4f18e3395fe64d7$export$b2539bed5023c21c as We, Button as j, ButtonLink as Ge, Disclosure as Ke, E3 as qe, EmptyState as M, FLOW_LABEL_X as Je, FLOW_VIEWBOX as Ye, Gg as Xe, IDLE_POLL_MS as Ze, Input as Qe, M6 as $e, MENU_ITEM as et, MENU_ITEM_INTERACTIVE as tt, MENU_POPOVER_SURFACE as nt, MenuDialog as rt, Note as N, OV as it, Progress as at, Rf as ot, SEGMENT as st, SEGMENTED_TRACK as ct, STAT_STRIP as lt, SegmentedTabList as ut, Select$1 as dt, SelectItem as ft, StatCard as pt, TASTE_REFRESH_KEY as mt, TASTE_WINDOWS as ht, TaskProgress as gt, Wt as _t, Xt as vt, _8 as yt, __toESM as bt, aB as xt, avatarInner as St, busyProps as P, cB as Ct, cardClass as F, clsx as I, configureTasteBrowser as wt, confirmModal as Tt, cx as Et, errorMessage as L, f1 as Dt, fetchTaste as Ot, fetchTasteJob as kt, firstGrapheme as At, flowGraph as jt, flowLabel as Mt, fmtSize as Nt, g4 as Pt, historySpan as Ft, importTasteExport as It, import_jsx_runtime as R, jsx as z, jsxs as B, keepPreviousData as Lt, mM as Rt, pv as V, queryClient as H, r2 as zt, radarRows as Bt, rankDetail as Vt, rankShares as Ht, removeTasteSource as Ut, require_react as Wt, siteMarkUrl as Gt, startTasteRefresh as Kt, statCardClass as qt, tasteDate as Jt, tasteDimensions as Yt, tasteHours as Xt, tasteKey as U, tasteRefetchInterval as Zt, tasteTime as Qt, topScores as $t, uo as en, useBackgroundJob as tn, useMutation as nn, useQuery as rn } from "./peach-app.js";
+import { Page as an } from "./peach-app.page-CW3QRN2N.js";
 import { LEGACY_AVATAR_IMG as on } from "./peach-app.legacy-avatar-NSITxLRS.js";
 import { ActivityHeat as sn, BAR_DOMAIN as cn, ExpandableRanking as ln, PolarAngleAxis as un, Polygon as dn, barLabel as fn, selectPolarAxisScale as pn, selectPolarAxisTicks as W } from "./peach-app.expandable-ranking-D8ZeeCn4.js";
 var mn = D([(e, t) => W(e, "angleAxis", t, !1)], (e) => {
 	if (e) return e.map((e) => e.coordinate);
 }), hn = D([(e, t) => W(e, "radiusAxis", t, !1)], (e) => {
 	if (e) return e.map((e) => e.coordinate);
-}), G = /* @__PURE__ */ vt(Ht()), gn = [
+}), G = /* @__PURE__ */ bt(Wt()), gn = [
 	"gridType",
 	"radialLines",
 	"angleAxisId",
@@ -334,7 +333,7 @@ var Gn = (e, t, n, r) => {
 		y2: l.y
 	});
 	return /*#__PURE__*/ G.createElement("line", q({ className: "recharts-polar-radius-axis-line" }, u));
-}, Yn = (e, t, n) => /*#__PURE__*/ G.isValidElement(e) ? /*#__PURE__*/ G.cloneElement(e, t) : typeof e == "function" ? e(t) : /*#__PURE__*/ G.createElement(T, q({}, t, { className: "recharts-polar-radius-axis-tick-value" }), n), Xn = (e, t) => {
+}, Yn = (e, t, n) => /*#__PURE__*/ G.isValidElement(e) ? /*#__PURE__*/ G.cloneElement(e, t) : typeof e == "function" ? e(t) : /*#__PURE__*/ G.createElement(te, q({}, t, { className: "recharts-polar-radius-axis-tick-value" }), n), Xn = (e, t) => {
 	var n = e.angle, r = e.tickFormatter, i = e.stroke, a = e.tick, o = Vn(e, In), s = Kn(e.orientation), c = k(o), l = Pe(a), u = t.map((t, o) => {
 		var u = Gn(t, e.angle, e.cx, e.cy), d = J(J(J(J({
 			textAnchor: s,
@@ -572,7 +571,7 @@ var Dr = (e) => {
 			graphicalItemId: c
 		}
 	};
-	return /*#__PURE__*/ G.createElement(te, { tooltipEntrySettings: l });
+	return /*#__PURE__*/ G.createElement(T, { tooltipEntrySettings: l });
 });
 function kr(e) {
 	var t = e.points, n = e.props, r = n.dot, i = n.dataKey;
@@ -1217,7 +1216,7 @@ Q.Radar = ii, Q.Dot = ai, Q.ActiveDot = oi, Q.PolarGrid = si, Q.PolarAngleAxis =
 // src/react/taste/charts.tsx
 function xi(e) {
 	let { x: t = 0, cx: n, textAnchor: r, payload: i, ...a } = e, o = String(i?.value ?? ""), s = typeof n == "number" ? n * 2 : 0, c = s ? r === "start" ? s - t : r === "end" ? t : 2 * Math.min(t, s - t) : 56;
-	return /* @__PURE__ */ B("g", { children: [/* @__PURE__ */ z("title", { children: o }), /* @__PURE__ */ z(T, {
+	return /* @__PURE__ */ B("g", { children: [/* @__PURE__ */ z("title", { children: o }), /* @__PURE__ */ z(te, {
 		...a,
 		x: t,
 		textAnchor: r,
@@ -1255,7 +1254,7 @@ var Si = [
 	"min-h-64"
 ], Ei = 26, Di = { radius: wi.value }, Oi = (e, t) => Math.sqrt(e / t);
 function ki({ rows: e, label: t }) {
-	let n = Rt(e);
+	let n = Bt(e);
 	if (!n.length) return null;
 	let r = n[0].value, i = n.map((e) => ({
 		...e,
@@ -1287,7 +1286,7 @@ function ki({ rows: e, label: t }) {
 	});
 }
 function Ai({ rows: e, label: t }) {
-	let n = Xt(e, 8);
+	let n = $t(e, 8);
 	return n.length ? /* @__PURE__ */ z("section", {
 		"aria-label": t,
 		className: `flex grow flex-col ${Ti[n.length]}`,
@@ -1331,7 +1330,7 @@ function Ai({ rows: e, label: t }) {
 	}) : null;
 }
 function ji({ flows: e }) {
-	let [t, r] = (0, G.useState)(null), i = kt(e);
+	let [t, r] = (0, G.useState)(null), i = jt(e);
 	if (!i) return null;
 	let a = t?.node ?? null, o = (e, n) => t ? a === null ? t.label === n : e.source === a || e.target === a : !0;
 	return /* @__PURE__ */ B("section", {
@@ -1414,7 +1413,7 @@ function ji({ flows: e }) {
 							textAnchor: e.side === "source" ? "end" : "start",
 							dominantBaseline: "middle",
 							className: "fill-text-secondary text-caption-1-regular",
-							children: [At(e.name), /* @__PURE__ */ z("tspan", {
+							children: [Mt(e.name), /* @__PURE__ */ z("tspan", {
 								x: Je[e.side],
 								dy: 15,
 								children: e.side === "source" ? e.value.toLocaleString() : `${e.share.toFixed(1)}%`
@@ -2262,8 +2261,8 @@ function Ii({ name: e }) {
 // src/react/taste/browser-sources.tsx
 var Li = "flex min-w-0 items-center gap-3 rounded-xl bg-background-primary-default p-3";
 function Ri({ browsers: e, sources: t, range: n, children: r }) {
-	let [i, a] = (0, G.useState)(!1), [o, s] = (0, G.useState)(""), [c, l] = (0, G.useState)(""), u = $t({
-		mutationFn: (e) => St(e, n),
+	let [i, a] = (0, G.useState)(!1), [o, s] = (0, G.useState)(""), [c, l] = (0, G.useState)(""), u = nn({
+		mutationFn: (e) => wt(e, n),
 		onSuccess: (e) => {
 			H.setQueryData(U(n), e.dashboard), a(!1), s(""), l("");
 		}
@@ -2382,7 +2381,7 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 									leadingIcon: e.enabled ? it : Xe,
 									"aria-label": `${e.enabled ? "停止读取" : "启用"} ${e.name}`,
 									onClick: () => {
-										e.enabled ? Ct({
+										e.enabled ? Tt({
 											title: `停止读取 ${e.name}`,
 											body: "已导入的历史与书签仍用于口味分析。",
 											confirmLabel: "停止读取",
@@ -2403,7 +2402,7 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 									...P(u.isPending),
 									"aria-label": `删除 ${e.name}`,
 									onClick: () => {
-										Ct({
+										Tt({
 											title: `删除 ${e.name}`,
 											body: "移除该浏览器的读取配置和已导入历史、书签，浏览器原文件保留。可以通过添加浏览器重新接入。",
 											confirmLabel: "删除浏览器来源",
@@ -2424,7 +2423,7 @@ function Ri({ browsers: e, sources: t, range: n, children: r }) {
 	});
 }
 // src/react/taste/taste-page.tsx
-var zi = 10, Bi = wt(et, tt, "text-body-2-medium"), Vi = `${F()} flex flex-col gap-4`, Hi = "rounded-xl bg-background-primary-default p-3", Ui = "读取运行 Peach 的这台电脑上的浏览历史与书签", Wi = "导入或读取浏览记录后，这里会列出记录来自哪些设备。", Gi = "馆藏中暂时没有与你浏览过的内容相符的标签。", Ki = "读取浏览记录后，这里会按类别汇总你浏览过的内容。", qi = "这些标签出现在浏览记录中，Peach 的观看或评价记录中尚未出现这些标签", Ji = "采集浏览记录后，这里会列出浏览过的标签。", Yi = "采集浏览记录后，这里会列出浏览过的创作者。", Xi = "采集浏览记录后，这里会列出常访问的网站。", Zi = "在 Peach 里播放或评价作品后，这里会列出对应的标签。", Qi = "在 Peach 里播放或评价作品后，这里会列出对应的创作者。", $i = "在 Peach 里播放或评价作品后，这里会列出对应的女优。", ea = "在运行 Peach 的电脑上使用浏览器：点上面的「读取浏览器记录」。", ta = "记录在其他设备上：导出文件后，选择「导入历史文件」或「导入书签文件」。书签支持浏览器导出的 HTML 文件和 Chromium Bookmarks JSON 文件。", na = "需要刷新时再次读取或导入；数据源可在页面底部移除。", ra = "删除这个来源的已导入记录，原始文件保留。若浏览器仍启用，下次读取会再次导入。", ia = "peach-taste-guide-dismissed", aa = (0, G.createContext)(/* @__PURE__ */ z(Ge, {
+var zi = 10, Bi = Et(et, tt, "text-body-2-medium"), Vi = `${F()} flex flex-col gap-4`, Hi = "rounded-xl bg-background-primary-default p-3", Ui = "读取运行 Peach 的这台电脑上的浏览历史与书签", Wi = "导入或读取浏览记录后，这里会列出记录来自哪些设备。", Gi = "馆藏中暂时没有与你浏览过的内容相符的标签。", Ki = "读取浏览记录后，这里会按类别汇总你浏览过的内容。", qi = "这些标签出现在浏览记录中，Peach 的观看或评价记录中尚未出现这些标签", Ji = "采集浏览记录后，这里会列出浏览过的标签。", Yi = "采集浏览记录后，这里会列出浏览过的创作者。", Xi = "采集浏览记录后，这里会列出常访问的网站。", Zi = "在 Peach 里播放或评价作品后，这里会列出对应的标签。", Qi = "在 Peach 里播放或评价作品后，这里会列出对应的创作者。", $i = "在 Peach 里播放或评价作品后，这里会列出对应的女优。", ea = "在运行 Peach 的电脑上使用浏览器：点上面的「读取浏览器记录」。", ta = "记录在其他设备上：导出文件后，选择「导入历史文件」或「导入书签文件」。书签支持浏览器导出的 HTML 文件和 Chromium Bookmarks JSON 文件。", na = "需要刷新时再次读取或导入；数据源可在页面底部移除。", ra = "删除这个来源的已导入记录，原始文件保留。若浏览器仍启用，下次读取会再次导入。", ia = "peach-taste-guide-dismissed", aa = (0, G.createContext)(/* @__PURE__ */ z(Ge, {
 	size: "small",
 	href: "/",
 	children: "浏览馆藏"
@@ -2434,8 +2433,8 @@ function oa() {
 }
 function $({ icon: e, term: t, figure: n, detail: r, detailTitle: i, accent: a }) {
 	return /* @__PURE__ */ z("div", {
-		className: an(),
-		children: /* @__PURE__ */ z(rn, {
+		className: qt(),
+		children: /* @__PURE__ */ z(pt, {
 			label: t,
 			icon: e,
 			accent: a,
@@ -2451,8 +2450,8 @@ function $({ icon: e, term: t, figure: n, detail: r, detailTitle: i, accent: a }
 function sa({ name: e, domain: t }) {
 	return /* @__PURE__ */ B("span", {
 		className: "relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-lg bg-background-tertiary-default text-caption-1-medium text-text-secondary",
-		children: [Ot(e).toUpperCase(), /* @__PURE__ */ z("img", {
-			src: Ut({ domain: t }),
+		children: [At(e).toUpperCase(), /* @__PURE__ */ z("img", {
+			src: Gt({ domain: t }),
 			alt: "",
 			loading: "lazy",
 			width: 20,
@@ -2476,7 +2475,7 @@ function la({ rows: e, kind: t, visual: n, empty: r, onSignal: i }) {
 		actions: /* @__PURE__ */ z(oa, {}),
 		children: r
 	});
-	let a = Bt(e);
+	let a = Ht(e);
 	return /* @__PURE__ */ z(ln, {
 		previewCount: zi,
 		className: "inline-grid w-full gap-x-7 gap-y-2 sm:grid-cols-2",
@@ -2505,7 +2504,7 @@ function la({ rows: e, kind: t, visual: n, empty: r, onSignal: i }) {
 					name: e.name,
 					domain: s
 				}) : null,
-				n !== "none" && n !== "domain" && (e.entity_id || e.has_avatar || !s) ? /* @__PURE__ */ z(ca, { html: bt(e.name, e.entity_id ? {
+				n !== "none" && n !== "domain" && (e.entity_id || e.has_avatar || !s) ? /* @__PURE__ */ z(ca, { html: St(e.name, e.entity_id ? {
 					id: e.entity_id,
 					has_image: !!e.has_image,
 					image_version: e.image_version,
@@ -2519,10 +2518,10 @@ function la({ rows: e, kind: t, visual: n, empty: r, onSignal: i }) {
 						children: e.name
 					}), /* @__PURE__ */ z("small", {
 						className: "text-caption-1-regular text-text-secondary",
-						children: zt(e)
+						children: Vt(e)
 					})]
 				}),
-				o ? /* @__PURE__ */ z(Lt, {
+				o ? /* @__PURE__ */ z(zt, {
 					"aria-hidden": !0,
 					className: "size-4 shrink-0 text-text-tertiary"
 				}) : null
@@ -2547,7 +2546,7 @@ function ua({ label: e, panels: t, onSignal: n }) {
 		className: `${F({ padding: "none" })} flex flex-col`,
 		children: [/* @__PURE__ */ z("div", {
 			className: "px-4 pt-3",
-			children: /* @__PURE__ */ z(lt, {
+			children: /* @__PURE__ */ z(ut, {
 				"aria-label": e,
 				className: ct,
 				children: t.map((e) => /* @__PURE__ */ z(Ue, {
@@ -2635,7 +2634,7 @@ function da({ data: e, onSignal: t, navigate: n }) {
 							className: "text-caption-1-regular wrap-anywhere text-text-secondary",
 							children: e.detail
 						})]
-					}), /* @__PURE__ */ z(Lt, {
+					}), /* @__PURE__ */ z(zt, {
 						"aria-hidden": !0,
 						className: "size-4 shrink-0 text-text-tertiary"
 					})]
@@ -2688,7 +2687,7 @@ function fa({ onboarding: e, done: t }) {
 							target: "_blank",
 							rel: "noopener noreferrer",
 							className: "text-text-primary underline-offset-4 hover:underline",
-							children: ["Google Takeout", /* @__PURE__ */ z(ht, {
+							children: ["Google Takeout", /* @__PURE__ */ z(_t, {
 								"aria-hidden": !0,
 								className: "size-(--icon-inline) shrink-0"
 							})]
@@ -2702,7 +2701,7 @@ function fa({ onboarding: e, done: t }) {
 							target: "_blank",
 							rel: "noopener noreferrer",
 							className: "text-text-primary underline-offset-4 hover:underline",
-							children: ["browserexport", /* @__PURE__ */ z(ht, {
+							children: ["browserexport", /* @__PURE__ */ z(_t, {
 								"aria-hidden": !0,
 								className: "size-(--icon-inline) shrink-0"
 							})]
@@ -2738,6 +2737,7 @@ function pa({ busy: e, onRefresh: t, onImport: n, onImportBookmarks: r }) {
 		o(!1), e();
 	};
 	return /* @__PURE__ */ B(R.Fragment, { children: [/* @__PURE__ */ B("span", {
+		"data-guide-target": "history-import",
 		"data-button-group": !0,
 		"data-split-button": !0,
 		"data-variant": "primary",
@@ -2750,7 +2750,7 @@ function pa({ busy: e, onRefresh: t, onImport: n, onImportBookmarks: r }) {
 		}), /* @__PURE__ */ z(j, {
 			ref: i,
 			iconOnly: !0,
-			leadingIcon: Tt,
+			leadingIcon: Dt,
 			"aria-label": "更多取得浏览记录的方式",
 			"aria-haspopup": "dialog",
 			"aria-expanded": a,
@@ -2792,7 +2792,7 @@ function pa({ busy: e, onRefresh: t, onImport: n, onImportBookmarks: r }) {
 					type: "button",
 					className: Bi,
 					onClick: () => s(r),
-					children: [/* @__PURE__ */ z(Mt, {
+					children: [/* @__PURE__ */ z(Pt, {
 						"aria-hidden": !0,
 						className: "size-4 shrink-0"
 					}), "导入书签文件"]
@@ -2802,8 +2802,8 @@ function pa({ busy: e, onRefresh: t, onImport: n, onImportBookmarks: r }) {
 	})] });
 }
 function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
-	let a = $t({
-		mutationFn: (e) => Vt(e, n),
+	let a = nn({
+		mutationFn: (e) => Ut(e, n),
 		onSuccess: (e) => {
 			H.setQueryData(U(n), e.dashboard), r("已移除口味数据源");
 		}
@@ -2827,7 +2827,7 @@ function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
 					children: e.browser === "browserexport" ? /* @__PURE__ */ z(ot, {
 						"aria-hidden": !0,
 						className: "size-4"
-					}) : /* @__PURE__ */ z(_t, {
+					}) : /* @__PURE__ */ z(yt, {
 						"aria-hidden": !0,
 						className: "size-4"
 					})
@@ -2851,7 +2851,7 @@ function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
 					leadingIcon: $e,
 					...P(a.isPending),
 					onClick: () => {
-						a.isPending || Ct({
+						a.isPending || Tt({
 							title: "移除口味数据源",
 							body: ra,
 							confirmLabel: "移除口味数据源",
@@ -2862,7 +2862,7 @@ function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
 			]
 		}, e.source_key)) }) : t.length ? null : /* @__PURE__ */ z(M, {
 			size: "compact",
-			icon: _t,
+			icon: yt,
 			title: "还没有数据源",
 			actions: i,
 			children: Wi
@@ -2870,26 +2870,26 @@ function ma({ sources: e, browsers: t, window: n, toast: r, emptyActions: i }) {
 	});
 }
 function ha(e) {
-	let { onSignal: t, navigate: n, toast: r, onboarding: i } = e, [a, o] = (0, G.useState)("all"), [s, c] = (0, G.useState)("browser"), l = (0, G.useRef)(null), u = (0, G.useRef)(null), d = en({
+	let { onSignal: t, navigate: n, toast: r, onboarding: i } = e, [a, o] = (0, G.useState)("all"), [s, c] = (0, G.useState)("browser"), l = (0, G.useRef)(null), u = (0, G.useRef)(null), d = rn({
 		queryKey: U(a),
-		queryFn: ({ signal: e }) => Et(a, e),
-		placeholderData: Ft,
-		refetchInterval: (e) => Jt(e.state.data)
-	}), { job: f, running: p, outcome: m, start: h } = Qt({
-		queryKey: ft,
-		queryFn: ({ signal: e }) => Dt(e),
-		start: () => Wt(a),
+		queryFn: ({ signal: e }) => Ot(a, e),
+		placeholderData: Lt,
+		refetchInterval: (e) => Zt(e.state.data)
+	}), { job: f, running: p, outcome: m, start: h } = tn({
+		queryKey: mt,
+		queryFn: ({ signal: e }) => kt(e),
+		start: () => Kt(a),
 		idlePollMs: Ze,
 		onFinish: (e) => {
 			e.status !== "failed" && (H.invalidateQueries({ queryKey: ["taste"] }), r(e.warnings?.length ? "部分浏览记录未取得" : "已更新口味分析"));
 		}
-	}), g = $t({
-		mutationFn: (e) => Et(e, void 0, !0),
+	}), g = nn({
+		mutationFn: (e) => Ot(e, void 0, !0),
 		onSuccess: (e, t) => {
 			H.setQueryData(U(t), e);
 		}
-	}), _ = $t({
-		mutationFn: (e) => Pt(e),
+	}), _ = nn({
+		mutationFn: (e) => It(e),
 		onSuccess: (e) => {
 			H.setQueryData(U("all"), e.dashboard), o("all"), r("已导入口味数据");
 		}
@@ -2899,12 +2899,12 @@ function ha(e) {
 	}, y = () => {
 		p || h.isPending || (h.reset(), h.mutate());
 	}, b = d.data;
-	if (!b) return /* @__PURE__ */ z(tn, { children: /* @__PURE__ */ z(N, {
+	if (!b) return /* @__PURE__ */ z(an, { children: /* @__PURE__ */ z(N, {
 		tone: "error",
 		title: "口味分析读取失败",
 		children: d.error ? L(d.error) : "读取口味分析失败"
 	}) });
-	let x = b.summary || {}, S = b.coverage || {}, C = b.rankings || {}, ee = b.storage || {}, w = Kt(C.browser_categories || []), te = Rt(w).length > 0, T = b.gaps || [], E = S.tagged || 0, ne = S.identified || 0, re = h.error ? L(h.error) : _.error ? L(_.error) : g.error ? L(g.error) : m?.status === "failed" ? m.error || "读取未取得" : "", ie = /* @__PURE__ */ B("div", {
+	let x = b.summary || {}, S = b.coverage || {}, C = b.rankings || {}, ee = b.storage || {}, w = Yt(C.browser_categories || []), T = Bt(w).length > 0, te = b.gaps || [], E = S.tagged || 0, ne = S.identified || 0, re = h.error ? L(h.error) : _.error ? L(_.error) : g.error ? L(g.error) : m?.status === "failed" ? m.error || "读取未取得" : "", ie = /* @__PURE__ */ B("div", {
 		className: "flex flex-wrap justify-center gap-2",
 		children: [/* @__PURE__ */ z(j, {
 			variant: "secondary",
@@ -2918,7 +2918,7 @@ function ha(e) {
 			children: "导入历史文件"
 		})]
 	});
-	return /* @__PURE__ */ z(tn, { children: /* @__PURE__ */ B(aa, {
+	return /* @__PURE__ */ z(an, { children: /* @__PURE__ */ B(aa, {
 		value: a === "all" ? s === "peach" ? /* @__PURE__ */ z(Ge, {
 			size: "small",
 			variant: "secondary",
@@ -2938,7 +2938,7 @@ function ha(e) {
 				children: [
 					/* @__PURE__ */ B("div", {
 						className: "flex flex-wrap items-center justify-between gap-3",
-						children: [/* @__PURE__ */ B(lt, {
+						children: [/* @__PURE__ */ B(ut, {
 							"aria-label": "口味分析的数据来源",
 							className: ct,
 							children: [/* @__PURE__ */ z(Ue, {
@@ -2953,13 +2953,13 @@ function ha(e) {
 						}), /* @__PURE__ */ B("div", {
 							className: "flex flex-wrap items-center gap-2",
 							children: [
-								/* @__PURE__ */ z(ut, {
+								/* @__PURE__ */ z(dt, {
 									"aria-label": "分析范围",
 									selectedKey: a,
 									onSelectionChange: (e) => {
 										e !== null && o(String(e));
 									},
-									children: pt.map(([e, t]) => /* @__PURE__ */ z(dt, {
+									children: ht.map(([e, t]) => /* @__PURE__ */ z(ft, {
 										id: e,
 										children: t
 									}, e))
@@ -2998,12 +2998,12 @@ function ha(e) {
 						"aria-live": "polite",
 						className: "flex flex-col gap-3 empty:hidden",
 						children: [
-							p ? /* @__PURE__ */ z(mt, {
+							p ? /* @__PURE__ */ z(gt, {
 								label: f?.message || "正在读取浏览记录并更新口味分析",
 								value: f?.checked,
 								total: f?.total
 							}) : null,
-							_.isPending ? /* @__PURE__ */ z(mt, { label: "正在导入口味数据" }) : null,
+							_.isPending ? /* @__PURE__ */ z(gt, { label: "正在导入口味数据" }) : null,
 							b.stale && b.error ? /* @__PURE__ */ z(N, {
 								tone: "error",
 								action: /* @__PURE__ */ z(j, {
@@ -3013,8 +3013,8 @@ function ha(e) {
 									onClick: () => g.mutate(a),
 									children: "立即重试"
 								}),
-								children: `口味分析更新失败，当前显示 ${Yt(b.computed_at)} 的结果。${b.error}`
-							}) : b.stale ? /* @__PURE__ */ z(mt, { label: `正在更新口味分析，当前显示 ${Yt(b.computed_at)} 的结果` }) : null,
+								children: `口味分析更新失败，当前显示 ${Qt(b.computed_at)} 的结果。${b.error}`
+							}) : b.stale ? /* @__PURE__ */ z(gt, { label: `正在更新口味分析，当前显示 ${Qt(b.computed_at)} 的结果` }) : null,
 							re ? /* @__PURE__ */ z(N, {
 								tone: "error",
 								children: re
@@ -3030,19 +3030,19 @@ function ha(e) {
 						className: "flex flex-col gap-5",
 						children: [
 							/* @__PURE__ */ B("div", {
-								className: nn,
+								className: lt,
 								children: [
 									/* @__PURE__ */ z($, {
 										accent: 0,
-										icon: Zt,
+										icon: en,
 										term: "浏览记录",
 										figure: Number(x.history_visits || 0).toLocaleString(),
-										detail: Nt(x),
-										detailTitle: `${Gt(x.range_start)}—${Gt(x.range_end)}`
+										detail: Ft(x),
+										detailTitle: `${Jt(x.range_start)}—${Jt(x.range_end)}`
 									}),
 									/* @__PURE__ */ z($, {
 										accent: 1,
-										icon: It,
+										icon: Rt,
 										term: "口味维度",
 										figure: w.length.toLocaleString(),
 										detail: w[0]?.name || "尚无主维度"
@@ -3051,34 +3051,34 @@ function ha(e) {
 										accent: 2,
 										icon: V,
 										term: "浏览线索",
-										figure: T.length.toLocaleString()
+										figure: te.length.toLocaleString()
 									}),
 									/* @__PURE__ */ z($, {
 										accent: 3,
-										icon: Mt,
+										icon: Pt,
 										term: "浏览器书签",
 										figure: Number(x.bookmarks || 0).toLocaleString(),
-										detail: `${Number(ee.exports || 0).toLocaleString()} 份私有导出 · ${jt(ee.bytes || 0)}`
+										detail: `${Number(ee.exports || 0).toLocaleString()} 份私有导出 · ${Nt(ee.bytes || 0)}`
 									})
 								]
 							}),
 							/* @__PURE__ */ B("section", {
-								className: te ? `${Vi} md:flex-row md:gap-6` : Vi,
+								className: T ? `${Vi} md:flex-row md:gap-6` : Vi,
 								"aria-label": "浏览器画像",
 								children: [/* @__PURE__ */ B("div", {
-									className: te ? "flex shrink-0 flex-col gap-2 pb-5 md:w-80 md:pr-6 md:pb-0" : "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1",
+									className: T ? "flex shrink-0 flex-col gap-2 pb-5 md:w-80 md:pr-6 md:pb-0" : "flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1",
 									children: [
 										/* @__PURE__ */ z("span", {
 											className: "text-caption-1-regular text-text-secondary",
 											children: "浏览器画像"
 										}),
-										te ? /* @__PURE__ */ z(ki, {
+										T ? /* @__PURE__ */ z(ki, {
 											rows: w,
 											label: "主要口味维度"
 										}) : null,
 										/* @__PURE__ */ z("small", {
 											className: "text-caption-1-regular text-text-secondary",
-											children: b.updated_at ? `更新于 ${Gt(b.updated_at)}` : "尚未采集浏览记录"
+											children: b.updated_at ? `更新于 ${Jt(b.updated_at)}` : "尚未采集浏览记录"
 										})
 									]
 								}), /* @__PURE__ */ z("div", {
@@ -3156,7 +3156,7 @@ function ha(e) {
 										id: "gaps",
 										name: "浏览线索",
 										props: {
-											rows: T,
+											rows: te,
 											kind: "",
 											visual: "none",
 											empty: qi
@@ -3171,30 +3171,30 @@ function ha(e) {
 						className: "flex flex-col gap-5",
 						children: [
 							/* @__PURE__ */ B("div", {
-								className: nn,
+								className: lt,
 								children: [
 									/* @__PURE__ */ z($, {
 										accent: 0,
-										icon: gt,
+										icon: vt,
 										term: "Peach 看过",
 										figure: Number(x.peach_items || 0).toLocaleString(),
-										detail: qt(x.peach_seconds || 0)
+										detail: Xt(x.peach_seconds || 0)
 									}),
 									/* @__PURE__ */ z($, {
 										accent: 1,
-										icon: yt,
+										icon: xt,
 										term: "喜欢",
 										figure: Number(x.liked || 0).toLocaleString()
 									}),
 									/* @__PURE__ */ z($, {
 										accent: 2,
-										icon: xt,
+										icon: Ct,
 										term: "不合口味",
 										figure: Number(x.disliked || 0).toLocaleString()
 									}),
 									/* @__PURE__ */ z($, {
 										accent: 3,
-										icon: It,
+										icon: Rt,
 										term: "有标签",
 										figure: E.toLocaleString()
 									})
@@ -3309,4 +3309,4 @@ function ga({ term: e, value: t, rest: n }) {
 }
 export { ia as TASTE_GUIDE_KEY, ha as TastePage };
 
-//# debugId=5bb7c21d-fa38-473c-9ff1-e46006de017f
+//# debugId=3d481375-9830-4f00-8e54-3319608ee923

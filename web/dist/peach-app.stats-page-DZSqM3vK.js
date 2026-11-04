@@ -1,17 +1,16 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f8c6e8cb-1fac-4fe4-8237-a6998b58f940", e._sentryDebugIdIdentifier = "sentry-dbid-f8c6e8cb-1fac-4fe4-8237-a6998b58f940");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "6552a60a-187d-47a5-9e35-b760c5698c36", e._sentryDebugIdIdentifier = "sentry-dbid-6552a60a-187d-47a5-9e35-b760c5698c36");
 	} catch {}
 })();
 import { AnimatedItems as e, CHART_CARD as t, CHART_COLORS as n, Cell as r, ChartBackground as i, ChartContainer as a, ChartEmpty as o, ChartLegend as s, ChartLegendContent as c, ChartTip as l, ChartTooltip as u, ChartTooltipContent as d, DefaultZIndexes as f, LabelListFromLabelProp as p, Layer as m, LoadingIndicator as h, PolarChart as g, PolarLabelListContextProvider as _, RegisterGraphicalItemId as v, Sector as y, SetPolarGraphicalItem as b, SetPolarLegendPayload as x, SetTooltipEntrySettings as S, Shape as C, ZIndexLayer as w, adaptEventsOfChild as T, arrayTooltipSearcher as E, combineAllBarPositions as ee, combineBarPosition as D, combineBarSizeList as te, combineDisplayedStackedData as ne, combineStackGroups as re, combineStackedData as ie, createSelector as O, defaultPolarChartProps as ae, findAllByType as oe, getBandSizeOfAxis as k, getBaseValueOfBar as se, getCateCoordinateOfBar as ce, getColorsCount as le, getNormalizedStackId as ue, getTooltipNameProp as de, getValueByDataKey as fe, getZIndexFromUnknown as pe, interpolate as me, isCategoricalAxis as he, isNullish as ge, isStacked as _e, matchAppend as ve, mathSign as ye, noop as be, resolveDefaultProps as xe, selectActiveTooltipIndex as Se, selectAngleAxis as Ce, selectBarCategoryGap as we, selectBarGap as Te, selectChartDataAndAlwaysIgnoreIndexes as Ee, selectChartDataWithIndexes as De, selectChartLayout as A, selectPolarItemsSettings as Oe, selectPolarViewBox as ke, selectRadiusAxis as Ae, selectReverseStackOrder as je, selectRootBarSize as Me, selectRootMaxBarSize as Ne, selectStackOffsetType as Pe, selectTooltipAxis as Fe, selectUnfilteredPolarItems as Ie, sliceConfig as Le, sliceKey as Re, svgPropertiesNoEvents as ze, svgPropertiesNoEventsFromUnknown as Be, truncateByDomain as Ve, useAnimationCallbacks as He, useAppSelector as Ue, useMouseClickItemDispatch as We, useMouseEnterItemDispatch as Ge, useMouseLeaveItemDispatch as Ke, usePolarChartLayout as qe } from "./peach-app.chart-tip-BGeaXdeB.js";
-import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as j, $b4f18e3395fe64d7$export$3e41faf802a29e71 as M, $b4f18e3395fe64d7$export$b2539bed5023c21c as Je, $b4f18e3395fe64d7$export$e51a686c67fdaa2d as Ye, ButtonLink as N, EmptyState as P, LOC as Xe, MEDIA_SOURCE_ICONS as Ze, NR as Qe, Note as $e, Progress as F, SEGMENT as et, SEGMENTED_TRACK as tt, STATS_KEY as nt, SegmentedTabList as rt, SourceMark as it, StatusLabel as at, Xc as ot, Xt as st, _8 as ct, __toESM as lt, bandRows as ut, cardClass as dt, clsx as ft, errorMessage as pt, fetchStats as mt, fmtCount as I, fmtSize as L, import_jsx_runtime as R, jsx as z, jsxs as B, known as ht, lengthRows as gt, mM as _t, mediumRows as vt, percentText as yt, playedFor as bt, playedItemUrl as xt, radialArc as St, radialBarSize as Ct, radialCeiling as wt, radialSlices as Tt, reachedShare as Et, replayRows as Dt, require_react as Ot, settingsPath as kt, uo as At, useQuery as jt, watchNote as Mt, watchedShare as Nt } from "./peach-app.js";
-import { Page as Pt } from "./peach-app.page-CW3QRN2N.js";
-import { STAT_STRIP as Ft, StatCard as It, statCardClass as Lt } from "./peach-app.stat-card-4sRHYGSD.js";
+import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as j, $b4f18e3395fe64d7$export$3e41faf802a29e71 as M, $b4f18e3395fe64d7$export$b2539bed5023c21c as Je, $b4f18e3395fe64d7$export$e51a686c67fdaa2d as Ye, ButtonLink as N, EmptyState as P, LOC as Xe, MEDIA_SOURCE_ICONS as Ze, NR as Qe, Note as $e, Progress as F, SEGMENT as et, SEGMENTED_TRACK as tt, STATS_KEY as nt, STAT_STRIP as rt, SegmentedTabList as it, SourceMark as at, StatCard as ot, StatusLabel as st, Xc as ct, Xt as lt, _8 as ut, __toESM as dt, bandRows as ft, cardClass as pt, clsx as mt, errorMessage as ht, fetchStats as gt, fmtCount as I, fmtSize as L, import_jsx_runtime as R, jsx as z, jsxs as B, known as _t, lengthRows as vt, mM as yt, mediumRows as bt, percentText as xt, playedFor as St, playedItemUrl as Ct, radialArc as wt, radialBarSize as Tt, radialCeiling as Et, radialSlices as Dt, reachedShare as Ot, replayRows as kt, require_react as At, settingsPath as jt, statCardClass as Mt, uo as Nt, useQuery as Pt, watchNote as Ft, watchedShare as It } from "./peach-app.js";
+import { Page as Lt } from "./peach-app.page-CW3QRN2N.js";
 import { ConnectionStatus as Rt } from "./peach-app.connection-status-BjZE05sg.js";
 import { ActivityHeat as zt, BarCard as V, ExpandableRanking as Bt, PolarAngleAxis as Vt, selectPolarAxisScale as Ht, selectPolarAxisTicks as Ut, selectPolarGraphicalItemAxisTicks as Wt } from "./peach-app.expandable-ranking-D8ZeeCn4.js";
 // node_modules/recharts/es6/util/RadialBarUtils.js
-var H = /* @__PURE__ */ lt(Ot()), Gt = ["option"];
+var H = /* @__PURE__ */ dt(At()), Gt = ["option"];
 function Kt(e, t) {
 	if (e == null) return {};
 	var n, r, i = qt(e, t);
@@ -387,7 +386,7 @@ var zn = /*#__PURE__*/ H.memo((e) => {
 			if (!i) return null;
 			var o = q(q(q(q(q({ cornerRadius: Yt(t) }, a), {}, { fill: "#eee" }, i), n), T(this.props, e, r)), {}, {
 				index: r,
-				className: ft("recharts-radial-bar-background-sector", String(n?.className)),
+				className: mt("recharts-radial-bar-background-sector", String(n?.className)),
 				option: i,
 				isActive: !1
 			});
@@ -397,7 +396,7 @@ var zn = /*#__PURE__*/ H.memo((e) => {
 	render() {
 		var e = this.props, t = e.hide, n = e.sectors, r = e.className, i = e.background;
 		if (t) return null;
-		var a = ft("recharts-area", r);
+		var a = mt("recharts-area", r);
 		return /*#__PURE__*/ H.createElement(w, { zIndex: this.props.zIndex }, /*#__PURE__*/ H.createElement(m, { className: a }, i && /*#__PURE__*/ H.createElement(m, { className: "recharts-radial-bar-background" }, this.renderBackground(n)), /*#__PURE__*/ H.createElement(m, { className: "recharts-radial-bar-sectors" }, /*#__PURE__*/ H.createElement(Ln, this.props))));
 	}
 };
@@ -797,15 +796,15 @@ var mr = [
 	"aria-pressed:bg-chart-6/10 aria-pressed:ring-chart-6"
 ];
 function gr({ title: e, rows: n, empty: r, unit: i = "个视频" }) {
-	let [a, s] = (0, H.useState)(-1), [c, u] = (0, H.useState)(-1), d = Tt(n);
+	let [a, s] = (0, H.useState)(-1), [c, u] = (0, H.useState)(-1), d = Dt(n);
 	if (!d.length) return /* @__PURE__ */ z(o, {
 		title: e,
 		children: r
 	});
-	let f = c >= 0 ? c : a, p = d.reduce((e, t) => e + t.value, 0), m = d[f], h = (e) => s((t) => t === e ? -1 : e), g = wt(d.map((e) => e.value)), _ = d.map((e, t) => ({
+	let f = c >= 0 ? c : a, p = d.reduce((e, t) => e + t.value, 0), m = d[f], h = (e) => s((t) => t === e ? -1 : e), g = Et(d.map((e) => e.value)), _ = d.map((e, t) => ({
 		slice: Re(t),
 		value: e.value,
-		arc: St(e.value, g)
+		arc: wt(e.value, g)
 	}));
 	return /* @__PURE__ */ B("section", {
 		className: t,
@@ -816,7 +815,7 @@ function gr({ title: e, rows: n, empty: r, unit: i = "个视频" }) {
 					className: "flex min-w-0 flex-col gap-1",
 					children: [/* @__PURE__ */ B("h3", {
 						className: "flex items-center gap-1.5 text-title-2-medium wrap-anywhere text-text-primary",
-						children: [m?.mark ? /* @__PURE__ */ z(it, { mark: m.mark }) : null, m ? m.name : e]
+						children: [m?.mark ? /* @__PURE__ */ z(at, { mark: m.mark }) : null, m ? m.name : e]
 					}), /* @__PURE__ */ z("b", {
 						className: "text-display-4-medium tabular-nums text-text-primary",
 						children: (m ? m.value : p).toLocaleString()
@@ -839,7 +838,7 @@ function gr({ title: e, rows: n, empty: r, unit: i = "个视频" }) {
 					className: "aspect-auto h-75 max-sm:h-65",
 					children: [/* @__PURE__ */ z(Y.RadialBar, {
 						dataKey: "arc",
-						barSize: Ct(d.length),
+						barSize: Tt(d.length),
 						radialBarProps: {
 							shape: (e) => /* @__PURE__ */ z(y, {
 								...e,
@@ -875,7 +874,7 @@ function gr({ title: e, rows: n, empty: r, unit: i = "个视频" }) {
 								className: `mt-0.5 size-3 shrink-0 rounded-sm ${mr[t % 6]}`
 							}), /* @__PURE__ */ B("span", {
 								className: "inline-flex min-w-0 items-start gap-1.5 wrap-anywhere",
-								children: [e.mark ? /* @__PURE__ */ z(it, { mark: e.mark }) : null, e.name]
+								children: [e.mark ? /* @__PURE__ */ z(at, { mark: e.mark }) : null, e.name]
 							})]
 						}),
 						/* @__PURE__ */ z("b", {
@@ -893,7 +892,7 @@ function gr({ title: e, rows: n, empty: r, unit: i = "个视频" }) {
 	});
 }
 // src/react/stats/stats-page.tsx
-var _r = kt("媒体库与入库"), vr = 10, X = n[5], yr = n[4], br = `${dt()} flex flex-col gap-4`, xr = "添加媒体目录或关注来源后，这里会显示馆藏统计。", Sr = "补全资料或添加标签后，这里会显示馆藏中的内容标签。", Cr = "开始播放后，这里会显示最近的真实观看证据。", wr = "补充作品资料或手动添加标签后，这里会显示各个标签来源对应的视频数量。", Tr = "添加媒体目录后，这里会显示存储空间。", Er = "把媒体目录归进媒体库后，这里会按库显示视频数。", Dr = "探测时长后，这里会显示时长分布。", Or = "探测画质后，这里会显示画质分布。", kr = "开始播放后，这里会显示播放落在一周的哪些时段。", Ar = "开始播放后，这里会显示每个作品播了几次。", jr = (e, t) => Math.min(Math.max(e, 0), t);
+var _r = jt("媒体库与入库"), vr = 10, X = n[5], yr = n[4], br = `${pt()} flex flex-col gap-4`, xr = "添加媒体目录或关注来源后，这里会显示馆藏统计。", Sr = "补全资料或添加标签后，这里会显示馆藏中的内容标签。", Cr = "开始播放后，这里会显示最近的真实观看证据。", wr = "补充作品资料或手动添加标签后，这里会显示各个标签来源对应的视频数量。", Tr = "添加媒体目录后，这里会显示存储空间。", Er = "把媒体目录归进媒体库后，这里会按库显示视频数。", Dr = "探测时长后，这里会显示时长分布。", Or = "探测画质后，这里会显示画质分布。", kr = "开始播放后，这里会显示播放落在一周的哪些时段。", Ar = "开始播放后，这里会显示每个作品播了几次。", jr = (e, t) => Math.min(Math.max(e, 0), t);
 function Z({ term: e, value: t }) {
 	return /* @__PURE__ */ B("div", {
 		className: "flex min-h-16 min-w-0 flex-col gap-1.5 rounded-2lg bg-background-primary-default p-3",
@@ -914,14 +913,14 @@ function Q({ term: e, value: t, total: n }) {
 			className: "flex items-baseline justify-between gap-3 text-body-2-regular text-text-primary",
 			children: [/* @__PURE__ */ z("span", { children: e }), /* @__PURE__ */ B("b", {
 				className: "tabular-nums",
-				children: [I(t), ht(t) ? /* @__PURE__ */ z("span", {
+				children: [I(t), _t(t) ? /* @__PURE__ */ z("span", {
 					className: "ml-1.5 text-caption-1-regular text-text-secondary",
-					children: yt(t, n)
+					children: xt(t, n)
 				}) : null]
 			})]
 		}), /* @__PURE__ */ z(F, {
 			label: `${e}：${I(t)} / ${n.toLocaleString()}`,
-			value: ht(t) ? jr(t, r) : 0,
+			value: _t(t) ? jr(t, r) : 0,
 			max: r
 		})]
 	});
@@ -986,7 +985,7 @@ function Pr({ data: e }) {
 					unit: "个视频",
 					series: "视频",
 					color: X,
-					rows: gt(e.by_length),
+					rows: vt(e.by_length),
 					empty: Dr
 				}),
 				/* @__PURE__ */ z(V, {
@@ -994,7 +993,7 @@ function Pr({ data: e }) {
 					unit: "个视频",
 					series: "视频",
 					color: X,
-					rows: ut(e.by_quality),
+					rows: ft(e.by_quality),
 					empty: Or
 				}),
 				/* @__PURE__ */ z(V, {
@@ -1003,7 +1002,7 @@ function Pr({ data: e }) {
 					series: "条目",
 					color: X,
 					layout: "horizontal",
-					rows: vt(e.by_medium),
+					rows: bt(e.by_medium),
 					empty: xr
 				})
 			]
@@ -1042,7 +1041,7 @@ function Fr({ data: e }) {
 		unit: "个作品",
 		series: "作品",
 		color: yr,
-		rows: Dt(e.replays),
+		rows: kt(e.replays),
 		empty: Ar
 	})] });
 }
@@ -1089,11 +1088,11 @@ function Lr({ volume: e }) {
 				children: [/* @__PURE__ */ z("h3", {
 					className: "min-w-0 break-words",
 					children: e.label
-				}), t == null ? e.online ? /* @__PURE__ */ z(at, { children: "容量未取得" }) : /* @__PURE__ */ z(Rt, { online: !1 }) : /* @__PURE__ */ B("b", {
+				}), t == null ? e.online ? /* @__PURE__ */ z(st, { children: "容量未取得" }) : /* @__PURE__ */ z(Rt, { online: !1 }) : /* @__PURE__ */ B("b", {
 					className: "whitespace-nowrap tabular-nums",
 					children: [L(n), /* @__PURE__ */ z("span", {
 						className: "ml-1.5 text-caption-1-regular text-text-secondary",
-						children: yt(n, t)
+						children: xt(n, t)
 					})]
 				})]
 			}),
@@ -1120,7 +1119,7 @@ function Rr({ volumes: e }) {
 		className: "flex flex-col",
 		children: e.map((e) => /* @__PURE__ */ z(Lr, { volume: e }, `${e.kind}:${e.label}`))
 	}) : /* @__PURE__ */ z(P, {
-		icon: ot,
+		icon: ct,
 		title: "还没有存储来源",
 		actions: /* @__PURE__ */ z(N, {
 			variant: "primary",
@@ -1158,7 +1157,7 @@ function zr({ tags: e, tagLabel: t, onTag: n, hasMedia: r }) {
 			})
 		}, `${e.k}:${r}`))
 	}) : /* @__PURE__ */ z(P, {
-		icon: _t,
+		icon: yt,
 		title: "还没有内容标签",
 		actions: /* @__PURE__ */ z(N, {
 			variant: "secondary",
@@ -1173,7 +1172,7 @@ function Br({ rows: e, hasMedia: t }) {
 	return e.length ? /* @__PURE__ */ z("div", {
 		className: "flex flex-col gap-5",
 		children: e.map((e) => {
-			let t = Nt(e);
+			let t = It(e);
 			return /* @__PURE__ */ B("article", {
 				className: "flex flex-wrap items-center gap-x-6 gap-y-2",
 				children: [/* @__PURE__ */ B("div", {
@@ -1181,7 +1180,7 @@ function Br({ rows: e, hasMedia: t }) {
 					children: [/* @__PURE__ */ z("h3", {
 						className: "min-w-0 text-body-2-medium text-text-primary",
 						children: /* @__PURE__ */ z("a", {
-							href: xt(e),
+							href: Ct(e),
 							"data-middle-truncate": !0,
 							className: "block max-w-full overflow-hidden whitespace-nowrap hover:underline",
 							children: e.name
@@ -1191,7 +1190,7 @@ function Br({ rows: e, hasMedia: t }) {
 						children: [e.creator ? /* @__PURE__ */ z("span", {
 							className: "min-w-0 wrap-anywhere",
 							children: e.creator
-						}) : null, /* @__PURE__ */ z("span", { children: Mt(e) })]
+						}) : null, /* @__PURE__ */ z("span", { children: Ft(e) })]
 					})]
 				}), /* @__PURE__ */ B("div", {
 					className: "min-w-0 basis-40",
@@ -1200,13 +1199,13 @@ function Br({ rows: e, hasMedia: t }) {
 						value: t
 					}), /* @__PURE__ */ z("small", {
 						className: "mt-1.5 block text-caption-1-regular text-text-secondary",
-						children: `真实 ${t.toFixed(0)}% · 到达 ${Et(e).toFixed(0)}%`
+						children: `真实 ${t.toFixed(0)}% · 到达 ${Ot(e).toFixed(0)}%`
 					})]
 				})]
 			}, `${e.kind}:${e.id}`);
 		})
 	}) : /* @__PURE__ */ z(P, {
-		icon: At,
+		icon: Nt,
 		title: "还没有观看记录",
 		actions: /* @__PURE__ */ z(N, {
 			variant: "secondary",
@@ -1248,7 +1247,7 @@ function Vr({ sources: e, videos: t }) {
 			]
 		}, e.k))
 	}) : /* @__PURE__ */ z(P, {
-		icon: _t,
+		icon: yt,
 		title: "还没有标签来源",
 		actions: /* @__PURE__ */ z(N, {
 			variant: "secondary",
@@ -1262,11 +1261,11 @@ function Vr({ sources: e, videos: t }) {
 function $({ id: e, label: t, figure: n, detail: r, icon: i, accent: a }) {
 	return /* @__PURE__ */ z(M, {
 		id: e,
-		className: Lt({
+		className: Mt({
 			interactive: !0,
 			selectable: !0
 		}),
-		children: /* @__PURE__ */ z(It, {
+		children: /* @__PURE__ */ z(ot, {
 			label: t,
 			icon: i,
 			accent: a,
@@ -1276,17 +1275,17 @@ function $({ id: e, label: t, figure: n, detail: r, icon: i, accent: a }) {
 	});
 }
 function Hr(e) {
-	let t = jt({
+	let t = Pt({
 		queryKey: nt,
-		queryFn: ({ signal: e }) => mt(e)
+		queryFn: ({ signal: e }) => gt(e)
 	}), n = t.data;
-	if (!n) return /* @__PURE__ */ z(Pt, { children: /* @__PURE__ */ z($e, {
+	if (!n) return /* @__PURE__ */ z(Lt, { children: /* @__PURE__ */ z($e, {
 		tone: "error",
 		title: "馆藏统计读取失败",
-		children: t.error ? pt(t.error) : "未取得统计数据，请刷新页面重试。"
+		children: t.error ? ht(t.error) : "未取得统计数据，请刷新页面重试。"
 	}) });
-	let r = n.consumption, i = n.storage_summary, a = n.by_loc.reduce((e, t) => e + t.videos, 0), o = n.by_loc.reduce((e, t) => e + t.bytes, 0), s = ht(n.tag_cov) ? yt(n.tag_cov, n.attribution.videos) : "未取得", c = `${I(n.tag_cov)} / ${n.attribution.videos.toLocaleString()}`;
-	return /* @__PURE__ */ B(Pt, { children: [
+	let r = n.consumption, i = n.storage_summary, a = n.by_loc.reduce((e, t) => e + t.videos, 0), o = n.by_loc.reduce((e, t) => e + t.bytes, 0), s = _t(n.tag_cov) ? xt(n.tag_cov, n.attribution.videos) : "未取得", c = `${I(n.tag_cov)} / ${n.attribution.videos.toLocaleString()}`;
+	return /* @__PURE__ */ B(Lt, { children: [
 		/* @__PURE__ */ z("p", {
 			className: "text-caption-1-regular text-text-secondary",
 			children: `数据库中的当前统计 · ${a.toLocaleString()} 个视频 · ${L(o)}`
@@ -1297,12 +1296,12 @@ function Hr(e) {
 			children: [
 				/* @__PURE__ */ B(Ye, {
 					"aria-label": "统计视图",
-					className: Ft,
+					className: rt,
 					children: [
 						/* @__PURE__ */ z($, {
 							id: "inventory",
 							label: "馆藏视频",
-							icon: ct,
+							icon: ut,
 							accent: 0,
 							figure: a.toLocaleString(),
 							detail: L(o)
@@ -1310,15 +1309,15 @@ function Hr(e) {
 						/* @__PURE__ */ z($, {
 							id: "viewing",
 							label: "看过",
-							icon: st,
+							icon: lt,
 							accent: 1,
 							figure: I(r.played),
-							detail: bt(r.play_seconds)
+							detail: St(r.play_seconds)
 						}),
 						/* @__PURE__ */ z($, {
 							id: "coverage",
 							label: "内容标签",
-							icon: _t,
+							icon: yt,
 							accent: 2,
 							figure: s,
 							detail: c
@@ -1326,7 +1325,7 @@ function Hr(e) {
 						/* @__PURE__ */ z($, {
 							id: "storage",
 							label: "使用空间",
-							icon: ot,
+							icon: ct,
 							accent: 3,
 							figure: `${i.online.toLocaleString()} 个卷`,
 							detail: i.measured ? `已用 ${L(i.used)}` : "容量未取得"
@@ -1417,11 +1416,11 @@ function Hr(e) {
 		}),
 		/* @__PURE__ */ B(Je, {
 			defaultSelectedKey: "tags",
-			className: `${dt({ padding: "none" })} flex flex-col`,
+			className: `${pt({ padding: "none" })} flex flex-col`,
 			children: [
 				/* @__PURE__ */ z("div", {
 					className: "px-4 pt-3",
-					children: /* @__PURE__ */ B(rt, {
+					children: /* @__PURE__ */ B(it, {
 						"aria-label": "统计维度",
 						className: tt,
 						children: [
@@ -1474,4 +1473,4 @@ function Hr(e) {
 }
 export { Hr as StatsPage };
 
-//# debugId=f8c6e8cb-1fac-4fe4-8237-a6998b58f940
+//# debugId=6552a60a-187d-47a5-9e35-b760c5698c36
