@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "641fefd1-3438-4a64-923b-00f3bddda95a", e._sentryDebugIdIdentifier = "sentry-dbid-641fefd1-3438-4a64-923b-00f3bddda95a");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "d6c4de56-c35b-4253-85b7-8c6bdd72a491", e._sentryDebugIdIdentifier = "sentry-dbid-d6c4de56-c35b-4253-85b7-8c6bdd72a491");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
@@ -1205,7 +1205,7 @@ var Wt = tt({
 }, Kt = /* @__PURE__ */ new Set(["actions"]), qt = Object.entries(Gt).map(([e, t]) => ({
 	id: e,
 	label: t,
-	width: e === "select" ? 48 : e === "name" ? 300 : e === "actions" ? 208 : e === "fetched" ? 200 : 160,
+	width: e === "select" ? 48 : e === "name" ? 300 : e === "actions" ? 208 : e === "fetched" ? 200 : e === "origin" ? 184 : 160,
 	min: e === "select" ? 48 : e === "actions" ? 200 : e === "name" ? 300 : 112,
 	max: e === "select" ? 48 : e === "name" ? 2e3 : 800,
 	flex: e === "name",
@@ -1370,9 +1370,9 @@ function tn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 					target: "_blank",
 					rel: "noopener noreferrer",
 					title: "打开来源页面",
-					className: "text-text-primary underline-offset-2 hover:underline",
+					className: "max-w-full text-text-primary underline-offset-2 hover:underline",
 					children: [/* @__PURE__ */ (0, Q.jsx)(ie, {
-						site: e.row.original.kind.startsWith("javdb") ? "javdb" : Yt(e.getValue()),
+						site: e.row.original.kind.startsWith("javdb") ? "javdb" : e.row.original.kind.startsWith("dmm") ? "dmm" : Yt(e.getValue()),
 						label: Yt(e.getValue())
 					}), /* @__PURE__ */ (0, Q.jsx)(ue, {
 						"aria-hidden": !0,
@@ -1889,4 +1889,4 @@ function an(e) {
 }
 export { an as FollowManagePage };
 
-//# debugId=641fefd1-3438-4a64-923b-00f3bddda95a
+//# debugId=d6c4de56-c35b-4253-85b7-8c6bdd72a491
