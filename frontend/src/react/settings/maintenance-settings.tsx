@@ -114,10 +114,15 @@ function Facts({ facts: loaded, receipt }: { facts: ConfigurationFact[]; receipt
       <FactList>
         {facts.map(({ term, value, install_tool: tool, download_url: url, download_label: label }) => (
           <Fact key={term} term={term}>
-            {value}
-            {tool
-              ? <Button size="small" onClick={() => install(tool)} {...busyProps(action.busy === tool)}>安装</Button>
-              : url ? <ExternalLink href={url}>{label}</ExternalLink> : null}
+            {/* 「安装」钉在说明右边：说明在自己那一栏里折行，按钮不被挤到下一行。 */}
+            {tool ? <span className="flex min-w-0 items-center gap-3">
+              <span className="min-w-0">{value}</span>
+              <Button size="small" className="shrink-0" onClick={() => install(tool)}
+                {...busyProps(action.busy === tool)}>安装</Button>
+            </span> : <>
+              {value}
+              {url ? <ExternalLink href={url}>{label}</ExternalLink> : null}
+            </>}
           </Fact>
         ))}
       </FactList>

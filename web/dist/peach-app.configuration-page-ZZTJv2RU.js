@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "2f3cd5a5-f56d-4330-99e5-239a1b564c28", e._sentryDebugIdIdentifier = "sentry-dbid-2f3cd5a5-f56d-4330-99e5-239a1b564c28");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "1e533fbf-b5ad-44ea-a74c-029c3be0230e", e._sentryDebugIdIdentifier = "sentry-dbid-1e533fbf-b5ad-44ea-a74c-029c3be0230e");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2304,17 +2304,24 @@ function Da({ facts: e, receipt: t }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "facts",
 		title: "运行信息",
-		children: [/* @__PURE__ */ (0, Q.jsx)(lt, { children: i.map(({ term: e, value: t, install_tool: n, download_url: r, download_label: i }) => /* @__PURE__ */ (0, Q.jsxs)(j, {
+		children: [/* @__PURE__ */ (0, Q.jsx)(lt, { children: i.map(({ term: e, value: t, install_tool: n, download_url: r, download_label: i }) => /* @__PURE__ */ (0, Q.jsx)(j, {
 			term: e,
-			children: [t, n ? /* @__PURE__ */ (0, Q.jsx)(E, {
-				size: "small",
-				onClick: () => o(n),
-				...K(a.busy === n),
-				children: "安装"
-			}) : r ? /* @__PURE__ */ (0, Q.jsx)(A, {
+			children: n ? /* @__PURE__ */ (0, Q.jsxs)("span", {
+				className: "flex min-w-0 items-center gap-3",
+				children: [/* @__PURE__ */ (0, Q.jsx)("span", {
+					className: "min-w-0",
+					children: t
+				}), /* @__PURE__ */ (0, Q.jsx)(E, {
+					size: "small",
+					className: "shrink-0",
+					onClick: () => o(n),
+					...K(a.busy === n),
+					children: "安装"
+				})]
+			}) : /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [t, r ? /* @__PURE__ */ (0, Q.jsx)(A, {
 				href: r,
 				children: i
-			}) : null]
+			}) : null] })
 		}, e)) }), a.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: a.error }) : null]
 	});
 }
@@ -5831,4 +5838,4 @@ function Ps({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { js as ConfigurationPage };
 
-//# debugId=2f3cd5a5-f56d-4330-99e5-239a1b564c28
+//# debugId=1e533fbf-b5ad-44ea-a74c-029c3be0230e
