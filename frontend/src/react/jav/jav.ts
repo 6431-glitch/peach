@@ -1,7 +1,7 @@
-import { apiGet } from '../../api';
+import { apiGet, apiSend } from '../../api';
 import { queryClient } from '../query';
 import { fetchWants, WANTS_KEY } from '../wants/wants';
-import type { FaceRef, CoverItem } from '@peach/card-art';
+import type { CoverState, FaceRef, CoverItem } from '@peach/card-art';
 import { coverImage, javArtwork, remoteCoverUrl } from '@peach/card-art';
 import { esc } from '@peach/legacy/core';
 import { peachHistory, shellNavigate } from '@peach/history';
@@ -24,8 +24,62 @@ export interface Discovery extends CoverItem {
   taste_score?: number | null; ranking_score?: number | null; rank?: number;
   source_score?: number | null; duration?: number | null;
   metadata_state?: 'pending' | 'ready' | 'partial' | 'unavailable' | 'stale'; metadata_message?: string;
+  cover_state?: CoverState | null; cover_reason?: string;
 }
 export type DiscoveryScope = 'external' | 'library';
+
+/** `/api/jav/cover` 的回话：取到了就带上版本与取景的两份边车，没取到是原因。 */
+export interface CoverNow {
+  has_cover: boolean; cover_version: string; message: string;
+  cover_frame?: CoverItem['cover_frame']; poster_box?: CoverItem['poster_box'];
+}
+
+/* 正在当场取的番号：卡上点的、整批插队里轮到的都记在这里，卡片按它画不定进度圆环，两种入口一个样子。 */
+const coversInFlight = new Set<string>();
+const coverListeners = new Set<() => void>();
+let coverRevision = 0;
+const coversChanged = () => { coverRevision += 1; coverListeners.forEach(listener => listener()) };
+export const coverFetching = {
+  subscribe(listener: () => void) { coverListeners.add(listener); return () => { coverListeners.delete(listener) } },
+  revision: () => coverRevision,
+  has: (code: string) => coversInFlight.has(code),
+};
+
+/** 不进后台的队，当场取这一部的官方封面（详情页「立即重试」同一个接口）。 */
+export function fetchCoverNow(code: string, signal?: AbortSignal): Promise<CoverNow> {
+  coversInFlight.add(code); coversChanged();
+  return apiSend<CoverNow>('/api/jav/cover', { code }, 'POST', signal)
+    .finally(() => { coversInFlight.delete(code); coversChanged() });
+}
+
+/** 一批番号逐部当场取，`parallel` 部并行。`fetchOne` 回这一部取没取到；`alive()` 为假就停在当前这部，
+ *  没轮到的照旧排在后台的队里。JAV 页「新作」与首页、女优页的新作那一行共用。 */
+export async function prioritiseCovers(codes: string[], fetchOne: (code: string) => Promise<boolean>,
+  progress: (done: number) => void, alive: () => boolean, parallel = 2): Promise<number> {
+  const queue = [...codes];
+  let done = 0, got = 0;
+  const worker = async () => {
+    for (let code = queue.shift(); code && alive(); code = queue.shift()) {
+      const ok = await fetchOne(code).catch(() => false);
+      if (!alive()) return;
+      done += 1; got += ok ? 1 : 0;
+      progress(done);
+    }
+  };
+  await Promise.all(Array.from({ length: parallel }, worker));
+  return got;
+}
+
+/** 当场取到的封面补进「新作」「发现」两个分区已取回的数据：卡片换上本机那张，不必整页重问
+ *  （`/api/jav/releases` 每问一次都把全部候选重算一遍）。 */
+export function coverArrived(code: string, result: CoverNow): void {
+  const patch = (data: unknown) => {
+    const items = (data as { items?: Discovery[] } | undefined)?.items;
+    return items ? { ...(data as object), items: items.map(item => item.code === code ? { ...item, has_cover: true,
+      cover_version: result.cover_version, cover_frame: result.cover_frame, poster_box: result.poster_box, cover_state: null } : item) } : data;
+  };
+  for (const key of ['jav-releases', 'jav-discoveries']) queryClient.setQueriesData({ queryKey: [key] }, patch);
+}
 export interface DiscoveryMetadataJob {
   job_id: string; status: 'running' | 'complete' | 'stopped' | 'failed'; completed: number; total: number;
   failed: number; requests: number; bytes: number; stop_reason?: string; message?: string;

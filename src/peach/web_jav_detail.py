@@ -231,9 +231,10 @@ def q_jav_reviews(contract, args) -> dict:
 
 
 def w_jav_cover(contract, body) -> dict:
-    """详情页「立即重试」：按番号取官方封面装进本机封面目录，与后台补封面同一条路。
+    """详情页「立即重试」与新作卡「优先处理」：按番号取官方封面装进本机封面目录，与后台补封面同一条路。
 
     只写封面目录与取图记录，不写账本；同步等到取完，`feed_followup.COVER_SECONDS` 封顶。
+    取到时带上取景的两份边车，新作卡原地换图也按它取景。
     没取到时 `message` 是取图记录里那句去掉来源地址的原因。
     """
     from . import feed_followup
@@ -253,6 +254,7 @@ def w_jav_cover(contract, body) -> dict:
     contract.cache_bust()
     covered = contract.has_cover(code)
     return {"ok": True, "code": code, "has_cover": covered, "cover_version": contract.cover_version(code),
+            "cover_frame": contract.cover_frame(code), "poster_box": contract.poster_box(code),
             "message": '' if covered else message or '没有找到可用的官方封面'}
 
 

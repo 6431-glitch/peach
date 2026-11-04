@@ -15,7 +15,7 @@ describe('页面等待态的结构', () => {
         let completed = false;
         await page.route('**/api/entity/shapes', route => route.fulfill({ json: { ok: true, entities: [], home: { feed: true } } }));
         await page.route(/\/api\/feeds\/discoveries\?/, route => route.fulfill({ json: { ok: true, items: [
-          { id: 1, code: 'EXM-001', title: '示例新作', has_cover: completed, cover_fetching: !completed },
+          { id: 1, code: 'EXM-001', title: '示例新作', has_cover: completed, cover_state: completed ? null : 'fetching' },
         ] } }));
         await page.route(/\/cover\?code=EXM-001/, route => route.fulfill({ contentType: 'image/svg+xml', body:
           '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="480"><rect width="320" height="480" fill="#ddd"/></svg>' }));
