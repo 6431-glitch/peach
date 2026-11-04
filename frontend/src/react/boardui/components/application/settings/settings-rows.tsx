@@ -41,27 +41,16 @@ export function SettingsSectionLabel({ className, children }: { className?: stri
   );
 }
 
-/** One label + control row. Rows separate themselves; the last has no border.
- *  `icon` is an optional leading glyph, centred against both lines. */
+/** One label + control row. Rows separate themselves; the last has no border. */
 export function SettingsRow({
   label,
   description,
-  icon,
   children,
 }: {
-  label: ReactNode;
+  label: string;
   description?: string;
-  icon?: ReactNode;
   children?: ReactNode;
 }) {
-  const text = (
-    <div className="flex min-w-0 flex-col">
-      <p className="text-body-regular text-text-primary">{label}</p>
-      {description && (
-        <p className="text-body-2-regular text-text-secondary">{description}</p>
-      )}
-    </div>
-  );
   return (
     <div
       className={cx(
@@ -69,7 +58,12 @@ export function SettingsRow({
         "border-b border-separator-border last:border-b-0",
       )}
     >
-      {icon ? <div className="flex min-w-0 items-center gap-3">{icon}{text}</div> : text}
+      <div className="flex min-w-0 flex-col">
+        <p className="text-body-regular text-text-primary">{label}</p>
+        {description && (
+          <p className="text-body-2-regular text-text-secondary">{description}</p>
+        )}
+      </div>
       {children}
     </div>
   );

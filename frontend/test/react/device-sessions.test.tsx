@@ -81,16 +81,13 @@ it('每行有终端图标，认得出的浏览器与系统各在名字前配标�
   expect(new Set(shapes).size).toBe(4);
 });
 
-it('平台标志与浏览器标志一样是品牌原色：Apple 用正文色，ChromeOS 用 Chrome 彩色标志', async () => {
+it('平台标志按品牌标记取色（色值在样式表），ChromeOS 用 Chrome 彩色标志', async () => {
   const chromebook = row({ id: '1111111111111111', device: 'Chrome · ChromeOS' });
   serve(listing([desk, phone, row({ id: '2222222222222222', device: 'Chrome · Android' }), chromebook]));
   const host = await render();
   const lines = [...section(host, '已登录的设备')!.querySelectorAll('p.text-body-regular')];
-  const marks = lines.slice(0, 3).map(line => line.querySelector<SVGElement>('[data-platform-mark]')!);
-  expect(marks[0]!.style.color.toLowerCase()).toBe('#0078d4');
-  expect(marks[1]!.getAttribute('class')).toContain('text-text-primary');
-  expect(marks[2]!.style.color.toLowerCase()).toBe('#3ddc84');
-  expect(marks.some(mark => mark.getAttribute('class')?.includes('text-foreground-icon-secondary'))).toBe(false);
+  expect(lines.map(line => line.querySelector('[data-platform-mark]')?.getAttribute('data-platform-mark')))
+    .toEqual(['windows', 'apple', 'android', undefined]);
   expect([...lines[3]!.querySelectorAll('img')].map(img => img.getAttribute('src'))).toEqual(['/browser-icon/chrome', '/browser-icon/chrome']);
 });
 
