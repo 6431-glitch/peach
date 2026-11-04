@@ -115,6 +115,21 @@ launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/io.github.longmeidao.pea
 3. 仓库变量 `SPARKLE_APPCAST_ENABLED` 为 `true` 时，每个版本标签在 GitHub Release 公开后运行 `sparkle-appcast` 作业：官方 `generate_appcast` 生成两个架构的 appcast，`scripts/sparkle_appcast.py` 补写迁移号并核对版本、下载地址与大小，官方 `sign_update --verify` 核对签名，最后上传到 `https://downloads.peach.video/sparkle/macos-<架构>.xml`。没有 appcast 时，Sparkle 的检查会报更新源不可用。
 4. 第一个带公钥的版本须手动安装一次；之后的版本才能经 Sparkle 更新。在真机按 ADR-0130「未取得的证据」逐项验收。
 
+### Windows 应用内更新的发布签名
+
+Windows 独立包的应用内更新校验每个版本 `SHA256SUMS.txt` 的 Ed25519 签名，取舍见 [ADR-0134](adr/0134-release-sums-ed25519-signature.md)。`src/peach/release_signing.py` 的 `PUBLIC_KEYS` 为空时不校验；写入公钥后，这一版起的客户端只装签名验得过的版本。
+
+`release.yml` 的 `release` 作业生成 `SHA256SUMS.txt` 后，把 `release` environment 的 secret `PEACH_RELEASE_SIGNING_KEY` 经标准输入交给 `scripts/sign_release.py`，签名文件 `SHA256SUMS.txt.sig` 随 Release 上传。源码已有公钥而 secret 为空时作业失败，不发布未签名的版本。
+
+启用步骤由维护者完成，顺序不能颠倒：
+
+1. 在主检出运行 `scripts/sign_release.py --generate-key <私钥文件>`：私钥只写进该文件，已存在就拒绝覆盖，输出里只有公钥。私钥文件放进离线备份。
+2. 用 `gh secret set PEACH_RELEASE_SIGNING_KEY --env release` 从标准输入写入私钥。
+3. 发布一个版本，确认 Release 资产里有 `SHA256SUMS.txt.sig`。
+4. 公钥写进 `PUBLIC_KEYS`，经 PR 合入。
+
+轮换时把新公钥追加进 `PUBLIC_KEYS`，secret 里一行一把放新旧两把私钥；仍要自动升级的客户端都认得新公钥后，再删旧私钥和旧公钥。
+
 ### GitLab 发布与下载后端
 
 GitLab 兼容平台使用 `.gitlab-ci.yml`。唯一版本入口支持 `--gitlab-host` 指定主机，默认入口使用 GitHub。主线发布判据要求同一提交最新的 push 流水线成功，且 Linux、Windows、macOS 和 wheel 验收任务全部成功；缺少原生系统任务时拒绝打标签。主线上的三个平台验收只跑改动域与平台敏感用例（[ADR-0119](adr/0119-mainline-changed-scope-release-full-suite.md)）。版本提交 `chore(release): 版本 X` 的主线流水线同时是发布演练：三平台全量、媒体工具、Windows 与 macOS 构建、Windows 冒烟和 Docker 镜像都跑一遍，只是不发布。`--ship` 等演练全部成功才打标签；标签流水线核对同一提交的演练已通过，只重新构建并发布（[ADR-0121](adr/0121-release-rehearsal-and-atomic-publication.md)）。GitHub 的 `release.yml` 用同一套判据，迁回 GitHub 时不用改流程。CLI 传输复用官方 glab，不在仓库或命令参数里存访问令牌。
@@ -784,6 +799,7 @@ Windows 托盘在取得单实例锁后启动独立监视器。监视器用 Win32
 
 - 独立包的版本检查读取 GitHub 公开发行记录与 R2 公开清单，选择可下载的最高版本；同版本优先 GitHub。R2 制品必须具有 SHA-256，发行说明统一指向 GitHub。任一来源不可用时仍检查另一来源，两个来源都未取得时显示检查失败。
 - 更新包、完整包和轻量安装器的工具包下载失败或校验不符时，尝试另一公开源的同版本、同文件名；每次都按原发布记录的大小与 SHA-256 校验。备源不能替换为其他版本或放宽校验，两个来源都失败时保留错误状态。
+- `release_signing.PUBLIC_KEYS` 非空时，Windows 更新器下载前先取同版本的 `SHA256SUMS.txt` 与 `SHA256SUMS.txt.sig`，用随包公钥验过签名后，更新包与完整包只按签过名的摘要校验；两个来源都验不过就停在当前版本，提示到发布页手动下载（[ADR-0134](adr/0134-release-sums-ed25519-signature.md)）。
 
 - 版本号只在 `src/peach/__init__.py::__version__` 里定义，采用 pre-1.0 SemVer。Git 提交是构建标识，`vX.Y.Z` 标签是发布点，推到 GitHub 就触发 Release 工作流（见「桌面入口与发布」）。
 - 版本号在发布时才动，一次发布加一格，所以每个 `X.Y.Z` 都有一份能下载的制品。
