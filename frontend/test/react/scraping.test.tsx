@@ -58,8 +58,8 @@ function serve(handlers: Record<string, (body: never) => Reply | Promise<Reply>>
   return { calls, fetcher };
 }
 
-/** 依次回这几份任务快照，最后一份之后一直回它。 */
-function coverStates(...states: CoverJob[]) {
+/** 依次回这几份任务快照，最后一份之后一直回它。抓封面与全部检查两种任务共用。 */
+function coverStates<T extends CoverJob | CheckAllJob>(...states: T[]) {
   let at = 0;
   return () => {
     const state = states[Math.min(at, states.length - 1)]!;
