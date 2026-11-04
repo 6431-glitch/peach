@@ -114,6 +114,10 @@ class MediaToolInstallTests(unittest.TestCase):
         if archive.stat().st_size != size or update_packages.digest(archive) != digest:
             raise ValueError('更新包校验失败，请重新下载')
 
+    def entries(self):
+        """`tools` 下除安装锁以外的条目。filelock 释放时只在 Windows 上删锁文件，macOS、Linux 上会留着。"""
+        return sorted(path.name for path in self.tools.iterdir() if not path.name.endswith('.lock'))
+
     def install(self, **kwargs):
         from peach import media_tools
         return media_tools.install(self.tools, 'untrunc', locate=kwargs.pop('locate', self.locate), fetch=self.fetch)
@@ -123,7 +127,7 @@ class MediaToolInstallTests(unittest.TestCase):
         self.assertEqual(self.install(), '已安装 untrunc（abc1234）')
         self.assertEqual((self.tools / 'untrunc' / 'untrunc.exe').read_bytes(), 'untrunc.exe 内容'.encode())
         self.assertEqual(media_tools.installed_version(self.tools, 'untrunc'), 'abc1234')
-        self.assertEqual(sorted(path.name for path in self.tools.iterdir()), ['untrunc'])
+        self.assertEqual(self.entries(), ['untrunc'])
 
     def test_a_package_that_does_not_match_the_release_digest_changes_nothing(self):
         (self.tools / 'untrunc').mkdir(parents=True)
@@ -131,7 +135,7 @@ class MediaToolInstallTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, '与发布摘要不符'):
             self.install(locate=lambda tool: self.locate(tool, digest='0' * 64))
         self.assertEqual((self.tools / 'untrunc' / 'untrunc.exe').read_bytes(), b'user copy')
-        self.assertEqual(sorted(path.name for path in self.tools.iterdir()), ['untrunc'])
+        self.assertEqual(self.entries(), ['untrunc'])
 
     def test_installing_again_skips_the_download_until_a_file_stops_matching(self):
         self.install()
@@ -146,7 +150,7 @@ class MediaToolInstallTests(unittest.TestCase):
         leftover.mkdir(parents=True)
         (leftover / 'package.zip').write_bytes(b'half')
         self.install()
-        self.assertEqual(sorted(path.name for path in self.tools.iterdir()), ['untrunc'])
+        self.assertEqual(self.entries(), ['untrunc'])
 
     def test_files_outside_the_package_manifest_are_refused(self):
         with zipfile.ZipFile(self.package, 'a') as bundle:
