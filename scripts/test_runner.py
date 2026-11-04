@@ -319,6 +319,9 @@ AUTO_SCOPE_PREFIXES: tuple[tuple[str, str | tuple[str, ...]], ...] = (
     # 站点解析器契约与套了契约的站（ADR-0044）：测试住在 `test_metadata_sources.py` 与
     # `test_community_catalog.py`，都在 metadata 域；按包内模块名推不出来。
     ("src/peach/sources/", "metadata"),
+    # 来源录制回放：录制由 `test_metadata_replay.py` 回放，录制脚本也由它装载；重录不必全量。
+    ("tests/fixtures/source-replay/", "metadata"),
+    ("scripts/record_source_fixtures.py", ("metadata", "tooling")),
     ("scripts/localize_performer_names.py", ("metadata", "tooling")),
     ("scripts/localize_series_names.py", ("metadata", "tooling")),
     ("scripts/localize_studio_names.py", ("metadata", "tooling")),
