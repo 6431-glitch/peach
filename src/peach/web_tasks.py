@@ -16,6 +16,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import datetime
 
+from .ingest_notices import NOTICES
 from .task_runs import ACTIVE_STATUSES, TERMINAL_STATUSES
 from .task_results import RESULT_FIELDS, result_counts
 from .web_result_versions import result_versions
@@ -71,6 +72,8 @@ def _tasks(contract, args):
         "filtered": False,
         "available": True,
         "result_versions": result_versions(contract),
+        # 逐部到来的入库通知，页面常驻的任务轮询拿去弹 toast（`ingest_notices`）。
+        "ingest_notices": NOTICES.snapshot(),
         "running": [payload(row) for row in running],
         # 被挡掉的那些也在 `finished` 里（它们是 `cancelled`），这里单独再挑一份：
         # 「为什么没跑」是用户来这一页的主要问题，不该让他在完成列表里自己找。
