@@ -1,20 +1,20 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "00b5b15e-ba68-464d-a312-93c805e9e1e1", e._sentryDebugIdIdentifier = "sentry-dbid-00b5b15e-ba68-464d-a312-93c805e9e1e1");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "674b25f6-536a-4708-aaf8-bcd20af2a392", e._sentryDebugIdIdentifier = "sentry-dbid-674b25f6-536a-4708-aaf8-bcd20af2a392");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
 import { createSortedRowModel as t, useTableSelection as n } from "./peach-app.use-table-selection-BSdXI_Nc.js";
-import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as r, $542a13ca2fa5b484$export$5b6b19405a83ff9d as i, $76d00c5a4edb230a$export$76ccd210b9029917 as a, $76d00c5a4edb230a$export$816b5d811295e6bc as o, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as s, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as c, $76d00c5a4edb230a$export$f850895b287ef28e as l, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as u, $b4f18e3395fe64d7$export$3e41faf802a29e71 as d, $b4f18e3395fe64d7$export$b2539bed5023c21c as f, $ea3928288112382f$export$439d29a4e110a164 as p, $l as m, Button as h, ButtonLink as g, Bx as _, Checkbox as v, ChevronSortDown as ee, Chip as y, DataTableFooter as b, DataTableFrame as te, DataTableSort as x, EmptyFocusButton as S, EmptyState as C, ErrorText as w, ExternalLink as T, FEEDS_KEY as ne, FOLLOW_CREDENTIALS_KEY as re, FOLLOW_MANAGE_KEY as E, FOLLOW_MANAGE_NAV as D, FOLLOW_RESOLVE_KEY as O, FieldLabel as k, Help as A, Input as j, LoadingDots as M, M6 as N, MENU_ITEM as P, MENU_ITEM_INTERACTIVE as F, MENU_POPOVER_SURFACE as I, ModalFrame as L, Note as R, P7 as ie, SORT_DEFAULT_DIR as z, STAT_STRIP_SIX as B, SelectionDock as V, SelectionPopover as H, SiteLabel as ae, Switch as oe, Table as se, TableColumnControls as ce, TableColumnResizer as le, TableSelectionHeader as ue, TagManager as U, TaskProgress as W, Wt as de, Xf as fe, __toESM as pe, addAlias as me, addSource as he, avatarInner as G, busyProps as K, cardClass as ge, checkFeeds as _e, columnVisibilityFeature as ve, composingKey as q, confirmModal as ye, createColumnHelper as be, credentialDone as xe, cx as J, dZ as Y, errorHeadline as Se, errorMessage as X, feedIntervalText as Ce, fetchCredentials as we, fetchFeeds as Te, fetchFollow as Ee, fetchResolveJob as De, fetchSuggestions as Oe, flexRender as ke, followFeedByName as Ae, followSuggestKey as je, groupByAuthor as Me, isBroken as Ne, isLayout as Pe, keepSelected as Fe, localTime as Ie, lookupFeedActor as Le, mapLimit as Re, pageSizeOf as ze, pageWindow as Be, pv as Ve, queryClient as He, reloadFollowManage as Ue, removeAlias as We, removeFeed as Ge, renameAliasGroup as Ke, require_jsx_runtime as qe, require_react as Je, resolveFollowSort as Ye, rowPaginationFeature as Xe, rowSelectionFeature as Ze, rowSortingFeature as Qe, setFeedEnabled as $e, startCheck as et, startResolve as tt, tableFeatures as nt, useAction as rt, useBackgroundJob as it, useMutation as at, useQuery as ot, useTable as st, useTablePreferences as ct } from "./peach-app.js";
-import { Page as lt } from "./peach-app.page-QAncjzM1.js";
-import { LEGACY_AVATAR_IMG as ut } from "./peach-app.legacy-avatar-NSITxLRS.js";
-import { PillAriaTabList as dt } from "./peach-app.pill-aria-tab-list-BMY1ZEv1.js";
-import { AuthorAvatar as ft, SourceIcon as pt } from "./peach-app.source-view-DalWfDkm.js";
-import { SourceList as mt } from "./peach-app.source-list-ri5fRK2E.js";
+import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as r, $542a13ca2fa5b484$export$5b6b19405a83ff9d as i, $76d00c5a4edb230a$export$76ccd210b9029917 as a, $76d00c5a4edb230a$export$816b5d811295e6bc as o, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as s, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as c, $76d00c5a4edb230a$export$f850895b287ef28e as l, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as u, $b4f18e3395fe64d7$export$3e41faf802a29e71 as d, $b4f18e3395fe64d7$export$b2539bed5023c21c as f, $ea3928288112382f$export$439d29a4e110a164 as p, $l as m, Button as h, ButtonLink as g, Bx as _, Checkbox as v, ChevronSortDown as ee, Chip as y, DataTableFooter as b, DataTableFrame as te, DataTableSort as x, EmptyFocusButton as S, EmptyState as C, ErrorText as w, ExternalLink as T, FEEDS_KEY as ne, FOLLOW_CREDENTIALS_KEY as re, FOLLOW_MANAGE_KEY as E, FOLLOW_MANAGE_NAV as D, FOLLOW_RESOLVE_KEY as O, FieldLabel as k, Help as A, Input as j, LoadingDots as M, M6 as N, MENU_ITEM as P, MENU_ITEM_INTERACTIVE as F, MENU_POPOVER_SURFACE as I, ModalFrame as L, Note as R, P7 as ie, SORT_DEFAULT_DIR as z, STAT_STRIP_SIX as B, SelectionDock as V, SelectionPopover as H, SiteLabel as ae, Switch as oe, Table as se, TableColumnControls as ce, TableColumnResizer as le, TableSelectionHeader as ue, TagManager as U, TaskProgress as W, Wt as de, Xf as fe, __toESM as pe, addAlias as me, addSource as he, avatarInner as G, busyProps as K, cardClass as ge, checkFeeds as _e, columnVisibilityFeature as ve, composingKey as q, confirmModal as ye, createColumnHelper as be, credentialDone as xe, cx as J, dZ as Y, errorHeadline as Se, errorMessage as X, feedIntervalText as Ce, fetchCredentials as we, fetchFeeds as Te, fetchFollow as Ee, fetchResolveJob as De, fetchSuggestions as Oe, flexRender as ke, followFeedByName as Ae, followFeedEntity as je, followSuggestKey as Me, groupByAuthor as Ne, isBroken as Pe, isLayout as Fe, keepSelected as Ie, localTime as Le, lookupFeedActor as Re, mapLimit as ze, pageSizeOf as Be, pageWindow as Ve, pv as He, queryClient as Ue, reloadFollowManage as We, removeAlias as Ge, removeFeed as Ke, renameAliasGroup as qe, require_jsx_runtime as Je, require_react as Ye, resolveFollowSort as Xe, rowPaginationFeature as Ze, rowSelectionFeature as Qe, rowSortingFeature as $e, setFeedEnabled as et, startCheck as tt, startResolve as nt, tableFeatures as rt, useAction as it, useBackgroundJob as at, useMutation as ot, useQuery as st, useTable as ct, useTablePreferences as lt } from "./peach-app.js";
+import { Page as ut } from "./peach-app.page-QAncjzM1.js";
+import { LEGACY_AVATAR_IMG as dt } from "./peach-app.legacy-avatar-NSITxLRS.js";
+import { PillAriaTabList as ft } from "./peach-app.pill-aria-tab-list-BMY1ZEv1.js";
+import { AuthorAvatar as pt, SourceIcon as mt } from "./peach-app.source-view-DalWfDkm.js";
+import { SourceList as ht } from "./peach-app.source-list-ri5fRK2E.js";
 // src/react/follow-manage/add-source.tsx
-var Z = /* @__PURE__ */ pe(Je(), 1), Q = qe(), ht = J(P, F, "text-body-2-medium"), gt = "粘贴来源链接，或输入创作者名、id…", _t = "添加创作者关注", vt = "查找中（首次按名字查要下载创作者索引，可能几十秒）", yt = "识别中", bt = "站内没有查到来源", xt = "/settings/subscriptions", St = (e, t) => `${e}:${t.url}`;
-function Ct({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onClose: s }) {
+var Z = /* @__PURE__ */ pe(Ye(), 1), Q = Je(), gt = J(P, F, "text-body-2-medium"), _t = "粘贴来源链接，或输入创作者名、id…", vt = "添加创作者关注", yt = "查找中（首次按名字查要下载创作者索引，可能几十秒）", bt = "识别中", xt = "站内没有查到来源", St = "/settings/subscriptions", Ct = (e, t) => `${e}:${t.url}`;
+function wt({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onClose: s }) {
 	return (0, Z.useEffect)(() => {
 		t.current?.querySelector("[aria-current=\"true\"]")?.scrollIntoView({ block: "nearest" });
 	}, [t, r]), /* @__PURE__ */ (0, Q.jsxs)(i, {
@@ -39,7 +39,7 @@ function Ct({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onCl
 		}), /* @__PURE__ */ (0, Q.jsxs)("button", {
 			type: "button",
 			"aria-current": t === r ? "true" : void 0,
-			className: t === r ? J(ht, "bg-background-secondary-default") : ht,
+			className: t === r ? J(gt, "bg-background-secondary-default") : gt,
 			onMouseDown: (e) => e.preventDefault(),
 			onClick: () => o(e.value),
 			children: [
@@ -59,7 +59,7 @@ function Ct({ field: e, menu: t, options: n, active: r, busy: a, onPick: o, onCl
 		})] }, `${e.group}-${e.value}`))]
 	});
 }
-function wt({ credentials: e, hidden: t, onHidden: n }) {
+function Tt({ credentials: e, hidden: t, onHidden: n }) {
 	let r = (e.providers || []).filter((e) => e.followable), i = r.filter((e) => !t.has(e.provider_label)).length, a = i === r.length ? "全部来源" : `${i}/${r.length} 个来源`;
 	return /* @__PURE__ */ (0, Q.jsx)(H, {
 		label: "来源筛选",
@@ -71,7 +71,7 @@ function wt({ credentials: e, hidden: t, onHidden: n }) {
 			selected: !t.has(e.provider_label),
 			label: /* @__PURE__ */ (0, Q.jsxs)("span", {
 				className: "flex min-w-0 items-center gap-1.5",
-				children: [/* @__PURE__ */ (0, Q.jsx)(pt, { provider: e.provider }), e.provider_label]
+				children: [/* @__PURE__ */ (0, Q.jsx)(mt, { provider: e.provider }), e.provider_label]
 			})
 		})),
 		onChange: (e, r) => {
@@ -91,12 +91,12 @@ function wt({ credentials: e, hidden: t, onHidden: n }) {
 			},
 			{
 				label: "凭据设置",
-				href: xt
+				href: St
 			}
 		]
 	});
 }
-function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
+function Et({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 	if (e.kind === "error") return /* @__PURE__ */ (0, Q.jsx)(R, {
 		tone: "error",
 		title: e.line,
@@ -115,7 +115,7 @@ function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 				children: e.line
 			}),
 			a.length ? a.map((e) => {
-				let n = St(t, e);
+				let n = Ct(t, e);
 				return /* @__PURE__ */ (0, Q.jsx)(v, {
 					isSelected: !e.known && !r.has(n),
 					isDisabled: e.known,
@@ -123,7 +123,7 @@ function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 					children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 						className: "flex min-w-0 flex-wrap items-center gap-1.5",
 						children: [
-							/* @__PURE__ */ (0, Q.jsx)(pt, { provider: e.provider }),
+							/* @__PURE__ */ (0, Q.jsx)(mt, { provider: e.provider }),
 							/* @__PURE__ */ (0, Q.jsx)("b", {
 								className: "text-body-medium",
 								children: e.provider_label
@@ -139,7 +139,7 @@ function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 						]
 					})
 				}, n);
-			}) : /* @__PURE__ */ (0, Q.jsx)(A, { children: bt }),
+			}) : /* @__PURE__ */ (0, Q.jsx)(A, { children: xt }),
 			(e.external_searches || []).map((e) => /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex flex-wrap items-center gap-2",
 				children: [/* @__PURE__ */ (0, Q.jsx)("small", {
@@ -154,7 +154,7 @@ function Tt({ row: e, at: t, hidden: n, unpicked: r, onPick: i }) {
 		]
 	});
 }
-function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
+function Dt({ data: e, credentials: t, readOnly: n, toast: r }) {
 	let [i, a] = (0, Z.useState)(""), [o, s] = (0, Z.useState)(!1), [c, l] = (0, Z.useState)(""), [u, d] = (0, Z.useState)(""), [f, p] = (0, Z.useState)(!1), [m, g] = (0, Z.useState)(null), [_, v] = (0, Z.useState)(-1), ee = (0, Z.useRef)(null), y = (0, Z.useRef)(null), [b, te] = (0, Z.useState)(/* @__PURE__ */ new Set()), [x, S] = (0, Z.useState)(/* @__PURE__ */ new Set()), [C, w] = (0, Z.useState)(""), [T, ne] = (0, Z.useState)(0);
 	(0, Z.useEffect)(() => {
 		let e = i.trim();
@@ -165,8 +165,8 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 		let t = setTimeout(() => d(e), 250);
 		return () => clearTimeout(t);
 	}, [i, o]);
-	let re = ot({
-		queryKey: je(u),
+	let re = st({
+		queryKey: Me(u),
 		queryFn: ({ signal: e }) => Oe(u, e),
 		enabled: u.length > 0 && f && !o && m !== i
 	}), E = (0, Z.useMemo)(() => (re.data?.groups || []).flatMap((e) => e.items.map((t) => ({
@@ -174,10 +174,10 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 		matched: t.matched || "",
 		n: t.n || 0,
 		group: e.label
-	}))), [re.data]), { job: D, running: A, outcome: M, start: N, dismiss: P } = it({
+	}))), [re.data]), { job: D, running: A, outcome: M, start: N, dismiss: P } = at({
 		queryKey: O,
 		queryFn: ({ signal: e }) => De(e),
-		start: (e) => tt([e]),
+		start: (e) => nt([e]),
 		onStarted: () => S(/* @__PURE__ */ new Set()),
 		onError: (e) => w(X(e)),
 		onFinish: (e) => {
@@ -206,8 +206,8 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 		}
 	}, B = M?.results || [], V = B.flatMap((e, t) => (e.candidates || []).filter((e) => !e.known && !b.has(e.provider_label || "")).map((e) => ({
 		candidate: e,
-		key: St(t, e)
-	})).filter((e) => !x.has(e.key))), H = at({
+		key: Ct(t, e)
+	})).filter((e) => !x.has(e.key))), H = ot({
 		mutationFn: async (e) => {
 			let t = [], n = [];
 			ne(0);
@@ -221,7 +221,7 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 				ne((e) => e + 1);
 			}
 			if (n.length) try {
-				await et(n);
+				await tt(n);
 			} catch (e) {
 				t.push(X(e));
 			}
@@ -231,12 +231,12 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 			};
 		},
 		onSuccess: (e) => {
-			Ue(), e.failures.length ? w(e.failures.join("；")) : (w(""), P(), r(`已添加 ${e.sources.length} 个关注来源`));
+			We(), e.failures.length ? w(e.failures.join("；")) : (w(""), P(), r(`已添加 ${e.sources.length} 个关注来源`));
 		},
 		onError: (e) => w(X(e))
 	}), ae = e.suggestions || [], oe = !c.includes("/");
 	return /* @__PURE__ */ (0, Q.jsxs)("section", {
-		"aria-label": _t,
+		"aria-label": vt,
 		className: ge({
 			padding: "none",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
@@ -244,7 +244,7 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)("h3", {
 				className: "text-title-2-medium text-text-primary",
-				children: _t
+				children: vt
 			}),
 			/* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex flex-wrap items-end gap-2",
@@ -259,9 +259,9 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 						},
 						children: [/* @__PURE__ */ (0, Q.jsx)(j, {
 							"aria-label": "来源链接、名字或 id",
-							placeholder: gt,
+							placeholder: _t,
 							value: i,
-							leadingIcon: Ve,
+							leadingIcon: He,
 							enterKeyHint: "search",
 							isDisabled: n,
 							onChange: a,
@@ -272,7 +272,7 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 								s(!1), a(e.currentTarget.value);
 							},
 							onKeyDown: z
-						}), L ? /* @__PURE__ */ (0, Q.jsx)(Ct, {
+						}), L ? /* @__PURE__ */ (0, Q.jsx)(wt, {
 							field: ee,
 							menu: y,
 							options: E,
@@ -282,7 +282,7 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 							onClose: ie
 						}) : null]
 					}),
-					/* @__PURE__ */ (0, Q.jsx)(wt, {
+					/* @__PURE__ */ (0, Q.jsx)(Tt, {
 						credentials: t,
 						hidden: b,
 						onHidden: te
@@ -301,7 +301,7 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 				className: "flex flex-col gap-3 empty:hidden",
 				children: [A || N.isPending ? /* @__PURE__ */ (0, Q.jsx)(W, {
 					embedded: !0,
-					label: D?.message || (D?.total ? `查找中：${D.checked || 0}/${D.total}` : oe ? vt : yt),
+					label: D?.message || (D?.total ? `查找中：${D.checked || 0}/${D.total}` : oe ? yt : bt),
 					value: D?.checked,
 					total: D?.total
 				}) : null, C ? /* @__PURE__ */ (0, Q.jsx)(R, {
@@ -314,7 +314,7 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 				className: "flex flex-col gap-3",
 				children: [
 					/* @__PURE__ */ (0, Q.jsx)(k, { children: "查找结果" }),
-					B.map((e, t) => /* @__PURE__ */ (0, Q.jsx)(Tt, {
+					B.map((e, t) => /* @__PURE__ */ (0, Q.jsx)(Et, {
 						row: e,
 						at: t,
 						hidden: b,
@@ -368,8 +368,8 @@ function Et({ data: e, credentials: t, readOnly: n, toast: r }) {
 	});
 }
 // src/react/follow-manage/add-feed.tsx
-var Dt = "输入女优名，到 JavDB 找她的演员页", Ot = "添加 JAV 订阅";
-function kt(e, t) {
+var Ot = "输入女优名，到 JavDB 找她的演员页", kt = "添加 JAV 订阅";
+function At(e, t) {
 	let n = /* @__PURE__ */ new Map();
 	for (let r of e.candidates) t.has(r.id) && r.held_by && n.set(r.held_by.id, r.held_by.name);
 	if (n.size > 1) return {
@@ -388,7 +388,7 @@ function kt(e, t) {
 		blocked: !1
 	};
 }
-function At({ card: e, picked: t, onPick: n }) {
+function jt({ card: e, picked: t, onPick: n }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex flex-wrap items-center gap-2",
 		children: [/* @__PURE__ */ (0, Q.jsx)(v, {
@@ -418,10 +418,10 @@ function At({ card: e, picked: t, onPick: n }) {
 		})]
 	});
 }
-function jt({ readOnly: e, toast: t, onAdded: n }) {
-	let [r, i] = (0, Z.useState)(""), [a, o] = (0, Z.useState)(null), [s, c] = (0, Z.useState)(/* @__PURE__ */ new Set()), l = rt(), u = () => {
+function Mt({ readOnly: e, toast: t, onAdded: n }) {
+	let [r, i] = (0, Z.useState)(""), [a, o] = (0, Z.useState)(null), [s, c] = (0, Z.useState)(/* @__PURE__ */ new Set()), l = it(), u = () => {
 		let t = r.trim();
-		t && !e && l.run("lookup", (e) => Le(t, e), (e) => {
+		t && !e && l.run("lookup", (e) => Re(t, e), (e) => {
 			o(e), c(new Set(e.suggested));
 		});
 	}, d = (e) => {
@@ -432,9 +432,14 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 		a && l.run("follow", (e) => Ae(a.q, [...s], e), (e) => {
 			t(e.created ? `已新建「${e.entity_name}」并订阅她的新作` : `已订阅「${e.entity_name}」的新作`), i(""), f(), n();
 		});
-	}, m = a ? kt(a, s) : null;
+	}, m = () => {
+		let e = a?.known;
+		e && l.run("known", (t) => je(e.id, t), () => {
+			t(`已订阅「${e.name}」的新作`), i(""), f(), n();
+		});
+	}, g = a ? At(a, s) : null, _ = a && !a.candidates.length && a.known?.subscribable ? a.known : null;
 	return /* @__PURE__ */ (0, Q.jsxs)("section", {
-		"aria-label": Ot,
+		"aria-label": kt,
 		className: ge({
 			padding: "none",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
@@ -442,7 +447,7 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)("h3", {
 				className: "text-title-2-medium text-text-primary",
-				children: Ot
+				children: kt
 			}),
 			/* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex flex-wrap items-end gap-2",
@@ -450,9 +455,9 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 					className: "min-w-64 grow",
 					children: /* @__PURE__ */ (0, Q.jsx)(j, {
 						"aria-label": "女优名",
-						placeholder: Dt,
+						placeholder: Ot,
 						value: r,
-						leadingIcon: Ve,
+						leadingIcon: He,
 						enterKeyHint: "search",
 						isDisabled: e,
 						onChange: i,
@@ -474,34 +479,54 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 			a ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex flex-col gap-3",
 				children: [
+					a.unavailable ? /* @__PURE__ */ (0, Q.jsx)(R, {
+						tone: "warning",
+						title: "JavDB 这一次没有搜成",
+						children: a.unavailable
+					}) : null,
 					/* @__PURE__ */ (0, Q.jsx)(k, { children: "JavDB 上的演员卡" }),
-					a.candidates.length ? a.candidates.map((e) => /* @__PURE__ */ (0, Q.jsx)(At, {
+					a.candidates.length ? a.candidates.map((e) => /* @__PURE__ */ (0, Q.jsx)(jt, {
 						card: e,
 						picked: s.has(e.id),
 						onPick: (t) => c((n) => {
 							let r = new Set(n);
 							return t ? r.add(e.id) : r.delete(e.id), r;
 						})
-					}, e.id)) : /* @__PURE__ */ (0, Q.jsx)(A, { children: "JavDB 上没有搜到这个名字。" }),
+					}, e.id)) : /* @__PURE__ */ (0, Q.jsx)(A, { children: a.unavailable ? "这一次没有拿到演员卡。" : "JavDB 上没有搜到这个名字。" }),
 					a.candidates.length ? /* @__PURE__ */ (0, Q.jsx)(A, {
 						role: "status",
-						children: s.size ? m.text : "勾选她的演员卡；有碼与無碼两条记录都是她的话，两张都勾。"
+						children: s.size ? g.text : "勾选她的演员卡；有碼与無碼两条记录都是她的话，两张都勾。"
+					}) : null,
+					_ ? /* @__PURE__ */ (0, Q.jsx)(A, {
+						role: "status",
+						children: _.following ? `数据库里的「${_.name}」已经在订阅新作。` : `数据库里的「${_.name}」已有 JavDB 或 DMM 编号，可以直接订阅。`
 					}) : null,
 					/* @__PURE__ */ (0, Q.jsxs)("div", {
 						className: "flex flex-wrap items-center gap-2",
-						children: [/* @__PURE__ */ (0, Q.jsx)(h, {
-							variant: "secondary",
-							size: "small",
-							onClick: f,
-							children: "关闭"
-						}), a.candidates.length ? /* @__PURE__ */ (0, Q.jsx)(h, {
-							variant: "primary",
-							size: "small",
-							disabled: e || !s.size || m.blocked,
-							...K(l.busy === "follow"),
-							onClick: p,
-							children: `添加订阅（${s.size}）`
-						}) : null]
+						children: [
+							/* @__PURE__ */ (0, Q.jsx)(h, {
+								variant: "secondary",
+								size: "small",
+								onClick: f,
+								children: "关闭"
+							}),
+							a.candidates.length ? /* @__PURE__ */ (0, Q.jsx)(h, {
+								variant: "primary",
+								size: "small",
+								disabled: e || !s.size || g.blocked,
+								...K(l.busy === "follow"),
+								onClick: p,
+								children: `添加订阅（${s.size}）`
+							}) : null,
+							_ && !_.following ? /* @__PURE__ */ (0, Q.jsx)(h, {
+								variant: "primary",
+								size: "small",
+								disabled: e,
+								...K(l.busy === "known"),
+								onClick: m,
+								children: `订阅「${_.name}」`
+							}) : null
+						]
 					})
 				]
 			}) : null
@@ -509,7 +534,7 @@ function jt({ readOnly: e, toast: t, onAdded: n }) {
 	});
 }
 // src/react/follow-manage/alias-rename-dialog.tsx
-function Mt({ group: e, close: t, receipt: n }) {
+function Nt({ group: e, close: t, receipt: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(L, {
 		isOpen: !!e,
 		onOpenChange: (e) => {
@@ -517,19 +542,19 @@ function Mt({ group: e, close: t, receipt: n }) {
 		},
 		width: "form",
 		label: "修改统一名称",
-		children: e ? /* @__PURE__ */ (0, Q.jsx)(Nt, {
+		children: e ? /* @__PURE__ */ (0, Q.jsx)(Pt, {
 			group: e,
 			close: t,
 			receipt: n
 		}, e.canonical_key) : null
 	});
 }
-function Nt({ group: e, close: t, receipt: n }) {
-	let [i, a] = (0, Z.useState)(e.canonical_name), o = rt();
+function Pt({ group: e, close: t, receipt: n }) {
+	let [i, a] = (0, Z.useState)(e.canonical_name), o = it();
 	return /* @__PURE__ */ (0, Q.jsxs)("form", {
 		onSubmit: (r) => {
-			r.preventDefault(), i.trim() && i.trim() !== e.canonical_name && o.run("rename", (t) => Ke(e.canonical_key, i.trim(), t), () => {
-				Ue(), n(`已把统一名称改为 ${i.trim()}`), t();
+			r.preventDefault(), i.trim() && i.trim() !== e.canonical_name && o.run("rename", (t) => qe(e.canonical_key, i.trim(), t), () => {
+				We(), n(`已把统一名称改为 ${i.trim()}`), t();
 			});
 		},
 		className: "flex min-h-0 flex-col gap-4 p-5",
@@ -587,30 +612,30 @@ function Nt({ group: e, close: t, receipt: n }) {
 	});
 }
 // src/react/follow-manage/alias-manager.tsx
-var Pt = (e) => `将移除别名「${e}」，对应来源恢复为独立创作者组。`, Ft = nt({
-	rowSelectionFeature: Ze,
-	rowSortingFeature: Qe,
-	rowPaginationFeature: Xe,
+var Ft = (e) => `将移除别名「${e}」，对应来源恢复为独立创作者组。`, It = rt({
+	rowSelectionFeature: Qe,
+	rowSortingFeature: $e,
+	rowPaginationFeature: Ze,
 	columnVisibilityFeature: ve,
 	sortedRowModel: t(),
 	paginatedRowModel: e()
-}), It = Ft, Lt = {
+}), Lt = It, Rt = {
 	id: "select",
 	label: "选择",
 	width: 48,
 	min: 48,
 	max: 48,
 	required: !0
-}, Rt = {
+}, zt = {
 	id: "canonical",
 	label: "统一名称",
 	width: 280,
 	min: 240,
 	required: !0,
 	flex: !0
-}, zt = [
-	Lt,
+}, Bt = [
 	Rt,
+	zt,
 	{
 		id: "alias",
 		label: "平台别名",
@@ -626,9 +651,9 @@ var Pt = (e) => `将移除别名「${e}」，对应来源恢复为独立创作�
 		label: "操作",
 		width: 112
 	}
-], Bt = [
-	Lt,
+], Vt = [
 	Rt,
+	zt,
 	{
 		id: "aliases",
 		label: "平台别名",
@@ -640,16 +665,16 @@ var Pt = (e) => `将移除别名「${e}」，对应来源恢复为独立创作�
 		width: 184,
 		min: 168
 	}
-], Vt = (e) => e.alias;
-function Ht(e, t, n) {
+], Ht = (e) => e.alias;
+function Ut(e, t, n) {
 	let r = n ? `name:${n}` : "", i = r && e.find((e) => e.author_key === r) || e.find((e) => e.author_name === t || e.entity_name === t);
 	return i ? e.filter((e) => e.author_key === i.author_key) : [];
 }
-function Ut({ sources: e, name: t, canonicalKey: n }) {
+function Wt({ sources: e, name: t, canonicalKey: n }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("span", {
 		className: "flex items-center gap-2",
-		children: [/* @__PURE__ */ (0, Q.jsx)(ft, {
-			group: Ht(e, t, n),
+		children: [/* @__PURE__ */ (0, Q.jsx)(pt, {
+			group: Ut(e, t, n),
 			name: t
 		}), /* @__PURE__ */ (0, Q.jsx)("b", {
 			className: "text-body-medium",
@@ -657,8 +682,8 @@ function Ut({ sources: e, name: t, canonicalKey: n }) {
 		})]
 	});
 }
-function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u }) {
-	let d = ct("alias-suggestions", zt), f = ct("alias-saved", Bt), [p, m] = (0, Z.useState)(null), [g, _] = (0, Z.useState)({}), [y, T] = (0, Z.useState)({}), ne = n(() => _({})), re = n(() => T({})), [E, D] = (0, Z.useState)([]), [O, A] = (0, Z.useState)([]), [M, N] = (0, Z.useState)({
+function Gt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u }) {
+	let d = lt("alias-suggestions", Bt), f = lt("alias-saved", Vt), [p, m] = (0, Z.useState)(null), [g, _] = (0, Z.useState)({}), [y, T] = (0, Z.useState)({}), ne = n(() => _({})), re = n(() => T({})), [E, D] = (0, Z.useState)([]), [O, A] = (0, Z.useState)([]), [M, N] = (0, Z.useState)({
 		pageIndex: 0,
 		pageSize: 20
 	}), [P, F] = (0, Z.useState)({
@@ -670,14 +695,14 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 	}, L = {
 		...P,
 		pageIndex: Math.min(P.pageIndex, Math.max(0, Math.ceil(e.length / P.pageSize) - 1))
-	}, [R, z] = (0, Z.useState)(""), [B, H] = (0, Z.useState)(""), [ae, oe] = (0, Z.useState)(""), U = at({
+	}, [R, z] = (0, Z.useState)(""), [B, H] = (0, Z.useState)(""), [ae, oe] = (0, Z.useState)(""), U = ot({
 		mutationFn: async (e) => {
 			let t = 0;
 			for (let n of e) {
 				try {
 					await me(n.canonical, n.alias);
 				} catch (n) {
-					throw t && Ue(), Error(`${X(n)}（还有 ${e.length - t} 组没有合并）`);
+					throw t && We(), Error(`${X(n)}（还有 ${e.length - t} 组没有合并）`);
 				}
 				t += 1;
 			}
@@ -687,24 +712,24 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 			};
 		},
 		onSuccess: (e) => {
-			z(""), _({}), Ue(), u(`已合并 ${e.done} 组创作者别名`);
+			z(""), _({}), We(), u(`已合并 ${e.done} 组创作者别名`);
 		},
 		onError: (e) => z(X(e))
-	}), W = at({
+	}), W = ot({
 		mutationFn: (e) => me(e.canonical, e.alias),
 		onSuccess: () => {
-			z(""), H(""), oe(""), Ue(), u("已保存创作者别名");
+			z(""), H(""), oe(""), We(), u("已保存创作者别名");
 		},
 		onError: (e) => z(X(e))
-	}), de = at({
+	}), de = ot({
 		mutationFn: async (e) => {
 			let t = typeof e == "string" ? [e] : e, n = 0;
 			try {
-				for (let e of t) await We(e), n += 1;
+				for (let e of t) await Ge(e), n += 1;
 			} catch (e) {
 				throw Error(`${X(e)}（已移除 ${n} 个别名，还有 ${t.length - n} 个未移除）`);
 			} finally {
-				Ue();
+				We();
 			}
 		},
 		onSuccess: () => {
@@ -720,7 +745,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 		});
 	}, he = (e) => void ye({
 		title: "移除创作者别名",
-		body: Pt(e),
+		body: Ft(e),
 		confirmLabel: "移除创作者别名",
 		onConfirm: () => de.mutateAsync(e)
 	}), G = (0, Z.useRef)({
@@ -759,7 +784,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 			}),
 			e.accessor("canonical", {
 				header: "统一名称",
-				cell: (e) => /* @__PURE__ */ (0, Q.jsx)(Ut, {
+				cell: (e) => /* @__PURE__ */ (0, Q.jsx)(Wt, {
 					sources: G.current.sources,
 					name: e.getValue()
 				})
@@ -807,7 +832,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 			e.accessor("canonical_name", {
 				id: "canonical",
 				header: "统一名称",
-				cell: (e) => /* @__PURE__ */ (0, Q.jsx)(Ut, {
+				cell: (e) => /* @__PURE__ */ (0, Q.jsx)(Wt, {
 					sources: G.current.sources,
 					name: e.getValue(),
 					canonicalKey: e.row.original.canonical_key
@@ -846,11 +871,11 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 				})
 			})
 		]);
-	}, []), q = st({
-		features: Ft,
+	}, []), q = ct({
+		features: It,
 		data: t,
 		columns: _e,
-		getRowId: Vt,
+		getRowId: Ht,
 		state: {
 			rowSelection: g,
 			sorting: E,
@@ -869,8 +894,8 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 		},
 		onPaginationChange: N,
 		enableRowSelection: !0
-	}), xe = st({
-		features: It,
+	}), xe = ct({
+		features: Lt,
 		data: e,
 		columns: ve,
 		getRowId: (e) => e.canonical_key,
@@ -1176,7 +1201,7 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 					})
 				]
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(Mt, {
+			/* @__PURE__ */ (0, Q.jsx)(Nt, {
 				group: p,
 				close: () => m(null),
 				receipt: u
@@ -1185,14 +1210,14 @@ function Wt({ groups: e, suggestions: t, sources: r = [], readOnly: i, toast: u 
 	});
 }
 // src/react/follow-manage/feed-sources.tsx
-var Gt = nt({
-	rowPaginationFeature: Xe,
-	rowSelectionFeature: Ze,
-	rowSortingFeature: Qe,
+var Kt = rt({
+	rowPaginationFeature: Ze,
+	rowSelectionFeature: Qe,
+	rowSortingFeature: $e,
 	columnVisibilityFeature: ve,
 	sortedRowModel: t(),
 	paginatedRowModel: e()
-}), Kt = {
+}), qt = {
 	select: "选择",
 	name: "名称",
 	kind: "类型",
@@ -1202,7 +1227,7 @@ var Gt = nt({
 	fetched: "上次拉取",
 	fresh: "上次新增",
 	actions: "操作"
-}, qt = /* @__PURE__ */ new Set(["actions"]), Jt = Object.entries(Kt).map(([e, t]) => ({
+}, Jt = /* @__PURE__ */ new Set(["actions"]), Yt = Object.entries(qt).map(([e, t]) => ({
 	id: e,
 	label: t,
 	width: e === "select" ? 48 : e === "name" ? 300 : e === "actions" ? 208 : e === "fetched" ? 200 : e === "origin" ? 184 : 160,
@@ -1210,18 +1235,18 @@ var Gt = nt({
 	max: e === "select" ? 48 : e === "name" ? 2e3 : 800,
 	flex: e === "name",
 	required: e === "select" || e === "name"
-})), Yt = () => He.invalidateQueries({
+})), Xt = () => Ue.invalidateQueries({
 	queryKey: ne,
 	exact: !0
 }), $ = (e) => e.name || e.url;
-function Xt(e) {
+function Zt(e) {
 	try {
 		return new URL(e).hostname.replace(/^www\./, "");
 	} catch {
 		return e;
 	}
 }
-function Zt({ source: e }) {
+function Qt({ source: e }) {
 	return e.enabled ? e.last_error ? /* @__PURE__ */ (0, Q.jsx)(y, {
 		variant: "caption",
 		color: "rose",
@@ -1240,7 +1265,7 @@ function Zt({ source: e }) {
 		children: "已暂停"
 	});
 }
-function Qt({ source: e }) {
+function $t({ source: e }) {
 	let t = e.entity_id ? {
 		id: e.entity_id,
 		has_image: !!e.has_image,
@@ -1249,17 +1274,17 @@ function Qt({ source: e }) {
 	} : null;
 	return /* @__PURE__ */ (0, Q.jsx)("span", {
 		"aria-hidden": !0,
-		className: `relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background-tertiary-default text-caption-1-semibold text-text-secondary ${ut}`,
+		className: `relative inline-grid size-8 shrink-0 place-items-center overflow-hidden rounded-full bg-background-tertiary-default text-caption-1-semibold text-text-secondary ${dt}`,
 		dangerouslySetInnerHTML: { __html: G($(e), t, null, "performer") }
 	});
 }
-var $t = (e, t) => e.entity_id !== null && t.has(e.entity_id) && e.page_name && e.page_name !== e.name ? e.page_name : "";
-function en(e) {
+var en = (e, t) => e.entity_id !== null && t.has(e.entity_id) && e.page_name && e.page_name !== e.name ? e.page_name : "";
+function tn(e) {
 	let t = /* @__PURE__ */ new Set(), n = /* @__PURE__ */ new Set();
 	for (let { entity_id: r } of e) r !== null && (t.has(r) ? n.add(r) : t.add(r));
 	return n;
 }
-function tn(e, t) {
+function nn(e, t) {
 	let n = e.length === 1 ? e[0] : null;
 	return ye({
 		title: n ? "移除订阅源" : `移除 ${e.length} 条订阅源`,
@@ -1269,11 +1294,11 @@ function tn(e, t) {
 		onConfirm: t
 	});
 }
-function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
-	let i = ot({
+function rn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
+	let i = st({
 		queryKey: ne,
 		queryFn: ({ signal: e }) => Te(e)
-	}), u = rt(), d = ct("jav-feeds", Jt), f = i.data, m = (0, Z.useMemo)(() => f?.sources ?? [], [f]), [g, y] = (0, Z.useState)(/* @__PURE__ */ new Set()), S = r?.ids ?? g, T = r?.onChange ?? y, [re, E] = (0, Z.useState)(1), [D, O] = (0, Z.useState)(20), [k, j] = (0, Z.useState)([]), M = Be(m.length, D, re);
+	}), u = it(), d = lt("jav-feeds", Yt), f = i.data, m = (0, Z.useMemo)(() => f?.sources ?? [], [f]), [g, y] = (0, Z.useState)(/* @__PURE__ */ new Set()), S = r?.ids ?? g, T = r?.onChange ?? y, [re, E] = (0, Z.useState)(1), [D, O] = (0, Z.useState)(20), [k, j] = (0, Z.useState)([]), M = Ve(m.length, D, re);
 	(0, Z.useEffect)(() => {
 		E((e) => Math.min(e, M.pages));
 	}, [M.pages]), (0, Z.useEffect)(() => {
@@ -1282,10 +1307,10 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 			return n.size === e.size ? e : n;
 		});
 	}, [m, T]);
-	let P = at({
+	let P = ot({
 		mutationFn: async (e) => {
-			let t = await Re(e.ids, 4, async (t) => {
-				e.action === "remove" ? await Ge(t) : await $e(t, e.action === "enabled");
+			let t = await ze(e.ids, 4, async (t) => {
+				e.action === "remove" ? await Ke(t) : await et(t, e.action === "enabled");
 			});
 			return {
 				...e,
@@ -1294,13 +1319,13 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 		},
 		onSuccess: (e) => {
 			let n = e.results.filter((e) => !e.ok), r = e.ids.length - n.length;
-			if (T(/* @__PURE__ */ new Set()), Yt(), e.action === "remove" && r && t(`已移除 ${r} 条订阅源`), n.length) {
+			if (T(/* @__PURE__ */ new Set()), Xt(), e.action === "remove" && r && t(`已移除 ${r} 条订阅源`), n.length) {
 				let e = n[0];
 				u.setError(`${n.length} 条没有写入：${e.ok ? "" : X(e.error)}`);
 			}
 		},
 		onError: (e) => u.setError(X(e))
-	}), F = (0, Z.useMemo)(() => en(m), [m]), I = (0, Z.useRef)({
+	}), F = (0, Z.useMemo)(() => tn(m), [m]), I = (0, Z.useRef)({
 		readOnly: e,
 		shared: F,
 		busy: null,
@@ -1312,14 +1337,14 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 		readOnly: e,
 		shared: F,
 		busy: u.busy,
-		toggle: (e, t) => void u.run(`enabled-${e.id}`, (n) => $e(e.id, t, n), () => void Yt()),
-		fetch: (e) => void u.run(`check-${e.id}`, (t) => _e(t, [e.id]), () => void Yt()),
-		remove: (e) => void tn([e], async () => {
-			await Ge(e.id), t(`已移除订阅源「${$(e)}」`), Yt();
+		toggle: (e, t) => void u.run(`enabled-${e.id}`, (n) => et(e.id, t, n), () => void Xt()),
+		fetch: (e) => void u.run(`check-${e.id}`, (t) => _e(t, [e.id]), () => void Xt()),
+		remove: (e) => void nn([e], async () => {
+			await Ke(e.id), t(`已移除订阅源「${$(e)}」`), Xt();
 		})
 	};
 	let L = (0, Z.useMemo)(() => {
-		let e = be(), t = (e) => () => Kt[e] || e;
+		let e = be(), t = (e) => () => qt[e] || e;
 		return e.columns([
 			e.display({
 				id: "select",
@@ -1339,11 +1364,11 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 				id: "name",
 				header: t("name"),
 				cell: (e) => {
-					let t = $t(e.row.original, I.current.shared);
+					let t = en(e.row.original, I.current.shared);
 					return /* @__PURE__ */ (0, Q.jsxs)("span", {
 						className: "flex items-center gap-2 whitespace-nowrap text-body-medium text-text-primary",
 						children: [
-							/* @__PURE__ */ (0, Q.jsx)(Qt, { source: e.row.original }),
+							/* @__PURE__ */ (0, Q.jsx)($t, { source: e.row.original }),
 							e.getValue(),
 							t ? /* @__PURE__ */ (0, Q.jsx)("span", {
 								className: "text-body-2-regular text-text-secondary",
@@ -1372,8 +1397,8 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 					title: "打开来源页面",
 					className: "max-w-full text-text-primary underline-offset-2 hover:underline",
 					children: [/* @__PURE__ */ (0, Q.jsx)(ae, {
-						site: e.row.original.kind.startsWith("javdb") ? "javdb" : e.row.original.kind.startsWith("dmm") ? "dmm" : Xt(e.getValue()),
-						label: Xt(e.getValue())
+						site: e.row.original.kind.startsWith("javdb") ? "javdb" : e.row.original.kind.startsWith("dmm") ? "dmm" : Zt(e.getValue()),
+						label: Zt(e.getValue())
 					}), /* @__PURE__ */ (0, Q.jsx)(de, {
 						"aria-hidden": !0,
 						className: "size-(--icon-inline) shrink-0"
@@ -1383,7 +1408,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 			e.accessor((e) => e.last_error ? "拉取失败" : e.enabled ? "已启用" : "已暂停", {
 				id: "status",
 				header: t("status"),
-				cell: (e) => /* @__PURE__ */ (0, Q.jsx)(Zt, { source: e.row.original })
+				cell: (e) => /* @__PURE__ */ (0, Q.jsx)(Qt, { source: e.row.original })
 			}),
 			e.accessor((e) => e.interval_minutes, {
 				id: "interval",
@@ -1398,7 +1423,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 				header: t("fetched"),
 				cell: (e) => /* @__PURE__ */ (0, Q.jsx)("span", {
 					className: "whitespace-nowrap tabular-nums",
-					children: e.row.original.last_fetched_at ? Ie(e.row.original.last_fetched_at) : "还没拉过"
+					children: e.row.original.last_fetched_at ? Le(e.row.original.last_fetched_at) : "还没拉过"
 				})
 			}),
 			e.accessor((e) => e.last_new_count, {
@@ -1444,8 +1469,8 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 				})
 			})
 		]);
-	}, []), ie = (0, Z.useMemo)(() => Object.fromEntries([...S].map((e) => [String(e), !0])), [S]), z = st({
-		features: Gt,
+	}, []), ie = (0, Z.useMemo)(() => Object.fromEntries([...S].map((e) => [String(e), !0])), [S]), z = ct({
+		features: Kt,
 		data: m,
 		columns: L,
 		getRowId: (e) => String(e.id),
@@ -1474,7 +1499,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 		title: "打不开订阅源",
 		children: X(i.error)
 	}) : /* @__PURE__ */ (0, Q.jsx)(A, { children: "正在读订阅源。" });
-	let B = () => void u.run("check", (e) => _e(e), () => void Yt()), H = (e) => {
+	let B = () => void u.run("check", (e) => _e(e), () => void Xt()), H = (e) => {
 		r?.onActivate(), T((t) => {
 			let n = new Set(t);
 			return n.has(e) ? n.delete(e) : n.add(e), n;
@@ -1529,7 +1554,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 									"fresh"
 								].map((e) => ({
 									id: e,
-									label: Kt[e]
+									label: qt[e]
 								}))
 							})
 						]
@@ -1583,7 +1608,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 							size: "small",
 							disabled: e,
 							...K(P.isPending),
-							onClick: () => void tn(U, () => P.mutateAsync({
+							onClick: () => void nn(U, () => P.mutateAsync({
 								ids: U.map((e) => e.id),
 								action: "remove"
 							})),
@@ -1616,7 +1641,7 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 								isRowHeader: e.column.id === "name",
 								allowsSorting: e.column.getCanSort(),
 								...d.columnProps(e.id),
-								children: ({ sortDirection: n }) => /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [qt.has(e.column.id) ? /* @__PURE__ */ (0, Q.jsx)(p, { children: t }) : /* @__PURE__ */ (0, Q.jsxs)("span", {
+								children: ({ sortDirection: n }) => /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [Jt.has(e.column.id) ? /* @__PURE__ */ (0, Q.jsx)(p, { children: t }) : /* @__PURE__ */ (0, Q.jsxs)("span", {
 									className: "flex items-center gap-0.5",
 									children: [t, e.column.getCanSort() ? /* @__PURE__ */ (0, Q.jsx)("span", {
 										"data-sort-indicator": !0,
@@ -1676,8 +1701,8 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 	});
 }
 // src/react/follow-manage/follow-manage-page.tsx
-var rn = (e) => D.some(([t]) => t === e);
-function an({ term: e, figure: t, unit: n }) {
+var an = (e) => D.some(([t]) => t === e);
+function on({ term: e, figure: t, unit: n }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: ge({
 			padding: "none",
@@ -1699,14 +1724,14 @@ function an({ term: e, figure: t, unit: n }) {
 		})]
 	});
 }
-function on(e) {
-	let { route: t, savePreference: n, toast: r, openFollow: i, readOnly: a, readOnlyMessage: o, writerUrl: s } = e, [c, l] = (0, Z.useState)(rn(e.tab) ? e.tab : "list"), [p, m] = (0, Z.useState)(Math.max(1, Math.floor(e.page) || 1)), [h, _] = (0, Z.useState)(() => Ye(e.sort, e.dir).sort), [v, ee] = (0, Z.useState)(() => Ye(e.sort, e.dir).dir), [y, b] = (0, Z.useState)(Pe(e.layout) ? e.layout : "default"), [te, x] = (0, Z.useState)(ze(e.pageSize)), [S, C] = (0, Z.useState)(/* @__PURE__ */ new Set()), [w, O] = (0, Z.useState)(/* @__PURE__ */ new Set()), k = ot({
+function sn(e) {
+	let { route: t, savePreference: n, toast: r, openFollow: i, readOnly: a, readOnlyMessage: o, writerUrl: s } = e, [c, l] = (0, Z.useState)(an(e.tab) ? e.tab : "list"), [p, m] = (0, Z.useState)(Math.max(1, Math.floor(e.page) || 1)), [h, _] = (0, Z.useState)(() => Xe(e.sort, e.dir).sort), [v, ee] = (0, Z.useState)(() => Xe(e.sort, e.dir).dir), [y, b] = (0, Z.useState)(Fe(e.layout) ? e.layout : "default"), [te, x] = (0, Z.useState)(Be(e.pageSize)), [S, C] = (0, Z.useState)(/* @__PURE__ */ new Set()), [w, O] = (0, Z.useState)(/* @__PURE__ */ new Set()), k = st({
 		queryKey: E,
 		queryFn: ({ signal: e }) => Ee(e)
-	}), A = ot({
+	}), A = st({
 		queryKey: re,
 		queryFn: ({ signal: e }) => we(e)
-	}), j = ot({
+	}), j = st({
 		queryKey: ne,
 		queryFn: ({ signal: e }) => Te(e)
 	}), M = k.data || { sources: [] }, N = A.data || {
@@ -1715,7 +1740,7 @@ function on(e) {
 	}, P = M.sources;
 	(0, Z.useEffect)(() => {
 		C((e) => {
-			let t = Fe(e, P);
+			let t = Ie(e, P);
 			return t.size === e.size ? e : t;
 		});
 	}, [P]);
@@ -1727,8 +1752,8 @@ function on(e) {
 			sort: n === "checked" ? "" : n,
 			dir: r === z[n] ? "" : r
 		});
-	}, I = Me(P), L = P.filter(Ne).length, ie = P.filter((e) => e.enabled).length, V = (N.providers || []).filter((e) => e.requirement === "required" && !xe(e)).length, H = new Set((j.data?.sources || []).map((e) => e.entity_id ?? `source-${e.id}`)).size;
-	return /* @__PURE__ */ (0, Q.jsxs)(lt, { children: [
+	}, I = Ne(P), L = P.filter(Pe).length, ie = P.filter((e) => e.enabled).length, V = (N.providers || []).filter((e) => e.requirement === "required" && !xe(e)).length, H = new Set((j.data?.sources || []).map((e) => e.entity_id ?? `source-${e.id}`)).size;
+	return /* @__PURE__ */ (0, Q.jsxs)(ut, { children: [
 		a ? /* @__PURE__ */ (0, Q.jsx)(R, {
 			tone: "warning",
 			title: "本机只能浏览",
@@ -1745,32 +1770,32 @@ function on(e) {
 			className: B,
 			"aria-label": "关注概览",
 			children: [
-				/* @__PURE__ */ (0, Q.jsx)(an, {
+				/* @__PURE__ */ (0, Q.jsx)(on, {
 					term: "关注创作者",
 					figure: I.length,
 					unit: "位"
 				}),
-				/* @__PURE__ */ (0, Q.jsx)(an, {
+				/* @__PURE__ */ (0, Q.jsx)(on, {
 					term: "启用来源",
 					figure: ie,
 					unit: `/ ${P.length}`
 				}),
-				/* @__PURE__ */ (0, Q.jsx)(an, {
+				/* @__PURE__ */ (0, Q.jsx)(on, {
 					term: "检查失败",
 					figure: L,
 					unit: "个来源"
 				}),
-				/* @__PURE__ */ (0, Q.jsx)(an, {
+				/* @__PURE__ */ (0, Q.jsx)(on, {
 					term: "未看更新",
 					figure: M.counts?.new || 0,
 					unit: "条"
 				}),
-				/* @__PURE__ */ (0, Q.jsx)(an, {
+				/* @__PURE__ */ (0, Q.jsx)(on, {
 					term: "JAV 订阅",
 					figure: H,
 					unit: "位"
 				}),
-				/* @__PURE__ */ (0, Q.jsx)(an, {
+				/* @__PURE__ */ (0, Q.jsx)(on, {
 					term: "未看新作",
 					figure: j.data?.unread || 0,
 					unit: "条"
@@ -1781,11 +1806,11 @@ function on(e) {
 			selectedKey: c,
 			onSelectionChange: (e) => {
 				let t = String(e);
-				rn(t) && (C(/* @__PURE__ */ new Set()), O(/* @__PURE__ */ new Set()), l(t), F({ tab: t }));
+				an(t) && (C(/* @__PURE__ */ new Set()), O(/* @__PURE__ */ new Set()), l(t), F({ tab: t }));
 			},
 			className: "flex flex-col gap-6",
 			children: [
-				/* @__PURE__ */ (0, Q.jsx)(dt, {
+				/* @__PURE__ */ (0, Q.jsx)(ft, {
 					"aria-label": "关注管理区域",
 					"data-section-nav": !0,
 					"data-section-items": !0,
@@ -1801,7 +1826,7 @@ function on(e) {
 				/* @__PURE__ */ (0, Q.jsxs)(u, {
 					id: "list",
 					className: "flex flex-col gap-4",
-					children: [/* @__PURE__ */ (0, Q.jsx)(nn, {
+					children: [/* @__PURE__ */ (0, Q.jsx)(rn, {
 						readOnly: a,
 						toast: r,
 						onAdd: () => {
@@ -1812,7 +1837,7 @@ function on(e) {
 							onChange: O,
 							onActivate: () => C(/* @__PURE__ */ new Set())
 						}
-					}), /* @__PURE__ */ (0, Q.jsx)(mt, {
+					}), /* @__PURE__ */ (0, Q.jsx)(ht, {
 						data: M,
 						sort: h,
 						dir: v,
@@ -1851,20 +1876,20 @@ function on(e) {
 					id: "add",
 					className: "flex flex-col gap-8",
 					children: [
-						/* @__PURE__ */ (0, Q.jsx)(Et, {
+						/* @__PURE__ */ (0, Q.jsx)(Dt, {
 							data: M,
 							credentials: N,
 							readOnly: a,
 							toast: r
 						}),
-						/* @__PURE__ */ (0, Q.jsx)(jt, {
+						/* @__PURE__ */ (0, Q.jsx)(Mt, {
 							readOnly: a,
 							toast: r,
 							onAdded: () => {
 								j.refetch(), l("list"), F({ tab: "list" });
 							}
 						}),
-						/* @__PURE__ */ (0, Q.jsx)(Wt, {
+						/* @__PURE__ */ (0, Q.jsx)(Gt, {
 							groups: M.author_aliases || [],
 							readOnly: a,
 							toast: r,
@@ -1887,6 +1912,6 @@ function on(e) {
 		}) })
 	] });
 }
-export { on as FollowManagePage };
+export { sn as FollowManagePage };
 
-//# debugId=00b5b15e-ba68-464d-a312-93c805e9e1e1
+//# debugId=674b25f6-536a-4708-aaf8-bcd20af2a392
