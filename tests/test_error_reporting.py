@@ -890,7 +890,8 @@ class ErrorReportingTests(unittest.TestCase):
         remote.cookies.set(access.COOKIE, access.issue(empty_policy, 1)[0])
         self.assertEqual(remote.post(path, json={'message': 'anonymous'}).status_code, 401)
         policy = access.save(app.state.settings.access_path, 'valid-private-password')
-        remote.cookies.set(access.COOKIE, access.issue(policy, 1)[0])
+        sessions = access.Sessions(access.sessions_path(app.state.settings.access_path))
+        remote.cookies.set(access.COOKIE, access.issue(policy, 1, sessions)[0])
         self.assertEqual(remote.post(path, json={'message': 'phone failed'}).status_code, 200)
         self.assertEqual(remote.post(path, json={'message': 'phone failed'},
                                      headers={'Origin': 'https://other.example'}).status_code, 403)

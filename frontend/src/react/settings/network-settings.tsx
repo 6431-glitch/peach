@@ -1,4 +1,4 @@
-/* 「网络与访问」分组：本机端口、Peach 代理、访问密码与公网入口。 */
+/* 「网络与访问」分组：本机端口、Peach 代理、访问密码与已登录的设备、公网入口。 */
 import { useState, type FormEvent } from 'react';
 
 import { SettingsRow } from '@/components/application/settings/settings-rows';
@@ -9,6 +9,7 @@ import type { ConfigurationGroupProps, PeachProxyState } from '../bundle';
 import { Note } from '../components/note';
 import { AccessSettings } from './access-settings';
 import { groupRoot } from './configuration-panel';
+import { DeviceSessions } from './device-sessions';
 import { PortSettings } from './port-settings';
 import { ProxyAddressField, ProxyModeSelect } from './peach-proxy-fields';
 import { TunnelSettings } from './tunnel-settings';
@@ -21,7 +22,10 @@ export function NetworkSettings({ data, receipt, panel, issues }: ConfigurationG
       {issues}
       {data.network || (data.editable && data.port_editable !== false && !data.section_errors?.media_sources)
         ? <PortSettings data={data} receipt={receipt} /> : null}
-      {data.access ? <AccessSettings initial={data.access} receipt={receipt} /> : null}
+      {data.access
+        ? <AccessSettings initial={data.access} receipt={receipt}
+            devices={(state) => <DeviceSessions revision={state.revision} receipt={receipt} />} />
+        : null}
       {data.tunnel ? <TunnelSettings revision={data.revision} initial={data.tunnel} receipt={receipt} /> : null}
       {data.peach_proxy ? <PeachProxy initial={data.peach_proxy} receipt={receipt} /> : null}
     </div>

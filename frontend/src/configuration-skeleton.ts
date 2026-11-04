@@ -28,6 +28,8 @@ export interface JavBrowserShape { enabled: boolean; ready: boolean }
 export interface CloudProxyShape { configured: boolean; accounts: [boolean, boolean][]; unlinked: number }
 export interface DownloadsShape { cloud: boolean; has115: boolean; pikpak: boolean; pikpakRoots: boolean; pikpakLoggedIn: boolean; browserLogin: boolean }
 export interface NetworkShape { port: boolean; addresses?: number; networkEditable?: boolean; lan?: boolean; proxyAddress: boolean; access: string; tunnelNamed: boolean; tunnelNamedMode: boolean; tunnelNote: boolean }
+/** 已登录的设备：行数，以及底栏有没有「撤销其他设备」。 */
+export interface DevicesShape { rows: number; manageable: boolean }
 export interface MaintenanceShape {
   releaseFacts: number; releaseNotes: number; autoUpdateHelp: boolean; startupNote: boolean; desktopNote: boolean;
   storageRows: number; storageNotes: number; reporting: boolean; reportingIdle: boolean; sharing: boolean;
@@ -36,7 +38,7 @@ export interface MaintenanceShape {
 export interface ConfigurationShape {
   media: MediaShape; discovery: DiscoveryShape; credentials: CredentialsShape; indexers: IndexersShape;
   javBrowser: JavBrowserShape; cloudProxy: CloudProxyShape; downloads: DownloadsShape; network: NetworkShape;
-  maintenance: MaintenanceShape;
+  devices: DevicesShape; maintenance: MaintenanceShape;
 }
 type Shapes = { [K in keyof ConfigurationShape]?: Partial<ConfigurationShape[K]> };
 
@@ -289,6 +291,14 @@ function accessBody(mode: string): string {
     + (mode === 'password' ? inputField('当前访问密码 *') : '') + pair;
 }
 
+/** 已登录的设备：分区自己取数时也画这一份。没有记录时按一行（本机）画。 */
+export function devicesSkeleton(): string {
+  const shape = rememberedShape('devices');
+  const rows = Array.from({ length: Math.max(1, count(shape?.rows, 8)) }, () => valueRow(text('8em'), text('14em'), '3em')).join('');
+  return section('已登录的设备', rows, on(shape?.manageable) ? button('撤销其他设备', 'secondary') : '',
+    on(shape?.manageable) ? { status: '修改访问密码会让全部设备退出。' } : {});
+}
+
 const network = () => {
   const shape = rememberedShape('network');
   /* 没有记录时按服务端的默认状态画：没有访问设置文件就是 `legacy`（系统生成的口令）。 */
@@ -304,6 +314,7 @@ const network = () => {
       + (on(shape?.port) ? inputField('端口') : '')), on(shape?.port) ? button('保存配置') : '',
       on(shape?.port) ? { status: '保存后 Peach 会重启，并跳转到新地址。' } : {}) : '')
     + section('访问密码', stack(accessBody(mode)), mode === 'locked' ? '' : button('保存配置'))
+    + (mode === 'password' || mode === 'legacy' ? devicesSkeleton() : '')
     + section('Cloudflare 公网入口', stack((named ? block('10.5em', '36px') : '') + tunnel),
       button('启动公网入口', named ? 'secondary' : 'primary') + (named ? button('保存配置') : ''), { aside: chip() })
     + section('Peach 代理', row('连接方式', 'Peach 访问外网和采集来源时使用。', 'ui-configuration-skeleton-select') + (on(shape?.proxyAddress) ? stack(inputField('代理地址'), true) : ''), button('保存配置'));
