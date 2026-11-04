@@ -89,12 +89,12 @@ export function previewLines(preview: AutoLandingPreview): string[] {
 
 export function previewBody(preview: AutoLandingPreview): string {
   const parts = [
-    preview.restores.length ? `改回 ${preview.restores.length} 部作品的资料` : '',
+    preview.restores.length ? `改回 ${preview.restores.length} 条资料` : '',
     preview.tags.length ? `删除 ${preview.tags.length} 个自动补上的标签` : '',
   ].filter(Boolean);
   return [
     `将撤回 ${preview.batches.length} 批自动写入：${parts.join('，') || '没有要改的资料'}。`,
-    preview.changed.length ? `${preview.changed.length} 部作品写入后又被修改或已删除，不改动。` : '',
+    preview.changed.length ? `${preview.changed.length} 条资料写入后被修改过或作品已删除，不改动。` : '',
     preview.other_batches.length ? `所选标签的补写记录还连带 ${preview.other_batches.length} 个其他批次，一并撤回。` : '',
     '撤回前会自动备份账本。下一轮资料处理仍按同一判据判断，可能再次写入。',
   ].filter(Boolean).join('');
@@ -102,7 +102,7 @@ export function previewBody(preview: AutoLandingPreview): string {
 
 export function resultText(result: AutoLandingResult): string {
   const parts = [
-    result.restored ? `改回 ${result.restored} 部作品的资料` : '',
+    result.restored ? `改回 ${result.restored} 条资料` : '',
     result.removed_tags ? `删除 ${result.removed_tags} 个标签` : '',
   ].filter(Boolean);
   return `已撤回 ${result.batches.length} 批自动写入${parts.length ? `：${parts.join('，')}` : ''}`;

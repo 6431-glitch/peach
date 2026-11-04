@@ -125,8 +125,14 @@ def main(argv: list[str] | None = None) -> int:
         integrity, orphans = verify_after_write(connection)
     finally:
         connection.close()
-    result["删除文件"] = auto_landing_revert.remove_files(planned)
-    print({**result, "integrity_check": integrity, "foreign_key_check": orphans})
+    removed = auto_landing_revert.remove_files(planned)
+    # 「删除文件」排在建档实体之后，和这一行一直以来的顺序一致。
+    summary = {}
+    for key, value in result.items():
+        summary[key] = value
+        if key == "删除建档实体":
+            summary["删除文件"] = removed
+    print({**summary, "integrity_check": integrity, "foreign_key_check": orphans})
     return 0
 
 

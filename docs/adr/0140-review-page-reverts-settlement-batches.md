@@ -16,7 +16,7 @@ ADR-0139 让核查差异按确定判据自动落库，撤回入口是 `scripts/r
 
 **二、复核页只放行 ADR-0139 的两条规则。** 「元数据字段」分类下的「自动写入的资料」列出 `adr-0139-official-replaces-verified` 与 `adr-0139-verified-tags-union` 仍在的决定，按批次给出时间与影响面。两条规则只改账本、不删文件，决定里存着撤回要用的全部依据。别的自动落库来源（种子、别名、样张、无番号封面……）有的要删盘上文件、有的要按任务行认批次，仍只在脚本里撤。接口按批次号反查规则，查不到就拒绝。
 
-**三、先预览，再按同一份计划写。** `GET /api/review/auto-landings?batches=…` 返回逐条要改回的值、要删的标签、不动的资产和计划摘要 `token`。`POST /api/review/auto-landings/revert` 在写锁（`BEGIN IMMEDIATE`）里重算计划，`token` 对不上就拒绝；对上了先经 `ledger_backups.create` 留一份 `ledger.pre-auto-landing-revert-<时间>.db`，再撤回。回执写出备份文件名与被跳过的作品，作品可以点开核对。
+**三、先预览，再按同一份计划写。** `GET /api/review/auto-landings?batches=…` 返回逐条要改回的值、要删的标签、不动的资产和计划摘要 `token`。`POST /api/review/auto-landings/revert` 在写锁（`BEGIN IMMEDIATE`）里重算计划，`token` 对不上就拒绝；对上了先用 SQLite Backup API 留一份 `ledger.pre-auto-landing-revert-<时间>.db`（与标签管理同一做法，完整性检查与清退留给账本备份那一轮，不在写锁里多等），再撤回。回执写出备份文件名与被跳过的作品，作品可以点开核对。
 
 并集决定按决定撤：一条决定之后又补过一次时带着两个批次，选中其中一个也会删掉另一个批次补的标签。预览单独写出连带的批次数，不让确认的数字与实际删除的对不上。
 
@@ -37,7 +37,7 @@ ADR-0139 让核查差异按确定判据自动落库，撤回入口是 `scripts/r
 
 ## 后果
 
-- 复核页「元数据字段」在有自动写入时多一张批次表；只读端可以浏览，撤回按钮不可用。
+- 复核页「元数据字段」在有自动写入时多一张批次表；只读端按本机同步到的账本浏览，撤回由写入端闸门拒绝。
 - 「账本备份」列表里多一种用途「撤回自动写入前」，按同一套保留规则清退。
 - 撤回后决定被删，下一轮资料处理仍按同一判据判断，可能再次写入；改判据仍要先于撤回，弹层里写明这一点。
-- `scripts/revert_auto_landing.py` 的参数与输出不变。
+- `scripts/revert_auto_landing.py` 的参数与输出不变；网页侧计划不扫标识与封面目录（`plan(files=False)`），两条规则本来不写盘上文件。

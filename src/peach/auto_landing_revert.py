@@ -245,8 +245,13 @@ def planned_files(logo_root: Path, source: str, batch: str) -> list[Path]:
     return found
 
 
-def plan(connection, source: str, batch: str = "", *, logo_root: Path, cover_root: Path) -> dict:
-    """这个来源（与批次）要撤的全部条目，只读。`apply` 与 `remove_files` 都按它做。"""
+def plan(connection, source: str, batch: str = "", *, logo_root: Path, cover_root: Path,
+         files: bool = True) -> dict:
+    """这个来源（与批次）要撤的全部条目，只读。`apply` 与 `remove_files` 都按它做。
+
+    `files=False` 不扫标识与封面目录：调用方已知这个来源不写盘上文件（复核页只放行的两条
+    核查结算规则），在写锁里逐批扫一遍真实目录只是白等。
+    """
     return {
         "source": source, "batch": batch,
         "links": planned_links(connection, source, batch),
@@ -260,8 +265,8 @@ def plan(connection, source: str, batch: str = "", *, logo_root: Path, cover_roo
         "refs": planned_refs(connection, source, batch),
         "memberships": planned_memberships(connection, source, batch),
         "makers": planned_makers(connection, source, batch),
-        "files": planned_files(logo_root, source, batch),
-        "covers": western_artwork.planned_covers(cover_root, source, batch),
+        "files": planned_files(logo_root, source, batch) if files else [],
+        "covers": western_artwork.planned_covers(cover_root, source, batch) if files else [],
         "samples": sample_images.planned_revert(connection, source, batch),
         "rejections": planned_rejections(connection, source, batch),
         "tags": planned_tags(connection, source, batch),

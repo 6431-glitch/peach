@@ -6,7 +6,7 @@
 
 预览与撤回调同一个 `auto_landing_revert.plan`，撤回再调同一个 `apply`，和命令行一字不差：
 被人改过的资产照旧不动、单独报出。预览给出计划摘要的 `token`；撤回在写锁里重算计划，
-对不上就拒绝，确认的就是将要写的。写入前经 `ledger_backups.create` 留一份并查过完整性，回执写出文件名。
+对不上就拒绝，确认的就是将要写的。写入前按账本备份的命名留一份，回执写出文件名。
 """
 from __future__ import annotations
 
@@ -14,10 +14,12 @@ import hashlib
 import json
 import time
 from datetime import datetime, timezone
+from uuid import uuid4
 
-from . import auto_landing_revert, ledger_backups
+from . import auto_landing_revert
 from .library_processing import LABELS
 from .metadata_auto_apply import VERIFIED_REPLACE_RULE, VERIFIED_UNION_RULE
+from .migrations import sqlite_backup
 from .web_state import WebContract
 
 #: 网页能撤的规则，顺序就是列表里的顺序。
@@ -96,8 +98,8 @@ def _plans(contract: WebContract, connection, batches: list[str]) -> list[dict]:
         raise ValueError(f"这批自动写入已不在，请刷新后重试：{unknown[0]}")
     plans, seen = [], set()
     for batch in dict.fromkeys(batches):
-        planned = auto_landing_revert.plan(connection, rules[batch], batch,
-                                           logo_root=contract.logo_root, cover_root=contract.cover_root)
+        planned = auto_landing_revert.plan(connection, rules[batch], batch, logo_root=contract.logo_root,
+                                           cover_root=contract.cover_root, files=False)
         planned["verified"] = [entry for entry in planned["verified"] if entry["item_key"] not in seen]
         seen.update(entry["item_key"] for entry in planned["verified"])
         plans.append(planned)
@@ -171,7 +173,11 @@ def w_auto_landing_revert(contract: WebContract, body):
         if _token(plans) != str((body or {}).get("token") or ""):
             raise ValueError("这几批自动写入已有变化，请重新预览")
         summary = _summary(connection, plans)
-        backup = ledger_backups.create(contract.db_path, purpose=BACKUP_PURPOSE)
+        # 与标签管理同一个做法：写锁里只复制一份，完整性检查与清退留给账本备份那一轮，
+        # 不让任务中心的心跳在这里多等几十秒。
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup = contract.db_path.with_name(f"ledger.pre-{BACKUP_PURPOSE}-{stamp}-{uuid4().hex[:8]}.db")
+        sqlite_backup(contract.db_path, backup)
         results = [auto_landing_revert.apply(connection, planned) for planned in plans]
     contract.cache_bust()
     return {"ok": True, "batches": [planned["batch"] for planned in plans],

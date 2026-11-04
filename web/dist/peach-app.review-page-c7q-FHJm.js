@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "1782917c-5973-404e-b283-0af9db690636", e._sentryDebugIdIdentifier = "sentry-dbid-1782917c-5973-404e-b283-0af9db690636");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "5472de0a-fea3-4c25-9117-dc0ae527554b", e._sentryDebugIdIdentifier = "sentry-dbid-5472de0a-fea3-4c25-9117-dc0ae527554b");
 	} catch {}
 })();
 import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as e, $b4f18e3395fe64d7$export$3e41faf802a29e71 as t, $b4f18e3395fe64d7$export$b2539bed5023c21c as n, $ea3928288112382f$export$439d29a4e110a164 as r, $fe21c36db05242bb$export$a98f0dcb43a68a25 as i, $fe21c36db05242bb$export$d7b12c4107be0d61 as a, Button as o, ButtonLink as s, Checkbox as c, CheckboxGlyph as l, Chip as u, CollapseChevron as d, CollapseRegion as f, DEFAULT_CATEGORY as p, ENTITY_REVIEW_KINDS as m, Ea as h, EmptyState as ee, ExternalLink as g, FIELDSET_FOOT as _, FilterGlassRows as v, Gg as y, InputBase as te, LinkButton as ne, Note as b, REVIEW_CATEGORIES as x, REVIEW_DECISION_LABELS as re, REVIEW_KEY as S, REVIEW_LABELS as C, REVIEW_QUEUES as w, REVIEW_QUEUE_LABELS as T, Select as E, SelectItem as D, SelectionActions as O, SelectionDock as k, TextField as A, Wt as j, __toESM as M, apiGet as N, apiSend as P, avatarInner as F, busyProps as I, canApprove as ie, cardClass as L, commonReviewSources as ae, composingKey as R, confirmModal as oe, currentReviewRow as se, cx as z, decisionPayload as ce, decisionReceipt as le, defaultChoice as ue, errorMessage as B, fetchReview as de, filterReviewRows as fe, groupReviewRows as pe, isReviewCategory as me, l7 as he, localTime as ge, m7 as _e, mirrorText as ve, paginationRange as ye, pendingGenres as be, queryClient as V, recordGenre as xe, reloadReview as Se, require_jsx_runtime as Ce, require_react as H, reviewGroupingOptions as we, reviewQueueData as Te, reviewQueueOf as Ee, reviewWindow as De, rowEvidence as U, rowFieldName as W, rowSubject as Oe, rowTags as ke, rowTitle as G, selectReviewRange as Ae, settleReviewRows as je, spinnerHtml as Me, submitDecision as Ne, useMutation as Pe, useOverlayScrollbar as K, useQuery as Fe, useViewGlide as Ie } from "./peach-app.js";
@@ -26,16 +26,16 @@ function X(e) {
 	];
 }
 function Z(e) {
-	let t = [e.restores.length ? `改回 ${e.restores.length} 部作品的资料` : "", e.tags.length ? `删除 ${e.tags.length} 个自动补上的标签` : ""].filter(Boolean);
+	let t = [e.restores.length ? `改回 ${e.restores.length} 条资料` : "", e.tags.length ? `删除 ${e.tags.length} 个自动补上的标签` : ""].filter(Boolean);
 	return [
 		`将撤回 ${e.batches.length} 批自动写入：${t.join("，") || "没有要改的资料"}。`,
-		e.changed.length ? `${e.changed.length} 部作品写入后又被修改或已删除，不改动。` : "",
+		e.changed.length ? `${e.changed.length} 条资料写入后被修改过或作品已删除，不改动。` : "",
 		e.other_batches.length ? `所选标签的补写记录还连带 ${e.other_batches.length} 个其他批次，一并撤回。` : "",
 		"撤回前会自动备份账本。下一轮资料处理仍按同一判据判断，可能再次写入。"
 	].filter(Boolean).join("");
 }
 function Ye(e) {
-	let t = [e.restored ? `改回 ${e.restored} 部作品的资料` : "", e.removed_tags ? `删除 ${e.removed_tags} 个标签` : ""].filter(Boolean);
+	let t = [e.restored ? `改回 ${e.restored} 条资料` : "", e.removed_tags ? `删除 ${e.removed_tags} 个标签` : ""].filter(Boolean);
 	return `已撤回 ${e.batches.length} 批自动写入${t.length ? `：${t.join("，")}` : ""}`;
 }
 // src/react/review/auto-landings-card.tsx
@@ -71,7 +71,7 @@ function Ze({ locked: e, openItem: t, toast: n }) {
 				children: `撤回前的账本已备份为 ${a.backup}。`
 			}), a.changed.length ? /* @__PURE__ */ (0, Q.jsxs)("p", {
 				className: "flex flex-wrap items-center gap-x-2 gap-y-1 text-body-2-regular",
-				children: [`${a.changed.length} 部作品写入后又被修改或已删除，未改动：`, a.changed.map((e) => e.gone ? /* @__PURE__ */ (0, Q.jsx)("span", {
+				children: [`${a.changed.length} 条资料写入后被修改过或作品已删除，未改动：`, a.changed.map((e) => e.gone ? /* @__PURE__ */ (0, Q.jsx)("span", {
 					className: "text-text-secondary",
 					children: `#${e.asset_id}（已删除）`
 				}, `${e.asset_id}:${e.field}`) : /* @__PURE__ */ (0, Q.jsx)(ne, {
@@ -1813,4 +1813,4 @@ function Jt(r) {
 }
 export { Jt as ReviewPage };
 
-//# debugId=1782917c-5973-404e-b283-0af9db690636
+//# debugId=5472de0a-fea3-4c25-9117-dc0ae527554b

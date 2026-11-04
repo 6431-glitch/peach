@@ -66,7 +66,7 @@ export function AutoLandingsCard(
           <p className="text-body-2-regular">{`撤回前的账本已备份为 ${receipt.backup}。`}</p>
           {receipt.changed.length ? (
             <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body-2-regular">
-              {`${receipt.changed.length} 部作品写入后又被修改或已删除，未改动：`}
+              {`${receipt.changed.length} 条资料写入后被修改过或作品已删除，未改动：`}
               {receipt.changed.map((row) => row.gone ? (
                 <span key={`${row.asset_id}:${row.field}`} className="text-text-secondary">{`#${row.asset_id}（已删除）`}</span>
               ) : (
