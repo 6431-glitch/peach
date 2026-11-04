@@ -103,6 +103,7 @@ from .web_playlists import q_playlist, q_playlists, w_playlist
 from .web_custom_metadata import q_custom_metadata, w_custom_metadata
 from .web_resource_sync import w_purge_missing, w_resource_sync_apply, w_resource_sync_scan
 from .web_review import q_review, w_review_decision, w_review_genre
+from .web_auto_landings import q_auto_landings, w_auto_landing_revert
 from .web_settings import q_settings, w_settings
 from .web_library_shortcuts import q_library_shortcuts, w_library_shortcuts
 from .web_tutorial import q_tutorial_progress, w_tutorial_progress
@@ -418,6 +419,7 @@ GET_HANDLERS = {
     "/api/search/recommendations": q_search_recommendations,
     "/api/taste": _get_taste,
     "/api/review": _get_review,
+    "/api/review/auto-landings": q_auto_landings,
     "/api/post-setup-tutorial": _get_post_setup_tutorial,
 }
 
@@ -484,6 +486,7 @@ POST_HANDLERS = {
     "/api/media-repair": w_media_repair,
     "/api/review/decision": w_review_decision,
     "/api/review/genre": w_review_genre,
+    "/api/review/auto-landings/revert": w_auto_landing_revert,
     "/api/settings": w_settings,
     "/api/library-shortcuts": w_library_shortcuts,
     "/api/tutorial-progress": w_tutorial_progress,

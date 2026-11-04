@@ -100,7 +100,7 @@
 | `/tasks` | 任务中心与云下载进度 |
 | `/stats` | 统计 |
 | `/taste` | 口味分析 |
-| `/review` | 人工复核 |
+| `/review` | 人工复核；元数据字段下列出核查结算自动写入的批次，可预览后整批撤回 |
 | `/data-cleanup` | 数据管理概览；日常扫描、待处理摘要、维护与清理入口 |
 | `/data-cleanup/organize` | 文件整理与批次历史 |
 | `/data-cleanup/resource-sync` | 核对文件与馆藏记录，清理失效条目、空目录与缓存 |
@@ -115,6 +115,8 @@
 设置分区可直接打开、刷新和用浏览器前进后退。偏好面板从当前页面打开时保留背景；配置分区复用配置页及其权限检查。配置分类导航停在搜索栏下方，切换分类时显示所选分区的开头。
 
 用户脚本通过专用令牌调用 `POST /api/jav-browser/errors`，仅接收白名单错误字段并写入本机日志；批次、体积、限频与诊断包范围见 [浏览器添加 JAV](JAV_BROWSER.md)。状态接口 `GET /api/jav-browser` 同时投影真实下载与整理进度，`GET /api/jav-browser/active` 以同一结构列出进行中与最近结束的任务，均不授予配置、账号或账本写入权限。`POST /api/jav-browser/postprocess` 只能重试该番号已失败的整理，走任务中心同一入口。`POST /api/jav-browser/dismiss` 只记下脚本确认过哪些已结束的任务，不改任务与账本。
+
+`GET /api/review/auto-landings` 列出 ADR-0139 两条规则仍在的自动写入批次；带 `batches=<批次号>,…` 时只读返回这几批要改回的值、要删的标签、写入后被改过或已删除而不动的作品，以及计划摘要 `token`。`POST /api/review/auto-landings/revert` 接收 `batches` 与 `token`，在写锁里重算计划，对不上返回 400 要求重新预览；对上后先备份账本再撤回，回执带备份文件名与未改动的作品。批次号不属于这两条规则时拒绝，其余自动落库来源仍由 `scripts/revert_auto_landing.py` 撤回；只读端拒绝撤回（ADR-0140）。
 
 `GET /api/client-updates` 要求应用鉴权，返回运行版本与构建标记、发行版检查结果、安装状态、用户脚本版本和自动补修状态，不触发外部检查。`GET /api/jav-browser/updates` 使用用户脚本专用令牌，无需番号，返回运行与发行版、脚本版本快照，不暴露补修明细。`POST /api/configuration/upgrade-repairs/retry` 限本机同源请求，重试失败项；`GET /api/configuration/upgrade-repairs/review` 限本机管理权限，下载 JSON 复核记录，无记录时返回 404。
 

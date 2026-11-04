@@ -14,6 +14,7 @@ import {
   reviewWindow, type ReviewCandidate, type ReviewData, type ReviewRow,
   type DecisionResult,
 } from '../../src/react/review/review';
+import { AUTO_LANDINGS_URL, type AutoLandingBatch } from '../../src/react/review/auto-landings';
 import { ReviewPage } from '../../src/react/review/review-page';
 
 import { actionOrder, choose, click, mountRoot, settle } from './render';
@@ -58,6 +59,8 @@ interface Plan {
   data?: ReviewData;
   /** 判定的回答：给一串就按顺序一条一条回（最后一条之后一直回它）。 */
   decisions?: DecisionResult[];
+  /** 「自动写入的资料」列出的批次；缺省没有，那一块不出现。 */
+  autoLandings?: AutoLandingBatch[];
 }
 
 function serve(plan: Plan = {}) {
@@ -67,6 +70,7 @@ function serve(plan: Plan = {}) {
     if (url === REVIEW_DECISION_URL) {
       return ok(decisions.length > 1 ? decisions.shift()! : decisions[0]!);
     }
+    if (url.startsWith(AUTO_LANDINGS_URL)) return ok({ items: plan.autoLandings ?? [] });
     if (url.startsWith(REVIEW_URL)) return ok(plan.data ?? review());
     throw new Error(`没有安排这个端点：${url}`);
   });
@@ -337,7 +341,9 @@ it('只读数据库上判定与批量都不给点', async () => {
   const { host, fetcher } = await open(
     { data: review({ mirror: { state: 'live' } }) },
     { readOnly: true, writerUrl: 'https://writer.example/review' });
-  expect(fetcher.mock.calls.map(([url]) => String(url))).toEqual([REVIEW_URL]);
+  // 只读：队列与自动写入批次各读一次，一个写请求都不发。
+  expect(fetcher.mock.calls.map(([url]) => String(url)).sort()).toEqual([REVIEW_URL, AUTO_LANDINGS_URL]);
+  expect(fetcher.mock.calls.every(([, init]) => !init?.method || init.method === 'GET')).toBe(true);
   expect(noteText(host).join()).toContain('正在显示写入端的实时复核队列');
   expect(host.querySelector('a[href="https://writer.example/review"]')).toBeTruthy();
   // 勾选与批量操作整条都不出现：没有可写的东西，工具条只是一排点不动的按钮。
@@ -350,7 +356,9 @@ it('只读数据库上判定与批量都不给点', async () => {
 
 it('打开复核页只读队列，不再触发自动落库写操作', async () => {
   const { fetcher } = await open();
-  expect(fetcher.mock.calls.map(([url]) => String(url))).toEqual([REVIEW_URL]);
+  // 读两样：复核队列与「自动写入的资料」的批次列表；都是 GET。
+  expect(fetcher.mock.calls.map(([url]) => String(url)).sort()).toEqual([REVIEW_URL, AUTO_LANDINGS_URL]);
+  expect(fetcher.mock.calls.every(([, init]) => !init?.method || init.method === 'GET')).toBe(true);
 });
 
 it('稍后处理切换独立队列，刷新地址可还原且恢复保持原排序', async () => {
@@ -462,4 +470,24 @@ it('没有可采纳候选的卡仍可忽略或稍后处理，通过键不可用'
   const footer = cards(host)[0]!.querySelector('footer')!;
   expect([...footer.querySelectorAll('button')].map((button) => button.textContent?.trim()))
     .toEqual(['忽略', '稍后处理', '不可通过']);
+});
+
+const BATCHES: AutoLandingBatch[] = [
+  { rule: 'adr-0139-official-replaces-verified', label: '官方来源覆盖标题与日期',
+    batch: 'adr-0139-official-replaces-verified@20261104T141053', at: 1793772653, items: 4, assets: 3, tags: 0 },
+  { rule: 'adr-0139-verified-tags-union', label: '补齐来源多给的标签',
+    batch: 'auto:metadata-tags@20261104T141053', at: 1793772653, items: 2, assets: 0, tags: 5 },
+];
+
+it('元数据字段下列出自动写入的批次与影响面，只读端也能浏览', async () => {
+  const { host } = await open({ autoLandings: BATCHES }, { readOnly: true });
+  const section = host.querySelector('[aria-labelledby="auto-landings-title"]')!;
+  expect(section.textContent).toContain('自动写入的资料');
+  expect(section.textContent).toContain('4 项资料 · 3 部作品');
+  expect(section.textContent).toContain('2 项资料 · 5 个标签');
+});
+
+it('没有自动写入的批次时不出现那一块', async () => {
+  const { host } = await open();
+  expect(host.querySelector('[aria-labelledby="auto-landings-title"]')).toBeNull();
 });

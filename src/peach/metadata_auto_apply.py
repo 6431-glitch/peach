@@ -2024,7 +2024,8 @@ def _land_verification(connection, item_key: str, prior: dict | None, row: dict,
     _write_auto_decision(connection, item_key, {
         "auto_applied": True, "rule": verified.rule,
         "candidate_key": candidate.get("candidate_key"), "source": source, "value": written,
-        "batch": f"{verified.rule}@{now}", "previous": previous,
+        # 与并集同一个运行时刻：一次结算一个批次，复核页按批次列出、整批撤回。
+        "batch": f"{verified.rule}@{batch.rpartition('@')[2]}", "previous": previous,
         "reviewed_candidate_keys": reviewed,
     }, now)
     return {"item_key": item_key, "field": field, "value": written, "assets": count}
