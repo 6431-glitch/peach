@@ -1,14 +1,14 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "96611576-f0a2-497f-a0aa-23d03e23b489", e._sentryDebugIdIdentifier = "sentry-dbid-96611576-f0a2-497f-a0aa-23d03e23b489");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "50082b41-272c-44d5-a222-494f8bc12f4d", e._sentryDebugIdIdentifier = "sentry-dbid-50082b41-272c-44d5-a222-494f8bc12f4d");
 	} catch {}
 })();
 import { ActivePoints as e, AnimatedItems as t, CHART_CARD as n, CHART_COLORS as r, CartesianLabelListContextProvider as i, CategoryTick as a, ChartBackground as o, ChartContainer as s, ChartHead as c, ChartLegend as l, ChartLegendContent as u, ChartTip as d, ChartTooltip as f, ChartTooltipContent as p, DefaultZIndexes as m, Dots as h, EvilBarChart as g, LabelListFromLabelProp as _, Layer as v, LoadingIndicator as y, PolarChart as b, PolarLabelContextProvider as x, PolarLabelFromLabelProp as S, RegisterGraphicalItemId as C, SetPolarGraphicalItem as ee, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Text as E, ZIndexLayer as D, adaptEventsOfChild as te, addRadiusAxis as ne, arrayTooltipSearcher as re, categoryAxisWidth as ie, cn as ae, createSelector as O, defaultPolarChartProps as oe, defaultPolarRadiusAxisProps as se, fitLabel as ce, getAxisTypeBasedOnLayout as le, getBandSizeOfAxis as ue, getClassNameFromUnknown as de, getColorsCount as fe, getTooltipNameProp as pe, getValueByDataKey as me, identity as he, interpolate as ge, isArrayLike as _e, isCategoricalAxis as ve, isNullish as ye, iteratee as be, matchAnimationItems as xe, matchByIndex as Se, noop as Ce, polarToCartesian as k, removeRadiusAxis as we, resolveDefaultProps as A, selectAngleAxis as Te, selectChartDataAndAlwaysIgnoreIndexes as Ee, selectChartLayout as De, selectPolarViewBox as Oe, selectRadiusAxis as ke, selectUnfilteredPolarItems as Ae, svgPropertiesAndEvents as je, svgPropertiesNoEvents as j, svgPropertiesNoEventsFromUnknown as Me, tone as Ne, useAnimationCallbacks as Pe, useAnimationStartSnapshot as Fe, useAppDispatch as Ie, useAppSelector as M, useIsPanorama as Le, usePolarChartLayout as Re } from "./peach-app.chart-tip-CRxYp6KT.js";
 import { $542a13ca2fa5b484$export$5b6b19405a83ff9d as ze, $b4f18e3395fe64d7$export$3d96ec278d3efce4 as Be, $b4f18e3395fe64d7$export$3e41faf802a29e71 as Ve, $b4f18e3395fe64d7$export$b2539bed5023c21c as He, Button as N, ButtonLink as Ue, Disclosure as We, E3 as Ge, EmptyState as P, FLOW_LABEL_X as Ke, FLOW_VIEWBOX as qe, Gg as Je, IDLE_POLL_MS as Ye, Input as Xe, M6 as Ze, MENU_ITEM as Qe, MENU_ITEM_INTERACTIVE as $e, MENU_POPOVER_SURFACE as et, MenuDialog as tt, Note as F, OV as nt, Progress as rt, Rf as it, SEGMENT as at, SEGMENTED_TRACK as ot, STAT_STRIP as st, SegmentedTabList as ct, Select$1 as lt, SelectItem as ut, StatCard as dt, TASTE_REFRESH_KEY as ft, TASTE_WINDOWS as pt, TaskProgress as mt, Wt as ht, Xt as gt, _8 as _t, __toESM as vt, aB as yt, avatarInner as bt, busyProps as I, cB as xt, cardClass as L, clsx as R, configureTasteBrowser as St, confirmModal as Ct, cx as wt, errorMessage as z, f1 as Tt, fetchTaste as Et, fetchTasteJob as Dt, firstGrapheme as Ot, flowGraph as kt, flowLabel as At, fmtSize as jt, g4 as Mt, historySpan as Nt, importTasteExport as Pt, keepPreviousData as Ft, mM as It, pv as B, queryClient as V, r2 as Lt, radarRows as Rt, rankDetail as zt, rankShares as Bt, removeTasteSource as Vt, require_jsx_runtime as Ht, require_react as Ut, siteMarkUrl as Wt, startTasteRefresh as Gt, statCardClass as Kt, tasteDate as qt, tasteDimensions as Jt, tasteHours as Yt, tasteKey as H, tasteRefetchInterval as Xt, tasteTime as Zt, topScores as Qt, uo as $t, useBackgroundJob as en, useMutation as tn, useQuery as nn } from "./peach-app.js";
 import { Page as rn } from "./peach-app.page-QAncjzM1.js";
 import { LEGACY_AVATAR_IMG as an } from "./peach-app.legacy-avatar-NSITxLRS.js";
-import { ActivityHeat as on, BAR_DOMAIN as sn, ExpandableRanking as cn, PolarAngleAxis as ln, Polygon as un, barLabel as dn, selectPolarAxisScale as fn, selectPolarAxisTicks as U } from "./peach-app.expandable-ranking-dFA65P9N.js";
+import { ActivityHeat as on, BAR_DOMAIN as sn, ExpandableRanking as cn, PolarAngleAxis as ln, Polygon as un, barLabel as dn, selectPolarAxisScale as fn, selectPolarAxisTicks as U } from "./peach-app.expandable-ranking-DrIZgDjz.js";
 import { BrowserIcon as pn } from "./peach-app.browser-icon-N9Od-bAf.js";
 var mn = O([(e, t) => U(e, "angleAxis", t, !1)], (e) => {
 	if (e) return e.map((e) => e.coordinate);
@@ -2473,6 +2473,7 @@ function da({ term: e, value: t, rest: n }) {
 				})]
 			})]
 		}), /* @__PURE__ */ (0, X.jsx)(rt, {
+			meter: !0,
 			label: `${e}：${t.toLocaleString()} / ${r.toLocaleString()}`,
 			value: t,
 			max: r
@@ -2481,4 +2482,4 @@ function da({ term: e, value: t, rest: n }) {
 }
 export { $i as TASTE_GUIDE_KEY, ua as TastePage };
 
-//# debugId=96611576-f0a2-497f-a0aa-23d03e23b489
+//# debugId=50082b41-272c-44d5-a222-494f8bc12f4d

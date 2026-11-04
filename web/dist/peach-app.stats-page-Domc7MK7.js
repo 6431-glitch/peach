@@ -1,11 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-<<<<<<<< HEAD:web/dist/peach-app.stats-page-oKmjqWrd.js
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "62e6fd12-aa83-4daf-8158-da194786fece", e._sentryDebugIdIdentifier = "sentry-dbid-62e6fd12-aa83-4daf-8158-da194786fece");
-========
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e0888090-de36-44b0-bc48-c2b4410cf740", e._sentryDebugIdIdentifier = "sentry-dbid-e0888090-de36-44b0-bc48-c2b4410cf740");
->>>>>>>> refs/remotes/origin/agent/claude/reference-survey-small:web/dist/peach-app.stats-page-XSybs-4I.js
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "530a2a26-2b8c-4c73-85b2-144d2f850871", e._sentryDebugIdIdentifier = "sentry-dbid-530a2a26-2b8c-4c73-85b2-144d2f850871");
 	} catch {}
 })();
 import { AnimatedItems as e, CHART_CARD as t, CHART_COLORS as n, Cell as r, ChartBackground as i, ChartContainer as a, ChartEmpty as o, ChartLegend as s, ChartLegendContent as c, ChartTip as l, ChartTooltip as u, ChartTooltipContent as d, DefaultZIndexes as f, LabelListFromLabelProp as p, Layer as m, LoadingIndicator as h, PolarChart as g, PolarLabelListContextProvider as _, RegisterGraphicalItemId as v, Sector as y, SetPolarGraphicalItem as b, SetPolarLegendPayload as x, SetTooltipEntrySettings as S, Shape as C, ZIndexLayer as w, adaptEventsOfChild as T, arrayTooltipSearcher as E, combineAllBarPositions as ee, combineBarPosition as D, combineBarSizeList as te, combineDisplayedStackedData as ne, combineStackGroups as re, combineStackedData as ie, createSelector as O, defaultPolarChartProps as ae, findAllByType as oe, getBandSizeOfAxis as k, getBaseValueOfBar as se, getCateCoordinateOfBar as ce, getColorsCount as le, getNormalizedStackId as ue, getTooltipNameProp as de, getValueByDataKey as fe, getZIndexFromUnknown as pe, interpolate as me, isCategoricalAxis as he, isNullish as ge, isStacked as _e, matchAppend as ve, mathSign as ye, noop as be, resolveDefaultProps as xe, selectActiveTooltipIndex as Se, selectAngleAxis as Ce, selectBarCategoryGap as we, selectBarGap as Te, selectChartDataAndAlwaysIgnoreIndexes as Ee, selectChartDataWithIndexes as De, selectChartLayout as A, selectPolarItemsSettings as Oe, selectPolarViewBox as ke, selectRadiusAxis as Ae, selectReverseStackOrder as je, selectRootBarSize as Me, selectRootMaxBarSize as Ne, selectStackOffsetType as Pe, selectTooltipAxis as Fe, selectUnfilteredPolarItems as Ie, sliceConfig as Le, sliceKey as Re, svgPropertiesNoEvents as ze, svgPropertiesNoEventsFromUnknown as Be, truncateByDomain as Ve, useAnimationCallbacks as He, useAppSelector as j, useMouseClickItemDispatch as Ue, useMouseEnterItemDispatch as We, useMouseLeaveItemDispatch as Ge, usePolarChartLayout as Ke } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -1481,8 +1477,4 @@ function Vr(e) {
 }
 export { Vr as StatsPage };
 
-<<<<<<<< HEAD:web/dist/peach-app.stats-page-oKmjqWrd.js
-//# debugId=62e6fd12-aa83-4daf-8158-da194786fece
-========
-//# debugId=e0888090-de36-44b0-bc48-c2b4410cf740
->>>>>>>> refs/remotes/origin/agent/claude/reference-survey-small:web/dist/peach-app.stats-page-XSybs-4I.js
+//# debugId=530a2a26-2b8c-4c73-85b2-144d2f850871

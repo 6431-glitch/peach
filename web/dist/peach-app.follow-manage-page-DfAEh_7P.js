@@ -1,11 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-<<<<<<<< HEAD:web/dist/peach-app.follow-manage-page-CYtUBcyb.js
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "d6c4de56-c35b-4253-85b7-8c6bdd72a491", e._sentryDebugIdIdentifier = "sentry-dbid-d6c4de56-c35b-4253-85b7-8c6bdd72a491");
-========
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "a5061f2f-6ada-499e-a449-5800601e45a9", e._sentryDebugIdIdentifier = "sentry-dbid-a5061f2f-6ada-499e-a449-5800601e45a9");
->>>>>>>> refs/remotes/origin/agent/claude/reference-survey-small:web/dist/peach-app.follow-manage-page-ipO0SiYO.js
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "00b5b15e-ba68-464d-a312-93c805e9e1e1", e._sentryDebugIdIdentifier = "sentry-dbid-00b5b15e-ba68-464d-a312-93c805e9e1e1");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
@@ -1374,19 +1370,11 @@ function nn({ readOnly: e, toast: t, onAdd: n, selection: r }) {
 					target: "_blank",
 					rel: "noopener noreferrer",
 					title: "打开来源页面",
-<<<<<<<< HEAD:web/dist/peach-app.follow-manage-page-CYtUBcyb.js
 					className: "max-w-full text-text-primary underline-offset-2 hover:underline",
-					children: [/* @__PURE__ */ (0, Q.jsx)(ie, {
-						site: e.row.original.kind.startsWith("javdb") ? "javdb" : e.row.original.kind.startsWith("dmm") ? "dmm" : Yt(e.getValue()),
-						label: Yt(e.getValue())
-					}), /* @__PURE__ */ (0, Q.jsx)(ue, {
-========
-					className: "text-text-primary underline-offset-2 hover:underline",
 					children: [/* @__PURE__ */ (0, Q.jsx)(ae, {
-						site: e.row.original.kind.startsWith("javdb") ? "javdb" : Xt(e.getValue()),
+						site: e.row.original.kind.startsWith("javdb") ? "javdb" : e.row.original.kind.startsWith("dmm") ? "dmm" : Xt(e.getValue()),
 						label: Xt(e.getValue())
 					}), /* @__PURE__ */ (0, Q.jsx)(de, {
->>>>>>>> refs/remotes/origin/agent/claude/reference-survey-small:web/dist/peach-app.follow-manage-page-ipO0SiYO.js
 						"aria-hidden": !0,
 						className: "size-(--icon-inline) shrink-0"
 					})]
@@ -1901,8 +1889,4 @@ function on(e) {
 }
 export { on as FollowManagePage };
 
-<<<<<<<< HEAD:web/dist/peach-app.follow-manage-page-CYtUBcyb.js
-//# debugId=d6c4de56-c35b-4253-85b7-8c6bdd72a491
-========
-//# debugId=a5061f2f-6ada-499e-a449-5800601e45a9
->>>>>>>> refs/remotes/origin/agent/claude/reference-survey-small:web/dist/peach-app.follow-manage-page-ipO0SiYO.js
+//# debugId=00b5b15e-ba68-464d-a312-93c805e9e1e1
