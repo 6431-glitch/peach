@@ -154,14 +154,15 @@ def _performer_entries(contract: WebContract, c, d: dict, alias_rows) -> dict:
 
     入口下发的是拼好的地址，不是模板：拼它要的站点 id、规范名和别名都在服务端，
     前端再拼一遍就会有两份规则。缺 id 的站点不出现在这个列表里。开关只在她有
-    JavDB 演员页时出现，订阅地址同样由服务端拼，页面只管开和关。
+    JavDB 演员页或 DMM 女优编号时出现，订阅地址同样由服务端拼，页面只管开和关。
     """
     metadata = d.get("metadata") or {}
     localization = metadata.get("name_localization") if isinstance(metadata, dict) else None
     out = {"entry_links": entry_links.entry_links(
         contract.entry_links_root, d["canonical_name"], d["external_refs"], alias_rows,
         localization)}
-    if entry_links.javdb_actor_pages(d["canonical_name"], d["external_refs"]):
+    if (entry_links.javdb_actor_pages(d["canonical_name"], d["external_refs"])
+            or feeds.dmm_actress_ids(c, d["id"])):
         out["feed"] = {"following": feeds.entity_following(c, d["id"])}
     return out
 
@@ -665,9 +666,8 @@ def q_photo_set(contract: WebContract, args):
 def _attach_index_following(connection, rows: list[dict]) -> None:
     """名册人物的订阅状态按已启用、绑定实体的来源汇总。"""
     following = {source[0] for source in connection.execute(
-        "SELECT entity_id FROM feed_source WHERE kind=? AND enabled=1 "
-        "UNION SELECT entity_id FROM follow_source WHERE enabled=1",
-        (feeds.KIND_JAVDB_ACTOR,))}
+        "SELECT entity_id FROM feed_source WHERE enabled=1 "
+        "UNION SELECT entity_id FROM follow_source WHERE enabled=1")}
     for row in rows:
         row['following'] = row['entity_id'] in following
 
