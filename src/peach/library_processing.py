@@ -96,6 +96,12 @@ SOURCE_INTERVALS = {'javdb.com': 3.0, 'jdbstatic.com': 3.0}
 #: 各起各的 provider，间隔若各算各的，几条同时跑时问同一主机的请求就叠在一起，配额照样按
 #: 出口 IP 一份算。
 SOURCE_LIMITER = HostLimiter(SOURCE_INTERVALS, default_interval=2.0)
+#: 认人 Wiki 的取页层自己不再等主机间隔：它的传输就是 provider 的 `transport`，那里已经按
+#: `SOURCE_LIMITER` 等过一次，再等一遍每页就要 4 秒。
+_NO_WAIT = HostLimiter({}, default_interval=0.0)
+#: 一个 provider 里每个认人 Wiki 的请求上限。一部片至多十几页，真正的闸门是动作预算与本趟预算；
+#: 这一条只挡住同一批里失控地翻页。
+WIKI_MAX_REQUESTS = 2000
 SOURCE_LABELS = {'r18dev': 'r18.dev', 'dmm': 'DMM / FANZA', 'avbase': 'AVBase', 'javbus': 'JavBus', 'javdb': 'javdb',
                  'fc2': 'FC2', 'fc2cmadb': 'FC2CMADB', 'fc2ppvdb': 'FC2PPV-DB', 'javten': 'JAVten',
                  'javarchive': 'JavArchive',
@@ -105,7 +111,8 @@ SOURCE_LABELS = {'r18dev': 'r18.dev', 'dmm': 'DMM / FANZA', 'avbase': 'AVBase', 
                  'dahlia': 'DAHLIA', 'mgstage': 'MGStage',
                  'fc2club': 'FC2Club', 'freejavbt': 'FreeJavBT',
                  'airav': 'AIRAV', 'avsox': 'AVSOX',
-                 # Seesaa 的几个 Wiki，只由 `scrape_codes` 点名（`sources.seesaa`）。
+                 # Seesaa 的几个 Wiki（`sources.seesaa`）。前两个在素人链上（`metadata_routes.WIKI_STAGE`），
+                 # av_name 只由 `scrape_codes` 点名。
                  'sougouwiki': '素人系総合 Wiki', 'av_neme': 'このAV女優の名前教えてwiki',
                  'av_name': 'AV女優の名前特定wiki'}
 PROVIDER_NAMES = {'local_nfo': 'local-nfo', 'r18dev': 'r18-json', 'dmm': 'dmm-graphql', 'avbase': 'avbase-search',
@@ -326,6 +333,24 @@ def _corrects_kept_cover(target, candidate, data, verified_by):
     return not same_picture(kept, fresh)
 
 
+class _BudgetedPages:
+    """认人 Wiki 的取页层套一层动作预算：每取一页前看一眼还剩多少。
+
+    `WikiPages` 把传输层抛的 `RuntimeError` 一律记成「网络未取得」，预算用尽的 `DeadlineExceeded`
+    也是 `RuntimeError`，所以要在它外面判，不能交给传输层。"""
+
+    def __init__(self, pages):
+        self.pages = pages
+        self.deadline = None
+
+    def get(self, url):
+        from .jav_cover_fetch import DeadlineExceeded
+        # 用减法判：`processing_control.ActiveDeadline` 在减法里扣掉暂停的那段。
+        if self.deadline is not None and self.deadline - time.monotonic() <= 0:
+            raise DeadlineExceeded('外部资料在预算时间内未取得，可稍后重试')
+        return self.pages.get(url)
+
+
 class LibraryMetadataProvider:
     """来源链各档的入口：按来源配置的传输，站经 `sources.SITE_SOURCES` 问（`site`），封面走 `cover`。
 
@@ -333,12 +358,16 @@ class LibraryMetadataProvider:
     `CredentialStore` 自己会拼上那一层。多给一层的表现不是报错，是每个来源都读成
     「没有凭据」——采集设置里贴好的 JavBus、javdb Cookie 一条都不会被带上。
     """
-    def __init__(self, secrets_root, *, tools_root=None):
+    def __init__(self, secrets_root, *, tools_root=None, wiki_root=None):
         from .scraping_access import SourceTransport
         from .jav_cover_fetch import HostLimitedTransport
         self.secrets_root = Path(secrets_root)
         #: amane 桥的 venv 所在的工具区（`<Peach 数据目录>/tools`）；不给就用配置里的默认位置。
         self.tools_root = Path(tools_root) if tools_root is not None else None
+        #: 认人 Wiki 的页缓存（`wiki`）。不给就放在凭据根旁边的 `sources/library-metadata/seesaa-pages`：
+        #: 凭据根是数据目录下的 `secrets`。
+        self.wiki_root = (Path(wiki_root) if wiki_root is not None
+                          else self.secrets_root.parent / 'sources' / 'library-metadata' / 'seesaa-pages')
         self.transport = HostLimitedTransport(
             SourceTransport(secrets_root, max_requests=MAX_SOURCE_REQUESTS,
                             max_bytes=MAX_SOURCE_BYTES, max_seconds=MAX_SOURCE_SECONDS),
@@ -656,6 +685,38 @@ class LibraryMetadataProvider:
         """
         from .sources import SITE_SOURCES, Session
         return SITE_SOURCES[source]().query(code, session=Session(self.transport, deadline)).payload()
+
+    def wiki(self, source, code, *, deadline=None):
+        """素人链上的认人 Wiki（`metadata_routes.WIKI_STAGE`，ADR-0144），返回 `[(来源, 资料)]`。
+
+        一个 provider 里每站只建一个 `SeesaaSource`：素人系総合 Wiki 一张厂牌表列着几十上百部，
+        读过的表记在实例里，同厂牌的下一部不再搜索。取页层是 `sources.seesaa.WikiPages`（落盘页缓存），
+        传输用这条链的 `transport`，所以照「Peach 代理」出网、按主机冷却、计进本趟预算，主机间隔与
+        别的站共用 `SOURCE_LIMITER`。一部片最多十几页，每取一页前看这部片的动作预算。
+
+        站内搜索范围里没找到（`incomplete_search`）按「没有」交出去，记进一周的「没有」记忆：Wiki
+        条目是社区陆续补的，一周后再问；别的失败（断线、撞墙、限额）照常是问题，不记「没有」。
+        """
+        from .jav_cover_fetch import Unavailable
+        from .metadata import MetadataProviderError
+        from .sources import Session
+        from .sources.seesaa import WIKI_SOURCES, WikiPages
+        sites = self.__dict__.setdefault('_wiki', {})
+        if source not in sites:
+            site = WIKI_SOURCES[source]()
+            pages = WikiPages(self.wiki_root, config=site.config, transport=self.transport,
+                              limiter=_NO_WAIT, max_requests=WIKI_MAX_REQUESTS)
+            sites[source] = (site, _BudgetedPages(pages))
+        site, pages = sites[source]
+        pages.deadline = deadline
+        try:
+            record = site.query(code, session=Session(pages, deadline))
+        except MetadataProviderError as error:
+            # 原因里不带站名：`_metadata` 记问题时会给单家来源补上。
+            if error.kind == 'incomplete_search':
+                raise NotFound(str(error)) from error
+            raise Unavailable(str(error)) from error
+        return [(source, record.payload())]
 
     def query(self, code, source='r18dev', *, deadline=None):
         """有码与素人链上逐个成档的官方来源：默认是 r18.dev（`sources/r18dev.py`），有码链上它之后是 DMM 的
@@ -1472,7 +1533,9 @@ class _RemoteSession:
         if self._provider is None:
             self._provider = (self._factory() if self._factory
                               else LibraryMetadataProvider(self._config.directory('secrets'),
-                                                           tools_root=self._config.directory('tools')))
+                                                           tools_root=self._config.directory('tools'),
+                                                           wiki_root=self._config.directory('sources')
+                                                           / 'library-metadata' / 'seesaa-pages'))
         return self._provider
 
     def reset(self):
@@ -1665,6 +1728,8 @@ class _RemoteSession:
             return provider.one_pondo(code, deadline=deadline)
         if source in ('amane', 'amane_official'):
             return provider.amane(code, deadline=deadline, route=members)
+        if source in metadata_routes.WIKI_STAGE:
+            return provider.wiki(source, code, deadline=deadline)
         route = metadata_routes.community_route(code, *evidence, overrides=self._routes)
         return provider.community(code, deadline=deadline,
                                   route=tuple(name for name in route if name in members), received=received)
@@ -1681,11 +1746,13 @@ class _RemoteSession:
         短路判据是**这一行还缺的必填标量**（标题、演员、厂牌、发行日期），不是「有人答了
         就算」：r18.dev 少给演员时照旧往下问，否则那一行只能等人工去填。列表字段（标签、
         封面）不参与短路——多一家就多一批标签和一个图源，而免复核本来就要两家一致
-        （ADR-0030、ADR-0034）、封面互证要两个图源（ADR-0032）。唯一的例外是缺标签的行
-        在官方档之间多问一家（`metadata_routes.settles` 的 `wants_tags`）。
+        （ADR-0030、ADR-0034）、封面互证要两个图源（ADR-0032）。例外有两条：缺标签的行
+        在官方档之间多问一家（`metadata_routes.settles` 的 `wants_tags`）；素人缺演员的行，
+        MGStage 给了素人名义也接着问认人 Wiki，直到有一个 Wiki 给出演员（`wants_cast`，ADR-0144）；
+        两个 Wiki 都没给时，MGStage 给的字段够了就停，不落到综合索引。
 
         社区那一档的值照常进候选，只剩一家也补空，几家不一时按字段优先级链取：FC2 的演员栏
-        取 fc2cmadb，其余取 javdb（ADR-0034、ADR-0038）。
+        取 fc2cmadb，素人的演员栏取认人 Wiki，其余取 javdb（ADR-0034、ADR-0038、ADR-0144）。
         「没有」的记忆按站记：一档里说过没有的站一周内不再问，全档都说过就直接问下一档。
         """
         action = 'querying_metadata'
@@ -1698,6 +1765,8 @@ class _RemoteSession:
         chain = self._chain(code, *evidence)
         required = list(metadata_routes.required_scalars(missing))
         wants_tags = 'tags' in missing
+        # 素人缺演员：MGStage 给的是素人名义，直到有一个认人 Wiki 给出演员才算问到（ADR-0144）。
+        wants_cast = 'performers' in missing and any(name in metadata_routes.WIKI_STAGE for name in chain)
         results = _MetadataResults(self, code, received)
         problems, held, entries = [], [], results.entries
         failures = []
@@ -1711,8 +1780,10 @@ class _RemoteSession:
             cached = self._cached_evidence(members, code)
             if cached:
                 results.cached(cached)
+                if source in metadata_routes.WIKI_STAGE and any(entry[1].get('actresses') for entry in cached):
+                    wants_cast = False
                 if metadata_routes.settles(required, _given_fields(entries),
-                                           wants_tags=wants_tags, then=then):
+                                           wants_tags=wants_tags, wants_cast=wants_cast, then=then):
                     break
                 # FC2 那一档缓存里只有官方那页时，缺的演员还得去镜像站问（见 `fc2()`）。
                 if source != 'fc2':
@@ -1734,19 +1805,27 @@ class _RemoteSession:
                 if is_missing(error):
                     for name in getattr(error, 'sites', None) or members:
                         self._record_miss(name, code)
-                    continue
-                # 社区那一档的原因里已经写明是哪一家了（`community()` 逐家拼过），再套一层
-                # 就成了「社区来源：javdb：…」。单家来源的原因不带来源名，这里补上。
-                problems.append(describe_failure(error)
-                                if source in ('community', 'amane', 'amane_official')
-                                else f'{SOURCE_LABELS.get(source, source)}：{describe_failure(error)}')
-                failures.append(_source_failure_details(error, code, action, source=source))
-                held.append(source_paused(error))
+                else:
+                    # 社区那一档的原因里已经写明是哪一家了（`community()` 逐家拼过），再套一层
+                    # 就成了「社区来源：javdb：…」。单家来源的原因不带来源名，这里补上。
+                    problems.append(describe_failure(error)
+                                    if source in ('community', 'amane', 'amane_official')
+                                    else f'{SOURCE_LABELS.get(source, source)}：{describe_failure(error)}')
+                    failures.append(_source_failure_details(error, code, action, source=source))
+                    held.append(source_paused(error))
+                # 认人 Wiki 没给出演员时，MGStage 给的字段够停手就停，不为它落到综合索引那条 3 秒的队。
+                if source in metadata_routes.WIKI_STAGE and metadata_routes.settles(
+                        required, _given_fields(entries), wants_tags=wants_tags,
+                        wants_cast=wants_cast, then=then):
+                    break
                 continue
             update(stage='保存待确认资料')
             results.save(found)
+            # 来源快照的演员栏键名是 `actresses`（`SiteRecord.payload`）。
+            if source in metadata_routes.WIKI_STAGE and any(payload.get('actresses') for _, payload in found):
+                wants_cast = False
             if metadata_routes.settles(required, _given_fields(entries),
-                                       wants_tags=wants_tags, then=then):
+                                       wants_tags=wants_tags, wants_cast=wants_cast, then=then):
                 break
         tag_entries = self._preferred_tags(row, code, missing, chain, entries, attempted,
             update=update, issue=issue, deadline=_extended(deadline, _excused(self._provider) - mark))

@@ -17,8 +17,9 @@ from .r18dev import R18DEV, R18DevSource
 from .seesaa import SEESAA, WIKI_SOURCES, SeesaaSource
 
 #: 来源名 → 站的类。`LibraryMetadataProvider` 与 `scripts/scrape_codes.py` 按它取站，
-#: 测试按它核配置与 `SOURCE_SPECS` 等表的一致。Seesaa 的几个 Wiki（`seesaa.WIKI_SOURCES`）不在
-#: 任何链上，只由 `scrape_codes` 点名，会话的传输是它们自己的 `seesaa.WikiPages`。
+#: 测试按它核配置与 `SOURCE_SPECS` 等表的一致。Seesaa 的几个 Wiki（`seesaa.WIKI_SOURCES`）会话的传输
+#: 是它们自己的 `seesaa.WikiPages`；其中两个在素人链上（`metadata_routes.WIKI_STAGE`，经
+#: `LibraryMetadataProvider.wiki` 问），av_name 只由 `scrape_codes` 点名。
 SITE_SOURCES: dict[str, type[SiteSource]] = {
     R18DEV.name: R18DevSource,
     DMM.name: DmmSource,
