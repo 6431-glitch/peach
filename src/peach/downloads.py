@@ -289,6 +289,13 @@ MAX_WAIT_HOURS = 24 * 60
 #: 做法同 SakuraMedia `551715b321`：超时只是不再催，不等于远端不会完成。
 STALL_RECHECK = 6 * 3600.0
 STALL_RECHECK_HORIZON = 7 * 86400.0
+
+
+def _stall_cutoff(now: float) -> float:
+    """停滞早于这一刻的，下一次复查就会超出期限（`_recheck_stalled` 的同一条界线）。"""
+    return now - (STALL_RECHECK_HORIZON - STALL_RECHECK)
+
+
 #: 已落地的目录最多登记这么多个文件；种子里成千上万个小文件交给全量扫描。
 MAX_LANDED_FILES = 500
 
@@ -448,25 +455,28 @@ class DownloadStore:
         return {row["id"]: dict(row) for row in rows}
 
     def due(self, now: float) -> list[DownloadTask]:
-        # 停滞的任务只有排了复查时间才算到期；时间为空表示已经不再复查。
+        # 停滞的任务排了复查时间才算到期；时间为空表示已经不再复查。例外是停滞还没满复查期限、
+        # 时间却为空的：那是有低频复查之前就判停滞的旧任务，当作到期，复查一次后照常排下一次。
         states = tuple(sorted(TRACKED_STATES))
         marks = ",".join("?" for _ in states)
         with self.database.read_connection() as connection:
             rows = connection.execute(
                 f"SELECT * FROM download_task WHERE (state IN ({marks}) "
                 "AND (next_check_at IS NULL OR next_check_at<=?)) "
-                "OR (state=? AND next_check_at IS NOT NULL AND next_check_at<=?) ORDER BY next_check_at, id",
-                (*states, iso(now), STALLED, iso(now))).fetchall()
+                "OR (state=? AND next_check_at IS NOT NULL AND next_check_at<=?) "
+                "OR (state=? AND next_check_at IS NULL AND finished_at>=?) ORDER BY next_check_at, id",
+                (*states, iso(now), STALLED, iso(now), STALLED, iso(_stall_cutoff(now)))).fetchall()
         return [DownloadTask.from_row(row) for row in rows]
 
-    def next_due(self) -> float | None:
+    def next_due(self, now: float) -> float | None:
         states = tuple(sorted(TRACKED_STATES))
         marks = ",".join("?" for _ in states)
         with self.database.read_connection() as connection:
             row = connection.execute(
                 f"SELECT min(coalesce(next_check_at,'')) FROM download_task WHERE state IN ({marks}) "
-                "OR (state=? AND next_check_at IS NOT NULL)",
-                (*states, STALLED)).fetchone()
+                "OR (state=? AND next_check_at IS NOT NULL) "
+                "OR (state=? AND next_check_at IS NULL AND finished_at>=?)",
+                (*states, STALLED, STALLED, iso(_stall_cutoff(now)))).fetchone()
         if row is None or row[0] is None:
             return None
         return parse_iso(row[0]) or 0.0
@@ -882,7 +892,7 @@ class DownloadService:
             self._wake.clear()
             try:
                 self.poll_once()
-                upcoming = self.store.next_due()
+                upcoming = self.store.next_due(self.clock())
             except Exception:
                 # 一轮里出什么错都不能让线程退出：退出之后所有任务都不再推进，界面上只是不动。
                 LOGGER.exception("云下载对账失败")

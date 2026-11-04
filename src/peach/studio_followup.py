@@ -24,6 +24,7 @@ import json
 import sqlite3
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 from urllib.parse import urlsplit
 
 from . import studio_icons, studio_sites
@@ -50,6 +51,28 @@ STOCK_SHARE = 8
 
 #: 候选官网全都连不上时，过多久存量补派再派这一家。与补女优资料「未取得」的那一档同为一天。
 RETRY_UNREACHED = 24 * 3600
+
+
+def release_unbounded_misses(root, clock=time.time) -> int:
+    """给没有重试期限的「官网未取得」记录补一个已过期的期限，存量补派各再派一次。
+
+    带期限之前写下的这类记录分不清当时是断网还是这家确实没有官网，不补就要等作品数或
+    链接数变化才会再试。重试一次之后照现在的规则重记：连不上的带一天期限，回了状态的不带。
+    只动 `studio-mark` 的记录；返回改了几条。
+    """
+    changed = 0
+    for path in sorted(Path(root).glob(f"{TASK_KEY}-*.json")):
+        try:
+            record = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        if (not isinstance(record, dict) or record.get("outcome") != "官网未取得"
+                or record.get("retry_until") is not None):
+            continue
+        record["retry_until"] = clock()
+        path.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+        changed += 1
+    return changed
 
 
 def followup_key(entity_id: int) -> str:
