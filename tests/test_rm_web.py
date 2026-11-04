@@ -3052,6 +3052,9 @@ class JavModeAndCoverTests(unittest.TestCase):
                                 ("+++ [FHDC] SONE-804 作品标题", "SONE-804ch")), ["中字"])
         self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123 中文字幕",)), ["中字"])
         self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123-U",)), ["无码"])
+        # 磁力名与任务名各给一半证据时取并集，不看先后。
+        self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ("ABP-123-U", "ABP-123 无码破解")),
+                         ["无码破解"])
         # 没有下载任务就没有来源名，结果与只看文件名相同。
         self.assertEqual(badges("ABP-123.mp4", "ABP-123", (), ()), [])
         # 种子名是另一部片的标记，不能借来：番号对不上就不算这部的版次。

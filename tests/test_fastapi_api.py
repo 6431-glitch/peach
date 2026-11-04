@@ -146,7 +146,8 @@ CREATE TABLE review_decision(
   reviewer TEXT NOT NULL DEFAULT 'local-default',note TEXT NOT NULL DEFAULT '',updated_at TEXT NOT NULL,
   PRIMARY KEY(category,item_key));
 CREATE TABLE download_task(
-  id INTEGER PRIMARY KEY, code TEXT, state TEXT NOT NULL, ledger_path TEXT, asset_id INTEGER);
+  id INTEGER PRIMARY KEY, code TEXT, state TEXT NOT NULL, ledger_path TEXT, asset_id INTEGER,
+  display_name TEXT NOT NULL DEFAULT '', remote_name TEXT);
 CREATE TABLE genre_decision(
   source_genre TEXT PRIMARY KEY, raw_genre TEXT NOT NULL, peach_tag TEXT, decided_at TEXT NOT NULL,
   CHECK(peach_tag IS NULL OR length(trim(peach_tag))>0));

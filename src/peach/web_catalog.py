@@ -46,7 +46,7 @@ from .western_artwork import artwork_key
 GROUP_TABLES = ('asset', 'asset_entity', 'entity')
 
 
-def download_source_names(contract: WebContract) -> tuple[tuple[int, tuple[str, ...]], ...]:
+def _download_source_names(contract: WebContract) -> tuple[tuple[int, tuple[str, ...]], ...]:
     """入库资产对应的云下载种子名与网盘任务名，给版次判据当来源证据。
 
     一个资产绑过几次下载时取最后一次，文件是那一次落地的。整表读一次只要几毫秒，
@@ -71,7 +71,7 @@ def download_source_names(contract: WebContract) -> tuple[tuple[int, tuple[str, 
 
 def _group_cached(contract: WebContract, key: str, fn):
     """分组快照及其派生缓存：账本三张表之外，版次还看种子名。"""
-    return contract.cached_until_changed(key, fn, download_source_names(contract),
+    return contract.cached_until_changed(key, fn, _download_source_names(contract),
                                         tables=GROUP_TABLES)
 
 #: 卡片随每条记录返回的女优上限。共演作品必须带上全部出镜者，而不是只留第一位；
@@ -497,7 +497,7 @@ def q_items(contract: WebContract, args):
                 r["creator"] = r["creator_entity"]["name"]
             r["performer_total"] = len(refs) or len(all_performers)
             r["_entity_kinds"] = tuple(canonical)
-    sources = dict(download_source_names(contract)) if rows else {}
+    sources = dict(_download_source_names(contract)) if rows else {}
     for r in rows:
         r["cost"] = cost_for(r['location'], r.get('path'))
         r["has_thumb"] = contract.has_snapshot(r["snapshot_path"])
@@ -739,7 +739,7 @@ def _read_group_rows(contract: WebContract) -> list[dict]:
                 "JOIN entity e ON e.id=ae.entity_id "
                 "WHERE e.kind='tag'"):
             tags.setdefault(int(row["aid"]), []).append(str(row["name"]))
-    sources = dict(download_source_names(contract))
+    sources = dict(_download_source_names(contract))
     coded = []
     for row in rows:
         row['raw_code'] = row['code']
@@ -1108,7 +1108,7 @@ def q_item(contract: WebContract, aid):
     attach_jav_display_fields(
         d, [tag["k"] for tag in d["tags"]],
         [kind for kind, values in d["entities"].items() if values],
-        dict(download_source_names(contract)).get(d["id"], ()),
+        dict(_download_source_names(contract)).get(d["id"], ()),
     )
     d.pop("snapshot_path", None); d.pop("path", None)
     attach_multipart_groups(contract, [d])
@@ -1236,7 +1236,7 @@ def q_related(contract: WebContract, aid, limit=24):
         for asset_id, tag in con_tags(contract, related_ids, marks):
             related_tags.setdefault(asset_id, []).append(tag)
         _name_shared_tags(contract, aid, picked, related_tags)
-    sources = dict(download_source_names(contract)) if picked else {}
+    sources = dict(_download_source_names(contract)) if picked else {}
     for d in picked:
         d["cost"] = cost_for(d['location'], d.get('path'))
         d["has_thumb"] = contract.has_snapshot(d["snapshot_path"])

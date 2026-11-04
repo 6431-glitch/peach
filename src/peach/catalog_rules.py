@@ -1139,13 +1139,14 @@ def jav_edition_badges(name: str | None, code: str | None,
     - 中字只有「有」这一个方向，任何一边有就算；
     - 无码与无码破解以文件侧（文件名、番号形状、标签）为准，文件侧什么都没说时才用来源名。
       文件名写 `-U`、种子名写「破解」，结果是「无码」。
+    几个来源名之间不分先后，各项证据取并集。
     """
     subtitled, uncensored, cracked = _edition_evidence(name, code, tags)
-    for source in source_names:
-        source_subtitled, source_uncensored, source_cracked = _edition_evidence(source, code)
-        subtitled = subtitled or source_subtitled
-        if not uncensored:
-            uncensored, cracked = source_uncensored, source_cracked
+    evidence = [_edition_evidence(source, code) for source in source_names]
+    subtitled = subtitled or any(item[0] for item in evidence)
+    if not uncensored:
+        uncensored = any(item[1] for item in evidence)
+        cracked = any(item[2] for item in evidence)
     badges = []
     if subtitled:
         badges.append("中字")
