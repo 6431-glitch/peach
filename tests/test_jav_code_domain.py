@@ -420,6 +420,20 @@ class TokyoHotShapeTests(unittest.TestCase):
                 'edition_badges': ['中字', '无码']})
         self.assertEqual(jav_fallback_title('MKD-S118.mp4', 'MKD-S118'), '')
 
+    def test_uncensored_only_labels_get_the_uncensored_badge(self):
+        for name, code in (('SMBD-120.mp4', 'SMBD-120'), ('SKYHD-050-C.mp4', 'SKYHD-050')):
+            with self.subTest(code=code):
+                self.assertIn('无码', jav_display_metadata(name, code)['edition_badges'])
+        self.assertEqual(jav_display_metadata('MCDV-024.mp4', 'MCDV-024')['edition_badges'], [])
+
+    def test_ltx_after_the_code_marks_a_cracked_edition(self):
+        self.assertEqual(jav_display_metadata('ABP-123-LTX.mp4', 'ABP-123'), {
+            'display_code': 'ABP-123', 'display_title': '', 'edition_badges': ['无码破解']})
+        self.assertEqual(jav_display_metadata('ABP-123-C-LTX.mp4', 'ABP-123')['edition_badges'],
+                         ['中字', '无码破解'])
+        # 字母段本身是 LTX 的番号不是破解标记。
+        self.assertEqual(jav_display_metadata('LTX-123.mp4', 'LTX-123')['edition_badges'], [])
+
     def test_a_bare_number_is_read_only_at_the_head_of_the_name(self):
         self.assertEqual(release_code_from_filename("n1032.mkv"), "n1032")
         self.assertEqual(release_code_from_filename("n0762.mkv"), "n0762")

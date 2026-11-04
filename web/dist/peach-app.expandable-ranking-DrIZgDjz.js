@@ -1,37 +1,37 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "ee7ee7be-7043-4ddc-aba3-507f6b680211", e._sentryDebugIdIdentifier = "sentry-dbid-ee7ee7be-7043-4ddc-aba3-507f6b680211");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "85dcd517-300a-485d-95f1-8f0b87d3c4e2", e._sentryDebugIdIdentifier = "sentry-dbid-85dcd517-300a-485d-95f1-8f0b87d3c4e2");
 	} catch {}
 })();
-import { CHART_CARD as e, CategoryTick as t, ChartEmpty as n, ChartHead as r, ChartTip as i, Dot as a, EvilBarChart as o, Layer as s, TIP_SURFACE as c, TIP_SWATCH as l, Text as u, TipRow as d, ZIndexLayer as f, adaptEventsOfChild as p, addAngleAxis as m, categoryAxisWidth as h, combineAxisTicks as g, combineCategoricalDomain as _, combineConfiguredScale as v, combineGraphicalItemTicks as y, createSelector as b, defaultPolarAngleAxisProps as x, degreeToRadian as S, getAxisTypeBasedOnLayout as ee, getClassNameFromUnknown as te, noop as ne, pickAxisType as C, polarToCartesian as w, rechartsScaleFactory as re, removeAngleAxis as ie, resolveDefaultProps as ae, roundTemplateLiteral as oe, selectAngleAxis as T, selectAngleAxisRangeWithReversed as se, selectChartLayout as E, selectDuplicateDomain as D, selectPolarAppliedValues as ce, selectPolarAxisCheckedDomain as le, selectPolarNiceTicks as ue, selectPolarViewBox as de, selectRadiusAxis as fe, selectRadiusAxisRangeWithReversed as pe, selectRealScaleType as me, selectRenderableAxisSettings as he, svgPropertiesAndEvents as O, svgPropertiesNoEvents as k, svgPropertiesNoEventsFromUnknown as ge, tone as _e, useAppDispatch as ve, useAppSelector as A, useIsPanorama as ye, usePolarChartLayout as be } from "./peach-app.chart-tip-CRxYp6KT.js";
-import { __toESM as xe, clsx as j, f1 as Se, require_jsx_runtime as Ce, require_react as we } from "./peach-app.js";
+import { CHART_CARD as e, CategoryTick as t, ChartEmpty as n, ChartHead as r, ChartTip as i, Dot as a, EvilBarChart as o, Layer as s, TIP_SURFACE as c, TIP_SWATCH as l, Text as u, TipRow as d, ZIndexLayer as f, adaptEventsOfChild as p, addAngleAxis as m, categoryAxisWidth as h, combineAxisTicks as g, combineCategoricalDomain as _, combineConfiguredScale as v, combineGraphicalItemTicks as y, createSelector as b, defaultPolarAngleAxisProps as x, degreeToRadian as S, getAxisTypeBasedOnLayout as C, getClassNameFromUnknown as w, noop as T, pickAxisType as E, polarToCartesian as D, rechartsScaleFactory as ee, removeAngleAxis as te, resolveDefaultProps as ne, roundTemplateLiteral as re, selectAngleAxis as O, selectAngleAxisRangeWithReversed as ie, selectChartLayout as k, selectDuplicateDomain as A, selectPolarAppliedValues as ae, selectPolarAxisCheckedDomain as oe, selectPolarNiceTicks as se, selectPolarViewBox as ce, selectRadiusAxis as le, selectRadiusAxisRangeWithReversed as ue, selectRealScaleType as de, selectRenderableAxisSettings as fe, svgPropertiesAndEvents as j, svgPropertiesNoEvents as M, svgPropertiesNoEventsFromUnknown as pe, tone as me, useAppDispatch as he, useAppSelector as N, useIsPanorama as ge, usePolarChartLayout as _e } from "./peach-app.chart-tip-CRxYp6KT.js";
+import { __toESM as ve, clsx as P, f1 as ye, require_jsx_runtime as be, require_react as xe } from "./peach-app.js";
 // node_modules/recharts/es6/shape/Polygon.js
-var M = /* @__PURE__ */ xe(we()), Te = [
+var F = /* @__PURE__ */ ve(xe()), Se = [
 	"points",
 	"className",
 	"baseLinePoints",
 	"connectNulls"
-], Ee;
-function N() {
-	return N = Object.assign ? Object.assign.bind() : function(e) {
+], Ce;
+function I() {
+	return I = Object.assign ? Object.assign.bind() : function(e) {
 		for (var t = 1; t < arguments.length; t++) {
 			var n = arguments[t];
 			for (var r in n) ({}).hasOwnProperty.call(n, r) && (e[r] = n[r]);
 		}
 		return e;
-	}, N.apply(null, arguments);
+	}, I.apply(null, arguments);
 }
-function De(e, t) {
+function we(e, t) {
 	if (e == null) return {};
-	var n, r, i = Oe(e, t);
+	var n, r, i = Te(e, t);
 	if (Object.getOwnPropertySymbols) {
 		var a = Object.getOwnPropertySymbols(e);
 		for (r = 0; r < a.length; r++) n = a[r], t.indexOf(n) === -1 && {}.propertyIsEnumerable.call(e, n) && (i[n] = e[n]);
 	}
 	return i;
 }
-function Oe(e, t) {
+function Te(e, t) {
 	if (e == null) return {};
 	var n = {};
 	for (var r in e) if ({}.hasOwnProperty.call(e, r)) {
@@ -40,23 +40,23 @@ function Oe(e, t) {
 	}
 	return n;
 }
-function ke(e, t) {
+function Ee(e, t) {
 	return t ||= e.slice(0), Object.freeze(Object.defineProperties(e, { raw: { value: Object.freeze(t) } }));
 }
-var P = (e) => e != null && e.x === +e.x && e.y === +e.y, Ae = function() {
+var L = (e) => e != null && e.x === +e.x && e.y === +e.y, De = function() {
 	var e = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : [], t = [[]];
 	e.forEach((e) => {
 		var n = t[t.length - 1];
-		P(e) ? n && n.push(e) : n && n.length > 0 && t.push([]);
+		L(e) ? n && n.push(e) : n && n.length > 0 && t.push([]);
 	});
 	var n = e[0], r = t[t.length - 1];
-	P(n) && r && r.push(n);
+	L(n) && r && r.push(n);
 	var i = t[t.length - 1];
 	return i && i.length <= 0 && (t = t.slice(0, -1)), t;
-}, F = (e, t) => {
-	var n = Ae(e);
+}, R = (e, t) => {
+	var n = De(e);
 	t && (n = [n.reduce((e, t) => [...e, ...t], [])]);
-	var r = n.map((e) => e.reduce((e, t, n) => oe(Ee ||= ke([
+	var r = n.map((e) => e.reduce((e, t, n) => re(Ce ||= Ee([
 		"",
 		"",
 		"",
@@ -64,66 +64,66 @@ var P = (e) => e != null && e.x === +e.x && e.y === +e.y, Ae = function() {
 		""
 	]), e, n === 0 ? "M" : "L", t.x, t.y), "")).join("");
 	return n.length === 1 ? `${r}Z` : r;
-}, je = (e, t, n) => {
-	var r = F(e, n);
-	return `${r.slice(-1) === "Z" ? r.slice(0, -1) : r}L${F(Array.from(t).reverse(), n).slice(1)}`;
-}, I = (e) => {
-	var t = e.points, n = e.className, r = e.baseLinePoints, i = e.connectNulls, a = De(e, Te);
+}, Oe = (e, t, n) => {
+	var r = R(e, n);
+	return `${r.slice(-1) === "Z" ? r.slice(0, -1) : r}L${R(Array.from(t).reverse(), n).slice(1)}`;
+}, z = (e) => {
+	var t = e.points, n = e.className, r = e.baseLinePoints, i = e.connectNulls, a = we(e, Se);
 	if (!t || !t.length) return null;
-	var o = j("recharts-polygon", n);
+	var o = P("recharts-polygon", n);
 	if (r && r.length) {
-		var s = a.stroke && a.stroke !== "none", c = je(t, r, i);
-		return /*#__PURE__*/ M.createElement("g", { className: o }, /*#__PURE__*/ M.createElement("path", N({}, O(a), {
+		var s = a.stroke && a.stroke !== "none", c = Oe(t, r, i);
+		return /*#__PURE__*/ F.createElement("g", { className: o }, /*#__PURE__*/ F.createElement("path", I({}, j(a), {
 			fill: c.slice(-1) === "Z" ? a.fill : "none",
 			stroke: "none",
 			d: c
-		})), s ? /*#__PURE__*/ M.createElement("path", N({}, O(a), {
+		})), s ? /*#__PURE__*/ F.createElement("path", I({}, j(a), {
 			fill: "none",
-			d: F(t, i)
-		})) : null, s ? /*#__PURE__*/ M.createElement("path", N({}, O(a), {
+			d: R(t, i)
+		})) : null, s ? /*#__PURE__*/ F.createElement("path", I({}, j(a), {
 			fill: "none",
-			d: F(r, i)
+			d: R(r, i)
 		})) : null);
 	}
-	var l = F(t, i);
-	return /*#__PURE__*/ M.createElement("path", N({}, O(a), {
+	var l = R(t, i);
+	return /*#__PURE__*/ F.createElement("path", I({}, j(a), {
 		fill: l.slice(-1) === "Z" ? a.fill : "none",
 		className: o,
 		d: l
 	}));
-}, L = (e, t, n) => {
+}, B = (e, t, n) => {
 	switch (t) {
-		case "angleAxis": return T(e, n);
-		case "radiusAxis": return fe(e, n);
+		case "angleAxis": return O(e, n);
+		case "radiusAxis": return le(e, n);
 		default: throw Error(`Unexpected axis type: ${t}`);
 	}
-}, R = (e, t, n) => {
+}, V = (e, t, n) => {
 	switch (t) {
-		case "angleAxis": return se(e, n);
-		case "radiusAxis": return pe(e, n);
+		case "angleAxis": return ie(e, n);
+		case "radiusAxis": return ue(e, n);
 		default: throw Error(`Unexpected axis type: ${t}`);
 	}
-}, Me = b([
-	L,
-	me,
-	le,
-	R
-], v), z = b([Me], re), B = b([
-	E,
-	ce,
-	he,
-	C
-], _), V = b([
-	E,
-	L,
-	me,
-	z,
-	ue,
-	R,
-	D,
+}, ke = b([
 	B,
-	C
-], g), Ne = b([V], (e) => {
+	de,
+	oe,
+	V
+], v), H = b([ke], ee), U = b([
+	k,
+	ae,
+	fe,
+	E
+], _), W = b([
+	k,
+	B,
+	de,
+	H,
+	se,
+	V,
+	A,
+	U,
+	E
+], g), Ae = b([W], (e) => {
 	if (e) {
 		var t = /* @__PURE__ */ new Map();
 		return e.forEach((e) => {
@@ -131,25 +131,25 @@ var P = (e) => e != null && e.x === +e.x && e.y === +e.y, Ae = function() {
 			t.has(n) || t.set(n, e);
 		}), Array.from(t.values());
 	}
-}), Pe = b([
-	E,
-	L,
-	z,
-	R,
-	D,
+}), je = b([
+	k,
 	B,
-	C
-], y), Fe = ["children", "type"], Ie = ["ref"];
-function H() {
-	return H = Object.assign ? Object.assign.bind() : function(e) {
+	H,
+	V,
+	A,
+	U,
+	E
+], y), Me = ["children", "type"], Ne = ["ref"];
+function G() {
+	return G = Object.assign ? Object.assign.bind() : function(e) {
 		for (var t = 1; t < arguments.length; t++) {
 			var n = arguments[t];
 			for (var r in n) ({}).hasOwnProperty.call(n, r) && (e[r] = n[r]);
 		}
 		return e;
-	}, H.apply(null, arguments);
+	}, G.apply(null, arguments);
 }
-function U(e, t) {
+function K(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -159,30 +159,30 @@ function U(e, t) {
 	}
 	return n;
 }
-function W(e) {
+function q(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? U(Object(n), !0).forEach(function(t) {
-			Le(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : U(Object(n)).forEach(function(t) {
+		t % 2 ? K(Object(n), !0).forEach(function(t) {
+			Pe(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : K(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-function Le(e, t, n) {
-	return (t = Re(t)) in e ? Object.defineProperty(e, t, {
+function Pe(e, t, n) {
+	return (t = Fe(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-function Re(e) {
-	var t = ze(e, "string");
+function Fe(e) {
+	var t = Ie(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function ze(e, t) {
+function Ie(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -192,16 +192,16 @@ function ze(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-function G(e, t) {
+function Le(e, t) {
 	if (e == null) return {};
-	var n, r, i = Be(e, t);
+	var n, r, i = Re(e, t);
 	if (Object.getOwnPropertySymbols) {
 		var a = Object.getOwnPropertySymbols(e);
 		for (r = 0; r < a.length; r++) n = a[r], t.indexOf(n) === -1 && {}.propertyIsEnumerable.call(e, n) && (i[n] = e[n]);
 	}
 	return i;
 }
-function Be(e, t) {
+function Re(e, t) {
 	if (e == null) return {};
 	var n = {};
 	for (var r in e) if ({}.hasOwnProperty.call(e, r)) {
@@ -210,50 +210,50 @@ function Be(e, t) {
 	}
 	return n;
 }
-var K = 1e-5, Ve = Math.cos(S(45)), He = "angleAxis";
-function Ue(e) {
-	var t = ve(), n = be(), r = (0, M.useMemo)(() => {
+var ze = 1e-5, Be = Math.cos(S(45)), Ve = "angleAxis";
+function He(e) {
+	var t = he(), n = _e(), r = (0, F.useMemo)(() => {
 		e.children;
-		var t = e.type, r = G(e, Fe), i = ee(n, "angleAxis", t);
-		if (i != null) return W(W({}, r), {}, { type: i });
-	}, [e, n]), i = r === A((e) => T(e, r?.id));
-	return (0, M.useEffect)(() => r == null ? ne : (t(m(r)), () => {
-		t(ie(r));
+		var t = e.type, r = Le(e, Me), i = C(n, "angleAxis", t);
+		if (i != null) return q(q({}, r), {}, { type: i });
+	}, [e, n]), i = r === N((e) => O(e, r?.id));
+	return (0, F.useEffect)(() => r == null ? T : (t(m(r)), () => {
+		t(te(r));
 	}), [t, r]), i ? e.children : null;
 }
-var We = (e, t) => {
-	var n = t.cx, r = t.cy, i = t.radius, a = t.orientation, o = t.tickSize || 8, s = w(n, r, i, e.coordinate), c = w(n, r, i + (a === "inner" ? -1 : 1) * o, e.coordinate);
+var Ue = (e, t) => {
+	var n = t.cx, r = t.cy, i = t.radius, a = t.orientation, o = t.tickSize || 8, s = D(n, r, i, e.coordinate), c = D(n, r, i + (a === "inner" ? -1 : 1) * o, e.coordinate);
 	return {
 		x1: s.x,
 		y1: s.y,
 		x2: c.x,
 		y2: c.y
 	};
-}, Ge = (e, t) => {
+}, We = (e, t) => {
 	var n = Math.cos(S(-e.coordinate));
-	return n > K ? t === "outer" ? "start" : "end" : n < -K ? t === "outer" ? "end" : "start" : "middle";
-}, Ke = (e) => {
+	return n > ze ? t === "outer" ? "start" : "end" : n < -ze ? t === "outer" ? "end" : "start" : "middle";
+}, Ge = (e) => {
 	var t = Math.cos(S(-e.coordinate)), n = Math.sin(S(-e.coordinate));
-	return Math.abs(t) <= Ve ? n > 0 ? "start" : "end" : "middle";
-}, qe = (e) => {
+	return Math.abs(t) <= Be ? n > 0 ? "start" : "end" : "middle";
+}, Ke = (e) => {
 	var t = e.cx, n = e.cy, r = e.radius, i = e.axisLineType, o = e.axisLine, s = e.ticks;
 	if (!o) return null;
-	var c = W(W({}, k(e)), {}, { fill: "none" }, k(o));
-	if (i === "circle") return /*#__PURE__*/ M.createElement(a, H({ className: "recharts-polar-angle-axis-line" }, c, {
+	var c = q(q({}, M(e)), {}, { fill: "none" }, M(o));
+	if (i === "circle") return /*#__PURE__*/ F.createElement(a, G({ className: "recharts-polar-angle-axis-line" }, c, {
 		cx: t,
 		cy: n,
 		r
 	}));
-	var l = s.map((e) => w(t, n, r, e.coordinate));
-	return /*#__PURE__*/ M.createElement(I, H({ className: "recharts-polar-angle-axis-line" }, c, { points: l }));
-}, Je = (e) => {
+	var l = s.map((e) => D(t, n, r, e.coordinate));
+	return /*#__PURE__*/ F.createElement(z, G({ className: "recharts-polar-angle-axis-line" }, c, { points: l }));
+}, qe = (e) => {
 	var t = e.tick, n = e.tickProps, r = e.value;
-	return t ? /*#__PURE__*/ M.isValidElement(t) ? /*#__PURE__*/ M.cloneElement(t, n) : typeof t == "function" ? t(n) : /*#__PURE__*/ M.createElement(u, H({}, n, { className: "recharts-polar-angle-axis-tick-value" }), r) : null;
-}, Ye = (e) => {
-	var t = e.tick, n = e.tickLine, r = e.tickFormatter, i = e.stroke, a = e.ticks, o = k(e);
+	return t ? /*#__PURE__*/ F.isValidElement(t) ? /*#__PURE__*/ F.cloneElement(t, n) : typeof t == "function" ? t(n) : /*#__PURE__*/ F.createElement(u, G({}, n, { className: "recharts-polar-angle-axis-tick-value" }), r) : null;
+}, Je = (e) => {
+	var t = e.tick, n = e.tickLine, r = e.tickFormatter, i = e.stroke, a = e.ticks, o = M(e);
 	o.ref;
-	var c = G(o, Ie), l = ge(t), u = W(W({}, c), {}, { fill: "none" }, k(n)), d = a.map((a, o) => {
-		var d = We(a, e), f = Ge(a, e.orientation), m = Ke(a), h = W(W(W({}, c), {}, {
+	var c = Le(o, Ne), l = pe(t), u = q(q({}, c), {}, { fill: "none" }, M(n)), d = a.map((a, o) => {
+		var d = Ue(a, e), f = We(a, e.orientation), m = Ge(a), h = q(q(q({}, c), {}, {
 			textAnchor: f,
 			verticalAnchor: m,
 			stroke: "none",
@@ -264,28 +264,28 @@ var We = (e, t) => {
 			x: d.x2,
 			y: d.y2
 		});
-		return /*#__PURE__*/ M.createElement(s, H({
-			className: j("recharts-polar-angle-axis-tick", te(t)),
+		return /*#__PURE__*/ F.createElement(s, G({
+			className: P("recharts-polar-angle-axis-tick", w(t)),
 			key: `tick-${a.coordinate}`
-		}, p(e, a, o)), n && /*#__PURE__*/ M.createElement("line", H({ className: "recharts-polar-angle-axis-tick-line" }, u, d)), /*#__PURE__*/ M.createElement(Je, {
+		}, p(e, a, o)), n && /*#__PURE__*/ F.createElement("line", G({ className: "recharts-polar-angle-axis-tick-line" }, u, d)), /*#__PURE__*/ F.createElement(qe, {
 			tick: t,
 			tickProps: h,
 			value: r ? r(a.value, o) : a.value
 		}));
 	});
-	return /*#__PURE__*/ M.createElement(s, { className: "recharts-polar-angle-axis-ticks" }, d);
-}, Xe = (e) => {
-	var t = e.angleAxisId, n = A(de), r = A((e) => z(e, "angleAxis", t)), i = ye(), a = A((e) => Ne(e, "angleAxis", t, i));
+	return /*#__PURE__*/ F.createElement(s, { className: "recharts-polar-angle-axis-ticks" }, d);
+}, Ye = (e) => {
+	var t = e.angleAxisId, n = N(ce), r = N((e) => H(e, "angleAxis", t)), i = ge(), a = N((e) => Ae(e, "angleAxis", t, i));
 	if (n == null || !a || !a.length || r == null) return null;
-	var o = W(W(W({}, e), {}, { scale: r }, n), {}, {
+	var o = q(q(q({}, e), {}, { scale: r }, n), {}, {
 		radius: n.outerRadius,
 		ticks: a
 	});
-	return /*#__PURE__*/ M.createElement(f, { zIndex: o.zIndex }, /*#__PURE__*/ M.createElement(s, { className: j("recharts-polar-angle-axis", He, o.className) }, /*#__PURE__*/ M.createElement(qe, o), /*#__PURE__*/ M.createElement(Ye, o)));
+	return /*#__PURE__*/ F.createElement(f, { zIndex: o.zIndex }, /*#__PURE__*/ F.createElement(s, { className: P("recharts-polar-angle-axis", Ve, o.className) }, /*#__PURE__*/ F.createElement(Ke, o), /*#__PURE__*/ F.createElement(Je, o)));
 };
-function q(e) {
-	var t = ae(e, x);
-	return /*#__PURE__*/ M.createElement(Ue, {
+function Xe(e) {
+	var t = ne(e, x);
+	return /*#__PURE__*/ F.createElement(He, {
 		id: t.angleAxisId,
 		scale: t.scale,
 		type: t.type,
@@ -302,11 +302,11 @@ function q(e) {
 		ticks: t.ticks,
 		tick: t.tick,
 		domain: t.domain
-	}, /*#__PURE__*/ M.createElement(Xe, t));
+	}, /*#__PURE__*/ F.createElement(Ye, t));
 }
-q.displayName = "PolarAngleAxis";
+Xe.displayName = "PolarAngleAxis";
 // src/react/charts/bar-card.tsx
-var J = Ce(), Y = [0, (e) => e * 1.2];
+var J = be(), Y = [0, (e) => e * 1.2];
 function Ze(e) {
 	let t = Math.abs(e), n = (t, n) => {
 		let r = e / t;
@@ -340,7 +340,7 @@ function Qe({ title: a, unit: s, series: c, rows: l, color: u, empty: d, layout:
 			data: p,
 			config: { value: {
 				label: c,
-				colors: _e(u)
+				colors: me(u)
 			} },
 			layout: f,
 			barRadius: 4,
@@ -472,36 +472,48 @@ function at({ cell: e, series: t, tone: n, left: r, top: i, anchor: a }) {
 	});
 }
 function $({ title: t, words: n, cells: i, total: a, columns: o, rows: s, axis: c, footer: l, tone: u }) {
-	let [d, f] = (0, M.useState)(-1), p = c ? 30 : 0, m = c ? 18 : 0, h = p + o * Q, g = m + s * Q, _ = (e) => ({
-		x: p + e % o * Q,
-		y: m + Math.floor(e / o) * Q
-	}), v = i[d], y = v ? _(d) : null, b = y ? (y.x + Z / 2) / h : 0, x = b < .1 ? "start" : b > .9 ? "end" : "center", S = y ? {
-		start: y.x,
-		center: y.x + Z / 2,
-		end: y.x + Z
-	}[x] : 0;
+	let [d, f] = (0, F.useState)(-1), [p, m] = (0, F.useState)(0), h = (0, F.useRef)(null), g = p < i.length ? p : 0, _ = c ? 30 : 0, v = c ? 18 : 0, y = _ + o * Q, b = v + s * Q, x = (e) => ({
+		x: _ + e % o * Q,
+		y: v + Math.floor(e / o) * Q
+	}), S = i[d], C = S ? x(d) : null, w = C ? (C.x + Z / 2) / y : 0, T = w < .1 ? "start" : w > .9 ? "end" : "center", E = C ? {
+		start: C.x,
+		center: C.x + Z / 2,
+		end: C.x + Z
+	}[T] : 0, D = (e, t) => {
+		let n = t - t % o, r = {
+			ArrowLeft: t - 1,
+			ArrowRight: t + 1,
+			ArrowUp: t - o,
+			ArrowDown: t + o,
+			Home: n,
+			End: Math.min(n + o, i.length) - 1
+		}[e.key];
+		r !== void 0 && (e.preventDefault(), !(r < 0 || r >= i.length) && (m(r), h.current?.querySelector(`rect[data-cell="${r}"]`)?.focus()));
+	};
 	return /* @__PURE__ */ (0, J.jsxs)("section", {
 		className: e,
 		children: [
 			/* @__PURE__ */ (0, J.jsx)(r, {
 				title: t,
-				figure: (v ? v.count : a).toLocaleString(),
-				note: v ? v.label : n.unit
+				figure: (S ? S.count : a).toLocaleString(),
+				note: S ? S.label : n.unit
 			}),
 			/* @__PURE__ */ (0, J.jsxs)("div", {
 				className: "relative",
 				children: [/* @__PURE__ */ (0, J.jsx)("div", {
 					className: "min-w-0 overflow-x-auto",
 					children: /* @__PURE__ */ (0, J.jsxs)("svg", {
+						ref: h,
 						role: "img",
 						"aria-label": t,
 						onPointerLeave: () => f(-1),
-						viewBox: `0 0 ${h} ${g}`,
+						viewBox: `0 0 ${y} ${b}`,
 						className: c ? "block h-auto min-w-80 w-full" : "block h-auto w-full",
 						children: [c, i.map((e, t) => {
-							let { x: r, y: i } = _(t);
+							let { x: r, y: i } = x(t);
 							return /* @__PURE__ */ (0, J.jsx)("rect", {
-								tabIndex: 0,
+								"data-cell": t,
+								tabIndex: t === g ? 0 : -1,
 								role: "img",
 								"aria-label": `${e.label}，${e.count} ${n.cellUnit}`,
 								x: r,
@@ -513,18 +525,21 @@ function $({ title: t, words: n, cells: i, total: a, columns: o, rows: s, axis: 
 								opacity: d >= 0 && d !== t ? .4 : 1,
 								className: e.share ? `outline-none transition-opacity duration-200 focus-visible:stroke-border-focus-ring ${rt[u].fill}` : "fill-chart-track outline-none transition-opacity duration-200 focus-visible:stroke-border-focus-ring",
 								onPointerEnter: () => f(t),
-								onFocus: () => f(t),
-								onBlur: () => f(-1)
+								onFocus: () => {
+									f(t), m(t);
+								},
+								onBlur: () => f(-1),
+								onKeyDown: (e) => D(e, t)
 							}, e.key);
 						})]
 					})
-				}), v && y ? /* @__PURE__ */ (0, J.jsx)(at, {
-					cell: v,
+				}), S && C ? /* @__PURE__ */ (0, J.jsx)(at, {
+					cell: S,
 					series: n.series,
 					tone: u,
-					anchor: x,
-					left: S / h * 100,
-					top: y.y / g * 100
+					anchor: T,
+					left: E / y * 100,
+					top: C.y / b * 100
 				}) : null]
 			}),
 			/* @__PURE__ */ (0, J.jsx)("footer", {
@@ -578,8 +593,8 @@ function st({ activity: e, title: t, dailyTitle: r, words: i, tone: a, empty: o 
 }
 // src/react/components/expandable-ranking.tsx
 function ct({ children: e, className: t = "", previewCount: n = 10 }) {
-	let r = (0, M.useId)(), i = (0, M.useRef)(null), [a, o] = (0, M.useState)(!1), [s, c] = (0, M.useState)(!1), l = M.Children.toArray(e), u = l.length > n;
-	(0, M.useLayoutEffect)(() => {
+	let r = (0, F.useId)(), i = (0, F.useRef)(null), [a, o] = (0, F.useState)(!1), [s, c] = (0, F.useState)(!1), l = F.Children.toArray(e), u = l.length > n;
+	(0, F.useLayoutEffect)(() => {
 		let e = i.current;
 		if (!e || !u) return;
 		let t = () => {
@@ -594,7 +609,7 @@ function ct({ children: e, className: t = "", previewCount: n = 10 }) {
 		n,
 		l.length
 	]);
-	let d = l.map((e, t) => !(0, M.isValidElement)(e) || t < n ? e : (0, M.cloneElement)(e, { inert: !a || void 0 }));
+	let d = l.map((e, t) => !(0, F.isValidElement)(e) || t < n ? e : (0, F.cloneElement)(e, { inert: !a || void 0 }));
 	return /* @__PURE__ */ (0, J.jsxs)("div", {
 		"data-expandable-ranking": !0,
 		"data-expandable": u || void 0,
@@ -618,10 +633,10 @@ function ct({ children: e, className: t = "", previewCount: n = 10 }) {
 			onClick: () => {
 				c(!0), o((e) => !e);
 			},
-			children: /* @__PURE__ */ (0, J.jsx)(Se, { "aria-hidden": !0 })
+			children: /* @__PURE__ */ (0, J.jsx)(ye, { "aria-hidden": !0 })
 		}) : null]
 	});
 }
-export { st as ActivityHeat, Y as BAR_DOMAIN, Qe as BarCard, ct as ExpandableRanking, q as PolarAngleAxis, I as Polygon, X as barLabel, z as selectPolarAxisScale, V as selectPolarAxisTicks, Pe as selectPolarGraphicalItemAxisTicks };
+export { st as ActivityHeat, Y as BAR_DOMAIN, Qe as BarCard, ct as ExpandableRanking, Xe as PolarAngleAxis, z as Polygon, X as barLabel, H as selectPolarAxisScale, W as selectPolarAxisTicks, je as selectPolarGraphicalItemAxisTicks };
 
-//# debugId=ee7ee7be-7043-4ddc-aba3-507f6b680211
+//# debugId=85dcd517-300a-485d-95f1-8f0b87d3c4e2

@@ -317,7 +317,7 @@ _BRACKETED_PROMO_DOMAIN = re.compile(
     r"[\[【(（]\s*" + _PROMO_DOMAIN.pattern + r"\s*[\]】)）]", re.I,
 )
 _EDITION_TAIL = re.compile(
-    r"(?:[-_.\s]+(?:c|ch|sub|uc|u|uncen(?:sored)?|uncensored|中字|中文字幕|无码|无码破解|破解))+$",
+    r"(?:[-_.\s]+(?:c|ch|sub|uc|u|ltx|uncen(?:sored)?|uncensored|中字|中文字幕|无码|无码破解|破解))+$",
     re.I,
 )
 
@@ -1090,6 +1090,16 @@ UNCENSORED_CODE_SHAPES = (
     re.compile(r"^HEYZO-\d{2,5}$", re.I),
     _TOKYO_HOT_BODY,
 )
+#: 番号形状和有码一样、片商只出无码的厂牌字母段：S Model（`SMBD`／`SMD`／`SMDV`／`S2M`）、
+#: スカイハイ（`SKY`／`SKYHD`）、キャットウォーク（`CWP`／`CWPBD`），以及 `DRG`、`LAF` 两个系列
+#: 与各自的 `BD` 版。取 amane `parsing/file_info.py` 与 mdcz `67bb8bc5` 两份前缀表的交集，
+#: 本机账本 2026-11-04 只读核过 `SMBD`、`CWPBD`、`SKY` 都挂在这几家无码片商名下。
+#: 两表里的两字母段（`BT`、`KP`、`PT`…）和 `JAV`、`RED`、`TS` 会撞有码番号，不收；
+#: `MCDV` 一个字母段两家共用（ADR-0133）；KIRARI 只认带 `S` 的序号（`_KIRARI_CODE`）。
+#: 这一类只决定来源链与「无码」徽章，不进 `UNCENSORED_CODE_SHAPES`：它们的封面是常规封套，
+#: 取景照旧按有码裁。
+_UNCENSORED_LABEL_CODE = re.compile(
+    r"^(?:SMBD|SMD|SMDV|S2M|S2MBD|SKY|SKYHD|CWP|CWPBD|DRG|DRGBD|LAF|LAFBD)-\d{2,5}$", re.I)
 #: 文件名里的发行站标记。番号形状认不出来时，这是另一条本机就能核验的证据。
 _UNCENSORED_SITE = re.compile(
     r"(?i)(?<![A-Z0-9])(?:"
@@ -1105,6 +1115,11 @@ _GLUED_EDITION = r"(?:CH|C|SUB|UC|U)"
 def is_uncensored_code(code: str | None) -> bool:
     value = str(code or "").strip()
     return any(shape.fullmatch(value) for shape in UNCENSORED_CODE_SHAPES)
+
+
+def is_uncensored_label_code(code: str | None) -> bool:
+    """有码形状、但字母段属于只出无码的片商（`_UNCENSORED_LABEL_CODE`）。"""
+    return bool(_UNCENSORED_LABEL_CODE.fullmatch(str(code or "").strip()))
 
 
 def code_release_date(code: str | None) -> str | None:
@@ -1125,7 +1140,8 @@ def is_uncensored_release(name: str | None, code: str | None) -> bool:
     这两条都是本机可核验的证据，不依赖抓取结果——`040221-001` 这类番号在
     r18.dev 永远 404，等元数据到齐再判，徽章就永远不会出现。
     """
-    return is_uncensored_code(code) or bool(_UNCENSORED_SITE.search(str(name or "")))
+    return (is_uncensored_code(code) or is_uncensored_label_code(code)
+            or bool(_UNCENSORED_SITE.search(str(name or ""))))
 
 
 def jav_edition_badges(name: str | None, code: str | None,
@@ -1174,6 +1190,9 @@ def _edition_evidence(name: str | None, code: str | None,
     cracked = (
         bool(re.search(r"无码\s*破解|無碼\s*破解|AI\s*去码|"
                        r"(?:^|[-_.\s\[])破解(?:$|[-_.\s\]])", text, re.I))
+        # `-LTX` 是破解版的发布组标记（amane #613、mdcz `bc4e8828` 同认）。只看番号之后那段：
+        # `LTX` 自己也能是番号的字母段。
+        or bool(re.search(r"(?:^|[-_.\s\[])ltx(?:$|[-_.\s\]])", suffix, re.I))
         or "ai去码" in tag_set or "无码破解" in tag_set
     )
     uncensored = (

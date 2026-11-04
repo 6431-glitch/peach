@@ -24,6 +24,8 @@ class ClassifyTests(unittest.TestCase):
                 ('SIRO-3508', 'amateur'), ('STP-26232', 'amateur'),
                 ('092415_001', 'uncensored'), ('040221-001', 'uncensored'),
                 ('HEYZO-1380', 'uncensored'), ('n0780', 'uncensored'),
+                ('SMBD-120', 'uncensored'), ('SKYHD-050', 'uncensored'), ('CWPBD-79', 'uncensored'),
+                ('S2MBD-023', 'uncensored'), ('BT-123', 'censored'), ('MCDV-024', 'censored'),
                 ('FC2-PPV-1812235', 'fc2'), ('fc2-ppv-1233719', 'fc2'),
                 ('AIN-203', 'kmib'), ('NOAH-101', 'kmib'),
                 ('', 'unknown'), (None, 'unknown')):
