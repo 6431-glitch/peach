@@ -166,6 +166,38 @@ def release_date(value) -> str:
     return moment.astimezone(JST).date().isoformat()
 
 
+def listed_page(data: dict) -> tuple[list[dict], int, bool]:
+    """片单一页的（有 cid 的行，接口自报总部数，还有没有下一页）。形状对不上归 `parse_error`。"""
+    result = (data.get("legacySearchPPV") or {}).get("result")
+    contents = result.get("contents") if isinstance(result, dict) else None
+    if not isinstance(contents, list):
+        raise SourceFailure(FailureReason.PARSE_ERROR, "DMM 返回的不是片单 JSON")
+    info = result.get("pageInfo") if isinstance(result.get("pageInfo"), dict) else {}
+    total = info["totalCount"] if isinstance(info.get("totalCount"), int) else 0
+    rows = [row for row in contents if isinstance(row, dict) and row.get("id")]
+    return rows, total, bool(info.get("hasNext"))
+
+
+def _cast(row: dict) -> list[dict]:
+    return [item for item in row.get("actresses") or [] if isinstance(item, dict)]
+
+
+def listed_work(row: dict, maker_code: str) -> ListedWork:
+    """片单里的一行。发售日用 `deliveryStartAt`，预购的是预定配信日。"""
+    return ListedWork(
+        cid=str(row["id"]), title=str(row.get("title") or "").strip(), maker_code=maker_code,
+        release_date=release_date(row.get("deliveryStartAt")),
+        pre_order=row.get("releaseStatus") == PRE_ORDER,
+        performers=tuple(str(item["name"]) for item in _cast(row) if item.get("name")),
+        studio=str((row.get("maker") or {}).get("name") or ""))
+
+
+def actress_name(rows, actress_id: str) -> str:
+    """这个编号在出演表里挂的名字：订阅源列表靠它分清同一个人的几个编号。"""
+    return next((str(item.get("name") or "") for row in rows for item in _cast(row)
+                 if str(item.get("id") or "") == actress_id), "")
+
+
 class DmmSource(SiteSource):
     DEFAULT = DMM
 
@@ -249,28 +281,14 @@ class DmmSource(SiteSource):
             data = self.graphql(ACTRESS_WORKS_QUERY, {
                 "limit": ACTRESS_PAGE, "offset": offset, "sort": "RELEASE_DATE",
                 "filter": {"actressIds": {"ids": [{"id": str(actress_id)}]}}}, session=session)
-            result = (data.get("legacySearchPPV") or {}).get("result")
-            contents = result.get("contents") if isinstance(result, dict) else None
-            if not isinstance(contents, list):
-                raise SourceFailure(FailureReason.PARSE_ERROR, "DMM 返回的不是片单 JSON")
-            info = result.get("pageInfo") if isinstance(result.get("pageInfo"), dict) else {}
-            total = info["totalCount"] if isinstance(info.get("totalCount"), int) else 0
-            rows = [row for row in contents if isinstance(row, dict) and row.get("id")][:limit - offset]
+            rows, total, has_next = listed_page(data)
+            rows = rows[:limit - offset]
             fresh = [str(row["id"]) for row in rows if str(row["id"]) not in known]
             codes = self.maker_codes(fresh, session=session)
-            for row in rows:
-                cid = str(row["id"])
-                cast = [item for item in row.get("actresses") or [] if isinstance(item, dict)]
-                name = name or next((str(item.get("name") or "") for item in cast
-                                     if str(item.get("id") or "") == str(actress_id)), "")
-                works.append(ListedWork(
-                    cid=cid, title=str(row.get("title") or "").strip(), maker_code=codes.get(cid, ""),
-                    release_date=release_date(row.get("deliveryStartAt")),
-                    pre_order=row.get("releaseStatus") == PRE_ORDER,
-                    performers=tuple(str(item["name"]) for item in cast if item.get("name")),
-                    studio=str((row.get("maker") or {}).get("name") or "")))
+            works.extend(listed_work(row, codes.get(str(row["id"]), "")) for row in rows)
+            name = name or actress_name(rows, str(actress_id))
             offset += len(rows)
-            if not info.get("hasNext") or not rows or len(fresh) < len(rows):
+            if not has_next or not rows or len(fresh) < len(rows):
                 break
         return ActressWorks(name=name, total=total, works=tuple(works))
 
