@@ -93,7 +93,7 @@ class FollowUpdateScheduler:
                  "automatic follow updates are available only on the ledger writer"):
         self.job_id = job_id
         #: 多久跑一次。不给就等于设置里的间隔；订阅源给的是 `feeds.TICK_MINUTES`：
-        #: 那边设置里的间隔是每个源的周期，到期由源自己判（ADR-0132）。
+        #: 那边设置里的间隔是每个源的周期，到期由源自己判（ADR-0134）。
         self.tick_minutes = tick_minutes
         self.unavailable_message = unavailable_message
         self.store = FollowScheduleStore(state_root, filename, default)
@@ -223,7 +223,7 @@ class FollowUpdateScheduler:
                     self._last_started_at = started_before
                 return
             if result.get("idle"):
-                # 这一跳没有到期的来源（订阅源每半小时一跳，ADR-0132）：什么也没做，
+                # 这一跳没有到期的来源（订阅源每半小时一跳，ADR-0134）：什么也没做，
                 # 上一轮的结论原样留着。按成功结算的话，一次真实失败半小时后就从界面上消失，
                 # 而失败的那几个源还要等到下一次到期才重拉。
                 skipped = True

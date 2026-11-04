@@ -175,7 +175,7 @@ class FollowContractTests(unittest.TestCase):
         self.assertEqual(factory.call_count, 1)
 
     def test_sources_skipped_for_a_site_cooldown_are_not_reported_as_failures(self):
-        """站点限流冷却中：同站的来源这一轮不问，也不进失败清单（ADR-0132）。"""
+        """站点限流冷却中：同站的来源这一轮不问，也不进失败清单（ADR-0134）。"""
         from peach.follow_stream import FollowMediaResolver
         self._seed(ref='first')
         self._seed(ref='second')

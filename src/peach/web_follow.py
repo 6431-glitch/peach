@@ -2357,7 +2357,7 @@ class _FollowCheckSession:
         self.initial_days = follow_initial_days(contract.database)
         self.cooldown = getattr(contract, 'follow_media_resolver', None)
         #: 站点限流冷却中、这一轮没问的来源数。它们不进结果：没问就谈不上成败，
-        #: 下一跳照常到期（ADR-0132）。
+        #: 下一跳照常到期（ADR-0134）。
         self.deferred = 0
 
     def checkpoint(self, **fields):
@@ -2419,7 +2419,7 @@ def _run_follow_check(contract, body, job_id=None) -> dict:
     # 不会因为重走而倒退。补齐标记缺键的行在重走时各自重探一次详情。
     rewind = bool(body.get("rewind"))
     credentials = _credential_store(contract)
-    # 定时那一跳只查到期的来源，久没更新的按档放慢（ADR-0132）；点名的、往回翻的、
+    # 定时那一跳只查到期的来源，久没更新的按档放慢（ADR-0134）；点名的、往回翻的、
     # 手动「检查全部」和续跑冻结下来的那一批都不按到期筛。
     scheduled = None
     if (body.get("automatic") and source_id is None and "sources" not in body and not older

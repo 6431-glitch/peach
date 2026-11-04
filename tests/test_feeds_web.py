@@ -444,7 +444,7 @@ class FeedWebTest(FeedWebFixture):
             return {int(row["id"]): dict(row) for row in connection.execute("SELECT * FROM feed_source")}
 
     def test_a_refused_round_records_one_failure_and_defers_the_rest_to_the_cooldown_end(self):
-        """一轮里撞上 403：只记撞上的那一条，其余源不再问、顺延到冷却结束（ADR-0132）。"""
+        """一轮里撞上 403：只记撞上的那一条，其余源不再问、顺延到冷却结束（ADR-0134）。"""
         from peach import scraping_access
         first, *rest = self._sources_named("Smp2", "Smp3")
         served = self.transport

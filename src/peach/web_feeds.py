@@ -34,7 +34,7 @@ FETCH_MAX_BYTES = 2 * 1024 * 1024
 MAX_SOURCES_PER_RUN = 20
 
 #: 定时那几轮多久派一次存量后继：旧壳重试、补封面、缺头像的存量女优与想要作品重试
-#: （ADR-0132）。定时拉取每 `feeds.TICK_MINUTES` 一跳，存量跟着每跳派一次就成了原来的十几倍；
+#: （ADR-0134）。定时拉取每 `feeds.TICK_MINUTES` 一跳，存量跟着每跳派一次就成了原来的十几倍；
 #: 本轮新发现的番号不受它管，照旧当场派取资料。
 STOCK_INTERVAL = timedelta(hours=6)
 
@@ -276,7 +276,7 @@ def _execute_check(contract, body, job_id: str) -> dict:
 
 
 def _defer_round(contract, pending, until: datetime, results: list) -> tuple[list, int]:
-    """来源在冷却：这一轮剩下的源都顺延到冷却结束，整轮只记一条失败（ADR-0132）。
+    """来源在冷却：这一轮剩下的源都顺延到冷却结束，整轮只记一条失败（ADR-0134）。
 
     冷却是整个来源的状态，不是哪个订阅的毛病；每个源各记一条「正在冷却」只会把真正的
     原因淹掉。本轮撞上 403 的那一行已经写了原因，就在它后面补一句顺延了几个；本轮一开始

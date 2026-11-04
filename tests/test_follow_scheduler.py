@@ -197,7 +197,7 @@ class FollowUpdateSchedulerTests(unittest.TestCase):
                                "连续失败后应当推后，而不是照原间隔继续敲上游")
 
     def test_a_tick_shorter_than_the_period_runs_often_and_backs_off_from_the_tick(self):
-        """订阅源：设置里的间隔是每个源的周期，调度按更短的一跳看谁到期（ADR-0132）。"""
+        """订阅源：设置里的间隔是每个源的周期，调度按更短的一跳看谁到期（ADR-0134）。"""
         with tempfile.TemporaryDirectory() as temporary:
             scheduler = FollowUpdateScheduler(
                 Path(temporary), lambda: {"ok": True, "checked": 0, "results": []},

@@ -164,7 +164,7 @@ class CompilationTest(unittest.TestCase):
 
 
 class FeedPhaseTest(unittest.TestCase):
-    """下次拉取按源的相位排（ADR-0132）：同时加的源错开，跳与跳之间的延迟不累积。"""
+    """下次拉取按源的相位排（ADR-0134）：同时加的源错开，跳与跳之间的延迟不累积。"""
 
     MOMENT = datetime(2026, 11, 3, 3, 28, 57, tzinfo=timezone.utc)
     PERIOD = timedelta(minutes=feeds.DEFAULT_INTERVAL_MINUTES)

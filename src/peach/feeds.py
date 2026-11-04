@@ -30,7 +30,7 @@ KIND_LABELS = {KIND_JAVDB_ACTOR: "JAV 订阅"}
 #: 拉取间隔。JavDB 按出口 IP 计配额，一张一天才更新几条的页面拉得再密也只是花配额。
 DEFAULT_INTERVAL_MINUTES = 360
 
-#: 定时拉取多久看一次有没有到期的源（ADR-0132）。每个源仍按自己的间隔拉，这一档只决定
+#: 定时拉取多久看一次有没有到期的源（ADR-0134）。每个源仍按自己的间隔拉，这一档只决定
 #: 到期之后最多再等多久；源在间隔窗口里各占一个相位，一跳只拉落在这半小时里的那几个。
 TICK_MINUTES = 30
 
@@ -343,7 +343,7 @@ def due_sources(connection: sqlite3.Connection, now: str | None = None) -> list[
 
 
 def next_fetch(source_id: int, moment: datetime, interval_minutes: int) -> datetime:
-    """这个源下一次该拉的时刻：「现在 + 间隔」附近、落在它自己相位上的那一刻（ADR-0132）。
+    """这个源下一次该拉的时刻：「现在 + 间隔」附近、落在它自己相位上的那一刻（ADR-0134）。
 
     不直接取「现在 + 间隔」：调度每跳之间隔着 `TICK_MINUTES`，拉完那一刻总比到期晚一点，
     按它往后排会一轮轮漂，同一时刻加的源也永远在同一跳一起到期。相位由 id 定，过渡那一轮

@@ -90,7 +90,7 @@ def plan_check(store, credentials, *, source_id: int | None = None,
     return rows
 
 
-#: 定时检查按来源活跃度放慢（ADR-0132）：最近一条距今不到这么久，就按基础间隔的这个倍数查。
+#: 定时检查按来源活跃度放慢（ADR-0134）：最近一条距今不到这么久，就按基础间隔的这个倍数查。
 #: 基础间隔是设置里的「自动检查间隔」。越过最后一档的、一条都没有的，一天查一次。
 ACTIVITY_TIERS = ((timedelta(days=7), 1), (timedelta(days=30), 3), (timedelta(days=90), 12))
 DORMANT_INTERVAL = timedelta(days=1)

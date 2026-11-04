@@ -323,7 +323,7 @@ class PlanCheckTests(_CheckCase):
 
 
 class ScheduledCheckTests(_CheckCase):
-    """定时检查按来源活跃度放慢；手动检查照旧全查（ADR-0132）。"""
+    """定时检查按来源活跃度放慢；手动检查照旧全查（ADR-0134）。"""
 
     def _checked_with_latest(self, ref, age):
         source_id = self._register(ref=ref, url=f"https://{ref}.fanbox.cc/")
