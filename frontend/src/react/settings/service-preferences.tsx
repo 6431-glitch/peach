@@ -133,7 +133,7 @@ function FollowScheduleRow() {
             }} />
           {data?.enabled ? <div className="flex items-center gap-2">
             <Input type="number" inputMode="numeric" name="follow-interval" autoComplete="off"
-              aria-label="自动检查间隔" className="w-24"
+              aria-label="自动检查间隔" className="w-21 sm:w-24"
               value={draft} onChange={(value) => { setDraft(value); setInvalid(false) }} onBlur={commit}
               onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); commit() } }}
               isDisabled={blocked} isInvalid={invalid} />
