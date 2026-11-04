@@ -34,6 +34,11 @@ ACTIVE = {"queued", "searching"}
 #: 共享进度列表的上限，与持久队列同为 200；结束的任务保留 10 分钟，供各窗口看到完成。
 ACTIVE_LIMIT = 200
 RECENT_SECONDS = 600
+#: 浏览器添加的任务结束后一直留在列表里，直到用户在脚本里标为已读；键是「任务编号@结束时间」。
+ENDED_KEY = re.compile(r"^[1-9][0-9]{0,11}@[0-9T:+.\-]{19,32}$")
+ENDED_DISMISSED_LIMIT = 1000
+#: 结束时间：整理完成的取整理时间，失败、取消、停滞取结束时间；停滞复查只改 updated_at，不让任务重新冒出来。
+ENDED_AT = "coalesce(nullif(postprocessed_at,''), nullif(finished_at,''), updated_at)"
 MESSAGES = {
     "idle": "可以加入 Peach 馆藏", "queued": "等待搜索磁力", "searching": "正在搜索磁力",
     "submitted": "云下载进行中", "ingested": "已加入 Peach 馆藏", "owned": "馆藏已有该番号影片",
@@ -150,6 +155,7 @@ class JavBrowser:
         self.downloads = contract.downloads
         self.credentials = self.downloads.credentials
         self.path = Path(contract.follow_state_root) / "jav-browser-queue.json"
+        self.ended_path = Path(contract.follow_state_root) / "jav-browser-ended.json"
         self.search = search
         self._lock = threading.RLock()
         self._wake = threading.Event()
@@ -159,6 +165,7 @@ class JavBrowser:
         from .jav_browser_diagnostics import BrowserDiagnostics
         self.diagnostics = BrowserDiagnostics()
         self.rows = self._load()
+        self.ended = self._load_ended()
 
     def _load(self) -> dict:
         if not self.path.exists():
@@ -180,6 +187,40 @@ class JavBrowser:
 
     def _save(self):
         atomic_write_text(self.path, json.dumps(self.rows, ensure_ascii=False, indent=2) + "\n")
+
+    def _load_ended(self) -> dict:
+        """结束留存的确认记录：`since` 之前结束的都算确认过，之后的逐条记在 `dismissed` 里。
+
+        文件不存在时从 10 分钟前起算并立即落盘，启用之前早已结束的任务不会一下子涌进浮卡。
+        """
+        try:
+            payload = json.loads(self.ended_path.read_text(encoding="utf-8"))
+            since, dismissed = payload["since"], payload["dismissed"]
+            if (not isinstance(since, str) or not isinstance(dismissed, list)
+                    or not all(isinstance(key, str) and ENDED_KEY.match(key) for key in dismissed)):
+                raise ValueError
+            return {"since": since, "dismissed": dismissed[-ENDED_DISMISSED_LIMIT:]}
+        except FileNotFoundError:
+            ended = {"since": iso(time.time() - RECENT_SECONDS), "dismissed": []}
+        except (ValueError, KeyError, TypeError):
+            LOGGER.warning("浏览器添加的结束确认记录无法读取，从现在起重新计")
+            ended = {"since": iso(time.time()), "dismissed": []}
+        atomic_write_text(self.ended_path, json.dumps(ended, ensure_ascii=False, indent=2) + "\n")
+        return ended
+
+    def dismiss(self, body: dict) -> dict:
+        """确认已结束的任务：`all` 确认到此刻为止结束的全部，`keys` 逐条确认 `active()` 给出的键。"""
+        keys = body.get("keys", [])
+        if body.get("all") not in (None, False, True) or not isinstance(keys, list) or len(keys) > ACTIVE_LIMIT \
+                or not all(isinstance(key, str) and ENDED_KEY.match(key) for key in keys):
+            raise ValueError("确认参数无效")
+        with self._lock:
+            since = iso(time.time()) if body.get("all") is True else self.ended["since"]
+            dismissed = [key for key in dict.fromkeys([*self.ended["dismissed"], *keys])
+                         if key.split("@", 1)[1] >= since]
+            self.ended = {"since": since, "dismissed": dismissed[-ENDED_DISMISSED_LIMIT:]}
+            atomic_write_text(self.ended_path, json.dumps(self.ended, ensure_ascii=False, indent=2) + "\n")
+        return self.active()
 
     def _config(self) -> dict:
         credential = self.credentials.load(CREDENTIAL)
@@ -311,17 +352,22 @@ class JavBrowser:
 
         进行中与脚本 `tracking()` 同一判据：排队、搜索、云下载，或已入库但整理未结束。
         最近 `RECENT_SECONDS` 内结束的任务带着终态留在列表里，脚本据此看到「进行中 → 完成」。
+        浏览器添加（来处 `browser:`）的任务结束后一直留着，直到 `dismiss()` 确认。结束项带 `ended_key`
+        与 `dismissed`：确认过的在 10 分钟内仍然列出、只标 `dismissed`，各窗口的本页状态照旧读得到。
         """
         cutoff = iso(time.time() - RECENT_SECONDS)
         tracked = sorted(TRACKED_STATES)
         organizing = (POSTPROCESS_PENDING, POSTPROCESS_QUEUED, POSTPROCESS_RUNNING)
+        with self._lock:
+            since, dismissed = self.ended["since"], set(self.ended["dismissed"])
         with self.contract.database.read_connection() as connection:
             codes = [row[0] for row in connection.execute(
                 "SELECT normalise_code_key(code) AS key FROM download_task WHERE code IS NOT NULL AND code<>'' AND ("
                 f"state IN ({','.join('?' * len(tracked))}) OR (state=? AND postprocess_state IN (?,?,?)) "
-                "OR max(updated_at, coalesce(postprocessed_at,''), coalesce(finished_at,''))>=?) "
+                "OR max(updated_at, coalesce(postprocessed_at,''), coalesce(finished_at,''))>=? "
+                f"OR (origin LIKE 'browser:%' AND {ENDED_AT}>=?)) "
                 "GROUP BY key ORDER BY max(id) DESC LIMIT ?",
-                (*tracked, INGESTED, *organizing, cutoff, ACTIVE_LIMIT))]
+                (*tracked, INGESTED, *organizing, cutoff, since, ACTIVE_LIMIT))]
         with self._lock:
             queued = [code for code, row in self.rows.items() if row["state"] in ACTIVE or code in self._submitting]
         items = []
@@ -330,8 +376,19 @@ class JavBrowser:
                 status = self.status(code)
             except ValueError:
                 continue
-            if status["state"] != "idle":
-                items.append(status)
+            if status["state"] == "idle":
+                continue
+            task = self.downloads.store.get(status["task_id"]) if status.get("task_id") else None
+            if task is not None and task.state not in TRACKED_STATES and not (
+                    task.state == INGESTED and task.postprocess_state in organizing):
+                ended_at = task.postprocessed_at or task.finished_at or task.updated_at
+                key = f"{task.id}@{ended_at}"
+                acknowledged = ended_at < since or key in dismissed
+                recent = max(task.updated_at or "", task.postprocessed_at or "", task.finished_at or "") >= cutoff
+                if not recent and (acknowledged or not (task.origin or "").startswith("browser:")):
+                    continue
+                status.update(ended_key=key, dismissed=acknowledged)
+            items.append(status)
         return {"ok": True, "items": items[:ACTIVE_LIMIT]}
 
     def add(self, body: dict) -> dict:
