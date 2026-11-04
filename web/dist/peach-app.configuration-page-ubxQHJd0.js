@@ -1,11 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b136ef8a-5a47-4e68-8494-93c71c958a57", e._sentryDebugIdIdentifier = "sentry-dbid-b136ef8a-5a47-4e68-8494-93c71c958a57");
-========
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "0f526625-1990-4749-9c0e-5225c274fa5b", e._sentryDebugIdIdentifier = "sentry-dbid-0f526625-1990-4749-9c0e-5225c274fa5b");
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "80caf3f2-9a7b-4fda-9c35-03d51996f275", e._sentryDebugIdIdentifier = "sentry-dbid-80caf3f2-9a7b-4fda-9c35-03d51996f275");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -710,42 +706,42 @@ function Ar({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 	});
 }
 // src/react/settings/ledger-backup-settings.tsx
-var xr = "/api/configuration/ledger-backups", Sr = 1500, Cr = (e) => (/* @__PURE__ */ new Date(e.modified_at * 1e3)).toLocaleString();
-function wr(e) {
+var jr = "/api/configuration/ledger-backups", Mr = 1500, Nr = (e) => (/* @__PURE__ */ new Date(e.modified_at * 1e3)).toLocaleString();
+function Pr(e) {
 	return [e.source === "manual" ? "手动" : `自动 · ${e.purpose}`, J(e.bytes)].join(" · ");
 }
-function Tr({ job: e, label: t }) {
+function Fr({ job: e, label: t }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"aria-live": "polite",
 		className: "flex flex-col gap-2",
 		children: [
-			e.total ? /* @__PURE__ */ (0, Q.jsx)(Ot, {
+			e.total ? /* @__PURE__ */ (0, Q.jsx)(At, {
 				label: t,
 				value: e.done || 0,
 				max: e.total
-			}) : /* @__PURE__ */ (0, Q.jsx)(ht, { label: t }),
+			}) : /* @__PURE__ */ (0, Q.jsx)(_t, { label: t }),
 			/* @__PURE__ */ (0, Q.jsx)(N, { children: e.stage || t }),
-			/* @__PURE__ */ (0, Q.jsx)(Vt, {})
+			/* @__PURE__ */ (0, Q.jsx)(Ut, {})
 		]
 	});
 }
-function Er({ receipt: e }) {
+function Ir({ receipt: e }) {
 	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(""), a = Y(), o = t?.backup.status === "running", s = t?.restore.status === "running", c = o || s, l = (0, Z.useRef)({
 		backup: !1,
 		restore: !1
 	});
 	if ((0, Z.useEffect)(() => {
 		let e = new AbortController();
-		return W(xr, e.signal).then(n, (t) => {
+		return W(jr, e.signal).then(n, (t) => {
 			e.signal.aborted || i(String(t?.message || t));
 		}), () => e.abort();
 	}, []), (0, Z.useEffect)(() => {
 		if (!c) return;
 		let e = new AbortController(), t = setTimeout(() => {
-			W(xr, e.signal).then(n, () => {
+			W(jr, e.signal).then(n, () => {
 				e.signal.aborted || n((e) => e && { ...e });
 			});
-		}, Sr);
+		}, Mr);
 		return () => {
 			e.abort(), clearTimeout(t);
 		};
@@ -758,15 +754,15 @@ function Er({ receipt: e }) {
 		id: "ledgerBackups",
 		guide: "ledger-backups",
 		title: "账本备份",
-		children: /* @__PURE__ */ (0, Q.jsx)(V, { children: r ? /* @__PURE__ */ (0, Q.jsx)(k, { children: r }) : /* @__PURE__ */ (0, Q.jsx)(ht, { label: "正在读取备份列表" }) })
+		children: /* @__PURE__ */ (0, Q.jsx)(V, { children: r ? /* @__PURE__ */ (0, Q.jsx)(k, { children: r }) : /* @__PURE__ */ (0, Q.jsx)(_t, { label: "正在读取备份列表" }) })
 	});
-	let u = () => void a.run("backup", (e) => G(`${xr}/backup`, {}, "POST", e), n), d = (e) => void Qt({
+	let u = () => void a.run("backup", (e) => G(`${jr}/backup`, {}, "POST", e), n), d = (e) => void nn({
 		title: "从备份恢复账本",
 		danger: !0,
-		body: `将用 ${Cr(e)} 的备份（${wr(e)}）替换当前账本，此后的资料、观看记录与复核结论回到备份时的状态。替换前先把当前账本另存为一份备份；恢复期间不能启动新任务。`,
+		body: `将用 ${Nr(e)} 的备份（${Pr(e)}）替换当前账本，此后的资料、观看记录与复核结论回到备份时的状态。替换前先把当前账本另存为一份备份；恢复期间不能启动新任务。`,
 		confirmLabel: "替换当前账本",
 		onConfirm: async () => {
-			l.current.restore = !0, n(await G(`${xr}/restore`, {
+			l.current.restore = !0, n(await G(`${jr}/restore`, {
 				id: e.id,
 				confirm: !0
 			}));
@@ -780,11 +776,11 @@ function Er({ receipt: e }) {
 			/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(N, { children: "账本保存全部资料、观看记录与复核结论。手动备份与写入前的自动备份放在一起，保留最近 5 份和 24 小时内的备份。" }),
 				t.writer ? null : /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["这台电脑不是账本写入端，只能在写入端恢复：", t.writer_reason] }),
-				o ? /* @__PURE__ */ (0, Q.jsx)(Tr, {
+				o ? /* @__PURE__ */ (0, Q.jsx)(Fr, {
 					job: t.backup,
 					label: "备份进度"
 				}) : null,
-				s ? /* @__PURE__ */ (0, Q.jsx)(Tr, {
+				s ? /* @__PURE__ */ (0, Q.jsx)(Fr, {
 					job: t.restore,
 					label: "恢复进度"
 				}) : null,
@@ -796,8 +792,8 @@ function Er({ receipt: e }) {
 				className: "border-t border-separator-border",
 				"data-ledger-backups": "",
 				children: /* @__PURE__ */ (0, Q.jsx)(I, { children: t.backups.map((e) => /* @__PURE__ */ (0, Q.jsx)(B, {
-					label: Cr(e),
-					description: wr(e),
+					label: Nr(e),
+					description: Pr(e),
 					children: /* @__PURE__ */ (0, Q.jsx)(E, {
 						variant: "secondary",
 						disabled: !t.writer || c,
@@ -819,11 +815,7 @@ function Er({ receipt: e }) {
 	});
 }
 // src/react/settings/library-sharing-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function jr({ initial: e, receipt: t }) {
-========
-function Dr({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Lr({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(null), [o, s] = (0, Z.useState)(!1), [c, l] = (0, Z.useState)(!1), u = (0, Z.useMemo)(() => i ? JSON.stringify(i.data, null, 2) : "", [i]), d = Y(), f = (e) => void d.run("save", (t) => G("/api/configuration/library-sharing", {
 		enabled: e,
 		schema: n.schema,
@@ -953,11 +945,7 @@ function Dr({ initial: e, receipt: t }) {
 	] });
 }
 // src/react/settings/remote-reporting-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Mr({ value: e, onChange: t, busy: n = !1 }) {
-========
-function Or({ value: e, onChange: t, busy: n = !1 }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Rr({ value: e, onChange: t, busy: n = !1 }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 		label: "发送版本统计与错误诊断（推荐）",
 		description: "上传版本、系统信息、故障类型、代码位置与发生次数。",
@@ -979,15 +967,9 @@ function Or({ value: e, onChange: t, busy: n = !1 }) {
 		})
 	})] });
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Nr({ initial: e, receipt: t }) {
+function zr({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), i = Y();
-	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Mr, {
-========
-function kr({ initial: e, receipt: t }) {
-	let [n, r] = (0, Z.useState)(e), i = Y();
-	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Or, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Rr, {
 		value: n,
 		busy: i.busy === "save",
 		onChange: (e) => {
@@ -1004,27 +986,16 @@ function kr({ initial: e, receipt: t }) {
 	}) : null] });
 }
 // src/react/components/animated-number.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Pr = .6;
-function Fr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
+var Br = .6;
+function Vr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
 	let r = Hn(), [i, a] = (0, Z.useState)(e), o = (0, Z.useRef)(e);
-========
-var Ar = .6;
-function jr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
-	let r = Fn(), [i, a] = (0, Z.useState)(e), o = (0, Z.useRef)(e);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 	return (0, Z.useEffect)(() => {
 		if (r || o.current === e) {
 			o.current = e, a(e);
 			return;
 		}
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 		let t = Yt(o.current, e, {
-			duration: Pr,
-========
-		let t = Gt(o.current, e, {
-			duration: Ar,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			duration: Br,
 			ease: "easeOut",
 			onUpdate: (e) => {
 				o.current = e, a(e);
@@ -1037,11 +1008,7 @@ function jr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), class
 	});
 }
 // node_modules/recharts/es6/state/selectors/pieSelectors.js
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ir(e, t) {
-========
-function Mr(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Hr(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1051,52 +1018,30 @@ function Mr(e, t) {
 	}
 	return n;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Lr(e) {
+function Ur(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? Ir(Object(n), !0).forEach(function(t) {
-			Rr(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Ir(Object(n)).forEach(function(t) {
-========
-function Nr(e) {
-	for (var t = 1; t < arguments.length; t++) {
-		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? Mr(Object(n), !0).forEach(function(t) {
-			Pr(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Mr(Object(n)).forEach(function(t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		t % 2 ? Hr(Object(n), !0).forEach(function(t) {
+			Wr(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Hr(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Rr(e, t, n) {
-	return (t = zr(t)) in e ? Object.defineProperty(e, t, {
-========
-function Pr(e, t, n) {
-	return (t = Fr(t)) in e ? Object.defineProperty(e, t, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Wr(e, t, n) {
+	return (t = Gr(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function zr(e) {
-	var t = Br(e, "string");
+function Gr(e) {
+	var t = Kr(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function Br(e, t) {
-========
-function Fr(e) {
-	var t = Ir(e, "string");
-	return typeof t == "symbol" ? t : t + "";
-}
-function Ir(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Kr(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1106,36 +1051,20 @@ function Ir(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Vr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Hr = [], Ur = (e, t, n) => n?.length === 0 ? Hr : n, Wr = oe([
+var qr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Jr = [], Yr = (e, t, n) => n?.length === 0 ? Jr : n, Xr = oe([
 	Te,
-	Vr,
-	Ur
-========
-var Lr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Rr = [], zr = (e, t, n) => n?.length === 0 ? Rr : n, Br = oe([
-	Te,
-	Lr,
-	zr
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	qr,
+	Yr
 ], (e, t, n) => {
 	var r = e.chartData;
 	if (t != null) {
 		var i = t?.data != null && t.data.length > 0 ? t.data : r;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		if (i && i.length || n == null || (i = n.map((e) => Lr(Lr({}, t.presentationProps), e.props))), i != null) return i;
+		if (i && i.length || n == null || (i = n.map((e) => Ur(Ur({}, t.presentationProps), e.props))), i != null) return i;
 	}
-}), Gr = oe([
-	Wr,
-	Vr,
-	Ur
-========
-		if (i && i.length || n == null || (i = n.map((e) => Nr(Nr({}, t.presentationProps), e.props))), i != null) return i;
-	}
-}), Vr = oe([
-	Br,
-	Lr,
-	zr
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}), Zr = oe([
+	Xr,
+	qr,
+	Yr
 ], (e, t, n) => {
 	if (e != null && t != null) return e.map((e, r) => {
 		var i, a = he(e, t.nameKey, t.name), o = n != null && (i = n[r]) != null && (i = i.props) != null && i.fill ? n[r].props.fill : typeof e == "object" && e && "fill" in e ? e.fill : t.fill;
@@ -1147,74 +1076,42 @@ var Lr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find(
 			type: t.legendType
 		};
 	});
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}), Kr = oe([
-	Wr,
-	Vr,
-	Ur,
+}), Qr = oe([
+	Xr,
+	qr,
+	Yr,
 	Ee
 ], (e, t, n, r) => {
-	if (t != null && e != null) return _i({
-========
-}), Hr = oe([
-	Br,
-	Lr,
-	zr,
-	Ee
-], (e, t, n, r) => {
-	if (t != null && e != null) return pi({
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	if (t != null && e != null) return Ci({
 		offset: r,
 		pieSettings: t,
 		displayedData: e,
 		cells: n
 	});
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}), qr = ["key"], Jr = [
+}), $r = ["key"], ei = [
 	"onMouseEnter",
 	"onClick",
 	"onMouseLeave"
-], Yr = ["id"], Xr = ["id"];
-function Zr() {
-	return Zr = Object.assign ? Object.assign.bind() : function(e) {
-========
-}), Ur = ["key"], Wr = [
-	"onMouseEnter",
-	"onClick",
-	"onMouseLeave"
-], Gr = ["id"], Kr = ["id"];
-function qr() {
-	return qr = Object.assign ? Object.assign.bind() : function(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+], ti = ["id"], ni = ["id"];
+function ri() {
+	return ri = Object.assign ? Object.assign.bind() : function(e) {
 		for (var t = 1; t < arguments.length; t++) {
 			var n = arguments[t];
 			for (var r in n) ({}).hasOwnProperty.call(n, r) && (e[r] = n[r]);
 		}
 		return e;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}, Zr.apply(null, arguments);
+	}, ri.apply(null, arguments);
 }
-function Qr(e, t) {
+function ii(e, t) {
 	if (e == null) return {};
-	var n, r, i = $r(e, t);
-========
-	}, qr.apply(null, arguments);
-}
-function Jr(e, t) {
-	if (e == null) return {};
-	var n, r, i = Yr(e, t);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	var n, r, i = ai(e, t);
 	if (Object.getOwnPropertySymbols) {
 		var a = Object.getOwnPropertySymbols(e);
 		for (r = 0; r < a.length; r++) n = a[r], t.indexOf(n) === -1 && {}.propertyIsEnumerable.call(e, n) && (i[n] = e[n]);
 	}
 	return i;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function $r(e, t) {
-========
-function Yr(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ai(e, t) {
 	if (e == null) return {};
 	var n = {};
 	for (var r in e) if ({}.hasOwnProperty.call(e, r)) {
@@ -1223,11 +1120,7 @@ function Yr(e, t) {
 	}
 	return n;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ei(e, t) {
-========
-function Xr(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function oi(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1240,46 +1133,27 @@ function Xr(e, t) {
 function $(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		t % 2 ? ei(Object(n), !0).forEach(function(t) {
-			ti(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : ei(Object(n)).forEach(function(t) {
-========
-		t % 2 ? Xr(Object(n), !0).forEach(function(t) {
-			Zr(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Xr(Object(n)).forEach(function(t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		t % 2 ? oi(Object(n), !0).forEach(function(t) {
+			si(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : oi(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ti(e, t, n) {
-	return (t = ni(t)) in e ? Object.defineProperty(e, t, {
-========
-function Zr(e, t, n) {
-	return (t = Qr(t)) in e ? Object.defineProperty(e, t, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function si(e, t, n) {
+	return (t = ci(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ni(e) {
-	var t = ri(e, "string");
+function ci(e) {
+	var t = li(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function ri(e, t) {
-========
-function Qr(e) {
-	var t = $r(e, "string");
-	return typeof t == "symbol" ? t : t + "";
-}
-function $r(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function li(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1289,21 +1163,12 @@ function $r(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var ii = S;
-function ai(e) {
-	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => Gr(t, e.id, n));
+var ui = S;
+function di(e) {
+	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => Zr(t, e.id, n));
 	return r == null ? null : /*#__PURE__*/ Z.createElement(w, { legendPayload: r });
 }
-function oi(e) {
-========
-var ei = S;
-function ti(e) {
-	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => Vr(t, e.id, n));
-	return r == null ? null : /*#__PURE__*/ Z.createElement(w, { legendPayload: r });
-}
-function ni(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function fi(e) {
 	if (e != null && typeof e != "boolean" && typeof e != "function") {
 		if (/*#__PURE__*/ Z.isValidElement(e)) {
 			var t = e.props?.fill;
@@ -1313,13 +1178,8 @@ function ni(e) {
 		return typeof n == "string" ? n : void 0;
 	}
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var si = /*#__PURE__*/ Z.memo((e) => {
-	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = oi(f), m = {
-========
-var ri = /*#__PURE__*/ Z.memo((e) => {
-	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = ni(f), m = {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var pi = /*#__PURE__*/ Z.memo((e) => {
+	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = fi(f), m = {
 		dataDefinedOnItem: r.map((e) => {
 			var t = e.tooltipPayload;
 			return p == null || t == null ? t : t.map((e) => $($({}, e), {}, {
@@ -1344,75 +1204,42 @@ var ri = /*#__PURE__*/ Z.memo((e) => {
 		}
 	};
 	return /*#__PURE__*/ Z.createElement(T, { tooltipEntrySettings: m });
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}), ci = (e, t) => e > t ? "start" : e < t ? "end" : "middle", li = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), ui = (e, t, n) => {
-========
-}), ii = (e, t) => e > t ? "start" : e < t ? "end" : "middle", ai = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), oi = (e, t, n) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}), mi = (e, t) => e > t ? "start" : e < t ? "end" : "middle", hi = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), gi = (e, t, n) => {
 	var r = t.top, i = t.left, a = t.width, o = t.height, s = fe(a, o);
 	return {
 		cx: i + pe(e.cx, a, a / 2),
 		cy: r + pe(e.cy, o, o / 2),
 		innerRadius: pe(e.innerRadius, s, 0),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		outerRadius: li(n, e.outerRadius, s),
+		outerRadius: hi(n, e.outerRadius, s),
 		maxRadius: e.maxRadius || Math.sqrt(a * a + o * o) / 2
 	};
-}, di = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), fi = (e, t) => {
-========
-		outerRadius: ai(n, e.outerRadius, s),
-		maxRadius: e.maxRadius || Math.sqrt(a * a + o * o) / 2
-	};
-}, si = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), ci = (e, t) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}, _i = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), vi = (e, t) => {
 	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
 	if (typeof e == "function") return e(t);
 	var n = en("recharts-pie-label-line", typeof e == "boolean" ? "" : e.className);
 	t.key;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	var r = Qr(t, qr);
-	return /*#__PURE__*/ Z.createElement(l, Zr({}, r, {
+	var r = ii(t, $r);
+	return /*#__PURE__*/ Z.createElement(l, ri({}, r, {
 		type: "linear",
 		className: n
 	}));
-}, pi = (e, t, n) => {
+}, yi = (e, t, n) => {
 	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
 	var r = n;
 	if (typeof e == "function" && (r = e(t), /*#__PURE__*/ Z.isValidElement(r))) return r;
 	var i = en("recharts-pie-label-text", ue(e));
-	return /*#__PURE__*/ Z.createElement(ne, Zr({}, t, {
-========
-	var r = Jr(t, Ur);
-	return /*#__PURE__*/ Z.createElement(l, qr({}, r, {
-		type: "linear",
-		className: n
-	}));
-}, li = (e, t, n) => {
-	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
-	var r = n;
-	if (typeof e == "function" && (r = e(t), /*#__PURE__*/ Z.isValidElement(r))) return r;
-	var i = Xt("recharts-pie-label-text", ue(e));
-	return /*#__PURE__*/ Z.createElement(ne, qr({}, t, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return /*#__PURE__*/ Z.createElement(ne, ri({}, t, {
 		alignmentBaseline: "middle",
 		className: i
 	}), r);
 };
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function mi(e) {
-========
-function ui(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function bi(e) {
 	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label, a = n.labelLine, o = n.dataKey;
 	if (!r || !i || !t) return null;
 	var s = Oe(n), c = ke(i), l = ke(a), u = typeof i == "object" && "offsetRadius" in i && typeof i.offsetRadius == "number" && i.offsetRadius || 20, d = t.map((e, t) => {
 		var n = (e.startAngle + e.endAngle) / 2, r = be(e.cx, e.cy, e.outerRadius + u, n), d = $($($($({}, s), e), {}, { stroke: "none" }, c), {}, {
 			index: t,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			textAnchor: ci(r.x, e.cx)
-========
-			textAnchor: ii(r.x, e.cx)
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			textAnchor: mi(r.x, e.cx)
 		}, r), p = $($($($({}, s), e), {}, {
 			fill: "none",
 			stroke: e.fill
@@ -1424,35 +1251,20 @@ function ui(e) {
 		return /*#__PURE__*/ Z.createElement(re, {
 			zIndex: f.label,
 			key: `label-${e.startAngle}-${e.endAngle}-${e.midAngle}-${t}`
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		}, /*#__PURE__*/ Z.createElement(g, null, a && fi(a, p), pi(i, d, he(e, o))));
+		}, /*#__PURE__*/ Z.createElement(g, null, a && vi(a, p), yi(i, d, he(e, o))));
 	});
 	return /*#__PURE__*/ Z.createElement(g, { className: "recharts-pie-labels" }, d);
 }
-function hi(e) {
+function xi(e) {
 	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label;
-	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(mi, {
-========
-		}, /*#__PURE__*/ Z.createElement(g, null, a && ci(a, p), li(i, d, he(e, o))));
-	});
-	return /*#__PURE__*/ Z.createElement(g, { className: "recharts-pie-labels" }, d);
-}
-function di(e) {
-	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label;
-	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(ui, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(bi, {
 		sectors: t,
 		props: n,
 		showLabels: r
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function gi(e) {
-	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = Qr(i, Jr), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
-========
-function fi(e) {
-	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = Jr(i, Wr), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Si(e) {
+	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = ii(i, ei), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
 	return t == null || t.length === 0 ? null : /*#__PURE__*/ Z.createElement(Z.Fragment, null, t.map((e, h) => {
 		if (e?.startAngle === 0 && e?.endAngle === 0 && t.length !== 1) return null;
 		var _ = m == null || m === o, v = String(h) === f && (p == null || i.dataKey === p) && _, C = n && v ? n : f ? r : null, w = $($({}, e), {}, {
@@ -1466,11 +1278,7 @@ function fi(e) {
 			[d]: h,
 			[u]: o
 		});
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		return /*#__PURE__*/ Z.createElement(g, Zr({
-========
-		return /*#__PURE__*/ Z.createElement(g, qr({
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		return /*#__PURE__*/ Z.createElement(g, ri({
 			key: `sector-${e?.startAngle}-${e?.endAngle}-${e.midAngle}-${h}`,
 			tabIndex: -1,
 			className: "recharts-pie-sector"
@@ -1480,22 +1288,13 @@ function fi(e) {
 			onClick: S(e, h)
 		}), /*#__PURE__*/ Z.createElement(ee, {
 			option: C ?? a,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			DefaultShape: ii,
-========
-			DefaultShape: ei,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			DefaultShape: ui,
 			shapeProps: w
 		}));
 	}));
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function _i(e) {
-	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = di(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
-========
-function pi(e) {
-	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = si(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ci(e) {
+	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = _i(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
 		var n = he(t, c, 0);
 		return e + (_e(n) ? n : 0);
 	}, 0), v = d > 0 && _ > 0 && n.some((e) => {
@@ -1505,11 +1304,7 @@ function pi(e) {
 	if (_ > 0) {
 		var x;
 		b = n.map((e, n) => {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			var s = he(e, c, 0), d = he(e, l, n), p = ui(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
-========
-			var s = he(e, c, 0), d = he(e, l, n), p = oi(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			var s = he(e, c, 0), d = he(e, l, n), p = gi(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
 			g = n ? x.endAngle + ye(f) * m * (s === 0 ? 0 : 1) : o;
 			var C = g + ye(f) * ((s === 0 ? 0 : v) + h * y), w = (g + C) / 2, T = (p.innerRadius + p.outerRadius) / 2, ee = [{
 				name: d,
@@ -1541,11 +1336,7 @@ function pi(e) {
 	}
 	return b;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function vi(e) {
-========
-function mi(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function wi(e) {
 	var t = e.showLabels, n = e.sectors, r = e.children, i = (0, Z.useMemo)(() => !t || !n ? [] : n.map((e) => ({
 		value: e.value,
 		payload: e.payload,
@@ -1564,11 +1355,7 @@ function mi(e) {
 	})), [n, t]);
 	return /*#__PURE__*/ Z.createElement(b, { value: t ? i : void 0 }, r);
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var yi = (e, t) => {
-========
-var hi = (e, t) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Ti = (e, t) => {
 	if (e == null) return [];
 	var n = [], r = e.find((e) => e.status !== "removed"), i = r ? r.next.startAngle : 0;
 	return e.forEach((e, r) => {
@@ -1590,19 +1377,11 @@ var hi = (e, t) => {
 		}
 	}), n;
 };
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function bi(t) {
+function Ei(t) {
 	var n = t.props, r = t.previousSectorsRef, i = t.id, a = n.sectors, o = n.activeShape, s = n.inactiveShape, c = n.animationInterpolateFn, l = je(n.onAnimationStart, n.onAnimationEnd), u = l.isAnimating, d = l.handleAnimationStart, f = l.handleAnimationEnd, p = Ie();
 	if (p == null) return null;
 	var m = a[0];
-	return /*#__PURE__*/ Z.createElement(vi, {
-========
-function gi(t) {
-	var n = t.props, r = t.previousSectorsRef, i = t.id, a = n.sectors, o = n.activeShape, s = n.inactiveShape, c = n.animationInterpolateFn, l = je(n.onAnimationStart, n.onAnimationEnd), u = l.isAnimating, d = l.handleAnimationStart, f = l.handleAnimationEnd, p = Ie();
-	if (p == null) return null;
-	var m = a[0];
-	return /*#__PURE__*/ Z.createElement(mi, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return /*#__PURE__*/ Z.createElement(wi, {
 		showLabels: !u,
 		sectors: a
 	}, /*#__PURE__*/ Z.createElement(e, {
@@ -1619,11 +1398,7 @@ function gi(t) {
 		animationInterpolateFn: c,
 		animationMatchBy: n.animationMatchBy,
 		layout: p
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(gi, {
-========
-	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(fi, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(Si, {
 		sectors: e,
 		activeShape: o,
 		inactiveShape: s,
@@ -1633,11 +1408,7 @@ function gi(t) {
 		animationElapsedTime: t,
 		isAnimating: u || t < 1,
 		isEntrance: r
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}))), /*#__PURE__*/ Z.createElement(hi, {
-========
-	}))), /*#__PURE__*/ Z.createElement(di, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}))), /*#__PURE__*/ Z.createElement(xi, {
 		showLabels: !u,
 		sectors: a,
 		props: n
@@ -1651,19 +1422,11 @@ function gi(t) {
 		clockWise: !1
 	}, n.children));
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var xi = {
+var Di = {
 	animationBegin: 400,
 	animationDuration: 1500,
 	animationEasing: "ease",
-	animationInterpolateFn: yi,
-========
-var _i = {
-	animationBegin: 400,
-	animationDuration: 1500,
-	animationEasing: "ease",
-	animationInterpolateFn: hi,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	animationInterpolateFn: Ti,
 	animationMatchBy: ve,
 	cx: "50%",
 	cy: "50%",
@@ -1681,30 +1444,17 @@ var _i = {
 	outerRadius: "80%",
 	paddingAngle: 0,
 	rootTabIndex: 0,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	shape: ii,
-========
-	shape: ei,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	shape: ui,
 	startAngle: 0,
 	stroke: "#fff",
 	zIndex: f.area
 };
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Si(e) {
-	var n = e.id, r = Qr(e, Yr), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => Kr(e, n, s)), l = (0, Z.useRef)(null), u = en("recharts-pie", a);
+function Oi(e) {
+	var n = e.id, r = ii(e, ti), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => Qr(e, n, s)), l = (0, Z.useRef)(null), u = en("recharts-pie", a);
 	return i || c == null ? (l.current = null, /*#__PURE__*/ Z.createElement(g, {
 		tabIndex: o,
 		className: u
-	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(si, {
-========
-function vi(e) {
-	var n = e.id, r = Jr(e, Gr), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => Hr(e, n, s)), l = (0, Z.useRef)(null), u = Xt("recharts-pie", a);
-	return i || c == null ? (l.current = null, /*#__PURE__*/ Z.createElement(g, {
-		tabIndex: o,
-		className: u
-	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(ri, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(pi, {
 		dataKey: e.dataKey,
 		nameKey: e.nameKey,
 		sectors: c,
@@ -1720,23 +1470,14 @@ function vi(e) {
 	}), /*#__PURE__*/ Z.createElement(g, {
 		tabIndex: o,
 		className: u
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}, /*#__PURE__*/ Z.createElement(bi, {
-========
-	}, /*#__PURE__*/ Z.createElement(gi, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}, /*#__PURE__*/ Z.createElement(Ei, {
 		props: $($({}, r), {}, { sectors: c }),
 		previousSectorsRef: l,
 		id: n
 	})));
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ci(e) {
-	var t = xe(e, xi), n = t.id, r = Qr(t, Xr), i = Oe(r);
-========
-function yi(e) {
-	var t = xe(e, _i), n = t.id, r = Jr(t, Kr), i = Oe(r);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ki(e) {
+	var t = xe(e, Di), n = t.id, r = ii(t, ni), i = Oe(r);
 	return /*#__PURE__*/ Z.createElement(x, {
 		id: n,
 		type: "pie"
@@ -1764,21 +1505,12 @@ function yi(e) {
 		cornerRadius: r.cornerRadius,
 		presentationProps: i,
 		maxRadius: t.maxRadius
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}), /*#__PURE__*/ Z.createElement(ai, Zr({}, r, { id: e })), /*#__PURE__*/ Z.createElement(Si, Zr({}, r, { id: e }))));
+	}), /*#__PURE__*/ Z.createElement(di, ri({}, r, { id: e })), /*#__PURE__*/ Z.createElement(Oi, ri({}, r, { id: e }))));
 }
-var wi = Ci;
-wi.displayName = "Pie";
+var Ai = ki;
+Ai.displayName = "Pie";
 // node_modules/recharts/es6/chart/PieChart.js
-function Ti(e, t) {
-========
-	}), /*#__PURE__*/ Z.createElement(ti, qr({}, r, { id: e })), /*#__PURE__*/ Z.createElement(vi, qr({}, r, { id: e }))));
-}
-var bi = yi;
-bi.displayName = "Pie";
-// node_modules/recharts/es6/chart/PieChart.js
-function xi(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ji(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1788,52 +1520,30 @@ function xi(e, t) {
 	}
 	return n;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ei(e) {
+function Mi(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? Ti(Object(n), !0).forEach(function(t) {
-			Di(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Ti(Object(n)).forEach(function(t) {
-========
-function Si(e) {
-	for (var t = 1; t < arguments.length; t++) {
-		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? xi(Object(n), !0).forEach(function(t) {
-			Ci(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : xi(Object(n)).forEach(function(t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		t % 2 ? ji(Object(n), !0).forEach(function(t) {
+			Ni(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : ji(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Di(e, t, n) {
-	return (t = Oi(t)) in e ? Object.defineProperty(e, t, {
-========
-function Ci(e, t, n) {
-	return (t = wi(t)) in e ? Object.defineProperty(e, t, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ni(e, t, n) {
+	return (t = Pi(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Oi(e) {
-	var t = ki(e, "string");
+function Pi(e) {
+	var t = Fi(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function ki(e, t) {
-========
-function wi(e) {
-	var t = Ti(e, "string");
-	return typeof t == "symbol" ? t : t + "";
-}
-function Ti(e, t) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Fi(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1843,50 +1553,27 @@ function Ti(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ai = ["item"], ji = Ei(Ei({}, se), {}, {
+var Ii = ["item"], Li = Mi(Mi({}, se), {}, {
 	layout: "centric",
 	startAngle: 0,
 	endAngle: 360
-}), Mi = /*#__PURE__*/ (0, Z.forwardRef)((e, t) => {
-	var n = xe(e, ji);
+}), Ri = /*#__PURE__*/ (0, Z.forwardRef)((e, t) => {
+	var n = xe(e, Li);
 	return /*#__PURE__*/ Z.createElement(v, {
 		chartName: "PieChart",
 		defaultTooltipEventType: "item",
-		validateTooltipEventTypes: Ai,
-========
-var Ei = ["item"], Di = Si(Si({}, se), {}, {
-	layout: "centric",
-	startAngle: 0,
-	endAngle: 360
-}), Oi = /*#__PURE__*/ (0, Z.forwardRef)((e, t) => {
-	var n = xe(e, Di);
-	return /*#__PURE__*/ Z.createElement(v, {
-		chartName: "PieChart",
-		defaultTooltipEventType: "item",
-		validateTooltipEventTypes: Ei,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		validateTooltipEventTypes: Ii,
 		tooltipPayloadSearcher: ae,
 		categoricalChartProps: n,
 		ref: t
 	});
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}), Ni = 5, Pi = 2e3, Fi = 0, Ii = "80%", Li = 0, Ri = 0, zi = 0, Bi = 360, Vi = [], Hi = (0, Z.createContext)(null);
-function Ui() {
-	let e = (0, Z.use)(Hi);
+}), zi = 5, Bi = 2e3, Vi = 0, Hi = "80%", Ui = 0, Wi = 0, Gi = 0, Ki = 360, qi = [], Ji = (0, Z.createContext)(null);
+function Yi() {
+	let e = (0, Z.use)(Ji);
 	if (!e) throw Error("Pie chart parts (<Pie />, <Tooltip />, …) must be used within <EvilPieChart />");
 	return e;
 }
-function Wi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
-========
-}), ki = 5, Ai = 2e3, ji = 0, Mi = "80%", Ni = 0, Pi = 0, Fi = 0, Ii = 360, Li = [], Ri = (0, Z.createContext)(null);
-function zi() {
-	let e = (0, Z.use)(Ri);
-	if (!e) throw Error("Pie chart parts (<Pie />, <Tooltip />, …) must be used within <EvilPieChart />");
-	return e;
-}
-function Bi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Xi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
 	let [d, f] = (0, Z.useState)(c), p = (0, Z.useCallback)((e) => {
 		if (f(e), e === null) {
 			l?.(null);
@@ -1919,20 +1606,12 @@ function Bi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className
 		d,
 		p
 	]);
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	return /* @__PURE__ */ (0, Q.jsx)(Hi, {
-========
-	return /* @__PURE__ */ (0, Q.jsx)(Ri, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return /* @__PURE__ */ (0, Q.jsx)(Ji, {
 		value: m,
 		children: /* @__PURE__ */ (0, Q.jsxs)(r, {
 			className: o,
 			config: e,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(Mi, {
-========
-			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(Oi, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(Ri, {
 				id: "evil-charts-pie-chart",
 				accessibilityLayer: !0,
 				...s,
@@ -1941,17 +1620,10 @@ function Bi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className
 		})
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Gi({ variant: e = "gradient", innerRadius: t = Fi, outerRadius: n = Ii, cornerRadius: r = Li, paddingAngle: i = Ri, startAngle: a = zi, endAngle: o = Bi, isClickable: s = !1, glowingSectors: c = Vi, children: l, pieProps: u }) {
-	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = Ui(), v = (0, Z.useId)().replace(/:/g, "");
-	if (h) return /* @__PURE__ */ (0, Q.jsx)(wi, {
-		data: $i,
-========
-function Vi({ variant: e = "gradient", innerRadius: t = ji, outerRadius: n = Mi, cornerRadius: r = Ni, paddingAngle: i = Pi, startAngle: a = Fi, endAngle: o = Ii, isClickable: s = !1, glowingSectors: c = Li, children: l, pieProps: u }) {
-	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = zi(), v = (0, Z.useId)().replace(/:/g, "");
-	if (h) return /* @__PURE__ */ (0, Q.jsx)(bi, {
-		data: Yi,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Zi({ variant: e = "gradient", innerRadius: t = Vi, outerRadius: n = Hi, cornerRadius: r = Ui, paddingAngle: i = Wi, startAngle: a = Gi, endAngle: o = Ki, isClickable: s = !1, glowingSectors: c = qi, children: l, pieProps: u }) {
+	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = Yi(), v = (0, Z.useId)().replace(/:/g, "");
+	if (h) return /* @__PURE__ */ (0, Q.jsx)(Ai, {
+		data: aa,
 		dataKey: "value",
 		nameKey: "name",
 		innerRadius: t,
@@ -1962,23 +1634,13 @@ function Vi({ variant: e = "gradient", innerRadius: t = ji, outerRadius: n = Mi,
 		endAngle: o,
 		strokeWidth: 0,
 		isAnimationActive: !1,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		shape: (e) => /* @__PURE__ */ (0, Q.jsx)(ea, { ...e })
+		shape: (e) => /* @__PURE__ */ (0, Q.jsx)(oa, { ...e })
 	});
-	let y = Xi(l, p), b = f.map((e) => ({
+	let y = na(l, p), b = f.map((e) => ({
 		...e,
 		fill: `url(#${v}-colors-${e[m]})`
 	}));
-	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(wi, {
-========
-		shape: (e) => /* @__PURE__ */ (0, Q.jsx)(Xi, { ...e })
-	});
-	let y = Ki(l, p), b = f.map((e) => ({
-		...e,
-		fill: `url(#${v}-colors-${e[m]})`
-	}));
-	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(bi, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Ai, {
 		data: b,
 		dataKey: p,
 		nameKey: m,
@@ -2010,32 +1672,18 @@ function Vi({ variant: e = "gradient", innerRadius: t = ji, outerRadius: n = Mi,
 		},
 		...u,
 		children: y
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(Zi, {
+	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(ra, {
 		id: v,
 		config: d,
 		variant: e
-	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(Qi, {
-========
-	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(qi, {
-		id: v,
-		config: d,
-		variant: e
-	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(Ji, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(ia, {
 		id: v,
 		glowingSectors: c
 	})] })] });
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ki = () => null;
-function qi({ variant: e, roundness: t, defaultIndex: n }) {
-	let { isLoading: r, nameKey: i } = Ui();
-========
-var Hi = () => null;
-function Ui({ variant: e, roundness: t, defaultIndex: n }) {
-	let { isLoading: r, nameKey: i } = zi();
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Qi = () => null;
+function $i({ variant: e, roundness: t, defaultIndex: n }) {
+	let { isLoading: r, nameKey: i } = Yi();
 	return r ? null : /* @__PURE__ */ (0, Q.jsx)(s, {
 		defaultIndex: n,
 		content: /* @__PURE__ */ (0, Q.jsx)(c, {
@@ -2046,13 +1694,8 @@ function Ui({ variant: e, roundness: t, defaultIndex: n }) {
 		})
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ji({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
-	let { nameKey: o, selectedSector: s, selectSector: c } = Ui();
-========
-function Wi({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
-	let { nameKey: o, selectedSector: s, selectSector: c } = zi();
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ea({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
+	let { nameKey: o, selectedSector: s, selectSector: c } = Yi();
 	return /* @__PURE__ */ (0, Q.jsx)(i, {
 		verticalAlign: n,
 		align: t,
@@ -2065,23 +1708,13 @@ function Wi({ variant: e, align: t = "center", verticalAlign: n = "bottom", isCl
 		})
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Yi({ variant: e = "dots" }) {
+function ta({ variant: e = "dots" }) {
 	return /* @__PURE__ */ (0, Q.jsx)(n, { variant: e });
 }
-var Xi = (e, t) => {
+var na = (e, t) => {
 	let n = null;
 	return Z.Children.forEach(e, (e) => {
-		if (!(0, Z.isValidElement)(e) || e.type !== Ki) return;
-========
-function Gi({ variant: e = "dots" }) {
-	return /* @__PURE__ */ (0, Q.jsx)(n, { variant: e });
-}
-var Ki = (e, t) => {
-	let n = null;
-	return Z.Children.forEach(e, (e) => {
-		if (!(0, Z.isValidElement)(e) || e.type !== Hi) return;
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		if (!(0, Z.isValidElement)(e) || e.type !== Qi) return;
 		let { dataKey: r, labelListProps: i } = e.props;
 		n = /* @__PURE__ */ (0, Q.jsx)(m, {
 			dataKey: r ?? t,
@@ -2093,11 +1726,7 @@ var Ki = (e, t) => {
 			...i
 		});
 	}), n;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}, Zi = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
-========
-}, qi = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}, ra = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
 	let r = de(n);
 	return /* @__PURE__ */ (0, Q.jsx)("linearGradient", {
 		id: `${e}-colors-${t}`,
@@ -2119,11 +1748,7 @@ var Ki = (e, t) => {
 			}, i);
 		})
 	}, `${e}-colors-${t}`);
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}) }), Qi = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
-========
-}) }), Ji = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}) }), ia = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
 	id: `${e}-glow-${t}`,
 	x: "-100%",
 	y: "-100%",
@@ -2143,21 +1768,12 @@ var Ki = (e, t) => {
 		}),
 		/* @__PURE__ */ (0, Q.jsxs)("feMerge", { children: [/* @__PURE__ */ (0, Q.jsx)("feMergeNode", { in: "glow" }), /* @__PURE__ */ (0, Q.jsx)("feMergeNode", { in: "SourceGraphic" })] })
 	]
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}, `${e}-glow-${t}`)) }), $i = Array.from({ length: Ni }, (e, t) => ({
+}, `${e}-glow-${t}`)) }), aa = Array.from({ length: zi }, (e, t) => ({
 	name: `loading${t}`,
-	value: 100 / Ni
-})), ea = (e) => {
-	let { index: t = 0, ...n } = e, r = t / Ni * (Pi / 1e3);
+	value: 100 / zi
+})), oa = (e) => {
+	let { index: t = 0, ...n } = e, r = t / zi * (Bi / 1e3);
 	return /* @__PURE__ */ (0, Q.jsx)(xn.g, {
-========
-}, `${e}-glow-${t}`)) }), Yi = Array.from({ length: ki }, (e, t) => ({
-	name: `loading${t}`,
-	value: 100 / ki
-})), Xi = (e) => {
-	let { index: t = 0, ...n } = e, r = t / ki * (Ai / 1e3);
-	return /* @__PURE__ */ (0, Q.jsx)(mn.g, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		initial: { opacity: .15 },
 		animate: { opacity: [
 			.15,
@@ -2165,11 +1781,7 @@ var Ki = (e, t) => {
 			.15
 		] },
 		transition: {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			duration: Pi / 1e3,
-========
-			duration: Ai / 1e3,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			duration: Bi / 1e3,
 			delay: r,
 			repeat: Infinity,
 			ease: "easeInOut"
@@ -2180,15 +1792,9 @@ var Ki = (e, t) => {
 		})
 	});
 };
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-Wi.Pie = Gi, Wi.Label = Ki, Wi.Tooltip = qi, Wi.Legend = Ji, Wi.Background = Yi;
+Xi.Pie = Zi, Xi.Label = Qi, Xi.Tooltip = $i, Xi.Legend = ea, Xi.Background = ta;
 // src/react/settings/storage-charts.tsx
-var ta = {
-========
-Bi.Pie = Vi, Bi.Label = Hi, Bi.Tooltip = Ui, Bi.Legend = Wi, Bi.Background = Gi;
-// src/react/settings/storage-charts.tsx
-var Zi = {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var sa = {
 	database: "var(--color-chart-1)",
 	backups: "var(--color-chart-2)",
 	playback: "var(--color-chart-3)",
@@ -2198,11 +1804,7 @@ var Zi = {
 	sources: "var(--color-chart-7)",
 	records: "var(--color-chart-8)",
 	tools: "var(--color-chart-9)"
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}, na = "var(--color-text-tertiary)", ra = {
-========
-}, Qi = "var(--color-text-tertiary)", $i = {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}, ca = "var(--color-text-tertiary)", la = {
 	database: "bg-chart-1",
 	backups: "bg-chart-2",
 	playback: "bg-chart-3",
@@ -2212,42 +1814,23 @@ var Zi = {
 	sources: "bg-chart-7",
 	records: "bg-chart-8",
 	tools: "bg-chart-9"
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}, ia = (e) => J(e);
-function aa(e) {
-	let t = e.filter((e) => ta[e.key] && e.bytes > 0).map((e) => ({
+}, ua = (e) => J(e);
+function da(e) {
+	let t = e.filter((e) => sa[e.key] && e.bytes > 0).map((e) => ({
 		key: e.key,
 		label: e.label,
 		bytes: e.bytes,
-		color: ta[e.key]
-	})), n = e.filter((e) => !ta[e.key]).reduce((e, t) => e + t.bytes, 0);
-========
-}, ea = (e) => J(e);
-function ta(e) {
-	let t = e.filter((e) => Zi[e.key] && e.bytes > 0).map((e) => ({
-		key: e.key,
-		label: e.label,
-		bytes: e.bytes,
-		color: Zi[e.key]
-	})), n = e.filter((e) => !Zi[e.key]).reduce((e, t) => e + t.bytes, 0);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		color: sa[e.key]
+	})), n = e.filter((e) => !sa[e.key]).reduce((e, t) => e + t.bytes, 0);
 	return n > 0 ? [...t, {
 		key: "rest",
 		label: "其余",
 		bytes: n,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		color: na
+		color: ca
 	}] : t;
 }
-function oa({ storage: e }) {
-	let t = e.usage, n = aa(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
-========
-		color: Qi
-	}] : t;
-}
-function na({ storage: e }) {
-	let t = e.usage, n = ta(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function fa({ storage: e }) {
+	let t = e.usage, n = da(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
 		label: e.label,
 		colors: Ae(e.color)
 	}])), i = n.map((e) => ({
@@ -2259,23 +1842,14 @@ function na({ storage: e }) {
 		children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "relative mx-auto size-48 flex-none",
 			role: "img",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			"aria-label": `数据目录共 ${ia(t.total_bytes)}，各类占比`,
-			children: [/* @__PURE__ */ (0, Q.jsxs)(Wi, {
-========
-			"aria-label": `数据目录共 ${ea(t.total_bytes)}，各类占比`,
-			children: [/* @__PURE__ */ (0, Q.jsxs)(Bi, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			"aria-label": `数据目录共 ${ua(t.total_bytes)}，各类占比`,
+			children: [/* @__PURE__ */ (0, Q.jsxs)(Xi, {
 				data: i,
 				dataKey: "value",
 				nameKey: "slice",
 				config: r,
 				className: "aspect-square size-48 flex-none",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: [/* @__PURE__ */ (0, Q.jsx)(Wi.Pie, {
-========
-				children: [/* @__PURE__ */ (0, Q.jsx)(Bi.Pie, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: [/* @__PURE__ */ (0, Q.jsx)(Xi.Pie, {
 					innerRadius: "68%",
 					outerRadius: "100%",
 					paddingAngle: 1,
@@ -2283,21 +1857,13 @@ function na({ storage: e }) {
 				}), /* @__PURE__ */ (0, Q.jsx)(o, {
 					nameKey: "slice",
 					hideLabel: !0,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					format: ia
-========
-					format: ea
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					format: ua
 				})]
 			}), /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "pointer-events-none absolute inset-0 flex flex-col items-center justify-center",
 				children: [/* @__PURE__ */ (0, Q.jsx)("b", {
 					className: "text-title-2-medium tabular-nums text-text-primary",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					children: ia(t.total_bytes)
-========
-					children: ea(t.total_bytes)
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					children: ua(t.total_bytes)
 				}), /* @__PURE__ */ (0, Q.jsxs)("small", {
 					className: "text-caption-1-regular tabular-nums text-text-secondary",
 					children: [t.total_files.toLocaleString(), " 个文件"]
@@ -2313,36 +1879,20 @@ function na({ storage: e }) {
 					children: [
 						/* @__PURE__ */ (0, Q.jsx)("i", {
 							"aria-hidden": !0,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							className: `${te} ${ra[e.key] || "bg-text-tertiary"}`
-========
-							className: `${te} ${$i[e.key] || "bg-text-tertiary"}`
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+							className: `${te} ${la[e.key] || "bg-text-tertiary"}`
 						}),
 						e.label,
 						/* @__PURE__ */ (0, Q.jsx)("span", {
 							className: "tabular-nums text-text-primary",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							children: ia(e.bytes)
+							children: ua(e.bytes)
 						})
 					]
 				}, e.key))
-			}), /* @__PURE__ */ (0, Q.jsx)(sa, { storage: e })]
+			}), /* @__PURE__ */ (0, Q.jsx)(pa, { storage: e })]
 		})]
 	});
 }
-function sa({ storage: e }) {
-========
-							children: ea(e.bytes)
-						})
-					]
-				}, e.key))
-			}), /* @__PURE__ */ (0, Q.jsx)(ra, { storage: e })]
-		})]
-	});
-}
-function ra({ storage: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function pa({ storage: e }) {
 	if (e.total_bytes === null || e.free_bytes === null || !e.usage) return null;
 	let t = Math.min(e.usage.total_bytes, e.total_bytes), n = e.free_bytes, r = Math.max(0, e.total_bytes - n - t), i = {
 		peach: {
@@ -2351,11 +1901,7 @@ function ra({ storage: e }) {
 		},
 		others: {
 			label: "其他文件",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			colors: Ae(na)
-========
-			colors: Ae(Qi)
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			colors: Ae(ca)
 		},
 		free: {
 			label: "可用",
@@ -2368,11 +1914,7 @@ function ra({ storage: e }) {
 			className: "text-caption-1-regular text-text-secondary",
 			children: [
 				"所在磁盘共 ",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				ia(e.total_bytes),
-========
-				ea(e.total_bytes),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				ua(e.total_bytes),
 				e.system_drive ? "（系统盘）" : "",
 				"，Peach 占 ",
 				((t) => {
@@ -2380,11 +1922,7 @@ function ra({ storage: e }) {
 					return n < .1 ? "不到 0.1%" : `${n.toFixed(+(n < 10))}%`;
 				})(t),
 				"， 可用 ",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				ia(n)
-========
-				ea(n)
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				ua(n)
 			]
 		}), /* @__PURE__ */ (0, Q.jsxs)(p, {
 			data: [{
@@ -2415,45 +1953,26 @@ function ra({ storage: e }) {
 				/* @__PURE__ */ (0, Q.jsx)(p.Bar, { dataKey: "free" }),
 				/* @__PURE__ */ (0, Q.jsx)(o, {
 					hideLabel: !0,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					format: ia
-========
-					format: ea
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					format: ua
 				})
 			]
 		})]
 	});
 }
 // src/react/settings/storage-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var ca = "/api/configuration/storage", la = 1500, ua = 864e5, da = (e) => e instanceof qe && e.body?.errors?.target || q(e);
-function fa(e) {
-========
-var ia = "/api/configuration/storage", aa = 1500, oa = 864e5, sa = (e) => e instanceof qe && e.body?.errors?.target || q(e);
-function ca(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var ma = "/api/configuration/storage", ha = 1500, ga = 864e5, _a = (e) => e instanceof qe && e.body?.errors?.target || q(e);
+function va(e) {
 	if (e.free_bytes === null || e.total_bytes === null) return "未取得";
 	let t = `${J(e.free_bytes)} 可用，共 ${J(e.total_bytes)}`;
 	return e.system_drive ? `${t}（系统盘）` : t;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var pa = (e) => e.cleanable && e.reclaimable > 0;
-function ma({ job: e }) {
+var ya = (e) => e.cleanable && e.reclaimable > 0;
+function ba({ job: e }) {
 	let t = e.files || 0, n = e.expected_files || 0, r = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
 		"已统计 ",
-		/* @__PURE__ */ (0, Q.jsx)(Fr, { value: t }),
+		/* @__PURE__ */ (0, Q.jsx)(Vr, { value: t }),
 		" 个文件 · ",
-		/* @__PURE__ */ (0, Q.jsx)(Fr, {
-========
-var la = (e) => e.cleanable && e.reclaimable > 0;
-function ua({ job: e }) {
-	let t = e.files || 0, n = e.expected_files || 0, r = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
-		"已统计 ",
-		/* @__PURE__ */ (0, Q.jsx)(jr, { value: t }),
-		" 个文件 · ",
-		/* @__PURE__ */ (0, Q.jsx)(jr, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		/* @__PURE__ */ (0, Q.jsx)(Vr, {
 			value: e.bytes || 0,
 			format: J
 		})
@@ -2473,13 +1992,8 @@ function ua({ job: e }) {
 		] })] }) : /* @__PURE__ */ (0, Q.jsx)(_t, { label: "正在统计占用空间" }), n ? null : /* @__PURE__ */ (0, Q.jsx)(N, { children: r })]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ha({ category: e, selected: t, disabled: n, onToggle: r }) {
-	let i = pa(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
-========
-function da({ category: e, selected: t, disabled: n, onToggle: r }) {
-	let i = la(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function xa({ category: e, selected: t, disabled: n, onToggle: r }) {
+	let i = ya(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"data-category": e.key,
 		className: "flex min-h-13 w-full items-start gap-3 border-b border-separator-border py-2.5 pr-3 last:border-b-0",
@@ -2498,11 +2012,7 @@ function da({ category: e, selected: t, disabled: n, onToggle: r }) {
 						className: "flex items-center gap-2 text-body-regular text-text-primary",
 						children: [/* @__PURE__ */ (0, Q.jsx)("i", {
 							"aria-hidden": !0,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							className: `size-2.5 shrink-0 rounded-xs ${ra[e.key] || "bg-text-tertiary"}`
-========
-							className: `size-2.5 shrink-0 rounded-xs ${$i[e.key] || "bg-text-tertiary"}`
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+							className: `size-2.5 shrink-0 rounded-xs ${la[e.key] || "bg-text-tertiary"}`
 						}), e.label]
 					}),
 					/* @__PURE__ */ (0, Q.jsx)("p", {
@@ -2517,11 +2027,7 @@ function da({ category: e, selected: t, disabled: n, onToggle: r }) {
 			}),
 			/* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex shrink-0 flex-col items-end gap-0.5 text-right",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: [/* @__PURE__ */ (0, Q.jsx)(Fr, {
-========
-				children: [/* @__PURE__ */ (0, Q.jsx)(jr, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: [/* @__PURE__ */ (0, Q.jsx)(Vr, {
 					value: e.bytes,
 					format: J,
 					className: "text-body-regular text-text-primary"
@@ -2533,37 +2039,22 @@ function da({ category: e, selected: t, disabled: n, onToggle: r }) {
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ga({ initial: e, receipt: t }) {
-========
-function fa({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Sa({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(""), [o, s] = (0, Z.useState)(/* @__PURE__ */ new Set()), c = Y(), l = n.job.state !== "idle", u = (0, Z.useRef)(l);
 	(0, Z.useEffect)(() => {
 		if (!l) return;
 		let e = new AbortController(), t = setTimeout(() => {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			W(ca, e.signal).then(r, () => {
+			W(ma, e.signal).then(r, () => {
 				e.signal.aborted || r((e) => ({ ...e }));
 			});
-		}, la);
-========
-			W(ia, e.signal).then(r, () => {
-				e.signal.aborted || r((e) => ({ ...e }));
-			});
-		}, aa);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		}, ha);
 		return () => {
 			e.abort(), clearTimeout(t);
 		};
 	}, [n]), (0, Z.useEffect)(() => {
 		l ? u.current = !0 : u.current && (u.current = !1, s(/* @__PURE__ */ new Set()), n.job.error || t(n.job.message || "已统计占用空间"));
 	}, [l]);
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	let d = () => void c.run("measure", (e) => G(`${ca}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(pa) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
-========
-	let d = () => void c.run("measure", (e) => G(`${ia}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(la) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	let d = () => void c.run("measure", (e) => G(`${ma}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(ya) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
 		if (!e.length) return;
 		let n = e.reduce((e, t) => e + t.reclaimable, 0);
 		nn({
@@ -2571,11 +2062,7 @@ function fa({ initial: e, receipt: t }) {
 			body: `将删除 ${J(n)}：${e.map((e) => `${e.label} ${J(e.reclaimable)}（清理后${e.note}）`).join("；")}。`,
 			confirmLabel: `清理 ${J(n)}`,
 			danger: e.some((e) => e.key === "backups"),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			onConfirm: async () => r(await G(`${ca}/clean`, { categories: e.map((e) => e.key) }))
-========
-			onConfirm: async () => r(await G(`${ia}/clean`, { categories: e.map((e) => e.key) }))
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			onConfirm: async () => r(await G(`${ma}/clean`, { categories: e.map((e) => e.key) }))
 		});
 	}, g = () => void c.run("relocate", async (e) => {
 		let t = (await G(Ct, { initial: n.data_root }, "POST", e)).path;
@@ -2587,23 +2074,13 @@ function fa({ initial: e, receipt: t }) {
 			confirmLabel: "迁移数据目录",
 			onConfirm: async () => {
 				try {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					a((await G(`${ca}/relocate`, { target: t })).message);
+					a((await G(`${ma}/relocate`, { target: t })).message);
 				} catch (e) {
-					throw Error(da(e));
+					throw Error(_a(e));
 				}
 			}
 		});
-	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < ua), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
-========
-					a((await G(`${ia}/relocate`, { target: t })).message);
-				} catch (e) {
-					throw Error(sa(e));
-				}
-			}
-		});
-	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < oa), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < ga), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
 		let r = new Set(n);
 		return t ? r.add(e) : r.delete(e), r;
 	});
@@ -2621,20 +2098,12 @@ function fa({ initial: e, receipt: t }) {
 				})
 			}), /* @__PURE__ */ (0, Q.jsx)(j, {
 				term: "所在磁盘",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: fa(n)
-========
-				children: ca(n)
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: va(n)
 			})] }),
 			/* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(ma, { job: n.job }) : null,
-========
-					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(ua, { job: n.job }) : null,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(ba, { job: n.job }) : null,
 					f ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 						"data-storage-result": "",
 						className: Qt({
@@ -2644,17 +2113,10 @@ function fa({ initial: e, receipt: t }) {
 						}),
 						children: [/* @__PURE__ */ (0, Q.jsx)("div", {
 							className: "border-b border-separator-border p-4",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							children: /* @__PURE__ */ (0, Q.jsx)(oa, { storage: n })
+							children: /* @__PURE__ */ (0, Q.jsx)(fa, { storage: n })
 						}), /* @__PURE__ */ (0, Q.jsx)("div", {
 							className: "flex flex-col pl-4",
-							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(ha, {
-========
-							children: /* @__PURE__ */ (0, Q.jsx)(na, { storage: n })
-						}), /* @__PURE__ */ (0, Q.jsx)("div", {
-							className: "flex flex-col pl-4",
-							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(da, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(xa, {
 								category: e,
 								selected: o.has(e.key),
 								disabled: x,
@@ -2713,81 +2175,48 @@ function fa({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/maintenance-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var _a = [
-========
-var pa = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Ca = [
 	["6", "每 6 小时"],
 	["24", "每天"],
 	["168", "每周"]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function va({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
-========
-function ma({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function wa({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...ur(r),
 		children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.storage ? /* @__PURE__ */ (0, Q.jsx)(ga, {
-========
-			e.storage ? /* @__PURE__ */ (0, Q.jsx)(fa, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.storage ? /* @__PURE__ */ (0, Q.jsx)(Sa, {
 				initial: e.storage,
 				receipt: t
 			}) : null,
-			e.storage ? /* @__PURE__ */ (0, Q.jsx)(Er, { receipt: t }) : null,
+			e.storage ? /* @__PURE__ */ (0, Q.jsx)(Ir, { receipt: t }) : null,
 			e.remote_reporting || e.library_sharing ? /* @__PURE__ */ (0, Q.jsxs)(L, {
 				id: "librarySharing",
 				guide: "reporting",
 				title: "数据上传",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(Nr, {
-========
-				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(kr, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(zr, {
 					initial: e.remote_reporting,
 					receipt: t
 				}) : null, e.library_sharing ? /* @__PURE__ */ (0, Q.jsx)("div", {
 					className: "border-t border-separator-border",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					children: /* @__PURE__ */ (0, Q.jsx)(jr, {
-========
-					children: /* @__PURE__ */ (0, Q.jsx)(Dr, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					children: /* @__PURE__ */ (0, Q.jsx)(Lr, {
 						initial: e.library_sharing,
 						receipt: t
 					})
 				}) : null]
 			}) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(xa, { facts: e.facts }),
-			/* @__PURE__ */ (0, Q.jsx)(ya, {
+			/* @__PURE__ */ (0, Q.jsx)(Da, { facts: e.facts }),
+			/* @__PURE__ */ (0, Q.jsx)(Ta, {
 				receipt: t,
 				reopenTutorial: n
 			}),
-			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(Sa, {
-========
-			/* @__PURE__ */ (0, Q.jsx)(_a, { facts: e.facts }),
-			/* @__PURE__ */ (0, Q.jsx)(ha, {
-				receipt: t,
-				reopenTutorial: n
-			}),
-			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(va, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(Oa, {
 				uninstall: e.uninstall,
 				receipt: t
 			}) : null
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ya({ reopenTutorial: e }) {
-========
-function ha({ reopenTutorial: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ta({ reopenTutorial: e }) {
 	return /* @__PURE__ */ (0, Q.jsx)("section", {
 		"aria-label": "新手教程",
 		className: "w-full",
@@ -2802,11 +2231,7 @@ function ha({ reopenTutorial: e }) {
 		}) }) })
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ba({ initial: e, receipt: t }) {
-========
-function ga({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ea({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.mode), [i, a] = (0, Z.useState)(e.interval_hours), o = Y(e.error), s = (r) => {
 		r.preventDefault(), e.available && o.run("save", (e) => G("/api/configuration/automatic-updates", {
 			mode: n,
@@ -2849,11 +2274,7 @@ function ga({ initial: e, receipt: t }) {
 						onSelectionChange: (e) => {
 							e !== null && a(Number(e));
 						},
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-						children: _a.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
-========
-						children: pa.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+						children: Ca.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 							id: e,
 							children: t
 						}, e))
@@ -2873,11 +2294,7 @@ function ga({ initial: e, receipt: t }) {
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function xa({ facts: e }) {
-========
-function _a({ facts: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Da({ facts: e }) {
 	return /* @__PURE__ */ (0, Q.jsx)(L, {
 		guide: "facts",
 		title: "运行信息",
@@ -2890,13 +2307,8 @@ function _a({ facts: e }) {
 		}, e.term)) })
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Sa({ uninstall: e, receipt: t }) {
+function Oa({ uninstall: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(!1), [i, a] = (0, Z.useState)(""), o = () => void nn({
-========
-function va({ uninstall: e, receipt: t }) {
-	let [n, r] = (0, Z.useState)(!1), [i, a] = (0, Z.useState)(""), o = () => void Qt({
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		title: "卸载 Peach",
 		danger: !0,
 		body: n ? "将退出 Peach，移除程序、开机自启、桌面图标、设置、本地数据库、观看记录、凭据和缓存。原始媒体文件保留。" : "将退出 Peach 并移除程序、开机自启和桌面图标。设置、本地数据库、观看记录与缓存保留。",
@@ -2952,40 +2364,23 @@ function va({ uninstall: e, receipt: t }) {
 	});
 }
 // src/react/settings/release-updates.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ca = /* @__PURE__ */ new Set([
-========
-var ya = /* @__PURE__ */ new Set([
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var ka = /* @__PURE__ */ new Set([
 	"downloading",
 	"verifying",
 	"extracting",
 	"preparing",
 	"restarting",
 	"installing"
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-]), wa = [
+]), Aa = [
 	65,
 	75,
 	90
-], Ta = 120, Ea = "https://github.com/peach-mitao/peach/releases";
-function Da({ initial: e, initialJob: t }) {
+], ja = 120, Ma = "https://github.com/peach-mitao/peach/releases";
+function Na({ initial: e, initialJob: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(t || {
 		state: "idle",
 		progress: 0
-	}), [o, s] = (0, Z.useState)(""), c = Y(), l = (0, Z.useRef)(!1), u = (0, Z.useRef)(!0), d = Ca.has(i.state);
-========
-]), ba = [
-	65,
-	75,
-	90
-], xa = 120, Sa = "https://github.com/peach-mitao/peach/releases";
-function Ca({ initial: e, initialJob: t }) {
-	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(t || {
-		state: "idle",
-		progress: 0
-	}), [o, s] = (0, Z.useState)(""), c = Y(), l = (0, Z.useRef)(!1), u = (0, Z.useRef)(!0), d = ya.has(i.state);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}), [o, s] = (0, Z.useState)(""), c = Y(), l = (0, Z.useRef)(!1), u = (0, Z.useRef)(!0), d = ka.has(i.state);
 	(0, Z.useEffect)(() => (u.current = !0, () => {
 		u.current = !1;
 	}), []);
@@ -3002,11 +2397,7 @@ function Ca({ initial: e, initialJob: t }) {
 	(0, Z.useEffect)(() => {
 		i.state !== "ready" || l.current || (l.current = !0, p());
 	}, [i.state]), (0, Z.useEffect)(() => {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		let e = new AbortController(), t = Ca.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
-========
-		let e = new AbortController(), t = ya.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		let e = new AbortController(), t = ka.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
 			try {
 				let t = await W("/api/configuration/update-status", e.signal);
 				if (e.signal.aborted) return;
@@ -3019,15 +2410,9 @@ function Ca({ initial: e, initialJob: t }) {
 				let n = await W("/api/configuration/automatic-updates", e.signal);
 				!e.signal.aborted && n.result && r(n.result);
 			} catch {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				o += 1, o >= Ta && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
+				o += 1, o >= ja && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
 			}
-			!e.signal.aborted && o < Ta && (n = setTimeout(c, t));
-========
-				o += 1, o >= xa && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
-			}
-			!e.signal.aborted && o < xa && (n = setTimeout(c, t));
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			!e.signal.aborted && o < ja && (n = setTimeout(c, t));
 		};
 		return n = setTimeout(c, t), () => {
 			e.abort(), clearTimeout(n);
@@ -3093,11 +2478,7 @@ function Ca({ initial: e, initialJob: t }) {
 							/* @__PURE__ */ (0, Q.jsx)(At, {
 								label: "更新准备进度",
 								value: i.progress,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-								stops: wa
-========
-								stops: ba
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+								stops: Aa
 							}),
 							/* @__PURE__ */ (0, Q.jsxs)(N, { children: ["下载 → 校验 → 解压 → 准备安装 · ", i.message] }),
 							/* @__PURE__ */ (0, Q.jsx)(N, { children: _ })
@@ -3118,11 +2499,7 @@ function Ca({ initial: e, initialJob: t }) {
 							children: "GitHub"
 						}),
 						/* @__PURE__ */ (0, Q.jsx)(A, {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							href: n.release_url || Ea,
-========
-							href: n.release_url || Sa,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+							href: n.release_url || Ma,
 							children: "查看发布页"
 						})
 					]
@@ -3156,11 +2533,7 @@ function Ca({ initial: e, initialJob: t }) {
 	});
 }
 // src/react/settings/upgrade-repairs.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Oa = {
-========
-var wa = {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Pa = {
 	pending: "等待修复",
 	running: "正在修复",
 	failed: "需要重试",
@@ -3168,13 +2541,8 @@ var wa = {
 	complete: "已完成",
 	unavailable: "当前部署未启用"
 };
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ka() {
+function Fa() {
 	let { snapshot: e } = zn(), [t, n] = (0, Z.useState)(null), r = Y();
-========
-function Ta() {
-	let { snapshot: e } = Mn(), [t, n] = (0, Z.useState)(null), r = Y();
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 	(0, Z.useEffect)(() => n(null), [e]);
 	let i = t ?? e?.repairs, a = i?.state || "pending", o = i?.items.reduce((e, t) => e + (t.pending || 0), 0) || 0, s = i?.items.reduce((e, t) => e + (t.failed || 0), 0) || 0, c = i?.items.reduce((e, t) => e + (t.review_count || 0), 0) || 0;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
@@ -3184,11 +2552,7 @@ function Ta() {
 			tone: a === "failed" ? "error" : a === "running" ? "progress" : a === "review" ? "warning" : a === "complete" ? "success" : "neutral",
 			children: /* @__PURE__ */ (0, Q.jsx)("span", {
 				"data-copy-key": `upgradeRepairs.${a}.status`,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: Oa[a] || "未取得"
-========
-				children: wa[a] || "未取得"
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: Pa[a] || "未取得"
 			}, a)
 		}),
 		children: [
@@ -3196,27 +2560,15 @@ function Ta() {
 			/* @__PURE__ */ (0, Q.jsxs)(lt, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待完成",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Fr, { value: o }), " 项"] })
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Vr, { value: o }), " 项"] })
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "失败",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Fr, { value: s }), " 项"] })
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Vr, { value: s }), " 项"] })
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待复核",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Fr, { value: c }), " 项"] })
-========
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(jr, { value: o }), " 项"] })
-				}),
-				/* @__PURE__ */ (0, Q.jsx)(j, {
-					term: "失败",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(jr, { value: s }), " 项"] })
-				}),
-				/* @__PURE__ */ (0, Q.jsx)(j, {
-					term: "待复核",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(jr, { value: c }), " 项"] })
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Vr, { value: c }), " 项"] })
 				})
 			] }),
 			i?.message || r.error ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: r.error || i?.message }) }) : null,
@@ -3240,48 +2592,27 @@ function Ta() {
 	});
 }
 // src/react/settings/general-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Aa({ data: e, receipt: t, panel: n }) {
-========
-function Ea({ data: e, receipt: t, panel: n }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ia({ data: e, receipt: t, panel: n }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...ur(n),
 		children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.updates ? /* @__PURE__ */ (0, Q.jsx)(Da, {
+			e.updates ? /* @__PURE__ */ (0, Q.jsx)(Na, {
 				initial: e.updates,
 				initialJob: e.update_job
 			}) : null,
-			/* @__PURE__ */ (0, Q.jsx)(ka, {}),
-			e.automatic_updates ? /* @__PURE__ */ (0, Q.jsx)(ba, {
+			/* @__PURE__ */ (0, Q.jsx)(Fa, {}),
+			e.automatic_updates ? /* @__PURE__ */ (0, Q.jsx)(Ea, {
 				initial: e.automatic_updates,
 				receipt: t
 			}) : null,
-			e.startup ? /* @__PURE__ */ (0, Q.jsx)(ja, {
-========
-			e.updates ? /* @__PURE__ */ (0, Q.jsx)(Ca, {
-				initial: e.updates,
-				initialJob: e.update_job
-			}) : null,
-			/* @__PURE__ */ (0, Q.jsx)(Ta, {}),
-			e.automatic_updates ? /* @__PURE__ */ (0, Q.jsx)(ga, {
-				initial: e.automatic_updates,
-				receipt: t
-			}) : null,
-			e.startup ? /* @__PURE__ */ (0, Q.jsx)(Da, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.startup ? /* @__PURE__ */ (0, Q.jsx)(La, {
 				startup: e.startup,
 				receipt: t
 			}) : null
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ja({ startup: e, receipt: t }) {
-========
-function Da({ startup: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function La({ startup: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.enabled), [i, a] = (0, Z.useState)(e.silent), [o, s] = (0, Z.useState)(e.desktop), c = Y(), l = e.available && !e.desktop_message;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "startup",
@@ -3339,11 +2670,7 @@ function Da({ startup: e, receipt: t }) {
 	});
 }
 // src/react/restart-redirect.ts
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ma = 8e3, Na = [
-========
-var Oa = 8e3, ka = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Ra = 8e3, za = [
 	{
 		name: "机械硬盘，或内存 8 GB 以内",
 		cache: "10–20 GiB",
@@ -3362,20 +2689,12 @@ var Oa = 8e3, ka = [
 		read: "256 / 128 KB",
 		task: "2 个起步"
 	}
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-], Pa = [
-========
-], Aa = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+], Ba = [
 	["cache", "缓存上限"],
 	["read", "读取长度（默认 / 最小）"],
 	["task", "同时处理视频"]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Fa() {
-========
-function ja() {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Va() {
 	return /* @__PURE__ */ (0, Q.jsx)("div", {
 		className: "@container flex flex-col gap-3",
 		children: /* @__PURE__ */ (0, Q.jsxs)(O, {
@@ -3390,22 +2709,14 @@ function ja() {
 				/* @__PURE__ */ (0, Q.jsx)("ul", {
 					"aria-label": "按缓存所在硬盘分档",
 					className: "flex flex-col gap-2",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					children: Na.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
-========
-					children: ka.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					children: za.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
 						className: "flex flex-col gap-2 rounded-2lg border border-separator-border bg-background-primary-default p-3",
 						children: [/* @__PURE__ */ (0, Q.jsx)("p", {
 							className: "text-body-medium text-text-primary",
 							children: e.name
 						}), /* @__PURE__ */ (0, Q.jsx)("dl", {
 							className: "inline-grid grid-cols-1 gap-2 @md:grid-cols-3",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							children: Pa.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
-========
-							children: Aa.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+							children: Ba.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
 								className: "flex flex-col",
 								children: [/* @__PURE__ */ (0, Q.jsx)("dt", {
 									className: "text-caption-1-regular text-text-secondary",
@@ -3435,25 +2746,15 @@ function ja() {
 	});
 }
 // src/react/settings/cloud-proxy-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ia = "/api/configuration/cloud-proxies", La = [
-========
-var Ma = "/api/configuration/cloud-proxies", Na = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Ha = "/api/configuration/cloud-proxies", Ua = [
 	["direct", "直连"],
 	["system", "跟随系统"],
 	["http", "HTTP 代理"],
 	["socks5", "SOCKS5 代理"]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ra({ receipt: e }) {
+function Wa({ receipt: e }) {
 	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(!0), a = (0, Z.useRef)(/* @__PURE__ */ new Set()), o = (0, Z.useRef)(/* @__PURE__ */ new Set()), [s, c] = (0, Z.useState)(!1), l = (0, Z.useRef)(() => void 0), u = Y(), d = () => {
-		o.current.size || u.run("refresh", (e) => W(Ia, e), (e) => {
-========
-function Pa({ receipt: e }) {
-	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(!0), a = (0, Z.useRef)(/* @__PURE__ */ new Set()), o = (0, Z.useRef)(/* @__PURE__ */ new Set()), [s, c] = (0, Z.useState)(!1), l = (0, Z.useRef)(() => void 0), u = Y(), d = () => {
-		o.current.size || u.run("refresh", (e) => W(Ma, e), (e) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		o.current.size || u.run("refresh", (e) => W(Ha, e), (e) => {
 			a.current.clear(), n(e), i(!1);
 		}, (e) => {
 			i(!1), u.setError(e instanceof Error ? e.message : "无法读取网盘代理");
@@ -3507,11 +2808,7 @@ function Pa({ receipt: e }) {
 						children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: rr(e.location) }), e.name]
 					}) }), /* @__PURE__ */ (0, Q.jsx)(N, { children: "尚未匹配 CloudDrive 账号" })]
 				}, e.root)),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(za, {
-========
-				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(Fa, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(Ga, {
 					initial: t,
 					receipt: e,
 					onDirty: () => a.current.add(t.id),
@@ -3535,11 +2832,7 @@ function Pa({ receipt: e }) {
 		}) })]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function za({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
-========
-function Fa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ga({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 	let [a, o] = (0, Z.useState)(e), [s, c] = (0, Z.useState)([]), l = a.libraries?.map((e) => e.name).join("、") || a.name, u = Y(), d = (e, t) => {
 		o((n) => ({
 			...n,
@@ -3549,11 +2842,7 @@ function Fa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("form", {
 		"aria-label": `${l} 代理`,
 		onSubmit: (e) => {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.preventDefault(), i(!0), u.run("save", (e) => G(Ia, {
-========
-			e.preventDefault(), i(!0), u.run("save", (e) => G(Ma, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.preventDefault(), i(!0), u.run("save", (e) => G(Ha, {
 				id: a.id,
 				revision: a.revision,
 				...s.includes("api") ? { api: a.api } : {},
@@ -3573,21 +2862,13 @@ function Fa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 				" · ",
 				a.path
 			] }),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(Ba, {
-========
-			/* @__PURE__ */ (0, Q.jsx)(Ia, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(Ka, {
 				label: "数据代理",
 				value: a.data,
 				disabled: !a.writable || !!u.busy,
 				onChange: (e) => d("data", e)
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(Ba, {
-========
-			/* @__PURE__ */ (0, Q.jsx)(Ia, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(Ka, {
 				label: "API 代理",
 				value: a.api,
 				disabled: !a.writable || !!u.busy,
@@ -3611,11 +2892,7 @@ function Fa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ba({ label: e, value: t, disabled: n, onChange: r }) {
-========
-function Ia({ label: e, value: t, disabled: n, onChange: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ka({ label: e, value: t, disabled: n, onChange: r }) {
 	let i = t.mode === "http" || t.mode === "socks5";
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-w-0 flex-col gap-3",
@@ -3634,11 +2911,7 @@ function Ia({ label: e, value: t, disabled: n, onChange: r }) {
 				children: [t.mode === "unknown" ? /* @__PURE__ */ (0, Q.jsx)(z, {
 					id: "unknown",
 					children: "无法识别的代理类型"
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				}) : null, La.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
-========
-				}) : null, Na.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				}) : null, Ua.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 					id: e,
 					children: t
 				}, e))]
@@ -3706,11 +2979,7 @@ function Ia({ label: e, value: t, disabled: n, onChange: r }) {
 	});
 }
 // src/react/settings/library-icon-picker.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Va = [
-========
-var La = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var qa = [
 	["", "自动识别"],
 	["hard-drive", "磁盘"],
 	["database", "资料库"],
@@ -3754,23 +3023,13 @@ var La = [
 	["star", "收藏"],
 	["tags", "主题"]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ha(e) {
+function Ja(e) {
 	let t = e === "local" ? "" : xt[e];
 	return t ? [t, "自动识别"] : ["hard-drive", "默认"];
 }
-var Ua = "auto";
-function Wa({ value: e, label: t, kind: n = "local", onChange: r }) {
-	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = Ha(n);
-========
-function Ra(e) {
-	let t = e === "local" ? "" : yt[e];
-	return t ? [t, "自动识别"] : ["hard-drive", "默认"];
-}
-var za = "auto";
-function Ba({ value: e, label: t, kind: n = "local", onChange: r }) {
-	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = Ra(n);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Ya = "auto";
+function Xa({ value: e, label: t, kind: n = "local", onChange: r }) {
+	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = Ja(n);
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(E, {
 		ref: i,
 		variant: "secondary",
@@ -3784,11 +3043,7 @@ function Ba({ value: e, label: t, kind: n = "local", onChange: r }) {
 		children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 			"data-icon-choice": !0,
 			className: "flex items-center gap-2",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l }), ((e) => e && Va.find(([t]) => t === e)?.[1] || u)(e)]
-========
-			children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: e || l }), ((e) => e && La.find(([t]) => t === e)?.[1] || u)(e)]
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l }), ((e) => e && qa.find(([t]) => t === e)?.[1] || u)(e)]
 		})
 	}), /* @__PURE__ */ (0, Q.jsx)(ze, {
 		triggerRef: i,
@@ -3808,27 +3063,15 @@ function Ba({ value: e, label: t, kind: n = "local", onChange: r }) {
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(We, {
 					"aria-label": "可选图标",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					value: s || Ua,
-					onChange: (e) => c(e === Ua ? "" : e),
+					value: s || Ya,
+					onChange: (e) => c(e === Ya ? "" : e),
 					className: "inline-grid grid-cols-7 gap-1",
-					children: Va.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
-						value: e || Ua,
+					children: qa.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
+						value: e || Ya,
 						"aria-label": e ? t : u,
 						className: "flex h-10 cursor-pointer items-center justify-center rounded-lg text-foreground-icon-secondary outline-none hover:bg-dropdown-item-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:bg-dropdown-item-hover-background data-selected:text-text-primary",
 						children: /* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l })
-					}, e || Ua))
-========
-					value: s || za,
-					onChange: (e) => c(e === za ? "" : e),
-					className: "inline-grid grid-cols-7 gap-1",
-					children: La.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
-						value: e || za,
-						"aria-label": e ? t : u,
-						className: "flex h-10 cursor-pointer items-center justify-center rounded-lg text-foreground-icon-secondary outline-none hover:bg-dropdown-item-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:bg-dropdown-item-hover-background data-selected:text-text-primary",
-						children: /* @__PURE__ */ (0, Q.jsx)(zt, { mark: e || l })
-					}, e || za))
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					}, e || Ya))
 				}),
 				/* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex justify-end gap-2 border-t border-separator-border pt-2.5",
@@ -3849,31 +3092,19 @@ function Ba({ value: e, label: t, kind: n = "local", onChange: r }) {
 	})] });
 }
 // src/react/settings/library-policy-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ga = [
-========
-var Va = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Za = [
 	["probe", "读取视频信息"],
 	["metadata", "联网补资料"],
 	["cover", "联网补封面"],
 	["people", "联网补人物图片"],
 	["preview", "生成九宫格预览"]
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-], Ka = [
-========
-], Ha = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+], Qa = [
 	"probe",
 	"metadata",
 	"cover",
 	"people",
 	"preview"
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-], qa = [
-========
-], Ua = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+], $a = [
 	[
 		"auto",
 		"自动补全",
@@ -3890,11 +3121,7 @@ var Va = [
 		"逐项选择要做的步骤"
 	]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ja() {
-========
-function Wa() {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function eo() {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"data-policy-legend": "",
 		className: "flex flex-col gap-1",
@@ -3926,13 +3153,8 @@ function Wa() {
 		})]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ya({ name: e, value: t, onChange: n }) {
+function to({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(Lt, {
-========
-function Ga({ name: e, value: t, onChange: n }) {
-	return /* @__PURE__ */ (0, Q.jsx)(Ft, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		"data-guide-target": "library-policy",
 		className: "w-full",
 		"aria-label": `${e} 处理方式`,
@@ -3940,17 +3162,10 @@ function Ga({ name: e, value: t, onChange: n }) {
 		prefix: "处理方式",
 		renderValue: /* @__PURE__ */ (0, Q.jsx)("span", {
 			className: "truncate",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			children: qa.find(([e]) => e === t)?.[1]
+			children: $a.find(([e]) => e === t)?.[1]
 		}),
 		onSelectionChange: (e) => n(String(e)),
-		children: qa.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
-========
-			children: Ua.find(([e]) => e === t)?.[1]
-		}),
-		onSelectionChange: (e) => n(String(e)),
-		children: Ua.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		children: $a.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 			id: e,
 			textValue: t,
 			children: /* @__PURE__ */ (0, Q.jsxs)("span", {
@@ -3963,26 +3178,15 @@ function Ga({ name: e, value: t, onChange: n }) {
 		}, e))
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Xa({ name: e, value: t, onChange: n }) {
+function no({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(O, {
 		defaultOpen: !0,
-		summary: `${e} 的处理步骤（${t.length}/${Ga.length}）`,
-========
-function Ka({ name: e, value: t, onChange: n }) {
-	return /* @__PURE__ */ (0, Q.jsx)(O, {
-		defaultOpen: !0,
-		summary: `${e} 的处理步骤（${t.length}/${Va.length}）`,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		summary: `${e} 的处理步骤（${t.length}/${Za.length}）`,
 		children: /* @__PURE__ */ (0, Q.jsx)("div", {
 			className: "flex flex-wrap gap-x-6 gap-y-2",
 			role: "group",
 			"aria-label": `${e} 处理步骤`,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			children: Ga.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
-========
-			children: Va.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			children: Za.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
 				isSelected: t.includes(e),
 				onChange: (r) => n(r ? [...t, e] : t.filter((t) => t !== e)),
 				children: r
@@ -3990,11 +3194,7 @@ function Ka({ name: e, value: t, onChange: n }) {
 		})
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Za({ id: e, name: t, value: n, onChange: r }) {
-========
-function qa({ id: e, name: t, value: n, onChange: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ro({ id: e, name: t, value: n, onChange: r }) {
 	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), s = Ke.find(([e]) => e === n)?.[1] || "无颜色", c = (t) => {
 		r(t), wn(e, t), o(!1);
 	};
@@ -4077,13 +3277,8 @@ function qa({ id: e, name: t, value: n, onChange: r }) {
 	})] });
 }
 // src/react/settings/push-discovery-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Qa = "/api/configuration/push-discovery", $a = "/api/configuration/push-discovery/secret";
-function eo({ initial: e, receipt: t }) {
-========
-var Ja = "/api/configuration/push-discovery", Ya = "/api/configuration/push-discovery/secret";
-function Xa({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var io = "/api/configuration/push-discovery", ao = "/api/configuration/push-discovery/secret";
+function oo({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.prefixes), [o, s] = (0, Z.useState)(""), c = Y(), l = n.media_roots, [u, d] = (0, Z.useState)(e), f = (e, n) => {
 		r(e), d(e), a(e.prefixes), s(""), t(n);
 	}, p = (e, t) => a((n) => n.map((n, r) => r === e ? {
@@ -4097,15 +3292,9 @@ function Xa({ initial: e, receipt: t }) {
 			cloud: n.cloud,
 			prefixes: i
 		};
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		c.run("save", (e) => G(Qa, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
+		c.run("save", (e) => G(io, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
 	}, h = () => {
-		c.run("secret", (e) => G($a, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
-========
-		c.run("save", (e) => G(Ja, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
-	}, h = () => {
-		c.run("secret", (e) => G(Ya, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		c.run("secret", (e) => G(ao, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
 	}, g = `已入库 ${u.queue.ingested} 个文件` + (u.queue.failed ? `，${u.queue.failed} 个入库失败` : "") + (u.queue.pending ? `，队列里还有 ${u.queue.pending} 条` : ""), _ = u.local_running ? `正在监视 ${u.local_roots.join("、")}` : u.local_message || "没有运行";
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "pushDiscovery",
@@ -4268,11 +3457,7 @@ function Xa({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/media-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-async function to(e) {
-========
-async function Za(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+async function so(e) {
 	let t;
 	try {
 		t = await pn();
@@ -4287,22 +3472,14 @@ async function Za(e) {
 	});
 	return n;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var no = (e) => Qn.find(([t]) => t === e)?.[1] ?? e, ro = [...Qn, ["smb", "SMB 共享"]], io = (e) => e.library_icon || Ha(e.transport === "smb" ? "smb" : e.location)[0], ao = async (e) => (await G(Ct, { initial: e })).path, oo = (e) => ({
-========
-var Qa = (e) => Wn.find(([t]) => t === e)?.[1] ?? e, $a = [...Wn, ["smb", "SMB 共享"]], eo = (e) => e.library_icon || Ra(e.transport === "smb" ? "smb" : e.location)[0], to = async (e) => (await G(xt, { initial: e })).path, no = (e) => ({
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var co = (e) => Qn.find(([t]) => t === e)?.[1] ?? e, lo = [...Qn, ["smb", "SMB 共享"]], uo = (e) => e.library_icon || Ja(e.transport === "smb" ? "smb" : e.location)[0], fo = async (e) => (await G(Ct, { initial: e })).path, po = (e) => ({
 	library_id: e.library_id,
 	library: e.library,
 	library_icon: e.library_icon,
 	library_color: e.library_color,
 	library_policy: e.library_policy,
 	library_stages: e.library_stages
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}), so = (e) => e.library_stages ? Ka.filter((t) => e.library_stages.split(",").includes(t)) : [], co = (e = "") => ({
-========
-}), ro = (e) => e.library_stages ? Ha.filter((t) => e.library_stages.split(",").includes(t)) : [], io = (e = "") => ({
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+}), mo = (e) => e.library_stages ? Qa.filter((t) => e.library_stages.split(",").includes(t)) : [], ho = (e = "") => ({
 	path: e,
 	transport: e.startsWith("smb://") ? "smb" : "filesystem",
 	location: "local",
@@ -4315,13 +3492,8 @@ var Qa = (e) => Wn.find(([t]) => t === e)?.[1] ?? e, $a = [...Wn, ["smb", "SMB �
 	library_stages: "",
 	cost: "free"
 });
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function lo(e) {
+function go(e) {
 	let t = e.media_sources?.filter((e) => Qn.some(([t]) => t === e.location));
-========
-function ao(e) {
-	let t = e.media_sources?.filter((e) => Wn.some(([t]) => t === e.location));
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 	return t?.length ? t.map((e) => ({
 		transport: e.transport === "smb" || e.path.startsWith("smb://") ? "smb" : "filesystem",
 		smb_username: e.smb_username,
@@ -4337,33 +3509,18 @@ function ao(e) {
 		library_policy: e.library_policy || "auto",
 		library_stages: e.library_stages || "",
 		root_id: e.root_id,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 		library_id: e.library_id || On(),
 		cost: e.cost ?? Rn(e.location)
-	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => co(e));
+	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => ho(e));
 }
-var uo = (e) => !(e instanceof qe) || e.status !== 400 ? null : e.body?.errors ?? null;
-function fo({ data: e, receipt: t, panel: n }) {
+var _o = (e) => !(e instanceof qe) || e.status !== 400 ? null : e.body?.errors ?? null;
+function vo({ data: e, receipt: t, panel: n }) {
 	let r = !!e.media_sources?.some((e) => nr(e.location));
 	return (0, Z.useEffect)(() => {
 		if (e.editable) {
 			let t = /* @__PURE__ */ new Map();
-			for (let n of lo(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
+			for (let n of go(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
 			kn("media", {
-========
-		library_id: e.library_id || xn(),
-		cost: e.cost ?? jn(e.location)
-	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => io(e));
-}
-var oo = (e) => !(e instanceof qe) || e.status !== 400 ? null : e.body?.errors ?? null;
-function so({ data: e, receipt: t, panel: n }) {
-	let r = !!e.media_sources?.some((e) => Jn(e.location));
-	return (0, Z.useEffect)(() => {
-		if (e.editable) {
-			let t = /* @__PURE__ */ new Map();
-			for (let n of ao(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
-			Sn("media", {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 				folders: [...t.values()],
 				cloud: r
 			});
@@ -4379,11 +3536,7 @@ function so({ data: e, receipt: t, panel: n }) {
 	}, [e, r]), /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...ur(n),
 		children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.editable ? /* @__PURE__ */ (0, Q.jsx)(po, {
-========
-			e.editable ? /* @__PURE__ */ (0, Q.jsx)(co, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.editable ? /* @__PURE__ */ (0, Q.jsx)(yo, {
 				data: e,
 				receipt: t
 			}) : /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -4391,34 +3544,20 @@ function so({ data: e, receipt: t, panel: n }) {
 				title: "只读",
 				children: e.notice
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(ho, { data: e }),
-			r ? /* @__PURE__ */ (0, Q.jsx)(Ra, { receipt: t }) : null,
-			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)(eo, {
-========
-			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(uo, { data: e }),
-			r ? /* @__PURE__ */ (0, Q.jsx)(Pa, { receipt: t }) : null,
-			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)(Xa, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(xo, { data: e }),
+			r ? /* @__PURE__ */ (0, Q.jsx)(Wa, { receipt: t }) : null,
+			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)(oo, {
 				initial: e.push_discovery,
 				receipt: t
 			}) : null
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function po({ data: e, receipt: t }) {
+function yo({ data: e, receipt: t }) {
 	let { rows: n, edit: r, add: i, remove: a, errors: o, setErrors: s, picking: c, pick: l, inputRef: u } = ir({
-		initial: () => lo(e),
-		blank: () => co(),
-		pickFolder: ao,
-========
-function co({ data: e, receipt: t }) {
-	let { rows: n, edit: r, add: i, remove: a, errors: o, setErrors: s, picking: c, pick: l, inputRef: u } = Xn({
-		initial: () => ao(e),
-		blank: () => io(),
-		pickFolder: to,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		initial: () => go(e),
+		blank: () => ho(),
+		pickFolder: fo,
 		describe: q
 	}), [d, f] = (0, Z.useState)(!1), [p, m] = (0, Z.useState)(!1), [h, g] = (0, Z.useState)(""), [_, v] = (0, Z.useState)({}), [y, b] = (0, Z.useState)(null), x = (0, Z.useRef)(e.revision), S = (0, Z.useRef)(!1), C = Y();
 	Bn();
@@ -4435,11 +3574,7 @@ function co({ data: e, receipt: t }) {
 	let ne = (e, t) => {
 		let i = n.find((e) => e.library_id === t);
 		if (i) {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			r(e, oo(i));
-========
-			r(e, no(i));
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			r(e, po(i));
 			return;
 		}
 		let a = On();
@@ -4454,11 +3589,7 @@ function co({ data: e, receipt: t }) {
 	};
 	(0, Z.useEffect)(() => {
 		if (!y) return;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		let e = setTimeout(() => location.assign(y.url), Ma);
-========
-		let e = setTimeout(() => location.assign(y.url), Oa);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		let e = setTimeout(() => location.assign(y.url), Ra);
 		return () => clearTimeout(e);
 	}, [y]);
 	let re = (e) => {
@@ -4468,11 +3599,7 @@ function co({ data: e, receipt: t }) {
 			m(!0);
 			let n = e.currentTarget;
 			requestAnimationFrame(() => n.querySelector(`[data-media-read-policy="${t}"] button`)?.focus());
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		} else C.busy || S.current || (g(""), S.current = !0, to(d).then((e) => {
-========
-		} else C.busy || S.current || (g(""), S.current = !0, Za(d).then((e) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		} else C.busy || S.current || (g(""), S.current = !0, so(d).then((e) => {
 			S.current = !1, e && ie();
 		}));
 	}, ie = () => {
@@ -4485,11 +3612,7 @@ function co({ data: e, receipt: t }) {
 		}, "POST", t), (e) => {
 			x.current = e.revision, s([]), t("已保存配置"), b(e);
 		}, (e) => {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			let t = uo(e);
-========
-			let t = oo(e);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			let t = _o(e);
 			s(t?.media_dirs ?? []), (!t || t.port) && g(t?.port || q(e));
 		});
 	};
@@ -4516,11 +3639,7 @@ function co({ data: e, receipt: t }) {
 		title: "媒体库与目录",
 		onSubmit: re,
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(Ja, {}),
-========
-			/* @__PURE__ */ (0, Q.jsx)(Wa, {}),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(eo, {}),
 			/* @__PURE__ */ (0, Q.jsx)("div", {
 				role: "group",
 				"aria-label": "媒体库与目录",
@@ -4543,11 +3662,7 @@ function co({ data: e, receipt: t }) {
 							/* @__PURE__ */ (0, Q.jsxs)("div", {
 								"data-library-head": "",
 								children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-									/* @__PURE__ */ (0, Q.jsx)(Wa, {
-========
-									/* @__PURE__ */ (0, Q.jsx)(Ba, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+									/* @__PURE__ */ (0, Q.jsx)(Xa, {
 										label: `${f} 图标`,
 										value: e.library_icon,
 										kind: e.transport === "smb" ? "smb" : e.location,
@@ -4561,45 +3676,26 @@ function co({ data: e, receipt: t }) {
 										value: e.library,
 										onChange: (e) => w(t, { library: e })
 									}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-									/* @__PURE__ */ (0, Q.jsx)(Za, {
-========
-									/* @__PURE__ */ (0, Q.jsx)(qa, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+									/* @__PURE__ */ (0, Q.jsx)(ro, {
 										id: e.library_id,
 										name: e.library,
 										value: e.library_color,
 										onChange: (e) => w(t, { library_color: e })
 									}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-									/* @__PURE__ */ (0, Q.jsx)(Ya, {
-========
-									/* @__PURE__ */ (0, Q.jsx)(Ga, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+									/* @__PURE__ */ (0, Q.jsx)(to, {
 										name: f,
 										value: d,
 										onChange: (n) => w(t, {
 											library_policy: n,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-											library_stages: n === "custom" ? e.library_stages || Ka.join(",") : ""
-========
-											library_stages: n === "custom" ? e.library_stages || Ha.join(",") : ""
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+											library_stages: n === "custom" ? e.library_stages || Qa.join(",") : ""
 										})
 									})
 								]
 							}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(Xa, {
+							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(no, {
 								name: f,
-								value: so(e),
-								onChange: (e) => w(t, { library_stages: Ka.filter((t) => e.includes(t)).join(",") })
-========
-							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(Ka, {
-								name: f,
-								value: ro(e),
-								onChange: (e) => w(t, { library_stages: Ha.filter((t) => e.includes(t)).join(",") })
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+								value: mo(e),
+								onChange: (e) => w(t, { library_stages: Qa.filter((t) => e.includes(t)).join(",") })
 							}) : null,
 							/* @__PURE__ */ (0, Q.jsxs)("div", {
 								"data-library-folders": "",
@@ -4617,21 +3713,12 @@ function co({ data: e, receipt: t }) {
 									picking: c === i,
 									onPick: () => void l(i),
 									onRemove: n.length > 1 ? () => a(i) : void 0,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(mo, { online: ae(t)?.online }) : null,
+									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(bo, { online: ae(t)?.online }) : null,
 									children: [/* @__PURE__ */ (0, Q.jsxs)(Xn, { children: [
 										/* @__PURE__ */ (0, Q.jsx)(tr, {
 											index: i,
 											value: t.transport === "smb" ? "smb" : t.location,
-											options: ro,
-========
-									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(lo, { online: ae(t)?.online }) : null,
-									children: [/* @__PURE__ */ (0, Q.jsxs)(Hn, { children: [
-										/* @__PURE__ */ (0, Q.jsx)(qn, {
-											index: i,
-											value: t.transport === "smb" ? "smb" : t.location,
-											options: $a,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+											options: lo,
 											onChange: (e) => {
 												let n = e === "smb";
 												r(i, {
@@ -4684,11 +3771,7 @@ function co({ data: e, receipt: t }) {
 												selectedKey: t.library_id,
 												renderValue: /* @__PURE__ */ (0, Q.jsxs)("span", {
 													className: "flex min-w-0 items-center gap-2",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-													children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: io(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
-========
-													children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: eo(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+													children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: uo(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
 														className: "truncate",
 														children: f
 													})]
@@ -4701,11 +3784,7 @@ function co({ data: e, receipt: t }) {
 													textValue: e.library || "未命名媒体库",
 													children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 														className: "flex min-w-0 items-center gap-2",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-														children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: io(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
-========
-														children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: eo(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+														children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: uo(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
 															className: "truncate",
 															children: e.library || "未命名媒体库"
 														})]
@@ -4802,11 +3881,7 @@ function co({ data: e, receipt: t }) {
 										"aria-label": `给 ${f} 添加文件夹`,
 										onClick: () => {
 											i(), r(n.length, {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-												...oo(e),
-========
-												...no(e),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+												...po(e),
 												location: e.location,
 												cost: e.cost
 											});
@@ -4825,13 +3900,8 @@ function co({ data: e, receipt: t }) {
 				onClick: i,
 				children: "添加媒体库"
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 			/* @__PURE__ */ (0, Q.jsx)(N, { children: pt }),
-			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(er, {}), /* @__PURE__ */ (0, Q.jsx)(Fa, {})] }) : null,
-========
-			/* @__PURE__ */ (0, Q.jsx)(N, { children: dt }),
-			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Kn, {}), /* @__PURE__ */ (0, Q.jsx)(ja, {})] }) : null,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(er, {}), /* @__PURE__ */ (0, Q.jsx)(Va, {})] }) : null,
 			se.map((e) => /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 				"未检测到 ",
 				e.name,
@@ -4861,31 +3931,18 @@ function co({ data: e, receipt: t }) {
 		})]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function mo({ online: e }) {
+function bo({ online: e }) {
 	return /* @__PURE__ */ (0, Q.jsx)(ar, { online: e });
 }
-function ho({ data: e }) {
-========
-function lo({ online: e }) {
-	return /* @__PURE__ */ (0, Q.jsx)(Zn, { online: e });
-}
-function uo({ data: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function xo({ data: e }) {
 	let t = e.media_sources, n = Y();
 	return t ? /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "mounts",
 		title: "挂载状态",
 		children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 			/* @__PURE__ */ (0, Q.jsx)(lt, { children: t.map((e, t) => /* @__PURE__ */ (0, Q.jsxs)(j, {
-				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: rr(e.location) }), no(e.location)] }),
-				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(mo, { online: e.online })]
-========
-			/* @__PURE__ */ (0, Q.jsx)(ct, { children: t.map((e, t) => /* @__PURE__ */ (0, Q.jsxs)(j, {
-				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: Yn(e.location) }), Qa(e.location)] }),
-				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(lo, { online: e.online })]
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: rr(e.location) }), co(e.location)] }),
+				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(bo, { online: e.online })]
 			}, t)) }),
 			n.error ? /* @__PURE__ */ (0, Q.jsx)(V, {
 				divided: !0,
@@ -4901,20 +3958,12 @@ function uo({ data: e }) {
 	}) : null;
 }
 // src/react/settings/service-preferences.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var go = [
-========
-var fo = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var So = [
 	["off", "关闭"],
 	["precise", "每 10 秒一张"],
 	["coarse", "每 30 秒一张"]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function _o({ epoch: e = 0, disabled: t = !1 }) {
-========
-function po({ epoch: e = 0, disabled: t = !1 }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Co({ epoch: e = 0, disabled: t = !1 }) {
 	let n = X({
 		queryKey: Ht,
 		queryFn: ({ signal: e }) => gn(e),
@@ -4937,11 +3986,7 @@ function po({ epoch: e = 0, disabled: t = !1 }) {
 					onSelectionChange: (e) => {
 						e !== null && r.mutate(String(e));
 					},
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					children: go.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
-========
-					children: fo.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					children: So.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 						id: e,
 						children: t
 					}, e))
@@ -4961,13 +4006,8 @@ function po({ epoch: e = 0, disabled: t = !1 }) {
 		}) : null
 	] });
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function vo({ receipt: e }) {
+function wo({ receipt: e }) {
 	let t = Xt();
-========
-function mo({ receipt: e }) {
-	let t = Kt();
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 	(0, Z.useSyncExternalStore)(t.subscribe, t.version);
 	let n = X({
 		queryKey: Nt,
@@ -4978,13 +4018,8 @@ function mo({ receipt: e }) {
 		guide: "follow-options",
 		title: "关注采集",
 		children: [/* @__PURE__ */ (0, Q.jsxs)(I, { children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(yo, {}),
-			/* @__PURE__ */ (0, Q.jsx)(bo, {}),
-========
-			/* @__PURE__ */ (0, Q.jsx)(ho, {}),
-			/* @__PURE__ */ (0, Q.jsx)(go, {}),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(To, {}),
+			/* @__PURE__ */ (0, Q.jsx)(Eo, {}),
 			/* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "首次采集范围",
 				description: "新关注的来源第一次回看多久以前的内容。",
@@ -5029,11 +4064,7 @@ function mo({ receipt: e }) {
 		}) : null]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function yo() {
-========
-function ho() {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function To() {
 	let e = X({
 		queryKey: ct,
 		queryFn: ({ signal: e }) => fn(e),
@@ -5092,11 +4123,7 @@ function ho() {
 			role: "status",
 			children: t.isPending ? "正在保存…" : "正在检查来源更新…"
 		}) }) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		/* @__PURE__ */ (0, Q.jsx)(xo, {
-========
-		/* @__PURE__ */ (0, Q.jsx)(_o, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		/* @__PURE__ */ (0, Q.jsx)(Do, {
 			kind: "follow",
 			status: n,
 			title: "上次自动检查失败"
@@ -5104,11 +4131,7 @@ function ho() {
 		u ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: q(u) }) }) : null
 	] });
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function bo() {
-========
-function go() {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Eo() {
 	let e = X({
 		queryKey: at,
 		queryFn: ({ signal: e }) => dn(e),
@@ -5137,24 +4160,15 @@ function go() {
 			role: "status",
 			children: "正在拉取订阅源…"
 		}) }) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		/* @__PURE__ */ (0, Q.jsx)(xo, {
-========
-		/* @__PURE__ */ (0, Q.jsx)(_o, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		/* @__PURE__ */ (0, Q.jsx)(Do, {
 			kind: "feed",
 			status: t,
 			title: "上次自动拉取失败"
 		})
 	] });
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function xo({ kind: e, status: t, title: n }) {
+function Do({ kind: e, status: t, title: n }) {
 	let r = Un(e);
-========
-function _o({ kind: e, status: t, title: n }) {
-	let r = In(e);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 	if (!t?.enabled || t.running || !t.last_error) return null;
 	let i = t.consecutive_failures ?? 0, a = bn(t.next_run_at), o = [i > 1 ? `已连续失败 ${i} 次` : "", a ? `下一轮 ${a}` : ""].filter(Boolean).join("，"), s = [
 		t.last_error,
@@ -5176,11 +4190,7 @@ function _o({ kind: e, status: t, title: n }) {
 	}) });
 }
 // src/react/settings/media-processing-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function So({ receipt: e }) {
-========
-function vo({ receipt: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Oo({ receipt: e }) {
 	let t = X({
 		queryKey: yt,
 		queryFn: ({ signal: e }) => mn(e)
@@ -5201,11 +4211,7 @@ function vo({ receipt: e }) {
 					})
 				})
 			}) }),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(_o, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
-========
-			/* @__PURE__ */ (0, Q.jsx)(po, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(Co, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "抽帧解码方式",
 				description: "用于生成封面、九宫格和时间轴。",
@@ -5244,11 +4250,7 @@ function vo({ receipt: e }) {
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Co({ receipt: e }) {
-========
-function yo({ receipt: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ko({ receipt: e }) {
 	let t = X({
 		queryKey: yt,
 		queryFn: ({ signal: e }) => mn(e)
@@ -5296,11 +4298,7 @@ function yo({ receipt: e }) {
 	});
 }
 // src/react/boardui/components/base/textarea/textarea.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var wo = Ln({
-========
-var bo = An({
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Ao = Ln({
 	field: "relative flex w-full flex-col rounded-2lg bg-background-tertiary-default text-foreground-icon-tertiary ring-2 ring-inset ring-transparent transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms)] ease",
 	fieldSize: {
 		medium: "p-2",
@@ -5313,15 +4311,9 @@ var bo = An({
 	},
 	footer: "flex w-full items-start justify-between gap-3",
 	count: "ms-auto shrink-0 pt-px text-caption-1-medium text-text-tertiary tabular-nums"
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-}), To = 20;
-function Eo({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
+}), jo = 20;
+function Mo({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
 	let d = (0, Z.useContext)(Gt), f = e ?? d.size ?? "medium", p = (0, Z.useRef)(null), m = (e) => {
-========
-}), xo = 20;
-function So({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
-	let d = (0, Z.useContext)(Ut), f = e ?? d.size ?? "medium", p = (0, Z.useRef)(null), m = (e) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		p.current = e, typeof s == "function" ? s(e) : s && (s.current = e);
 	}, h = () => {
 		let e = p.current;
@@ -5330,22 +4322,14 @@ function So({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = 
 			e.style.height = "", e.style.maxHeight = "", e.style.overflowY = "";
 			return;
 		}
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		let i = parseFloat(window.getComputedStyle(e).lineHeight) || To, a = r ? r * i : Infinity;
-========
-		let i = parseFloat(window.getComputedStyle(e).lineHeight) || xo, a = r ? r * i : Infinity;
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		let i = parseFloat(window.getComputedStyle(e).lineHeight) || jo, a = r ? r * i : Infinity;
 		e.style.height = "0px";
 		let o = Math.max(e.scrollHeight, t * i);
 		e.style.height = `${Math.min(o, a)}px`, e.style.maxHeight = r ? `${a}px` : "", e.style.overflowY = o > a ? "auto" : "hidden";
 	};
 	return (0, Z.useLayoutEffect)(h), /* @__PURE__ */ (0, Q.jsx)(Re, {
 		ref: c,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => on(wo.field, wo.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
-========
-		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => tn(bo.field, bo.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => on(Ao.field, Ao.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
 		children: /* @__PURE__ */ (0, Q.jsx)(Ve, {
 			ref: m,
 			rows: t,
@@ -5353,21 +4337,12 @@ function So({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = 
 			onInput: (e) => {
 				h(), l?.(e);
 			},
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			className: on(wo.textarea, wo.resize[n ? "none" : i], d.inputClassName, o)
+			className: on(Ao.textarea, Ao.resize[n ? "none" : i], d.inputClassName, o)
 		})
 	});
 }
-Eo.displayName = "TextareaBase";
-function Do({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
-========
-			className: tn(bo.textarea, bo.resize[n ? "none" : i], d.inputClassName, o)
-		})
-	});
-}
-So.displayName = "TextareaBase";
-function Co({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+Mo.displayName = "TextareaBase";
+function No({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
 	let [v, y] = (0, Z.useState)(() => (h ?? "").length), b = m === void 0 ? v : m.length;
 	return /* @__PURE__ */ (0, Q.jsx)(Wt, {
 		..._,
@@ -5385,11 +4360,7 @@ function Co({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize
 				tooltip: n,
 				children: e
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(Eo, {
-========
-			/* @__PURE__ */ (0, Q.jsx)(So, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(Mo, {
 				ref: d,
 				groupRef: f,
 				placeholder: r,
@@ -5401,38 +4372,22 @@ function Co({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize
 				fieldClassName: u
 			}),
 			(t || l) && /* @__PURE__ */ (0, Q.jsxs)("div", {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				className: wo.footer,
+				className: Ao.footer,
 				children: [t && /* @__PURE__ */ (0, Q.jsx)(dt, {
 					isInvalid: m,
 					children: t
 				}), l && /* @__PURE__ */ (0, Q.jsx)("span", {
-					className: on(wo.count, m && "text-text-error-primary"),
-========
-				className: bo.footer,
-				children: [t && /* @__PURE__ */ (0, Q.jsx)(ut, {
-					isInvalid: m,
-					children: t
-				}), l && /* @__PURE__ */ (0, Q.jsx)("span", {
-					className: tn(bo.count, m && "text-text-error-primary"),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					className: on(Ao.count, m && "text-text-error-primary"),
 					children: c ? `${b}/${c}` : b
 				})]
 			})
 		] })
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-Do.displayName = "Textarea";
+No.displayName = "Textarea";
 // src/react/settings/code-pattern-settings.tsx
-var Oo = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
-function ko({ receipt: e }) {
-========
-Co.displayName = "Textarea";
-// src/react/settings/code-pattern-settings.tsx
-var wo = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
-function To({ receipt: e }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Po = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
+function Fo({ receipt: e }) {
 	let t = X({
 		queryKey: Nt,
 		queryFn: ({ signal: e }) => hn(e)
@@ -5447,11 +4402,7 @@ function To({ receipt: e }) {
 				Dn.setQueryData(Nt, t), r(null), e("已保存配置");
 			});
 		},
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(Do, {
-========
-		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(Co, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(No, {
 			id: "codePatternSetting",
 			"aria-label": "番号识别规则",
 			rows: 3,
@@ -5459,11 +4410,7 @@ function To({ receipt: e }) {
 			maxRows: 12,
 			spellCheck: "false",
 			autoComplete: "off",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			placeholder: Oo,
-========
-			placeholder: wo,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			placeholder: Po,
 			value: a,
 			isDisabled: !t.data,
 			isInvalid: !!o,
@@ -5477,11 +4424,7 @@ function To({ receipt: e }) {
 	});
 }
 // src/react/settings/password-pair.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ao({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
-========
-function Eo({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Io({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
 		id: "access-password",
 		type: "password",
@@ -5511,22 +4454,13 @@ function Eo({ label: e, password: t, confirmation: n, onPassword: r, onConfirmat
 	})] });
 }
 // src/react/settings/access-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var jo = {
-========
-var Do = {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var Lo = {
 	legacy: "当前使用系统生成的访问口令。改设自己的密码，或关闭登录要求。",
 	locked: "访问设置无法读取，请在本机检查配置文件。",
 	password: "已设置密码。新设备需要登录，登录时勾选「保持登录」可保持 30 天。"
 };
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Mo({ initial: e, receipt: t, devices: n }) {
+function Ro({ initial: e, receipt: t, devices: n }) {
 	let [r, i] = (0, Z.useState)(e), [a, o] = (0, Z.useState)(""), [s, c] = (0, Z.useState)(""), [l, u] = (0, Z.useState)(""), [d, f] = (0, Z.useState)(!1), [p, m] = (0, Z.useState)({}), h = (0, Z.useRef)(null), g = Y(), _ = (e) => {
-========
-function Oo({ initial: e, receipt: t }) {
-	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(""), [o, s] = (0, Z.useState)(""), [c, l] = (0, Z.useState)(""), [u, d] = (0, Z.useState)(!1), [f, p] = (0, Z.useState)({}), m = (0, Z.useRef)(null), h = Y(), g = (e) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		e.preventDefault();
 		let n = {};
 		r.mode === "password" && !a && (n.current_password = "请输入当前访问密码"), d || ((s.length < 8 || s.length > 256) && (n.password = "访问密码需为 8–256 个字符"), s !== l && (n.confirmation = "两次输入的密码不一致")), m(n), Object.keys(n).length ? requestAnimationFrame(() => h.current?.querySelector("input[aria-invalid=\"true\"]")?.focus()) : g.run("save", (e) => G("/api/configuration/access", {
@@ -5542,13 +4476,8 @@ function Oo({ initial: e, receipt: t }) {
 			let t = e instanceof qe ? e.body : null, n = t?.errors || t?.detail?.errors;
 			n ? m(n) : g.setError(q(e));
 		});
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}, v = jo[r.mode], y = r.mode !== "locked";
+	}, v = Lo[r.mode], y = r.mode !== "locked";
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsxs)(L, {
-========
-	}, _ = Do[n.mode], v = n.mode !== "locked";
-	return /* @__PURE__ */ (0, Q.jsxs)(L, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		guide: "access",
 		title: "访问密码",
 		onSubmit: _,
@@ -5579,8 +4508,7 @@ function Oo({ initial: e, receipt: t }) {
 					isInvalid: !!p.current_password,
 					hint: p.current_password
 				}) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				y && !d ? /* @__PURE__ */ (0, Q.jsx)(Ao, {
+				y && !d ? /* @__PURE__ */ (0, Q.jsx)(Io, {
 					label: r.mode === "password" ? "新访问密码" : "设置访问密码",
 					password: s,
 					confirmation: l,
@@ -5588,16 +4516,6 @@ function Oo({ initial: e, receipt: t }) {
 					onConfirmation: u,
 					passwordError: p.password,
 					confirmationError: p.confirmation,
-========
-				v && !u ? /* @__PURE__ */ (0, Q.jsx)(Eo, {
-					label: n.mode === "password" ? "新访问密码" : "设置访问密码",
-					password: o,
-					confirmation: c,
-					onPassword: s,
-					onConfirmation: l,
-					passwordError: f.password,
-					confirmationError: f.confirmation,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 					passwordHint: "至少 8 个字符。保存后其他设备需要重新登录。"
 				}) : null,
 				d ? /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -5615,27 +4533,27 @@ function Oo({ initial: e, receipt: t }) {
 	}), n && (r.mode === "password" || r.mode === "legacy") ? n(r) : null] });
 }
 // src/react/settings/device-sessions.tsx
-var No = "/api/configuration/access/sessions", Po = (e) => e.device || "未识别的浏览器", Fo = {
+var zo = "/api/configuration/access/sessions", Bo = (e) => e.device || "未识别的浏览器", Vo = {
 	glyph: ft,
 	brand: "apple"
-}, Io = {
+}, Ho = {
 	glyph: yn,
 	brand: "android"
-}, Lo = {
+}, Uo = {
 	iPhone: {
-		platform: Fo,
+		platform: Vo,
 		terminal: Jt
 	},
 	iPad: {
-		platform: Fo,
+		platform: Vo,
 		terminal: it
 	},
 	Android: {
-		platform: Io,
+		platform: Ho,
 		terminal: Jt
 	},
 	"Android 平板": {
-		platform: Io,
+		platform: Ho,
 		terminal: it
 	},
 	ChromeOS: {
@@ -5650,73 +4568,73 @@ var No = "/api/configuration/access/sessions", Po = (e) => e.device || "未识�
 		terminal: qn
 	},
 	macOS: {
-		platform: Fo,
+		platform: Vo,
 		terminal: qn
 	},
 	Linux: { terminal: qn }
-}, Ro = "inline size-4 -mt-0.5 mr-1 align-middle";
-function zo({ platform: e }) {
+}, Wo = "inline size-4 -mt-0.5 mr-1 align-middle";
+function Go({ platform: e }) {
 	if ("browser" in e) return /* @__PURE__ */ (0, Q.jsx)(sr, {
 		name: e.browser,
-		className: Ro
+		className: Wo
 	});
 	let { glyph: t, brand: n } = e;
 	return /* @__PURE__ */ (0, Q.jsx)(t, {
 		"aria-hidden": !0,
 		"data-platform-mark": n,
-		className: Ro
+		className: Wo
 	});
 }
-function Bo({ row: e }) {
-	if (!e.device) return Po(e);
-	let t = e.device.split(" · "), n = Lo[t.at(-1) ?? ""] ? t.pop() : "", r = t.join(" · "), i = n ? Lo[n].platform : void 0;
+function Ko({ row: e }) {
+	if (!e.device) return Bo(e);
+	let t = e.device.split(" · "), n = Uo[t.at(-1) ?? ""] ? t.pop() : "", r = t.join(" · "), i = n ? Uo[n].platform : void 0;
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
 		r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [cr(r) ? /* @__PURE__ */ (0, Q.jsx)(sr, {
 			name: r,
-			className: Ro
+			className: Wo
 		}) : null, r] }) : null,
 		r && n ? " · " : null,
-		n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [i ? /* @__PURE__ */ (0, Q.jsx)(zo, { platform: i }) : null, n] }) : null
+		n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [i ? /* @__PURE__ */ (0, Q.jsx)(Go, { platform: i }) : null, n] }) : null
 	] });
 }
-function Vo({ row: e }) {
-	let t = Lo[e.device.split(" · ").at(-1) ?? ""]?.terminal ?? sn;
+function qo({ row: e }) {
+	let t = Uo[e.device.split(" · ").at(-1) ?? ""]?.terminal ?? sn;
 	return /* @__PURE__ */ (0, Q.jsx)(t, {
 		"aria-hidden": !0,
 		className: "size-5 shrink-0 text-foreground-icon-secondary"
 	});
 }
-function Ho({ row: e, children: t }) {
+function Jo({ row: e, children: t }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-h-13 w-full items-center justify-between gap-4 border-b border-separator-border py-2.5 pr-2.5 last:border-b-0",
 		children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "flex min-w-0 items-center gap-3",
-			children: [/* @__PURE__ */ (0, Q.jsx)(Vo, { row: e }), /* @__PURE__ */ (0, Q.jsxs)("div", {
+			children: [/* @__PURE__ */ (0, Q.jsx)(qo, { row: e }), /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex min-w-0 flex-col",
 				children: [/* @__PURE__ */ (0, Q.jsx)("p", {
 					className: "text-body-regular text-text-primary",
-					children: /* @__PURE__ */ (0, Q.jsx)(Bo, { row: e })
+					children: /* @__PURE__ */ (0, Q.jsx)(Ko, { row: e })
 				}), /* @__PURE__ */ (0, Q.jsx)("p", {
 					className: "text-body-2-regular text-text-secondary",
-					children: Go(e)
+					children: Zo(e)
 				})]
 			})]
 		}), t]
 	});
 }
-function Uo(e, t = Date.now() / 1e3) {
+function Yo(e, t = Date.now() / 1e3) {
 	let n = Math.max(0, t - e);
 	return n < 60 ? "刚刚" : n < 3600 ? `${Math.floor(n / 60)} 分钟前` : n < 86400 ? `${Math.floor(n / 3600)} 小时前` : n < 2592e3 ? `${Math.floor(n / 86400)} 天前` : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleDateString("zh-CN");
 }
-function Wo(e) {
+function Xo(e) {
 	return e.network === "loopback" ? "运行 Peach 的电脑" : e.network ? e.remote ? `公网入口 · ${e.network}` : e.network : "";
 }
-var Go = (e) => [`最近活动 ${Uo(e.last_seen)}`, Wo(e)].filter(Boolean).join(" · ");
-function Ko({ revision: e, receipt: t }) {
+var Zo = (e) => [`最近活动 ${Yo(e.last_seen)}`, Xo(e)].filter(Boolean).join(" · ");
+function Qo({ revision: e, receipt: t }) {
 	let n = X({
 		queryKey: ["access-sessions", e],
 		refetchOnMount: "always",
-		queryFn: ({ signal: e }) => W(No, e)
+		queryFn: ({ signal: e }) => W(zo, e)
 	});
 	return n.error ? /* @__PURE__ */ (0, Q.jsx)(L, {
 		title: "已登录的设备",
@@ -5724,12 +4642,12 @@ function Ko({ revision: e, receipt: t }) {
 	}) : n.isFetching || !n.data ? /* @__PURE__ */ (0, Q.jsx)(Ft, {
 		label: "正在读取已登录的设备",
 		html: cn
-	}) : /* @__PURE__ */ (0, Q.jsx)(qo, {
+	}) : /* @__PURE__ */ (0, Q.jsx)($o, {
 		initial: n.data,
 		receipt: t
 	});
 }
-function qo({ initial: e, receipt: t }) {
+function $o({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e);
 	(0, Z.useEffect)(() => r(e), [e]);
 	let i = n.sessions.filter((e) => !e.current);
@@ -5741,10 +4659,10 @@ function qo({ initial: e, receipt: t }) {
 	}, [n, i.length]);
 	let a = (e) => void nn({
 		title: "撤销这台设备的登录",
-		body: `${Po(e)}（${Go(e)}）下次打开 Peach 需要重新输入访问密码。`,
+		body: `${Bo(e)}（${Zo(e)}）下次打开 Peach 需要重新输入访问密码。`,
 		confirmLabel: "撤销登录",
 		onConfirm: async () => {
-			r(await G(`${No}/revoke`, {
+			r(await G(`${zo}/revoke`, {
 				revision: n.revision,
 				id: e.id
 			})), t("已撤销登录");
@@ -5753,7 +4671,7 @@ function qo({ initial: e, receipt: t }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		title: "已登录的设备",
 		children: [
-			n.sessions.length ? /* @__PURE__ */ (0, Q.jsx)(I, { children: n.sessions.map((e) => /* @__PURE__ */ (0, Q.jsx)(Ho, {
+			n.sessions.length ? /* @__PURE__ */ (0, Q.jsx)(I, { children: n.sessions.map((e) => /* @__PURE__ */ (0, Q.jsx)(Jo, {
 				row: e,
 				children: e.current ? /* @__PURE__ */ (0, Q.jsx)(et, {
 					color: "blue",
@@ -5762,7 +4680,7 @@ function qo({ initial: e, receipt: t }) {
 				}) : n.manageable ? /* @__PURE__ */ (0, Q.jsx)(E, {
 					size: "small",
 					variant: "secondary",
-					"aria-label": `撤销 ${Po(e)} 的登录`,
+					"aria-label": `撤销 ${Bo(e)} 的登录`,
 					onClick: () => a(e),
 					children: "撤销"
 				}) : null
@@ -5780,7 +4698,7 @@ function qo({ initial: e, receipt: t }) {
 						body: `除本机以外的 ${i.length} 台设备下次打开 Peach 需要重新输入访问密码。`,
 						confirmLabel: "撤销登录",
 						onConfirm: async () => {
-							let e = await G(`${No}/revoke`, {
+							let e = await G(`${zo}/revoke`, {
 								revision: n.revision,
 								scope: "others"
 							});
@@ -5794,11 +4712,7 @@ function qo({ initial: e, receipt: t }) {
 	});
 }
 // src/react/components/configuration-fields.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Jo({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
-========
-function ko({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function es({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
 	let c = `${e}-label`;
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex flex-col gap-1.5",
@@ -5827,11 +4741,7 @@ function ko({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a,
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Yo({ prefix: e, suffix: t, ...n }) {
-========
-function Ao({ prefix: e, suffix: t, ...n }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ts({ prefix: e, suffix: t, ...n }) {
 	let r = () => /* @__PURE__ */ (0, Q.jsx)("span", {
 		className: "shrink-0 pr-1 text-body-regular text-text-secondary",
 		children: t
@@ -5846,30 +4756,18 @@ function Ao({ prefix: e, suffix: t, ...n }) {
 	});
 }
 // src/react/settings/port-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Xo = [{
-========
-var jo = [{
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var ns = [{
 	value: "0.0.0.0",
 	label: "同一局域网的设备"
 }, {
 	value: "127.0.0.1",
 	label: "只有这台电脑"
 }];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Zo({ data: e, receipt: t }) {
+function rs({ data: e, receipt: t }) {
 	let n = e.network, r = n ? n.editable : e.editable && e.port_editable !== !1, [i, a] = (0, Z.useState)(n?.host ?? "127.0.0.1"), [o, s] = (0, Z.useState)(n?.mdns_name ?? "peach"), [c, l] = (0, Z.useState)(String(e.port)), [u, d] = (0, Z.useState)({}), [f, p] = (0, Z.useState)(null), m = Y();
 	return (0, Z.useEffect)(() => {
 		if (!f) return;
-		let e = setTimeout(() => location.assign(f.url), Ma);
-========
-function Mo({ data: e, receipt: t }) {
-	let n = e.network, r = n ? n.editable : e.editable && e.port_editable !== !1, [i, a] = (0, Z.useState)(n?.host ?? "127.0.0.1"), [o, s] = (0, Z.useState)(n?.mdns_name ?? "peach"), [c, l] = (0, Z.useState)(String(e.port)), [u, d] = (0, Z.useState)({}), [f, p] = (0, Z.useState)(null), m = Y();
-	return (0, Z.useEffect)(() => {
-		if (!f) return;
-		let e = setTimeout(() => location.assign(f.url), Oa);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		let e = setTimeout(() => location.assign(f.url), Ra);
 		return () => clearTimeout(e);
 	}, [f]), f ? /* @__PURE__ */ (0, Q.jsx)(L, {
 		guide: "port",
@@ -5905,57 +4803,33 @@ function Mo({ data: e, receipt: t }) {
 			});
 		} : void 0,
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Qo, {
-========
-			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(No, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(is, {
 				label: "本机地址",
 				value: n.local_url,
 				receipt: t
 			}), n.lan_url || n.ip_url ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				/* @__PURE__ */ (0, Q.jsx)(Qo, {
-========
-				/* @__PURE__ */ (0, Q.jsx)(No, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				/* @__PURE__ */ (0, Q.jsx)(is, {
 					label: "手机连接地址",
 					value: n.lan_url || n.ip_url,
 					receipt: t
 				}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(Qo, {
-========
-				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(No, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(is, {
 					label: "备用 IP 地址",
 					value: n.ip_url,
 					receipt: t
 				}) : null,
 				/* @__PURE__ */ (0, Q.jsxs)(N, { children: ["手机与电脑连接同一 Wi-Fi。", n.ip_url && n.lan_url ? "名称地址打不开时，可尝试备用 IP 地址。" : ""] })
 			] }) : /* @__PURE__ */ (0, Q.jsx)(N, { children: n.scope === "local" ? "当前只允许这台电脑访问，手机无法连接。" : "局域网连接地址未取得，请检查电脑的网络连接和服务启动配置。" })] }) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Jo, {
-========
-			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(ko, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(es, {
 				id: "configHost",
 				label: "谁可以访问",
 				value: i,
 				onChange: a,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				options: Xo,
+				options: ns,
 				isDisabled: !!m.busy,
 				isInvalid: !!u.host,
 				children: u.host ? /* @__PURE__ */ (0, Q.jsx)(k, { children: u.host }) : null
-			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(Yo, {
-========
-				options: jo,
-				isDisabled: !!m.busy,
-				isInvalid: !!u.host,
-				children: u.host ? /* @__PURE__ */ (0, Q.jsx)(k, { children: u.host }) : null
-			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(Ao, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(ts, {
 				id: "configMdnsName",
 				label: "局域网访问地址",
 				value: o,
@@ -5969,11 +4843,7 @@ function Mo({ data: e, receipt: t }) {
 				validationBehavior: "aria",
 				isInvalid: !!u.mdns_name,
 				hint: u.mdns_name || void 0
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(Yo, {
-========
-			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(Ao, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(ts, {
 				id: "configPort",
 				label: "端口",
 				prefix: "localhost:",
@@ -6001,11 +4871,7 @@ function Mo({ data: e, receipt: t }) {
 		}) : null]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Qo({ label: e, value: t, receipt: n }) {
-========
-function No({ label: e, value: t, receipt: n }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function is({ label: e, value: t, receipt: n }) {
 	let r = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-w-0 flex-col gap-2",
@@ -6030,20 +4896,12 @@ function No({ label: e, value: t, receipt: n }) {
 	});
 }
 // src/react/settings/peach-proxy-fields.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var $o = [
-========
-var Po = [
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+var as = [
 	["environment", "跟随环境"],
 	["direct", "直连"],
 	["proxy", "自定义"]
 ];
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function es({ mode: e, onChange: t, labelledBy: n }) {
-========
-function Fo({ mode: e, onChange: t, labelledBy: n }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function os({ mode: e, onChange: t, labelledBy: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(R, {
 		"aria-label": n ? void 0 : "连接方式",
 		"aria-labelledby": n,
@@ -6051,21 +4909,13 @@ function Fo({ mode: e, onChange: t, labelledBy: n }) {
 		onSelectionChange: (e) => {
 			e !== null && t(String(e));
 		},
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		children: $o.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
-========
-		children: Po.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		children: as.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 			id: e,
 			children: t
 		}, e))
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ts({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
-========
-function Io({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ss({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 	return /* @__PURE__ */ (0, Q.jsx)(P, {
 		id: e,
 		type: "password",
@@ -6081,19 +4931,11 @@ function Io({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 	});
 }
 // src/react/settings/tunnel-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var ns = 2e3, rs = [["quick", "临时链接"], ["named", "命名隧道"]], is = {
+var cs = 2e3, ls = [["quick", "临时链接"], ["named", "命名隧道"]], us = {
 	quick: "临时预览用，地址随机，重启后会变。启动前要先设置访问密码。",
 	named: "使用你在 Cloudflare 绑定的固定域名。启动前要先设置访问密码。"
 };
-function as({ revision: e, initial: t, receipt: n }) {
-========
-var Lo = 2e3, Ro = [["quick", "临时链接"], ["named", "命名隧道"]], zo = {
-	quick: "临时预览用，地址随机，重启后会变。启动前要先设置访问密码。",
-	named: "使用你在 Cloudflare 绑定的固定域名。启动前要先设置访问密码。"
-};
-function Bo({ revision: e, initial: t, receipt: n }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ds({ revision: e, initial: t, receipt: n }) {
 	let [r, i] = (0, Z.useState)(t), [a, o] = (0, Z.useState)(e), [s, c] = (0, Z.useState)(t.mode), [l, u] = (0, Z.useState)(t.hostname), [d, f] = (0, Z.useState)(""), [p, m] = (0, Z.useState)({}), h = Y(), g = r.state === "starting" || r.state === "running", _ = r.named_available && s === "named";
 	(0, Z.useEffect)(() => {
 		if (r.state !== "starting") return;
@@ -6101,11 +4943,7 @@ function Bo({ revision: e, initial: t, receipt: n }) {
 			ln(e.signal).then((t) => {
 				!e.signal.aborted && t.tunnel && (Dn.setQueryData(Ze, t), i(t.tunnel), o(t.revision));
 			}).catch(() => void 0);
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-		}, ns);
-========
-		}, Lo);
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		}, cs);
 		return () => {
 			e.abort(), window.clearInterval(t);
 		};
@@ -6141,23 +4979,14 @@ function Bo({ revision: e, initial: t, receipt: n }) {
 				value: s,
 				isDisabled: g,
 				onChange: (e) => c(e),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 				className: Mt,
-				children: rs.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
-========
-				className: At,
-				children: Ro.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: ls.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
 					value: e,
 					className: jt,
 					children: t
 				}, e))
 			}) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(N, { children: is[_ ? "named" : "quick"] }),
-========
-			/* @__PURE__ */ (0, Q.jsx)(N, { children: zo[_ ? "named" : "quick"] }),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(N, { children: us[_ ? "named" : "quick"] }),
 			_ ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
 				id: "tunnel-hostname",
 				label: "公开主机名",
@@ -6217,60 +5046,36 @@ function Bo({ revision: e, initial: t, receipt: n }) {
 	});
 }
 // src/react/settings/network-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function os({ data: e, receipt: t, panel: n, issues: r }) {
-========
-function Vo({ data: e, receipt: t, panel: n, issues: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function fs({ data: e, receipt: t, panel: n, issues: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		...ur(n),
 		children: [
 			r,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.network || e.editable && e.port_editable !== !1 && !e.section_errors?.media_sources ? /* @__PURE__ */ (0, Q.jsx)(Zo, {
+			e.network || e.editable && e.port_editable !== !1 && !e.section_errors?.media_sources ? /* @__PURE__ */ (0, Q.jsx)(rs, {
 				data: e,
 				receipt: t
 			}) : null,
-			e.access ? /* @__PURE__ */ (0, Q.jsx)(Mo, {
-========
-			e.network || e.editable && e.port_editable !== !1 && !e.section_errors?.media_sources ? /* @__PURE__ */ (0, Q.jsx)(Mo, {
-				data: e,
-				receipt: t
-			}) : null,
-			e.access ? /* @__PURE__ */ (0, Q.jsx)(Oo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.access ? /* @__PURE__ */ (0, Q.jsx)(Ro, {
 				initial: e.access,
 				receipt: t,
-				devices: (e) => /* @__PURE__ */ (0, Q.jsx)(Ko, {
+				devices: (e) => /* @__PURE__ */ (0, Q.jsx)(Qo, {
 					revision: e.revision,
 					receipt: t
 				})
 			}) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)(as, {
-========
-			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)(Bo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)(ds, {
 				revision: e.revision,
 				initial: e.tunnel,
 				receipt: t
 			}) : null,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(ss, {
-========
-			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(Ho, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(ps, {
 				initial: e.peach_proxy,
 				receipt: t
 			}) : null
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ss({ initial: e, receipt: t }) {
-========
-function Ho({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ps({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.mode), [o, s] = (0, Z.useState)(""), c = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "peachProxy",
@@ -6288,11 +5093,7 @@ function Ho({ initial: e, receipt: t }) {
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "连接方式",
 				description: "Peach 访问外网和采集来源时使用。",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: /* @__PURE__ */ (0, Q.jsx)(es, {
-========
-				children: /* @__PURE__ */ (0, Q.jsx)(Fo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: /* @__PURE__ */ (0, Q.jsx)(os, {
 					mode: i,
 					onChange: a
 				})
@@ -6300,11 +5101,7 @@ function Ho({ initial: e, receipt: t }) {
 			i === "proxy" || n.needs_selection || c.error ? /* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(ts, {
-========
-					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(Io, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(ss, {
 						id: "peachProxyAddress",
 						value: o,
 						onChange: s,
@@ -6327,21 +5124,12 @@ function Ho({ initial: e, receipt: t }) {
 	});
 }
 // src/react/follow-manage/credentials.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var cs = "将清除这个来源在本机和共享副本中的登录凭据。", ls = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
-function us(e, t) {
+var ms = "将清除这个来源在本机和共享副本中的登录凭据。", hs = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
+function gs(e, t) {
 	return (e.shared_fields || []).includes(t) ? "来自共享，留空表示不改" : e.fields.includes(t) ? "已保存，留空表示不改" : "未填写";
 }
-function ds({ row: e }) {
+function _s({ row: e }) {
 	if (rn(e)) return /* @__PURE__ */ (0, Q.jsx)(et, {
-========
-var Uo = "将清除这个来源在本机和共享副本中的登录凭据。", Wo = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
-function Go(e, t) {
-	return (e.shared_fields || []).includes(t) ? "来自共享，留空表示不改" : e.fields.includes(t) ? "已保存，留空表示不改" : "未填写";
-}
-function Ko({ row: e }) {
-	if ($t(e)) return /* @__PURE__ */ (0, Q.jsx)(et, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		variant: "caption",
 		color: "lime",
 		children: "已配置"
@@ -6353,15 +5141,9 @@ function Ko({ row: e }) {
 		children: $e[e.requirement] || ""
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function fs({ row: e, readOnly: t, toast: n }) {
+function vs({ row: e, readOnly: t, toast: n }) {
 	let [r, i] = (0, Z.useState)({}), [a, o] = (0, Z.useState)(""), s = rn(e), c = Vn({
 		mutationFn: (t) => Nn(e.provider, t),
-========
-function qo({ row: e, readOnly: t, toast: n }) {
-	let [r, i] = (0, Z.useState)({}), [a, o] = (0, Z.useState)(""), s = $t(e), c = Pn({
-		mutationFn: (t) => En(e.provider, t),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 		onSuccess: (e, t) => {
 			e.note ? o(e.note) : (o(""), i({}), Dn.invalidateQueries({
 				queryKey: ot,
@@ -6386,11 +5168,7 @@ function qo({ row: e, readOnly: t, toast: n }) {
 				children: (e.needs || []).map((n) => /* @__PURE__ */ (0, Q.jsx)(P, {
 					type: "password",
 					label: n,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					placeholder: us(e, n),
-========
-					placeholder: Go(e, n),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					placeholder: gs(e, n),
 					autoComplete: "off",
 					spellCheck: "false",
 					isDisabled: t,
@@ -6410,11 +5188,7 @@ function qo({ row: e, readOnly: t, toast: n }) {
 					...K(c.isPending),
 					onClick: () => void nn({
 						title: "清除来源凭据",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-						body: cs,
-========
-						body: Uo,
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+						body: ms,
 						confirmLabel: "清除来源凭据",
 						danger: !0,
 						onConfirm: () => c.mutateAsync({})
@@ -6441,11 +5215,7 @@ function qo({ row: e, readOnly: t, toast: n }) {
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ps({ row: e, readOnly: t, toast: n }) {
-========
-function Jo({ row: e, readOnly: t, toast: n }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ys({ row: e, readOnly: t, toast: n }) {
 	let r = /* @__PURE__ */ (0, Q.jsxs)("span", {
 		className: "flex min-w-0 flex-wrap items-center gap-2",
 		children: [
@@ -6457,11 +5227,7 @@ function Jo({ row: e, readOnly: t, toast: n }) {
 				className: "min-w-0 text-body-medium wrap-anywhere text-text-primary",
 				children: e.provider_label
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(ds, { row: e }),
-========
-			/* @__PURE__ */ (0, Q.jsx)(Ko, { row: e }),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(_s, { row: e }),
 			e.missing.map((e) => /* @__PURE__ */ (0, Q.jsx)(et, {
 				variant: "caption",
 				color: "rose",
@@ -6477,15 +5243,9 @@ function Jo({ row: e, readOnly: t, toast: n }) {
 		children: [
 			r,
 			/* @__PURE__ */ (0, Q.jsx)(O, {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 				summary: rn(e) ? "修改凭据" : "填写凭据",
 				defaultOpen: e.requirement === "required" && !rn(e),
-				children: /* @__PURE__ */ (0, Q.jsx)(fs, {
-========
-				summary: $t(e) ? "修改凭据" : "填写凭据",
-				defaultOpen: e.requirement === "required" && !$t(e),
-				children: /* @__PURE__ */ (0, Q.jsx)(qo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: /* @__PURE__ */ (0, Q.jsx)(vs, {
 					row: e,
 					readOnly: t,
 					toast: n
@@ -6494,22 +5254,13 @@ function Jo({ row: e, readOnly: t, toast: n }) {
 			e.world_readable ? /* @__PURE__ */ (0, Q.jsx)(F, {
 				tone: "error",
 				title: "凭据文件权限过宽",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-				children: ls
-========
-				children: Wo
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+				children: hs
 			}) : null
 		]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ms({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
+function bs({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 	let i = e.providers || [], a = i.filter((e) => e.requirement === "required" && !rn(e));
-========
-function Yo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
-	let i = e.providers || [], a = i.filter((e) => e.requirement === "required" && !$t(e));
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
 	if ((0, Z.useEffect)(() => {
 		kn("credentials", { done: i.filter(rn).map((e) => e.provider) });
 	}, [e]), !i.length) return /* @__PURE__ */ (0, Q.jsx)(rt, {
@@ -6546,11 +5297,7 @@ function Yo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 				padding: "none",
 				className: "flex flex-col overflow-hidden"
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(ps, {
-========
-			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(Jo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(ys, {
 				row: e,
 				readOnly: t,
 				toast: n
@@ -6580,11 +5327,7 @@ function Yo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 	});
 }
 // src/react/settings/entry-links-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function hs({ initial: e, receipt: t }) {
-========
-function Xo({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function xs({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.sites), i = Y(), a = (e, t) => r((n) => n.map((n) => n.key === e ? {
 		...n,
 		host: t
@@ -6624,54 +5367,31 @@ function Xo({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/indexer-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var gs = "/api/configuration/indexers";
-function _s({ receipt: e }) {
+var Ss = "/api/configuration/indexers";
+function Cs({ receipt: e }) {
 	let t = X({
 		queryKey: ["indexers"],
-		queryFn: ({ signal: e }) => W(gs, e),
-========
-var Zo = "/api/configuration/indexers";
-function Qo({ receipt: e }) {
-	let t = X({
-		queryKey: ["indexers"],
-		queryFn: ({ signal: e }) => W(Zo, e),
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		queryFn: ({ signal: e }) => W(Ss, e),
 		refetchOnMount: "always"
 	});
 	return t.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(t.error) }) : t.isFetching ? /* @__PURE__ */ (0, Q.jsx)(Ft, {
 		label: "正在读取资源搜索设置",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
 		html: _n
-	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(bs, {
-========
-		html: dn
-	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(ts, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(Es, {
 		initial: t.data,
 		receipt: e
 	}) : null;
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function vs(e) {
-========
-function $o(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ws(e) {
 	try {
 		return new globalThis.URL(e).host;
 	} catch {
 		return e;
 	}
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ys({ row: e, index: t }) {
+function Ts({ row: e, index: t }) {
 	let n = [
-		e.url ? vs(e.url) : "未填地址",
-========
-function es({ row: e, index: t }) {
-	let n = [
-		e.url ? $o(e.url) : "未填地址",
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		e.url ? ws(e.url) : "未填地址",
 		e.enabled ? "已启用" : "已停用",
 		e.api_key_set && !e.clear_api_key ? "已保存 API key" : e.api_key ? "API key 待保存" : "没有 API key"
 	];
@@ -6686,11 +5406,7 @@ function es({ row: e, index: t }) {
 		})]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function bs({ initial: e, receipt: t }) {
-========
-function ts({ initial: e, receipt: t }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Es({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.indexers), i = Y();
 	(0, Z.useEffect)(() => {
 		kn("indexers", { open: e.indexers.map((e) => !e.url) });
@@ -6703,11 +5419,7 @@ function ts({ initial: e, receipt: t }) {
 		guide: "indexers",
 		title: "资源搜索",
 		onSubmit: (e) => {
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			e.preventDefault(), i.run("save", (e) => G(gs, { indexers: n }, "POST", e), (e) => {
-========
-			e.preventDefault(), i.run("save", (e) => G(Zo, { indexers: n }, "POST", e), (e) => {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			e.preventDefault(), i.run("save", (e) => G(Ss, { indexers: n }, "POST", e), (e) => {
 				r(e.indexers), t("已保存索引器");
 			});
 		},
@@ -6727,11 +5439,7 @@ function ts({ initial: e, receipt: t }) {
 				className: "min-w-0 border-t border-separator-border pt-2",
 				children: /* @__PURE__ */ (0, Q.jsx)(O, {
 					defaultOpen: !e.url,
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					summary: /* @__PURE__ */ (0, Q.jsx)(ys, {
-========
-					summary: /* @__PURE__ */ (0, Q.jsx)(es, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					summary: /* @__PURE__ */ (0, Q.jsx)(Ts, {
 						row: e,
 						index: t
 					}),
@@ -6816,11 +5524,7 @@ function ts({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/source-settings.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function xs({ data: e, receipt: t, panel: n, issues: r }) {
-========
-function ns({ data: e, receipt: t, panel: n, issues: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ds({ data: e, receipt: t, panel: n, issues: r }) {
 	let i = X({
 		queryKey: ot,
 		queryFn: ({ signal: e }) => un(e),
@@ -6839,11 +5543,7 @@ function ns({ data: e, receipt: t, panel: n, issues: r }) {
 					children: "采集来源与登录状态"
 				})
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			i.data ? /* @__PURE__ */ (0, Q.jsx)(ms, {
-========
-			i.data ? /* @__PURE__ */ (0, Q.jsx)(Yo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			i.data ? /* @__PURE__ */ (0, Q.jsx)(bs, {
 				data: i.data,
 				readOnly: !!e.ledger_read_only,
 				toast: t,
@@ -6856,15 +5556,9 @@ function ns({ data: e, receipt: t, panel: n, issues: r }) {
 				label: "正在读取来源凭据",
 				html: an
 			}),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			/* @__PURE__ */ (0, Q.jsx)(vo, { receipt: t }),
-			/* @__PURE__ */ (0, Q.jsx)(_s, { receipt: t }),
-			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(hs, {
-========
-			/* @__PURE__ */ (0, Q.jsx)(mo, { receipt: t }),
-			/* @__PURE__ */ (0, Q.jsx)(Qo, { receipt: t }),
-			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(Xo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			/* @__PURE__ */ (0, Q.jsx)(wo, { receipt: t }),
+			/* @__PURE__ */ (0, Q.jsx)(Cs, { receipt: t }),
+			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(xs, {
 				initial: e.entry_links,
 				receipt: t
 			}) : null
@@ -6872,11 +5566,7 @@ function ns({ data: e, receipt: t, panel: n, issues: r }) {
 	});
 }
 // src/react/settings/configuration-shape.ts
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ss(e) {
-========
-function rs(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Os(e) {
 	let t = e.downloads;
 	if (!t) return null;
 	let n = t.media_sources ?? [];
@@ -6889,11 +5579,7 @@ function rs(e) {
 		browserLogin: t.pikpak_browser.available
 	};
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Cs(e) {
-========
-function is(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function ks(e) {
 	let t = e.tunnel;
 	return {
 		port: !!(e.editable && e.port_editable !== !1),
@@ -6907,11 +5593,7 @@ function is(e) {
 		tunnelNote: !!(t && (!t.available || t.state === "starting" || t.state === "running" && t.url))
 	};
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function ws(e) {
-========
-function as(e) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function As(e) {
 	let t = e.updates, n = e.update_job?.state ?? "idle", r = !t || t.state === "unchecked" && !t.checked_at && n === "idle", i = +!!t?.package_kind + (r ? 0 : +!!t?.checked_at + (t?.state === "unchecked" ? 0 : 1) + (n === "idle" ? 0 : 1)), a = e.automatic_updates, o = e.storage;
 	return {
 		releaseFacts: t?.package_kind ? 5 : 4,
@@ -6932,20 +5614,12 @@ function as(e) {
 	};
 }
 // src/react/settings/configuration-page.tsx
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Ts({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
-========
-function os({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function js({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
 	let i = X({
 		queryKey: Ze,
 		queryFn: ({ signal: e }) => ln(e)
 	}), a = i.data;
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	return a ? /* @__PURE__ */ (0, Q.jsx)(Os, {
-========
-	return a ? /* @__PURE__ */ (0, Q.jsx)(ls, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	return a ? /* @__PURE__ */ (0, Q.jsx)(Ps, {
 		data: a,
 		receipt: e,
 		reopenTutorial: t,
@@ -6964,11 +5638,7 @@ function os({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) 
 		})
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-function Es({ data: e, sections: t, reload: n, refreshing: r }) {
-========
-function ss({ data: e, sections: t, reload: n, refreshing: r }) {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+function Ms({ data: e, sections: t, reload: n, refreshing: r }) {
 	return /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => {
 		let i = e.section_errors?.[t];
 		return i ? /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -6985,25 +5655,14 @@ function ss({ data: e, sections: t, reload: n, refreshing: r }) {
 		}, t) : null;
 	}) });
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-var Ds = 0;
-function Os({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
-	let [s] = (0, Z.useState)(() => `board-tabs-${++Ds}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
+var Ns = 0;
+function Ps({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
+	let [s] = (0, Z.useState)(() => `board-tabs-${++Ns}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
 	(0, Z.useEffect)(() => {
 		l(r);
 	}, [r]), (0, Z.useEffect)(() => {
-		let t = Ss(e);
-		t && kn("downloads", t), kn("network", Cs(e)), kn("maintenance", ws(e));
-========
-var cs = 0;
-function ls({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
-	let [s] = (0, Z.useState)(() => `board-tabs-${++cs}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
-	(0, Z.useEffect)(() => {
-		l(r);
-	}, [r]), (0, Z.useEffect)(() => {
-		let t = rs(e);
-		t && Sn("downloads", t), Sn("network", is(e)), Sn("maintenance", as(e));
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+		let t = Os(e);
+		t && kn("downloads", t), kn("network", ks(e)), kn("maintenance", As(e));
 	}, [e]), (0, Z.useLayoutEffect)(() => {
 		if (d.current === c) return;
 		d.current = c;
@@ -7027,11 +5686,7 @@ function ls({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 	let h = (0, Z.useRef)([]), g = {
 		data: e,
 		receipt: t
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(Es, {
-========
-	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(ss, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(Ms, {
 		data: e,
 		sections: t,
 		reload: a,
@@ -7053,25 +5708,15 @@ function ls({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 						"library_count",
 						"mount_dependencies"
 					]),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(fo, { ...g }) : null,
-					/* @__PURE__ */ (0, Q.jsx)(ko, { receipt: t }),
-					/* @__PURE__ */ (0, Q.jsx)(So, { receipt: t })
-========
-					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(so, { ...g }) : null,
-					/* @__PURE__ */ (0, Q.jsx)(To, { receipt: t }),
-					/* @__PURE__ */ (0, Q.jsx)(vo, { receipt: t })
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(vo, { ...g }) : null,
+					/* @__PURE__ */ (0, Q.jsx)(Fo, { receipt: t }),
+					/* @__PURE__ */ (0, Q.jsx)(Oo, { receipt: t })
 				]
 			})
 		},
 		{
 			title: "来源与订阅",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(xs, {
-========
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(ns, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Ds, {
 				...g,
 				panel: e,
 				issues: _(["entry_links"])
@@ -7088,11 +5733,7 @@ function ls({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		}] : [],
 		...y ? [{
 			title: "网络与访问",
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(os, {
-========
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Vo, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(fs, {
 				...g,
 				panel: e,
 				issues: _(v)
@@ -7114,15 +5755,9 @@ function ls({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 						"automatic_updates",
 						"facts"
 					]),
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-					/* @__PURE__ */ (0, Q.jsx)(Aa, { ...g }),
-					/* @__PURE__ */ (0, Q.jsx)(Co, { receipt: t }),
-					/* @__PURE__ */ (0, Q.jsx)(va, {
-========
-					/* @__PURE__ */ (0, Q.jsx)(Ea, { ...g }),
-					/* @__PURE__ */ (0, Q.jsx)(yo, { receipt: t }),
-					/* @__PURE__ */ (0, Q.jsx)(ma, {
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+					/* @__PURE__ */ (0, Q.jsx)(Ia, { ...g }),
+					/* @__PURE__ */ (0, Q.jsx)(ko, { receipt: t }),
+					/* @__PURE__ */ (0, Q.jsx)(wa, {
 						...g,
 						reopenTutorial: n
 					})
@@ -7183,12 +5818,6 @@ function ls({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		})] }, e))]
 	});
 }
-<<<<<<<< HEAD:web/dist/peach-app.configuration-page-NsP5Crfe.js
-export { Ts as ConfigurationPage };
+export { js as ConfigurationPage };
 
-//# debugId=b136ef8a-5a47-4e68-8494-93c71c958a57
-========
-export { os as ConfigurationPage };
-
-//# debugId=0f526625-1990-4749-9c0e-5225c274fa5b
->>>>>>>> refs/heads/agent/claude/ledger-backup-restore:web/dist/peach-app.configuration-page-DHqbHUP4.js
+//# debugId=80caf3f2-9a7b-4fda-9c35-03d51996f275
