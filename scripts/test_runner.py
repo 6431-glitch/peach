@@ -293,6 +293,8 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     ".dockerignore": ("packaging", "tooling"),
     "compose.yaml": ("packaging", "tooling"),
     "src/peach/server.py": ("packaging", "tooling"),
+    # 一键更新的用例和镜像仓库核对一起放在 `test_release_updates.py`。
+    "src/peach/docker_update.py": ("tooling",),
     "scripts/smoke_docker.py": ("packaging", "tooling"),
     # GitLab 流水线：构建、发布与 CI 验证的编排，本机测试不执行它；`test_version_bump.py`
     # 读它判补丁版本。主线 CI 改它时由 `ci_scope` 让三个平台跑全量。

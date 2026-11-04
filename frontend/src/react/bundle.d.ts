@@ -258,6 +258,15 @@ export interface ReleaseState {
   steps?: { text: string; command: string }[];
 }
 
+/** Docker 一键更新经 Watchtower（ADR-0140）。令牌不回传，只有存没存过。 */
+export interface DockerUpdateState {
+  url: string;
+  token_set: boolean;
+  /** compose 传进来的镜像标签；不是 edge 时 Watchtower 换不到新版本。 */
+  image_tag: string;
+  rolling: boolean;
+}
+
 export interface UpdateJob {
   state: string; progress: number; message?: string; downloaded?: number; total?: number; version?: string;
 }
@@ -291,6 +300,7 @@ export interface ConfigurationData {
   downloads?: DownloadSettingsState;
   updates?: ReleaseState;
   update_job?: UpdateJob;
+  docker_update?: DockerUpdateState;
   automatic_updates?: AutomaticUpdateState;
   access?: AccessState;
   tunnel?: TunnelState;

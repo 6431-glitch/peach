@@ -118,6 +118,8 @@
 
 `GET /api/client-updates` 要求应用鉴权，返回运行版本与构建标记、发行版检查结果、安装状态、用户脚本版本和自动补修状态，不触发外部检查。`GET /api/jav-browser/updates` 使用用户脚本专用令牌，无需番号，返回运行与发行版、脚本版本快照，不暴露补修明细。`POST /api/configuration/upgrade-repairs/retry` 限本机同源请求，重试失败项；`GET /api/configuration/upgrade-repairs/review` 限本机管理权限，下载 JSON 复核记录，无记录时返回 404。
 
+Docker 镜像的一键更新（[ADR-0140](adr/0140-docker-one-click-update-via-watchtower.md)）：`GET /api/configuration` 在容器里多一个 `docker_update` 区域，返回 Watchtower 地址、`token_set`、镜像标签与 `rolling`（标签是否为 `edge`），不回显令牌。`POST /api/configuration/docker-update` 保存地址与令牌，令牌留空不改，`clear_token: true` 撤掉；地址无效返回 400。`POST /api/configuration/docker-update/run` 请 Watchtower 异步拉取并重建容器，收到 202 后返回 `state: updating`；没有令牌、标签不是 `edge`、Watchtower 拒绝令牌或正忙返回 409。两条写入接口限本机同源请求，非 Docker 部署返回 404。容器里的 `GET /api/configuration/updates` 在 Docker Hub 的版本号标签与 `edge` 指向同一镜像前返回 `state: pending`。
+
 `GET /api/configuration/cloud-proxies` 返回已添加媒体库对应的 CloudDrive 账号及 API／数据代理、未匹配媒体库和账号修订号，不回显代理密码；尚未填写 CloudDrive2 地址时返回空列表与 `configured: false`。`POST` 接受账号 `id`、`revision` 和本次修改的 `api`／`data`，写回 CloudDrive 后返回该账号当前状态；配置冲突返回 409。这两条接口均限本机管理权限，写入还要求同源请求。
 
 `POST /api/configuration/smb/test` 接受共享地址及连接字段，验证只读目录访问，返回 `readable` 和最多 500 个可进入子目录名。接口要求本机管理权限与同源请求；地址无效返回 400，无读取权限返回 403，共享不可达返回 502，不回显密码。配置读取只返回账号、加密要求与密码是否已保存。

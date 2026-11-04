@@ -8,7 +8,7 @@ import sys
 
 import httpx
 
-from . import __version__, distribution
+from . import __version__, distribution, docker_update
 from .http import HttpRequest, HttpxTransport
 from .update_packages import TOOL_PATHS
 
@@ -124,8 +124,12 @@ def check(*, transport=None, system: str | None = None, machine: str | None = No
         state = "available" if version > current else "ahead" if version < current else "current"
         message = {"available": "有新版本可下载。", "ahead": "当前版本高于已发布测试版。", "current": "已是最新测试版。"}[state]
         if distribution.docker():
-            # 版本号跟着 Windows 包判，镜像在同一次发布里推送；容器不下载发行包，只给版本与发布页。
-            return dict(result, latest_version=tag.removeprefix("v"), state=state, release_url=release_url,
+            # 版本号跟着 Windows 包判；镜像在 Release 之后才推送，空窗里拉到的还是旧镜像，
+            # 所以以 Docker Hub 上版本号标签与 edge 指向同一镜像为准（ADR-0140）。
+            latest = tag.removeprefix("v")
+            if state == "available" and not docker_update.published(client, latest):
+                state, message = "pending", f"Peach {latest} 的镜像尚未发布，请稍后再检查。"
+            return dict(result, latest_version=latest, state=state, release_url=release_url,
                         message="有新镜像可拉取。" if state == "available" else message)
         return dict(result, latest_version=tag.removeprefix("v"), state=state, message=message,
                     asset_url=f"{directory}/{asset['name']}",

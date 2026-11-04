@@ -30,7 +30,7 @@ from .jobs import JobAlreadyRunning
 from .routes_auth import require_auth, require_authenticated_client, same_origin, sessions as access_sessions
 from .web_entry import runtime_fact_entries
 from .web_local_access import local_client, managed_configuration
-from . import release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall
+from . import release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall, docker_update
 
 router = APIRouter()
 _SAVE_LOCK = threading.Lock()
@@ -265,6 +265,8 @@ def snapshot(config) -> dict[str, Any]:
         ("mount_dependencies", "挂载依赖", media_configuration.mount_dependencies),
         ("facts", "运行信息", lambda: runtime_fact_entries(config)),
     )
+    if distribution.docker():
+        readers += (("docker_update", "一键更新设置", lambda: docker_update.describe(config.directory("secrets"))),)
     for key, title, reader in readers:
         _read_section(result, key, title, reader)
     return result
@@ -804,6 +806,33 @@ def upgrade_repairs_review(request: Request, _args=Depends(require_auth)):
         raise HTTPException(404, '暂无升级复核记录')
     return Response(path.read_bytes(), media_type='application/json',
                     headers={'Content-Disposition': 'attachment; filename="upgrade-review.json"'})
+
+
+def _docker_secrets():
+    if not distribution.docker():
+        raise HTTPException(404, "只有 Docker 镜像有一键更新")
+    return settings_file.load_config().directory("secrets")
+
+
+@router.post("/api/configuration/docker-update")
+def save_docker_update(request: Request, body: dict = Body(...), _args=Depends(require_auth)):
+    """保存 Watchtower 地址与令牌；回应里只有地址和令牌存没存过。"""
+    local_only(request)
+    same_origin(request)
+    try:
+        return docker_update.save(_docker_secrets(), body)
+    except (ValueError, OSError) as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+@router.post("/api/configuration/docker-update/run")
+def run_docker_update(request: Request, _args=Depends(require_auth)):
+    local_only(request)
+    same_origin(request)
+    try:
+        return docker_update.trigger(_docker_secrets())
+    except (ValueError, OSError) as exc:
+        raise HTTPException(409, str(exc)) from exc
 
 
 @router.get("/api/configuration/update-status")
