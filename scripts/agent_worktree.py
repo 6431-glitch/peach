@@ -16,7 +16,7 @@ from pathlib import Path
 if not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     __package__ = "scripts"
-from . import (changelog, check_readme_impact, co_author, commit_subject,
+from . import (changelog, check_public_text, check_readme_impact, co_author, commit_subject,
                test_evidence, test_runner, version_bump)
 from .release_tag import MASTER_WRITER
 
@@ -207,7 +207,19 @@ def require_pull_request(worker: Path, branch: str, target_branch: str, head: st
         raise WorkspaceError(f"PR 目标分支不是 {target_branch}")
     body = pr.get("body") if isinstance(pr.get("body"), str) else ""
     refs = [line.strip() for line in body.splitlines() if ISSUE_LINK.fullmatch(line.strip())]
-    return {"url": pr["url"], "head": head, "base": target_branch, "refs": refs}
+    return {"url": pr["url"], "head": head, "base": target_branch, "refs": refs, "body": body}
+
+
+def require_public_text(repo: Path, texts: dict[str, str]) -> None:
+    """PR 正文与提交说明都公开在 GitHub 上：成串列出本机馆藏细节的拒收。
+
+    判据在 `scripts/check_public_text.py`，只读本机账本；没有账本的机器放行。
+    """
+    library = check_public_text.load_library(repo)
+    found = [f"{name}（{'；'.join(problems)}）" for name, text in texts.items()
+             for problems in [check_public_text.problems(text, library)] if problems]
+    if found:
+        raise WorkspaceError("公开文字成串列出了馆藏细节，改写 PR 正文或提交说明后再合入：" + "，".join(found))
 
 
 def merge_message(branch: str, pull_request: dict[str, object]) -> str:
@@ -277,6 +289,10 @@ def _integrate_locked(repo: Path, worker_branch: str,
     worker_head = _git(main, "rev-parse", worker_branch).stdout.strip()
     require_verified(workers[0], target_branch, worker_files)
     pull_request = require_pull_request(workers[0], worker_branch, target_branch, worker_head)
+    commits = _git(main, "log", "--format=%h%x00%B%x1e", f"{base}..{worker_head}").stdout
+    require_public_text(main, {"PR 正文": str(pull_request.get("body") or ""), **{
+        f"提交 {sha}": message for sha, _, message in
+        (entry.strip().partition("\0") for entry in commits.split("\x1e") if entry.strip())}})
     if _git(main, "rev-parse", worker_branch).stdout.strip() != worker_head or \
             _git(workers[0], "rev-parse", "HEAD").stdout.strip() != worker_head:
         raise WorkspaceError("验证检查期间工作者分支改变，请重试")
