@@ -771,8 +771,7 @@ def _check_sources(args: argparse.Namespace) -> int:
         print("检查来源页面与图片 CDN；连通不代表作品资料或登录会话已验证。")
         for source in result["sources"]:
             for target in source["results"]:
-                state = "可连接" if target["ok"] else target.get("reason", "未取得")
-                print(f"{source['label']} / {target['label']} [{state}] {target.get('message', '')}")
+                print(f"{source['label']} / {target['label']} [{target['outcome_label']}] {target.get('message', '')}")
     return 0 if result["ok"] else 1
 
 

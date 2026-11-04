@@ -119,6 +119,7 @@ TASK_LABELS = {
     "seed-import": "初始资料导入",
     "follow-creator": "关注作者建档",
     "amane-bridge": "amane 桥重建",
+    "source-check": "资料源连接检查",
     "face-models": "人脸模型下载",
 }
 
