@@ -313,12 +313,14 @@ class PlaybackTrackers:
     def _connect(self, session: Session) -> Probe | None:
         deadline = self.clock() + self.connect_wait
         while not self.stopping.is_set():
+            probe = None
             try:
                 probe = session.connect()
                 probe.snapshot()
                 return probe
             except FAILURES:
-                pass
+                if probe is not None:
+                    probe.close()
             if self.clock() >= deadline or not session.alive():
                 return None
             self.stopping.wait(self.poll)
@@ -336,6 +338,10 @@ class PlaybackTrackers:
                 try:
                     snap = probe.snapshot()
                 except FAILURES:
+                    break
+                except Exception:
+                    # 意料之外的回答也只结束跟踪，已经看过的部分照常落库。
+                    LOGGER.debug("外部播放器进度读取异常：asset=%s", session.asset_id, exc_info=True)
                     break
                 if snap.finished and progress.last is not None:
                     # 停下或换片后的位置不属于这个文件；VLC 刚起来、还没开始放时也报 stopped。
