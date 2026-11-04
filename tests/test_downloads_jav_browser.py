@@ -418,6 +418,50 @@ class BrowserTests(unittest.TestCase):
         self.assertEqual(listed(), {})
         self.assertEqual(self.client.get("/api/jav-browser/active").status_code, 401)
 
+    def test_finished_browser_tasks_stay_listed_until_dismissed(self):
+        def listed():
+            response = self.client.get("/api/jav-browser/active", headers=self.script_headers)
+            self.assertEqual(response.status_code, 200, response.text)
+            return {item["code"]: item for item in response.json()["items"]}
+
+        def dismiss(body):
+            return self.client.post("/api/jav-browser/dismiss", json=body, headers=self.script_headers)
+
+        self.add()
+        self.service.process_one()
+        task = self.downloads.store.get(self.status().json()["task_id"])
+        self.assertTrue(task.origin.startswith("browser:"))
+        self.service.ended["since"] = "2026-01-01T00:00:00+00:00"
+        # 结束早已超过 10 分钟，没确认就一直列出。
+        task.state, task.postprocess_state = dl.INGESTED, dl.POSTPROCESS_COMPLETE
+        task.updated_at = task.postprocessed_at = "2026-06-01T00:00:00+00:00"
+        self.downloads.store.save(task)
+        item = listed()["ABC-123"]
+        self.assertEqual((item["ended_key"], item["dismissed"]), (f"{task.id}@2026-06-01T00:00:00+00:00", False))
+        # 之后又改了 updated_at（如停滞复查），结束键不变。
+        task.updated_at = dl.iso(time.time() - 3600)
+        self.downloads.store.save(task)
+        self.assertEqual(listed()["ABC-123"]["ended_key"], item["ended_key"])
+        self.assertEqual(dismiss({"keys": ["../ABC-123"]}).status_code, 400)
+        self.assertEqual(dismiss({"keys": [item["ended_key"]]}).status_code, 200)
+        self.assertEqual(listed(), {})
+        # 重试整理后再次结束是新的结束键，重新列出。
+        task.postprocessed_at = "2026-07-01T00:00:00+00:00"
+        self.downloads.store.save(task)
+        self.assertFalse(listed()["ABC-123"]["dismissed"])
+        response = dismiss({"all": True})
+        self.assertEqual((response.status_code, response.json()["items"]), (200, []))
+        self.assertEqual(json.loads(self.service.ended_path.read_text(encoding="utf-8"))["dismissed"], [])
+        # 刚结束、已被别的窗口确认的仍列出 10 分钟，只标 dismissed，本页状态照旧读得到。
+        task.postprocessed_at = task.updated_at = dl.iso(time.time() - 5)
+        self.downloads.store.save(task)
+        self.assertTrue(listed()["ABC-123"]["dismissed"])
+        # 不是浏览器添加的任务结束后不留存。
+        self.service.ended["since"] = "2026-01-01T00:00:00+00:00"
+        task.origin, task.postprocessed_at, task.updated_at = "wishlist:1", "2026-08-01T00:00:00+00:00", "2026-08-01T00:00:00+00:00"
+        self.downloads.store.save(task)
+        self.assertEqual(listed(), {})
+
     def test_disable_and_rotation_revoke_tokens(self):
         rotated = self.configure("rotate").json()["token"]
         self.assertEqual(self.status().status_code, 401)
