@@ -329,7 +329,7 @@ class UpgradeRepairTests(unittest.TestCase):
         self.assertFalse(self.service.receipt.exists())
 
     def test_verification_rows_already_on_disk_settle_once_in_the_background(self):
-        """升级前落盘的核查候选（ADR-0137）在后台结算一次，官方一致的日期写入，备份先行；
+        """升级前落盘的核查候选（ADR-0139）在后台结算一次，官方一致的日期写入，备份先行；
         启动前的 `prepare` 不等它。"""
         import csv
         with self.database.write_transaction() as connection:

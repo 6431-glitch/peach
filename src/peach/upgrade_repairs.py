@@ -229,7 +229,7 @@ class UpgradeRepairs:
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
 
     def _settle_verification(self) -> None:
-        """核查差异的结算规则（ADR-0137）对存量候选跑一遍，规则版本变了才再跑。
+        """核查差异的结算规则（ADR-0139）对存量候选跑一遍，规则版本变了才再跑。
 
         只喂带核查标记的那些行：其余候选的判据没变，这一步不替它们重判。有要处理的行才
         先备份；结果连同规则版本记进 `ledger_upgrade_repair`，账本恢复到之前的备份时会重跑。

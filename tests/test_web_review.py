@@ -2230,7 +2230,7 @@ class ReviewQueueTests(unittest.TestCase):
         self.assertEqual(self.queue_keys("metadata_fields"), [])
 
     def test_community_verification_dissent_leaves_every_owner_alone_and_off_the_queue(self):
-        """核查带回的社区异议只补空不挑战（ADR-0033、ADR-0137），现值归谁都不进队列、不写。"""
+        """核查带回的社区异议只补空不挑战（ADR-0033、ADR-0139），现值归谁都不进队列、不写。"""
         cases = (("OWN-001", USER_MANUAL), ("OWN-002", review_owner("javdb")),
                  ("OWN-003", auto_owner("avbase")))
         keys = []

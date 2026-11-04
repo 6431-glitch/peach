@@ -31,8 +31,8 @@ id 或路径已被别的行占用时那一批拒绝撤回。登记时自动接�
 「想要」清单的入库对账记在 `want_item.acquired_source` 与 `acquired_batch`（批次号
 `auto:want-acquired@<登记时刻>`）。撤回把那几条改回待找，查找计数原样留着。
 
-核查差异按确定判据结算的两条（ADR-0137）按规则名撤：`adr-0137-official-replaces-verified`
-按 note 的 `previous` 把旧值与旧归属还原，之后被别人改过的资产不动；`adr-0137-verified-tags-union`
+核查差异按确定判据结算的两条（ADR-0139）按规则名撤：`adr-0139-official-replaces-verified`
+按 note 的 `previous` 把旧值与旧归属还原，之后被别人改过的资产不动；`adr-0139-verified-tags-union`
 删掉那一行补进的标签。两条都删掉决定，`--batch` 给 note 里记的批次号。先改判据再撤。
 
 西方发行方的无番号作品封面（`ASSET-ID-<id>.jpg`）在 `.scraping.json` 边车里记 `source` 与 `batch`
@@ -50,7 +50,7 @@ id 或路径已被别的行占用时那一批拒绝撤回。登记时自动接�
     revert_auto_landing.py --source auto:seed --batch auto:seed@2026-09-25
     revert_auto_landing.py --source adr-0079-fc2-descriptive-performer
     revert_auto_landing.py --source auto:metadata-tags
-    revert_auto_landing.py --source adr-0137-official-replaces-verified
+    revert_auto_landing.py --source adr-0139-official-replaces-verified
     revert_auto_landing.py --source auto:vanished-reattach --batch auto:vanished-reattach@3
     revert_auto_landing.py --source auto:want-acquired
     revert_auto_landing.py --source auto:western-artwork --batch auto:western-artwork@20261008T000000Z

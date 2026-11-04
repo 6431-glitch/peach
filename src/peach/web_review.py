@@ -347,7 +347,7 @@ def _metadata_queue_rows(connection, rows: list[dict],
     # MIB 官网（kmib）的候选是例外：那是这批番号自己的发行方。
     rows = [row for row in rows
             if not is_korean_mib_code(str(row.get("code") or "")) or _only_mib_official(row)]
-    # 核查差异（ADR-0108）的去向只由 `verification_outcome` 定（ADR-0137）：要人判的
+    # 核查差异（ADR-0108）的去向只由 `verification_outcome` 定（ADR-0139）：要人判的
     # 绕过下面几道过滤留在队列里，保留现值、并集与覆盖的那些不占队列——后两种由处理任务
     # 落库，判据与这里是同一份。
     assets = code_assets(connection, rows)

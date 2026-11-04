@@ -1,4 +1,4 @@
-"""核查差异按确定判据结算（ADR-0137）：保留现值、并集补标签、官方一致覆盖与撤回、交人。
+"""核查差异按确定判据结算（ADR-0139）：保留现值、并集补标签、官方一致覆盖与撤回、交人。
 
 样例取自 2026-11-04 复核页快照里的真实行，每条规则一类正例，外加「看起来像但必须交人」
 的反例。
@@ -152,72 +152,72 @@ class VerificationSettlementTests(unittest.TestCase):
                        ("javdb", current.replace("〜", "～").replace("！！", "!!")),
                        ("makers", "「いますぐ精子たくさん飲ませて…」フェラテクィーン夢実かなえの"
                                   "ごっくんしまくり逆ナンパ"))
-        self.assertKept(key, "adr-0137-no-new-information", asset_id, "title", current)
+        self.assertKept(key, "adr-0139-no-new-information", asset_id, "title", current)
 
     def test_official_masked_title_does_not_replace_the_original_wording(self):
         current = "身動き出来ない私は何度も凌辱されー、早漏メイドに改造された 七沢みあ"
         asset_id = self.asset("MIDE-633", title=current)
         key = self.row("MIDE-633", "title", current,
                        ("makers", "身動き出来ない私は何度も凌●されー、早漏メイドに改造された"))
-        self.assertKept(key, "adr-0137-no-new-information", asset_id, "title", current)
+        self.assertKept(key, "adr-0139-no-new-information", asset_id, "title", current)
 
     def test_store_decoration_on_the_candidate_keeps_the_current_title(self):
         current = "女優のたまご。ハロウィン前…クンニで切ないアヘ顔に膣中大量射精"
         asset_id = self.asset("FC2-PPV-3977699", title=current)
         key = self.row("FC2-PPV-3977699", "title", current,
                        ("fc2", "【限定顔出し15000→5000】" + current))
-        self.assertKept(key, "adr-0137-no-new-information", asset_id, "title", current)
+        self.assertKept(key, "adr-0139-no-new-information", asset_id, "title", current)
 
     def test_community_only_dissent_keeps_the_current_value(self):
         asset_id = self.asset("STH-123", release_date="2025-10-24")
         key = self.row("STH-123", "release_date", "2025-10-24", ("javdb", "2025-10-16"))
-        self.assertKept(key, "adr-0137-community-dissent", asset_id, "release_date", "2025-10-24")
+        self.assertKept(key, "adr-0139-community-dissent", asset_id, "release_date", "2025-10-24")
 
     def test_official_source_backing_the_current_value_outweighs_another_official(self):
         asset_id = self.asset("HUNTC-592", release_date="2026-10-13")
         key = self.row("HUNTC-592", "release_date", "2026-10-13",
                        ("dmm", "2026-10-13", False), ("r18dev", "2026-10-09"), ("avbase", "2026-10-09"))
-        self.assertKept(key, "adr-0137-official-backs-current", asset_id, "release_date", "2026-10-13")
+        self.assertKept(key, "adr-0139-official-backs-current", asset_id, "release_date", "2026-10-13")
 
     def test_value_written_by_a_higher_ranked_official_source_stays(self):
         asset_id = self.asset("ROYD-083", owner=auto_owner("makers"), studio="HHH")
         key = self.row("ROYD-083", "studio", "HHH",
                        ("dmm", "ロイヤル", False), ("r18dev", "Royal"), ("javdb", "ROYAL"))
-        self.assertKept(key, "adr-0137-chain-keeps-current", asset_id, "studio", "HHH")
+        self.assertKept(key, "adr-0139-chain-keeps-current", asset_id, "studio", "HHH")
 
     def test_r18dev_english_studio_name_is_a_translation_not_a_dissent(self):
         asset_id = self.asset("SIMM-876", owner=auto_owner("dmm"), studio="しろうとまんまん")
         key = self.row("SIMM-876", "studio", "しろうとまんまん",
                        ("r18dev", "Amateur Pussies"), ("javbus", "DOC"), ("javdb", "DOC"))
-        self.assertKept(key, "adr-0137-community-dissent", asset_id, "studio", "しろうとまんまん")
+        self.assertKept(key, "adr-0139-community-dissent", asset_id, "studio", "しろうとまんまん")
 
     def test_studio_with_a_reading_or_parent_note_adds_nothing(self):
         asset_id = self.asset("EBOD-531", owner=auto_owner("r18dev"), studio="E-BODY")
         key = self.row("EBOD-531", "studio", "E-BODY", ("makers", "E-BODY（イーボディ）"))
-        self.assertKept(key, "adr-0137-no-new-information", asset_id, "studio", "E-BODY")
+        self.assertKept(key, "adr-0139-no-new-information", asset_id, "studio", "E-BODY")
 
     def test_user_owned_value_is_never_challenged(self):
         asset_id = self.asset("ACC-006", owner=USER_MANUAL, release_date="2016-05-29")
         key = self.row("ACC-006", "release_date", "2016-05-29", ("r18dev", "2009-01-08"))
-        self.assertKept(key, "adr-0137-user-owned", asset_id, "release_date", "2016-05-29")
+        self.assertKept(key, "adr-0139-user-owned", asset_id, "release_date", "2016-05-29")
 
     def test_tag_candidates_that_are_a_subset_keep_the_current_tags(self):
         asset_id = self.asset("DASS-468", tags=("中出内射", "巨乳", "母子设定", "痴女"))
         key = self.row("DASS-468", "tags", "中出内射、巨乳、母子设定、痴女",
                        ("javdb", ["痴女", "巨乳", "中出内射"]))
-        self.assertEqual(self.outcome(key).rule, "adr-0137-no-new-information")
+        self.assertEqual(self.outcome(key).rule, "adr-0139-no-new-information")
         self.assertNotIn(key, self.queue())
         self.settle()
         self.assertEqual(self.tags(asset_id), {"中出内射", "巨乳", "母子设定", "痴女"})
         self.assertEqual(self.decisions(), {})
 
-    def test_row_pinned_to_an_asset_no_longer_in_the_library_is_kept(self):
+    def test_row_pinned_to_an_id_now_holding_another_code_is_kept(self):
         """按文件出的行，那个编号已经是别的片：谁批准都写不进去，不摆给人，也不写。"""
         asset_id = self.asset("ABP-602", release_date="2017-08-01")
         key = self.row("ABP-601", "release_date", "2017-08-01", ("makers", "2017-08-05"),
                        pinned=(asset_id, r"B:\云下载\ABP-601A-C.mp4"))
         self.asset("ABP-601", release_date="2017-08-01")
-        self.assertKept(key, "adr-0137-asset-gone", asset_id, "release_date", "2017-08-01")
+        self.assertKept(key, "adr-0139-asset-gone", asset_id, "release_date", "2017-08-01")
 
     def test_row_pinned_to_a_relocated_file_still_lands_on_the_same_asset(self):
         """扫描按番号改指挪过的文件，编号不变（ADR-0131）；候选件里的旧路径不挡落库。"""
@@ -330,7 +330,7 @@ class VerificationSettlementTests(unittest.TestCase):
                                 role="performer", source="javinizer:dmm:performer", now="now")
         key = self.row("ACC-006", "performers", "永沢咲良",
                        ("javdb", [{"name": "有栖七菜"}]), ("r18dev", [{"name": "三浦沙綾"}]))
-        self.assertForHuman(key, "adr-0137-official-performers")
+        self.assertForHuman(key, "adr-0139-official-performers")
 
     def test_maker_and_label_mixed_in_the_studio_field_go_to_a_human(self):
         self.asset("HOISW-002", owner=auto_owner("r18dev"), studio="素人ホイホイsweet！")
@@ -338,25 +338,25 @@ class VerificationSettlementTests(unittest.TestCase):
                        ("javdb", "素人ホイホイsweet！/妄想族"), ("r18dev", "Fresh Gordon/Daydream Tribe"),
                        ("dmm", "フレッシュ・ゴードン/妄想族"), ("avbase", "フレッシュ・ゴードン/妄想族"),
                        ("javbus", "素人ホイホイsweet！/妄想族"))
-        self.assertForHuman(key, "adr-0137-official-entity")
+        self.assertForHuman(key, "adr-0139-official-entity")
 
     def test_official_sources_naming_different_dates_go_to_a_human(self):
         self.asset("SSIS-776", release_date="2023-01-20")
         key = self.row("SSIS-776", "release_date", "2023-01-20",
                        ("dmm", "2023-01-24"), ("r18dev", "2023-01-27"))
-        self.assertForHuman(key, "adr-0137-official-disagree")
+        self.assertForHuman(key, "adr-0139-official-disagree")
 
     def test_a_local_nfo_disagreeing_with_the_ledger_goes_to_a_human(self):
         self.asset("FSDSS-275", title="腰が砕けても逃がさない！")
         key = self.row("FSDSS-275", "title", "腰が砕けても逃がさない！",
                        ("local_nfo", "ひたすら膣奥を貫く強制立ちバックハンドル"))
-        self.assertForHuman(key, "adr-0137-nfo-dissent")
+        self.assertForHuman(key, "adr-0139-nfo-dissent")
 
     def test_official_masked_studio_in_unknown_series_still_needs_a_human(self):
         self.asset("CAWD-241", owner=auto_owner("r18dev"), series="社内研修相部屋NTR")
         key = self.row("CAWD-241", "series", "社内研修相部屋NTR",
                        ("makers", "童貞陰キャ男とプライド高い絶倫彼女"))
-        self.assertForHuman(key, "adr-0137-official-entity")
+        self.assertForHuman(key, "adr-0139-official-entity")
 
 
 if __name__ == "__main__":

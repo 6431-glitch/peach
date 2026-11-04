@@ -270,7 +270,7 @@ class LibraryNfoTests(unittest.TestCase):
 
     @windows_ledger_roots
     def test_a_later_source_only_adds_tags_to_a_field_filled_during_the_run(self):
-        """本轮先补上的标签，后来的来源只按并集补新增的（ADR-0137），一个不删、不进复核页。"""
+        """本轮先补上的标签，后来的来源只按并集补新增的（ADR-0139），一个不删、不进复核页。"""
         media = self.root / 'media'
         media.mkdir()
         (media / 'SSIS-057.mp4').write_bytes(b'video')

@@ -960,12 +960,12 @@ def _verification_difference(connection, row: dict) -> bool:
         for candidate in row.get("candidates") or _parsed_candidates(row))
 
 
-#: 核查差异的四种去向（ADR-0137）。保留现值与交人都不写账本；并集只插账本没有的标签；
+#: 核查差异的四种去向（ADR-0139）。保留现值与交人都不写账本；并集只插账本没有的标签；
 #: 覆盖只在官方来源一致、现值不归人时发生，note 记下旧值，撤回按它还原。
 VERIFY_KEEP, VERIFY_UNION, VERIFY_REPLACE, VERIFY_REVIEW = "keep", "union", "replace", "review"
 #: 两条会写账本的规则名，也是 `revert_auto_landing.py --source` 认的那个名字。
-VERIFIED_UNION_RULE = "adr-0137-verified-tags-union"
-VERIFIED_REPLACE_RULE = "adr-0137-official-replaces-verified"
+VERIFIED_UNION_RULE = "adr-0139-verified-tags-union"
+VERIFIED_REPLACE_RULE = "adr-0139-official-replaces-verified"
 #: 覆盖时能改的列。厂牌与系列在账本里是实体，换值连带改作品关联与实体，撤回还不了原样，
 #: 官方说法不一致时交人。
 _VERIFIED_REPLACE_FIELDS = frozenset({"title", "original_title", "release_date"})
@@ -1105,7 +1105,7 @@ def _verified_tags(row: dict, evidence: list[dict], current: str) -> Verificatio
             sources.append(candidate)
             new.update((normalize_entity_name(tag), tag) for tag in added)
     if not new:
-        return Verification(VERIFY_KEEP, "adr-0137-no-new-information")
+        return Verification(VERIFY_KEEP, "adr-0139-no-new-information")
     return Verification(VERIFY_UNION, VERIFIED_UNION_RULE,
                         tags=tuple(new), sources=tuple(sources))
 
@@ -1174,7 +1174,7 @@ def verification_outcome(connection, row: dict, *, assets=None) -> Verification 
     if not _verification_difference(connection, row):
         return None
     if row.get("asset_path") and _pinned_asset_id(connection, row) is None:
-        return Verification(VERIFY_KEEP, "adr-0137-asset-gone")
+        return Verification(VERIFY_KEEP, "adr-0139-asset-gone")
     field = str(row.get("field") or "").strip()
     code = str(row.get("code") or "").strip()
     current = str(row.get("current_value") or "").strip()
@@ -1186,13 +1186,13 @@ def verification_outcome(connection, row: dict, *, assets=None) -> Verification 
         outcome = _verified_tags(row, evidence, current)
         if outcome.kind == VERIFY_UNION and not _auto_apply_targets(
                 connection, row, code, field, assets):
-            return Verification(VERIFY_REVIEW, "adr-0137-identity-unverified")
+            return Verification(VERIFY_REVIEW, "adr-0139-identity-unverified")
         return outcome
     owners = _current_owners(connection, row, field, assets)
     if any(is_protected(owner) for owner in owners):
-        return Verification(VERIFY_KEEP, "adr-0137-user-owned")
+        return Verification(VERIFY_KEEP, "adr-0139-user-owned")
     if field == "release_date" and current == code_release_date(code):
-        return Verification(VERIFY_KEEP, "adr-0137-code-date")
+        return Verification(VERIFY_KEEP, "adr-0139-code-date")
     dissent = _Dissent.of(connection, field, code, evidence, current)
     kept = dissent.keeps_current()
     if kept:
@@ -1228,11 +1228,11 @@ class _Dissent:
     def keeps_current(self) -> str:
         """现值不必动、也不必问人时返回规则名，否则返回空串。"""
         if not self.fresh:
-            return "adr-0137-no-new-information" if self.evidence else "adr-0137-no-evidence"
+            return "adr-0139-no-new-information" if self.evidence else "adr-0139-no-evidence"
         if not self.leading:
-            return "adr-0137-community-dissent"
+            return "adr-0139-community-dissent"
         if self.backers - {LOCAL_NFO_SOURCE}:
-            return "adr-0137-official-backs-current"
+            return "adr-0139-official-backs-current"
         return ""
 
 
@@ -1252,27 +1252,27 @@ def _settle_leading_dissent(connection, row: dict, dissent: _Dissent, owners: se
     # 核查要做的事（ADR-0108），链在这里替人取舍就等于没有核查。
     if (dissent.backers or {owner.partition(":")[2] for owner in owners} == {LOCAL_NFO_SOURCE}
             or any(str(c.get("source") or "").strip() == LOCAL_NFO_SOURCE for c in leading)):
-        return Verification(VERIFY_REVIEW, "adr-0137-nfo-dissent")
+        return Verification(VERIFY_REVIEW, "adr-0139-nfo-dissent")
     winner = _preferred_candidate(field, leading, code=code)
     if _chain_wrote_current(field, code, owners, winner):
-        return Verification(VERIFY_KEEP, "adr-0137-chain-keeps-current")
+        return Verification(VERIFY_KEEP, "adr-0139-chain-keeps-current")
     if field == "performers":
-        return Verification(VERIFY_REVIEW, "adr-0137-official-performers")
+        return Verification(VERIFY_REVIEW, "adr-0139-official-performers")
     if field in {"studio", "series"}:
         keys = {_entity_identity_key(connection, field, str(c.get("display_value") or "").strip())
                 for c in leading}
     else:
         keys = {_candidate_value_key(connection, field, candidate) for candidate in leading}
     if None in keys or len(keys) != 1:
-        return Verification(VERIFY_REVIEW, "adr-0137-official-disagree")
+        return Verification(VERIFY_REVIEW, "adr-0139-official-disagree")
     if field not in _VERIFIED_REPLACE_FIELDS:
-        return Verification(VERIFY_REVIEW, "adr-0137-official-entity")
+        return Verification(VERIFY_REVIEW, "adr-0139-official-entity")
     date = code_release_date(code) if field == "release_date" else None
     if date is not None and str(winner.get("display_value") or "").strip() != date:
-        return Verification(VERIFY_REVIEW, "adr-0137-code-date-disagrees")
+        return Verification(VERIFY_REVIEW, "adr-0139-code-date-disagrees")
     if (not _auto_apply_targets(connection, row, code, field, assets)
             or (is_korean_mib_code(code) and not _only_mib_official(row))):
-        return Verification(VERIFY_REVIEW, "adr-0137-identity-unverified")
+        return Verification(VERIFY_REVIEW, "adr-0139-identity-unverified")
     return Verification(VERIFY_REPLACE, VERIFIED_REPLACE_RULE, candidate=winner)
 
 
@@ -1350,7 +1350,7 @@ def metadata_auto_apply_candidate(connection, row: dict, *,
 
     本地 NFO 不在登记表里，却同样构成证据（ADR-0029）：采集时它的番号已经和文件名
     对过，第 3 条照样再核一遍。NFO 核查的覆盖候选带 `requires_review`，已有值的差异只走
-    `verification_outcome` 那一套判据（ADR-0137）；来源链只决定补空采用哪一份。
+    `verification_outcome` 那一套判据（ADR-0139）；来源链只决定补空采用哪一份。
     """
     field = str(row.get("field") or "").strip()
     if field not in AUTO_APPLY_FIELDS:
@@ -1826,7 +1826,7 @@ def auto_apply_metadata(database, candidate_root, *, batch_size=AUTO_APPLY_BATCH
     标签按并集补上（`_land_collected_genres`，ADR-0082）。落不下去的
     FC2 出演者行里一个艺名都没有的，写一条 `rejected`（`fc2_descriptive_rejection`，
     ADR-0079），其余照旧留给人。核查差异（带 `requires_review` 的已有值差异）只按
-    `verification_outcome` 结算（ADR-0137）：保留现值的计进 `kept`，并集与覆盖落库。
+    `verification_outcome` 结算（ADR-0139）：保留现值的计进 `kept`，并集与覆盖落库。
 
     `database` 是调用方已经在用的那一个 `LedgerDatabase`：写锁与提交后的缓存失效都挂在
     实例上，自己再 new 一个就绕开了两者。`active` 返回假时停在批与批之间，已经提交的
@@ -2076,7 +2076,7 @@ def _land_verified_union(connection, item_key: str, prior: dict | None, row: dic
 
 
 def planned_verified_revert(connection, source: str, batch: str = "") -> list[dict]:
-    """`revert_auto_landing.py --source <规则名>` 要撤的核查结算（ADR-0137）。
+    """`revert_auto_landing.py --source <规则名>` 要撤的核查结算（ADR-0139）。
 
     覆盖那条按 note 的 `previous` 还原每条资产的旧值与旧归属；之后被别人改过的资产
     （值或归属已不是这次写下的）不动，计划里记 `changed`。并集那条删掉这次补进的标签。

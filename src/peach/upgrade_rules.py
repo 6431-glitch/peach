@@ -8,5 +8,5 @@ PUBLIC_SNAPSHOTS = 2
 PROVIDER_EVIDENCE = 2
 PROVIDER_TEXT = 3
 OFFICIAL_COVER_CATALOG_MISSES = 1
-#: 核查差异按确定判据结算（ADR-0137）。判据改了就加一，升级时对存量候选再结算一遍。
+#: 核查差异按确定判据结算（ADR-0139）。判据改了就加一，升级时对存量候选再结算一遍。
 VERIFICATION_SETTLEMENT = 1
