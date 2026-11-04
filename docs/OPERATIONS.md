@@ -439,6 +439,15 @@ Peach 配置页地址是 `/configuration`。从管理菜单或设置弹窗的「
 
 源码运行时，默认位置是项目旁边的 `peach-data`；原位置留下的 `state/data-root.txt` 让默认位置和显式的 `PEACH_DATA_ROOT` 都跟到新位置。直接运行 `peach serve` 时没有看守进程接手，不能在设置页迁移：改用托盘或无桌面服务启动，或退出 Peach，手动移动数据目录，再把 `PEACH_DATA_ROOT` 指向新位置。
 
+### 账本备份与恢复
+
+配置页「应用与维护 → 账本备份」列出 `database/` 与 `generated/organize-backups/` 里所有能恢复的备份，新的在前，每行写明时间、来源（手动，或自动及其用途）和大小。取舍见 [ADR-0134](adr/0134-user-triggered-ledger-backup-and-restore.md)。
+
+- **立即备份**：后台复制当前账本，进度同时显示在任务中心。复制完先做完整性检查，通过才命名为 `ledger.pre-manual-<时间>.db`；没通过的那份直接删掉。手动备份和自动备份同一套保留规则（见「迁移、备份与运维脚本」）。
+- **从备份恢复**：只能在写入端执行，且数据目录里没有别的任务在跑。确认后依次检查备份的完整性和结构（来自更新版本的备份拒收，较旧的先迁到当前结构），把当前账本另存为 `ledger.pre-restore-<时间>.db`，再把备份写进账本。恢复期间不能启动新任务；任务中心的历史保留恢复前的记录。完成后刷新页面查看恢复后的资料。
+- **中断处理**：写入账本前会在账本目录留下 `ledger.restore.json`。恢复被打断（断电、强制结束）后，下次启动服务或运行 `peach migrate upgrade` 时先处理它：当前账本完整就保留；不完整就用已经迁好的暂存 `ledger.restore-staging.db` 补完恢复；暂存也不能用就退回恢复前另存的那份。结果显示在「账本备份」里，同时写入 `ledger.restore-result.json`。
+- 账本损坏、服务读不出资料时，「账本备份」照常可用，恢复在后台进行，进度只在这一页显示。
+
 容器的数据目录是宿主机挂载的卷，在容器里迁移会离开卷，重建容器时数据丢失，所以设置页不提供迁移，改为列出在宿主机上迁移的步骤和命令，见 [Docker 部署](DOCKER.md#迁移数据目录)。
 
 ### 卸载
@@ -834,7 +843,7 @@ Windows 托盘在取得单实例锁后启动独立监视器。监视器用 Win32
 
 - 真实迁移前依次执行：SQLite 备份、asset/tag 计数、`PRAGMA integrity_check`、迁移版本检查、服务冒烟测试。已应用与待应用的迁移只认 `peach migrate status` 的输出。
 - 已应用的迁移文件不能修改，任何后续变更都要新增一个版本。已应用的迁移被改写会造成校验和漂移，只能用迁移前备份重放、逐条比对差异为 0 后再校正 `schema_migration`。
-- 数据库备份自动清退：`ledger.pre-*.db` 由 `peach.ledger_backups` 管理，「最近 5 份」「24 小时内」「比 `ledger.db` 新」三类全部保留，其余连同 `-wal`／`-shm` 删除。Windows 托盘每次启动自动执行；`scripts/prune_ledger_backups.py` 手动运行时默认只列计划，`--apply` 才删除；数据库 `integrity_check` 不是 ok 时拒绝清退，退出码 2。每份备份一百多 MB，5 天不清就是 7 GB。
+- 数据库备份自动清退：`ledger.pre-*.db`（含设置页的手动备份 `pre-manual` 与恢复前另存的 `pre-restore`）由 `peach.ledger_backups` 管理，「最近 5 份」「24 小时内」「比 `ledger.db` 新」三类全部保留，其余连同 `-wal`／`-shm` 删除。Windows 托盘每次启动自动执行；`scripts/prune_ledger_backups.py` 手动运行时默认只列计划，`--apply` 才删除；数据库 `integrity_check` 不是 ok 时拒绝清退，退出码 2。每份备份一百多 MB，5 天不清就是 7 GB。
 - 整理备份自动清退：下载后整理与手动整理写入前各留一份整库备份，放在 `<Peach 数据目录>/generated/organize-backups/`，文件名是 `ledger.pre-download-<任务>-<时间>.db` 与 `ledger.pre-organize-<时间>-<任务>.db`。每次写备份后按同一套规则清退这个目录，只留最近 5 份（`ORGANIZE_KEEP_RECENT`），不按年龄保留（`ORGANIZE_MIN_AGE` 为零）：一波下载一小时能整理四十个文件，24 小时窗口会攒下几十 GB。正在被整理引用的那份由 `ledger_backups.holding` 登记，Web 服务进程里的清退都跳过；目录里的其他文件名不动。手动查看或清理用 `scripts/prune_ledger_backups.py --organize`，同样默认只列计划，`--apply` 才删除；登记不跨进程，整理进行中不要给 `--keep 0`。
 - `<Peach 数据目录>/logs` 里的 `*.log` 统一保留半年，不限大小（`peach.log_retention.sweep`，托盘在启动任何子进程之前运行）：半年没写过的文件整份删除；还在写的文件按自然月分段，上次写入在更早月份的改名成 `<名字>.until-<最后写入日期>.log`，再过半年删除。子进程直接追加 stdout，不经过 `logging`，所以按文件处理，不按行处理。
 - 更新与打包产物自动清退：托盘每次启动只保留最近 2 份 `dist/Peach/Peach.pre-source-sync-*.exe` 备份，并删掉 `<Peach 数据目录>/state/source-sync-build/` 里不属于待应用记录的暂存构建（`WindowsUpdateInstaller.sweep_artifacts`）；`build_windows.ps1` 成功后删掉 PyInstaller 工作目录 `build/windows/app`；单文件托盘每次启动删掉 `%TEMP%` 里超过一天、不属于自己的 `_MEI*` 解压残留（`sweep_onefile_extractions`，托盘被结束进程时 PyInstaller 不会自己清理，每份 40–80 MB）。自动清理只认这几种命名：`Peach.exe` 本体、手工放进 `dist/` 的目录、`build/release-*`、`attic/` 都不碰，手工构建的残留要自己删。
