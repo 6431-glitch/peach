@@ -737,6 +737,23 @@ class FeedWebTest(FeedWebFixture):
         identity.assert_not_called()
         source_image.assert_not_called()
 
+    def test_recorded_source_url_returns_as_an_official_candidate(self):
+        from peach.jav_cover_fetch import Unavailable
+        recorded = 'https://awsimgsrc.dmm.co.jp/pics_dig/digital/amateur/deas082/deas082jp.jpg'
+        given = 'https://pics.dmm.co.jp/digital/amateur/deas082/deas082jp.jpg'
+        evidence = self.contract.cover_root / 'DEAS-082.scraping.json'
+        evidence.parent.mkdir(parents=True, exist_ok=True)
+        evidence.write_text(json.dumps({'code': 'DEAS-082', 'source_url': recorded}), encoding='utf-8')
+        with patch('peach.jav_cover_fetch.best_cover', side_effect=Unavailable('官方封面未取得')) as best:
+            for cover_url in (None, given):
+                with self.assertRaises(Unavailable):
+                    self._fetch_cover(self.contract, 'DEAS-082', cover_url)
+        without, with_given = ([c.url for c in call.kwargs['prior_candidates']] for call in best.call_args_list)
+        self.assertIn(recorded, without)
+        self.assertIn(recorded, with_given)
+        self.assertEqual(with_given[0], given)
+        self.assertEqual(len(with_given), len(set(with_given)))
+
     def test_vr_layout_survives_without_a_detected_face(self):
         target = self.contract.cover_root / 'MDVR-276.face.json'
         target.parent.mkdir(parents=True, exist_ok=True)
