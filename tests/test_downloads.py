@@ -207,6 +207,49 @@ class SubmitTests(_Deployment):
         self.assertEqual([row[:2] for row in self.submissions()],
                          [("failed", "quota"), ("submitted", None)])
 
+    def test_a_network_failure_while_submitting_is_submitted_again_by_the_poller(self):
+        self.provider.submit_result = dl.DownloadError("network", "查离线任务时连不上 CloudDrive2：Deadline Exceeded")
+        deferred = self.submit(code="ABC-123")
+        task = deferred["task"]
+        self.assertEqual((deferred["outcome"], task["state"], task["failure"], task["cancellable"]),
+                         ("deferred", dl.SUBMIT_PENDING, None, True))
+        self.assertEqual(task["failure_detail"], "查离线任务时连不上 CloudDrive2：Deadline Exceeded")
+        # 同一番号或磁力在等待期间再提交，接管这一条，不另交一次。
+        self.assertEqual(self.submit(magnet=HASH)["outcome"], "adopted")
+        self.assertEqual(self.tick(29), 0)
+        self.assertEqual(self.tick(1), 1)
+        self.assertEqual(self.service.store.get(task["id"]).state, dl.SUBMIT_PENDING)
+        self.provider.submit_result = dl.RemoteStatus(dl.RUNNING, "r1", "ABC-123")
+        self.tick(dl.poll_delay(2))
+        again = self.service.store.get(task["id"])
+        self.assertEqual((again.state, again.checks, again.failure_detail, again.submitted_at),
+                         (dl.SUBMITTED, 0, None, dl.iso(self.clock())))
+        self.assertEqual(len(self.provider.submitted), 3)
+        self.assertEqual([row[:2] for row in self.submissions()],
+                         [("deferred", "network"), ("adopted", None), ("submitted", None)])
+        self.tick(10)
+        self.assertEqual(self.service.store.get(task["id"]).state, dl.REMOTE_RUNNING)
+
+    def test_a_submission_that_never_gets_through_fails_after_an_hour(self):
+        self.provider.submit_result = dl.DownloadError("network", "连不上")
+        task_id = self.submit()["task"]["id"]
+        while self.service.store.get(task_id).state == dl.SUBMIT_PENDING:
+            self.tick(dl.POLL_DELAYS[-1])
+        task = self.service.store.get(task_id)
+        self.assertEqual((task.state, task.failure), (dl.FAILED, "network"))
+        self.assertGreaterEqual(self.clock() - 1_800_000_000.0, dl.SUBMIT_RETRY_WINDOW)
+        self.assertRegex(task.failure_detail, r"^连不上（自动重试 \d+ 次后仍未提交）$")
+        self.assertTrue(task.payload()["resubmittable"])
+        self.assertEqual(self.submissions()[-1][:2], ("failed", "network"))
+
+    def test_a_task_waiting_to_be_submitted_again_is_cancelled_locally(self):
+        self.provider.submit_result = dl.DownloadError("network", "连不上")
+        task_id = self.submit()["task"]["id"]
+        self.assertEqual(self.service.cancel(task_id).state, dl.CANCELLED)
+        self.assertEqual(self.provider.cancelled, [])
+        self.assertEqual(self.tick(dl.POLL_DELAYS[-1]), 0)
+        self.assertEqual(len(self.provider.submitted), 1)
+
     def test_a_blocked_infohash_is_refused_forever(self):
         self.provider.submit_result = dl.classify_remote_message("50038 违规")
         blocked = self.submit()
