@@ -50,12 +50,16 @@ def check_sources(secrets_root: Path, sources: list[str] | None = None, *,
 
     started = time.monotonic()
     finished: dict[str, dict] = {}
-    with ThreadPoolExecutor(max_workers=4, thread_name_prefix="source-check") as pool:
+    pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="source-check")
+    try:
         futures = {pool.submit(check, source): source for source in selected}
         for future in as_completed(futures):
             row = finished[futures[future]] = future.result()
             if on_result is not None:
                 on_result(row)
+    finally:
+        # 任务中心取消时 `on_result` 抛出：只等已在检查的来源，排队的不再开始。
+        pool.shutdown(wait=True, cancel_futures=True)
     results = [finished[source] for source in selected]
     return {"ok": all(target["ok"] or target.get("reason") == "needs_code"
                       for source in results for target in source["results"]),

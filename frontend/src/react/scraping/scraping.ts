@@ -1,7 +1,7 @@
 /* 来源和凭证页的数据契约与折算。几条端点在 `frontend/src` 里都只在这里声明一次
  * （`tests/test_frontend_build.py` 盯着）。
  *
- * 来源配置、封面任务、amane 桥和自定义来源各自缓存；后台任务按自己的节律读取状态，
+ * 来源配置、连接检查、封面任务、amane 桥和自定义来源各自缓存；后台任务按自己的节律读取状态，
  * 不重取正在编辑的来源配置。 */
 import { apiGet } from '../../api';
 import { queryClient } from '../query';
