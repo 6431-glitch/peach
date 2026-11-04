@@ -28,6 +28,8 @@ export interface JavBrowserShape { enabled: boolean; ready: boolean }
 export interface CloudProxyShape { configured: boolean; accounts: [boolean, boolean][]; unlinked: number }
 export interface DownloadsShape { cloud: boolean; has115: boolean; pikpak: boolean; pikpakRoots: boolean; pikpakLoggedIn: boolean; browserLogin: boolean }
 export interface NetworkShape { port: boolean; addresses?: number; networkEditable?: boolean; lan?: boolean; proxyAddress: boolean; access: string; tunnelNamed: boolean; tunnelNamedMode: boolean; tunnelNote: boolean }
+/** 已登录的设备：行数，以及底栏有没有「撤销其他设备」。 */
+export interface DevicesShape { rows: number; manageable: boolean }
 export interface MaintenanceShape {
   releaseFacts: number; releaseNotes: number; autoUpdateHelp: boolean; startupNote: boolean; desktopNote: boolean;
   storageRows: number; storageNotes: number; reporting: boolean; reportingIdle: boolean; sharing: boolean;
@@ -36,7 +38,7 @@ export interface MaintenanceShape {
 export interface ConfigurationShape {
   media: MediaShape; discovery: DiscoveryShape; credentials: CredentialsShape; indexers: IndexersShape;
   javBrowser: JavBrowserShape; cloudProxy: CloudProxyShape; downloads: DownloadsShape; network: NetworkShape;
-  maintenance: MaintenanceShape;
+  devices: DevicesShape; maintenance: MaintenanceShape;
 }
 type Shapes = { [K in keyof ConfigurationShape]?: Partial<ConfigurationShape[K]> };
 
@@ -84,7 +86,11 @@ const heading = (name: string, aside: string, mark: boolean) => {
 };
 const section = (name: string, content: string, actions = '', { aside = '', status = '', mark = false } = {}) =>
   `<section aria-label="${name}" class="flex w-full flex-col gap-2 wrap-anywhere">${heading(name, aside, mark)}<div class="flex w-full flex-col rounded-2xl bg-background-secondary-default pl-3">${content}${actions ? footer(actions, status) : ''}</div></section>`;
-const controlRow = (label: string, description: string, control: string) => `<div class="flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5 border-b border-separator-border last:border-b-0"><div class="flex min-w-0 flex-col"><p class="text-body-regular text-text-primary">${label}</p>${description ? `<p class="text-body-2-regular text-text-secondary">${description}</p>` : ''}</div>${control}</div>`;
+/** 同 BoardUI `SettingsRow`；`lead` 是行首图标的占位。 */
+const controlRow = (label: string, description: string, control: string, lead = '') => {
+  const body = `<div class="flex min-w-0 flex-col"><p class="text-body-regular text-text-primary">${label}</p>${description ? `<p class="text-body-2-regular text-text-secondary">${description}</p>` : ''}</div>`;
+  return `<div class="flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5 border-b border-separator-border last:border-b-0">${lead ? `<div class="flex min-w-0 items-center gap-3">${lead}${body}</div>` : body}${control}</div>`;
+};
 const row = (label: string, description = '', control = 'ui-configuration-skeleton-toggle') => controlRow(label, description, `<span class="skeleton ${control}"></span>`);
 /* 只读一句读数的行（「每 3 个月」）：右边是一段文字宽的占位，行高同开关行。 */
 const valueRow = (label: string, description = '', width = '4em') => controlRow(label, description, text(width));
@@ -289,6 +295,14 @@ function accessBody(mode: string): string {
     + (mode === 'password' ? inputField('当前访问密码 *') : '') + pair;
 }
 
+/** 已登录的设备：分区自己取数时也画这一份。没有记录时按一行（本机）画。 */
+export function devicesSkeleton(): string {
+  const shape = rememberedShape('devices');
+  const rows = Array.from({ length: Math.max(1, count(shape?.rows, 8)) }, () => controlRow(text('8em'), text('14em'), text('3em'), block('20px', '20px'))).join('');
+  return section('已登录的设备', rows, on(shape?.manageable) ? button('撤销其他设备', 'secondary') : '',
+    on(shape?.manageable) ? { status: '修改访问密码会让全部设备退出。' } : {});
+}
+
 const network = () => {
   const shape = rememberedShape('network');
   /* 没有记录时按服务端的默认状态画：没有访问设置文件就是 `legacy`（系统生成的口令）。 */
@@ -304,6 +318,7 @@ const network = () => {
       + (on(shape?.port) ? inputField('端口') : '')), on(shape?.port) ? button('保存配置') : '',
       on(shape?.port) ? { status: '保存后 Peach 会重启，并跳转到新地址。' } : {}) : '')
     + section('访问密码', stack(accessBody(mode)), mode === 'locked' ? '' : button('保存配置'))
+    + (mode === 'password' || mode === 'legacy' ? devicesSkeleton() : '')
     + section('Cloudflare 公网入口', stack((named ? block('10.5em', '36px') : '') + tunnel),
       button('启动公网入口', named ? 'secondary' : 'primary') + (named ? button('保存配置') : ''), { aside: chip() })
     + section('Peach 代理', row('连接方式', 'Peach 访问外网和采集来源时使用。', 'ui-configuration-skeleton-select') + (on(shape?.proxyAddress) ? stack(inputField('代理地址'), true) : ''), button('保存配置'));

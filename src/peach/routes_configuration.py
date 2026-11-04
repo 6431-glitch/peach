@@ -26,7 +26,7 @@ from filelock import FileLock, Timeout
 
 from . import (access, data_storage, distribution, entry_links, error_reporting, folder_picker, media_libraries, onboarding,
                push_discovery, settings_file, media_configuration, tunnel, web_downloads)
-from .routes_auth import require_auth, require_authenticated_client, same_origin
+from .routes_auth import require_auth, require_authenticated_client, same_origin, sessions as access_sessions
 from .web_entry import runtime_fact_entries
 from .web_local_access import local_client, managed_configuration
 from . import release_updates, standalone_update, peach_proxy, desktop_startup, desktop_uninstall
@@ -997,6 +997,46 @@ def save_access(request: Request, body: dict[str, Any] = Body(default_factory=di
         from .routes_auth import set_auth_cookie
         set_auth_cookie(response, request, login=True)
     return response
+
+
+def _access_sessions(request: Request) -> dict[str, Any]:
+    """登录过的设备，本机这一行排第一。撤销与改密码同一条边界：只在运行 Peach 的电脑上做。"""
+    path = request.app.state.settings.access_path
+    policy = access.load(path)
+    store = access_sessions(request)
+    rows = (store.rows(policy["revision"], access.digest(request.cookies.get(access.COOKIE, "")))
+            if store is not None and policy["mode"] in {"password", "legacy"} else [])
+    return {"revision": policy["revision"], "sessions": rows, "manageable": local_client(request)}
+
+
+@router.get("/api/configuration/access/sessions")
+def access_session_list(request: Request, _args=Depends(require_auth)):
+    return JSONResponse(_access_sessions(request), headers={"Cache-Control": "no-store"})
+
+
+@router.post("/api/configuration/access/sessions/revoke")
+def revoke_access_sessions(request: Request, body: dict[str, Any] = Body(default_factory=dict),
+                           _args=Depends(require_auth)):
+    """撤销一台（`id`）或除本机以外的全部（`scope: "others"`）。本机这一行不在这里撤。"""
+    local_only(request)
+    same_origin(request)
+    store = access_sessions(request)
+    session_id, others = body.get("id"), body.get("scope") == "others"
+    if store is None or (not others and not isinstance(session_id, str)) or (others and session_id is not None):
+        raise HTTPException(400, "请选择要撤销的设备")
+    policy = access.load(request.app.state.settings.access_path)
+    if body.get("revision") != policy["revision"]:
+        raise HTTPException(409, "访问设置已变更，请刷新后再操作")
+    current = access.digest(request.cookies.get(access.COOKIE, ""))
+    if not others and any(row["id"] == session_id and row["current"] for row in store.rows(policy["revision"], current)):
+        raise HTTPException(400, "不能在这里撤销本机")
+    try:
+        removed = store.revoke(policy["revision"], session_id="" if others else session_id, keep=current)
+    except Timeout:
+        raise HTTPException(409, "设备记录正在写入，请稍后重试") from None
+    if not others and not removed:
+        raise HTTPException(404, "这台设备已经不在列表里了")
+    return JSONResponse({**_access_sessions(request), "removed": removed}, headers={"Cache-Control": "no-store"})
 
 
 def tunnel_changes(config, body: dict[str, Any]) -> dict[str, Any]:
