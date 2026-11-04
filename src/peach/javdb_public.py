@@ -118,6 +118,13 @@ def preview_video_url(movie: dict) -> str:
     return value if allowed else ""
 
 
+def magnet_size(value: object) -> str:
+    """磁链区的体积是 MiB 整数，写成带单位的文字；其他形态原样保留。"""
+    if type(value) in (int, float) and value > 0:
+        return f"{value / 1024:.2f}GB" if value >= 1024 else f"{value:g}MB"
+    return str(value or "")
+
+
 class PublicSourceUnavailable(ValueError):
     """公开来源当前未取得。"""
 
@@ -492,6 +499,53 @@ class PublicAPI:
         return self._cached("magnets:" + movie['id'], lambda:
                             self._rows(f"/v1/movies/{movie['id']}/magnets", "magnets"),
                             released=movie.get('release_date'), refresh=refresh)
+
+    def resources(self, code: str, *, refresh=False, review_pages=MAX_REVIEW_PAGES) -> dict:
+        """磁链区与评论正文的资源链接；一侧未取得只记警告，作品身份未取得直接抛出。"""
+        from .downloads import parse_magnet
+        from .sources.javdb import merge_resources, parse_comment_text
+
+        movie = self.movie(code, refresh=True) if refresh else self.movie(code)
+        source_url = "https://javdb.com/v/" + movie["id"]
+        warnings = []
+        items = {}
+        magnet_failed = comments_failed = False
+        try:
+            rows = self.magnets(code, refresh=refresh, movie=movie)
+        except PublicSourceUnavailable as error:
+            rows = []
+            magnet_failed = True
+            warnings.append("磁链区资源未取得：" + str(error))
+        for row in rows:
+            try:
+                magnet = parse_magnet(str(row.get("hash") or ""))
+            except ValueError:
+                continue
+            if magnet.info_hash in items:
+                continue
+            attributes = [label for key, label in (("cnsub", "中字"), ("hd", "高清")) if row.get(key)]
+            items[magnet.info_hash] = {"id": "magnet:" + magnet.info_hash, "protocol": "magnet",
+                "info_hash": magnet.info_hash, "uri": magnet.uri, "name": row.get("name") or code,
+                "size": magnet_size(row.get("size")), "files": str(row.get("files_count") or ""),
+                "date": str(row.get("created_at") or ""), "attributes": attributes,
+                "source": "JavDB", "source_url": source_url, "origins": ["JavDB"]}
+        comments = []
+        try:
+            for page in range(1, review_pages + 1):
+                reviews = self.reviews(code, page, refresh=refresh, movie=movie)
+                for review in reviews:
+                    origin = source_url + "#review-item-" + str(review.get("id") or "")
+                    comments.extend(parse_comment_text(str(review.get("content") or ""), origin,
+                                                       str(review.get("created_at") or "")))
+                if len(reviews) < PAGE_SIZE:
+                    break
+            else:
+                warnings.append(f"已查询前 {review_pages} 页评论资源。")
+        except PublicSourceUnavailable as error:
+            comments_failed = True
+            warnings.append("评论资源未取得：" + str(error))
+        return {"items": merge_resources([*items.values(), *comments]), "warnings": warnings,
+                "source_url": source_url, "magnet_failed": magnet_failed, "comments_failed": comments_failed}
 
     def official_preview(self, code, fetch, *, released=None, refresh=False, provider='prestige', source_id=None):
         """预告按来源独立保存；DMM、JavDB 和未提供的预告每天可再检查。"""
