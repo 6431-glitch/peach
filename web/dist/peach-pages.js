@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "51613070-26e8-4783-9a83-ec3787385f9d", e._sentryDebugIdIdentifier = "sentry-dbid-51613070-26e8-4783-9a83-ec3787385f9d");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f721096c-ad88-4d9d-a1b2-f5eeb461d52f", e._sentryDebugIdIdentifier = "sentry-dbid-f721096c-ad88-4d9d-a1b2-f5eeb461d52f");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -19429,19 +19429,23 @@ var Fm = Mm.filter((e) => e.cloud).map((e) => e.id), Im = Object.fromEntries(Mm.
 	smb: "network"
 };
 // src/react/boardui/components/application/settings/settings-rows.tsx
-function zm({ label: e, description: t, children: n }) {
+function zm({ label: e, description: t, icon: n, children: r }) {
+	let i = /* @__PURE__ */ (0, z.jsxs)("div", {
+		className: "flex min-w-0 flex-col",
+		children: [/* @__PURE__ */ (0, z.jsx)("p", {
+			className: "text-body-regular text-text-primary",
+			children: e
+		}), t && /* @__PURE__ */ (0, z.jsx)("p", {
+			className: "text-body-2-regular text-text-secondary",
+			children: t
+		})]
+	});
 	return /* @__PURE__ */ (0, z.jsxs)("div", {
 		className: R("flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5", "border-b border-separator-border last:border-b-0"),
-		children: [/* @__PURE__ */ (0, z.jsxs)("div", {
-			className: "flex min-w-0 flex-col",
-			children: [/* @__PURE__ */ (0, z.jsx)("p", {
-				className: "text-body-regular text-text-primary",
-				children: e
-			}), t && /* @__PURE__ */ (0, z.jsx)("p", {
-				className: "text-body-2-regular text-text-secondary",
-				children: t
-			})]
-		}), n]
+		children: [n ? /* @__PURE__ */ (0, z.jsxs)("div", {
+			className: "flex min-w-0 items-center gap-3",
+			children: [n, i]
+		}) : i, r]
 	});
 }
 // src/react/boardui/components/base/buttons/link-button.tsx
@@ -22656,4 +22660,4 @@ E();
 var cv = document.getElementById("peach-page"), lv = cv ? sv[cv.dataset.page ?? ""] : void 0;
 cv && lv && (0, M.createRoot)(cv).render(/* @__PURE__ */ (0, z.jsx)(lv, { data: { ...cv.dataset } }));
 
-//# debugId=51613070-26e8-4783-9a83-ec3787385f9d
+//# debugId=f721096c-ad88-4d9d-a1b2-f5eeb461d52f

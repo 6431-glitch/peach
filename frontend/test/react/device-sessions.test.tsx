@@ -63,6 +63,20 @@ it('列出设备：本机排第一并标「本机」，其余写最近活动与�
   expect(buttonNamed('撤销其他设备', card)).not.toBeNull();
 });
 
+it('每行有终端图标，认得出系统时系统词前有平台标志', async () => {
+  const tablet = row({ id: 'eeeeeeeeeeeeeeee', device: 'Chrome · Android 平板' });
+  serve(listing([desk, phone, tablet, laptop]));
+  const host = await render();
+  const lines = [...section(host, '已登录的设备')!.querySelectorAll('p.text-body-regular')];
+  /* 行首图标和标签同在一个 flex 容器里；平台标志在标签 <p> 内。 */
+  const terminals = lines.map(line => line.parentElement!.previousElementSibling?.tagName.toLowerCase());
+  expect(terminals).toEqual(['svg', 'svg', 'svg', 'svg']);
+  expect(lines.map(line => line.querySelectorAll('svg').length)).toEqual([1, 1, 1, 0]);
+  const shapes = lines.map(line => line.parentElement!.previousElementSibling!.innerHTML);
+  /* 电脑、手机、平板、认不出的设备各是一种图形。 */
+  expect(new Set(shapes).size).toBe(4);
+});
+
 it('撤销一台先确认，确认后按这一行的 id 发请求并换上服务端回的列表', async () => {
   const receipt = vi.fn();
   const fetcher = serve(listing([desk, phone, laptop]), { ...listing([desk, laptop]), removed: 1 });

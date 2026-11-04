@@ -162,6 +162,8 @@ def device_name(user_agent: str) -> str:
     """User-Agent 只取浏览器与系统两个词，原文不落盘；认不出时留空，由页面写「未识别」。"""
     browser = next((name for mark, name in _BROWSERS if mark in user_agent), "")
     system = next((name for mark, name in _SYSTEMS if mark in user_agent), "")
+    if system == "Android" and "Mobile" not in user_agent:
+        system = "Android 平板"  # Android 平板的 User-Agent 不带 Mobile；页面据此换平板图标
     return " · ".join(part for part in (browser, system) if part)
 
 

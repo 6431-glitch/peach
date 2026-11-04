@@ -86,7 +86,11 @@ const heading = (name: string, aside: string, mark: boolean) => {
 };
 const section = (name: string, content: string, actions = '', { aside = '', status = '', mark = false } = {}) =>
   `<section aria-label="${name}" class="flex w-full flex-col gap-2 wrap-anywhere">${heading(name, aside, mark)}<div class="flex w-full flex-col rounded-2xl bg-background-secondary-default pl-3">${content}${actions ? footer(actions, status) : ''}</div></section>`;
-const controlRow = (label: string, description: string, control: string) => `<div class="flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5 border-b border-separator-border last:border-b-0"><div class="flex min-w-0 flex-col"><p class="text-body-regular text-text-primary">${label}</p>${description ? `<p class="text-body-2-regular text-text-secondary">${description}</p>` : ''}</div>${control}</div>`;
+/** 同 BoardUI `SettingsRow`；`lead` 是行首图标的占位。 */
+const controlRow = (label: string, description: string, control: string, lead = '') => {
+  const body = `<div class="flex min-w-0 flex-col"><p class="text-body-regular text-text-primary">${label}</p>${description ? `<p class="text-body-2-regular text-text-secondary">${description}</p>` : ''}</div>`;
+  return `<div class="flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5 border-b border-separator-border last:border-b-0">${lead ? `<div class="flex min-w-0 items-center gap-3">${lead}${body}</div>` : body}${control}</div>`;
+};
 const row = (label: string, description = '', control = 'ui-configuration-skeleton-toggle') => controlRow(label, description, `<span class="skeleton ${control}"></span>`);
 /* 只读一句读数的行（「每 3 个月」）：右边是一段文字宽的占位，行高同开关行。 */
 const valueRow = (label: string, description = '', width = '4em') => controlRow(label, description, text(width));
@@ -294,7 +298,7 @@ function accessBody(mode: string): string {
 /** 已登录的设备：分区自己取数时也画这一份。没有记录时按一行（本机）画。 */
 export function devicesSkeleton(): string {
   const shape = rememberedShape('devices');
-  const rows = Array.from({ length: Math.max(1, count(shape?.rows, 8)) }, () => valueRow(text('8em'), text('14em'), '3em')).join('');
+  const rows = Array.from({ length: Math.max(1, count(shape?.rows, 8)) }, () => controlRow(text('8em'), text('14em'), text('3em'), block('20px', '20px'))).join('');
   return section('已登录的设备', rows, on(shape?.manageable) ? button('撤销其他设备', 'secondary') : '',
     on(shape?.manageable) ? { status: '修改访问密码会让全部设备退出。' } : {});
 }

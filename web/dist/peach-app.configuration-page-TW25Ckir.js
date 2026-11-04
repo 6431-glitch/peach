@@ -1,31 +1,31 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f3c641e8-e5d8-4620-a286-6c2979aa9c7f", e._sentryDebugIdIdentifier = "sentry-dbid-f3c641e8-e5d8-4620-a286-6c2979aa9c7f");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e94f4b51-17e0-4c78-bb81-65399db4a550", e._sentryDebugIdIdentifier = "sentry-dbid-e94f4b51-17e0-4c78-bb81-65399db4a550");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
-import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as Le, $3a442827418ebe87$export$eb2fcfdbd7ba97d4 as Re, $542a13ca2fa5b484$export$5b6b19405a83ff9d as ze, $72abaeab4d80592f$export$78efe591171d7d45 as Be, $bd263d78e9bf3c56$export$f5c9f3c2c4054eec as Ve, $ea3928288112382f$export$439d29a4e110a164 as He, $f2ff30fde7b014be$export$3ddf2d174ce01153 as Ue, $fe21c36db05242bb$export$a98f0dcb43a68a25 as We, $fe21c36db05242bb$export$d7b12c4107be0d61 as Ge, ACCENTS as Ke, ApiError as qe, Button as E, ButtonLink as Je, CLOUD_LOCATIONS as Ye, CLOUD_PROXY_HELP as Xe, CONFIGURATION_KEY as Ze, CONFIGURATION_URL as Qe, CREDENTIAL_STATE as $e, Checkbox as D, Chip as et, Disclosure as O, ENTRY_LINKS_HELP as tt, ENTRY_LINKS_HINT as nt, EmptyState as rt, ErrorText as k, ExternalLink as A, FEED_SCHEDULE_KEY as it, FOLLOW_CREDENTIALS_KEY as at, FOLLOW_INITIAL_RANGE_OPTIONS as ot, FOLLOW_SCHEDULE_KEY as st, Fact as j, FactList as ct, FieldLabel as lt, Footer as M, Help as N, HintText as ut, Input as P, LIBRARY_FOLDER_HELP as dt, LIBRARY_PROCESSING_KEY as ft, Label as pt, LinkButton as mt, LoadingDots as ht, M6 as gt, MEDIA_PROCESSING_KEY as _t, MEDIA_PROCESSING_URL as vt, MEDIA_SOURCE_ICONS as yt, MENU_POPOVER_SURFACE as bt, Note as F, PICK_FOLDER_URL as xt, POLICY_COLUMNS as St, POLICY_COVER_NOTE as Ct, POLICY_MATRIX as wt, POLICY_SUMMARY as Tt, PathLine as Et, PillTabList as Dt, Progress as Ot, Rows as I, SEGMENT as kt, SEGMENTED_TRACK as At, SETTINGS_KEY as jt, SETTINGS_URL as Mt, Section as L, SectionSkeleton as Nt, SegmentedRadioGroup as Pt, Select as Ft, Select$1 as R, SelectItem as z, SettingsCard as It, SettingsRow as B, SiteLabel as Lt, SourceLabel as Rt, SourceMark as zt, Stack as V, StatusLabel as H, Switch as U, THUMBNAIL_JOBS_KEY as Bt, TaskCenterLink as Vt, TextField as Ht, TextFieldContext as Ut, __toESM as Wt, animate as Gt, apiGet as W, apiSend as G, appSettingsStore as Kt, boundedPreference as qt, busyProps as K, cardClass as Jt, cloudProxySkeleton as Yt, clsx as Xt, cn as Zt, confirmModal as Qt, credentialDone as $t, credentialsSkeleton as en, cx as tn, devicesSkeleton as nn, errorMessage as q, fetchConfiguration as rn, fetchCredentials as an, fetchFeedSchedule as on, fetchFollowSchedule as sn, fetchLibraryProcessing as cn, fetchMediaProcessing as ln, fetchSettings as un, fetchThumbnailJobs as dn, fmtSize as J, indexersSkeleton as fn, javBrowserSkeleton as pn, momentText as mn, motion as hn, overlayHost as gn, peachHistory$1 as _n, previewLibraryColor as vn, processingActive as yn, providerIcon as bn, queryClient as xn, randomId as Sn, rememberShape as Cn, require_jsx_runtime as wn, require_react as Tn, restartEffectText as En, saveCredential as Dn, schedulePollInterval as On, settingsPath as kn, shellNavigate as An, sortCx as jn, sourceDefaultCost as Mn, useAction as Y, useClientUpdates as Nn, useLibraryTints as Pn, useMutation as Fn, useQuery as X, useReducedMotion as In, useRunSchedule as Ln, useSaveFollowSchedule as Rn, useSaveSettings as zn, useSaveThumbnailMode as Bn } from "./peach-app.js";
-import { CodeBlock as Vn } from "./peach-app.code-block-CyDva4Ms.js";
-import { FolderField as Hn, FolderFieldLine as Un, FolderRow as Wn, MEDIA_SOURCES as Gn, MediaReadPolicy as Kn, MediaReadPolicyHelp as qn, SourceSelect as Jn, isCloudSource as Yn, sourceMark as Xn, useFolderRows as Zn } from "./peach-app.folder-rows-BWBfTyUD.js";
-import { ConnectionStatus as Qn } from "./peach-app.connection-status-DI6kgn3i.js";
-import { SourceIcon as $n } from "./peach-app.source-view-DalWfDkm.js";
+import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as Le, $3a442827418ebe87$export$eb2fcfdbd7ba97d4 as Re, $542a13ca2fa5b484$export$5b6b19405a83ff9d as ze, $72abaeab4d80592f$export$78efe591171d7d45 as Be, $bd263d78e9bf3c56$export$f5c9f3c2c4054eec as Ve, $ea3928288112382f$export$439d29a4e110a164 as He, $f2ff30fde7b014be$export$3ddf2d174ce01153 as Ue, $fe21c36db05242bb$export$a98f0dcb43a68a25 as We, $fe21c36db05242bb$export$d7b12c4107be0d61 as Ge, ACCENTS as Ke, ApiError as qe, Button as E, ButtonLink as Je, CLOUD_LOCATIONS as Ye, CLOUD_PROXY_HELP as Xe, CONFIGURATION_KEY as Ze, CONFIGURATION_URL as Qe, CREDENTIAL_STATE as $e, Checkbox as D, Chip as et, Disclosure as O, ENTRY_LINKS_HELP as tt, ENTRY_LINKS_HINT as nt, EmptyState as rt, ErrorText as k, Eu as it, ExternalLink as A, FEED_SCHEDULE_KEY as at, FOLLOW_CREDENTIALS_KEY as ot, FOLLOW_INITIAL_RANGE_OPTIONS as st, FOLLOW_SCHEDULE_KEY as ct, Fact as j, FactList as lt, FieldLabel as ut, Footer as M, Help as N, HintText as dt, Input as P, L1 as ft, LIBRARY_FOLDER_HELP as pt, LIBRARY_PROCESSING_KEY as mt, Label as ht, LinkButton as gt, LoadingDots as _t, M6 as vt, MEDIA_PROCESSING_KEY as yt, MEDIA_PROCESSING_URL as bt, MEDIA_SOURCE_ICONS as xt, MENU_POPOVER_SURFACE as St, Note as F, PICK_FOLDER_URL as Ct, POLICY_COLUMNS as wt, POLICY_COVER_NOTE as Tt, POLICY_MATRIX as Et, POLICY_SUMMARY as Dt, PathLine as Ot, PillTabList as kt, Progress as At, Rows as I, SEGMENT as jt, SEGMENTED_TRACK as Mt, SETTINGS_KEY as Nt, SETTINGS_URL as Pt, Section as L, SectionSkeleton as Ft, SegmentedRadioGroup as It, Select as Lt, Select$1 as R, SelectItem as z, SettingsCard as Rt, SettingsRow as B, SiteLabel as zt, SourceLabel as Bt, SourceMark as Vt, Stack as V, StatusLabel as H, Switch as U, THUMBNAIL_JOBS_KEY as Ht, TaskCenterLink as Ut, TextField as Wt, TextFieldContext as Gt, Uz as Kt, __toESM as qt, _p as Jt, animate as Yt, apiGet as W, apiSend as G, appSettingsStore as Xt, boundedPreference as Zt, busyProps as K, cardClass as Qt, cloudProxySkeleton as $t, clsx as en, cn as tn, confirmModal as nn, credentialDone as rn, credentialsSkeleton as an, cx as on, d6 as sn, d7 as cn, devicesSkeleton as ln, errorMessage as q, fetchConfiguration as un, fetchCredentials as dn, fetchFeedSchedule as fn, fetchFollowSchedule as pn, fetchLibraryProcessing as mn, fetchMediaProcessing as hn, fetchSettings as gn, fetchThumbnailJobs as _n, fmtSize as J, indexersSkeleton as vn, javBrowserSkeleton as yn, l1 as bn, momentText as xn, motion as Sn, overlayHost as Cn, peachHistory$1 as wn, previewLibraryColor as Tn, processingActive as En, providerIcon as Dn, queryClient as On, randomId as kn, rememberShape as An, require_jsx_runtime as jn, require_react as Mn, restartEffectText as Nn, saveCredential as Pn, schedulePollInterval as Fn, settingsPath as In, shellNavigate as Ln, sortCx as Rn, sourceDefaultCost as zn, useAction as Y, useClientUpdates as Bn, useLibraryTints as Vn, useMutation as Hn, useQuery as X, useReducedMotion as Un, useRunSchedule as Wn, useSaveFollowSchedule as Gn, useSaveSettings as Kn, useSaveThumbnailMode as qn, z3 as Jn } from "./peach-app.js";
+import { CodeBlock as Yn } from "./peach-app.code-block-CyDva4Ms.js";
+import { FolderField as Xn, FolderFieldLine as Zn, FolderRow as Qn, MEDIA_SOURCES as $n, MediaReadPolicy as er, MediaReadPolicyHelp as tr, SourceSelect as nr, isCloudSource as rr, sourceMark as ir, useFolderRows as ar } from "./peach-app.folder-rows-BWBfTyUD.js";
+import { ConnectionStatus as or } from "./peach-app.connection-status-DI6kgn3i.js";
+import { SourceIcon as sr } from "./peach-app.source-view-DalWfDkm.js";
 // src/react/settings/configuration-panel.ts
-var Z = /* @__PURE__ */ Wt(Tn(), 1), er = "flex flex-col gap-6";
-function tr(e) {
+var Z = /* @__PURE__ */ qt(Mn(), 1), cr = "flex flex-col gap-6";
+function lr(e) {
 	return e ? {
-		className: e.active ? `${er} ui-board-group-active` : er,
+		className: e.active ? `${cr} ui-board-group-active` : cr,
 		"data-board-group": String(e.index),
 		id: e.id,
 		role: "tabpanel",
 		"aria-labelledby": e.labelledBy
-	} : { className: er };
+	} : { className: cr };
 }
 // src/react/settings/userscript-probe.ts
-function nr() {
+function ur() {
 	let e = (0, Z.useRef)(null), [t, n] = (0, Z.useState)(0), [r, i] = (0, Z.useState)("checking");
 	return (0, Z.useEffect)(() => {
-		let t = Sn(), n = !1, r = e.current, a, o = () => {
+		let t = kn(), n = !1, r = e.current, a, o = () => {
 			n = !0, clearInterval(u), i("missing");
 		}, s = () => {
 			n || (clearTimeout(a), a = setTimeout(o, 3e3), c());
@@ -53,14 +53,14 @@ function nr() {
 	};
 }
 // src/react/settings/userscript-status.tsx
-var Q = wn();
-function rr(e, t) {
+var Q = jn();
+function dr(e, t) {
 	let n = e.split(".").map(Number), r = t.split(".").map(Number);
 	for (let e = 0; e < 3; e++) if (n[e] !== r[e]) return n[e] > r[e];
 	return !0;
 }
-function ir({ enabled: e, release: t }) {
-	let { frame: n, attempt: r, status: i, retry: a } = nr(), o = typeof i == "object", s = o && !rr(i.version, t.minimum_version), c = o && !rr(i.version, t.version), l = i === "checking" ? "progress" : i === "missing" ? "neutral" : s || c || !i.paired ? "warning" : "success", u = i === "checking" ? "检测中" : i === "missing" ? "未检测到" : s ? "需更新" : c ? "可更新" : i.paired ? "已连接" : "待配对", d = i === "checking" ? "checking" : i === "missing" ? "missing" : s ? "required" : c ? "available" : i.paired ? e ? "enabled" : "disabled" : "unpaired";
+function fr({ enabled: e, release: t }) {
+	let { frame: n, attempt: r, status: i, retry: a } = ur(), o = typeof i == "object", s = o && !dr(i.version, t.minimum_version), c = o && !dr(i.version, t.version), l = i === "checking" ? "progress" : i === "missing" ? "neutral" : s || c || !i.paired ? "warning" : "success", u = i === "checking" ? "检测中" : i === "missing" ? "未检测到" : s ? "需更新" : c ? "可更新" : i.paired ? "已连接" : "待配对", d = i === "checking" ? "checking" : i === "missing" ? "missing" : s ? "required" : c ? "available" : i.paired ? e ? "enabled" : "disabled" : "unpaired";
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)("iframe", {
 		ref: n,
 		title: "Peach 用户脚本检测",
@@ -69,7 +69,7 @@ function ir({ enabled: e, release: t }) {
 	}, r), /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"aria-live": "polite",
 		"data-userscript-status": "",
-		className: Jt({
+		className: Qt({
 			variant: "raised",
 			bordered: "line",
 			className: "flex flex-col gap-3"
@@ -80,7 +80,7 @@ function ir({ enabled: e, release: t }) {
 				children: [/* @__PURE__ */ (0, Q.jsx)("span", {
 					className: "text-body-medium text-text-primary",
 					children: "Peach 用户脚本"
-				}), /* @__PURE__ */ (0, Q.jsx)(Qn, {
+				}), /* @__PURE__ */ (0, Q.jsx)(or, {
 					tone: l,
 					children: /* @__PURE__ */ (0, Q.jsx)("span", {
 						"data-copy-key": `userscript.${d}.status`,
@@ -138,32 +138,32 @@ function ir({ enabled: e, release: t }) {
 	})] });
 }
 // src/react/settings/jav-browser-settings.tsx
-var ar = "/api/configuration/jav-browser";
-function or({ receipt: e, refreshKey: t }) {
+var pr = "/api/configuration/jav-browser";
+function mr({ receipt: e, refreshKey: t }) {
 	let n = X({
 		queryKey: ["jav-browser-settings", t],
-		queryFn: ({ signal: e }) => W(ar, e),
+		queryFn: ({ signal: e }) => W(pr, e),
 		refetchOnMount: "always",
 		refetchOnWindowFocus: "always"
 	});
-	return n.error && !n.data ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(n.error) }) : n.isFetching && !n.data ? /* @__PURE__ */ (0, Q.jsx)(Nt, {
+	return n.error && !n.data ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(n.error) }) : n.isFetching && !n.data ? /* @__PURE__ */ (0, Q.jsx)(Ft, {
 		label: "正在读取浏览器添加设置",
-		html: pn
-	}) : n.data ? /* @__PURE__ */ (0, Q.jsx)(sr, {
+		html: yn
+	}) : n.data ? /* @__PURE__ */ (0, Q.jsx)(hr, {
 		initial: n.data,
 		receipt: e
 	}) : null;
 }
-function sr({ initial: e, receipt: t }) {
+function hr({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.provider), [o, s] = (0, Z.useState)(""), c = Y();
 	(0, Z.useEffect)(() => {
-		Cn("javBrowser", {
+		An("javBrowser", {
 			enabled: e.enabled,
 			ready: e.providers.some((t) => t.key === e.provider && t.configured && t.target)
 		}), r(e), a((t) => e.providers.some((e) => e.key === t) ? t : e.provider), e.enabled || s("");
 	}, [e]);
 	let l = (e) => {
-		c.run(e, (t) => G(ar, {
+		c.run(e, (t) => G(pr, {
 			action: e,
 			provider: i
 		}, "POST", t), (n) => {
@@ -177,13 +177,13 @@ function sr({ initial: e, receipt: t }) {
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "flex min-w-0 flex-col gap-4",
 			children: [
-				/* @__PURE__ */ (0, Q.jsx)(ir, {
+				/* @__PURE__ */ (0, Q.jsx)(fr, {
 					enabled: n.enabled,
 					release: n.userscript
 				}),
 				/* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex flex-col gap-1",
-					children: [/* @__PURE__ */ (0, Q.jsx)(lt, { children: "浏览器添加的下载渠道" }), /* @__PURE__ */ (0, Q.jsx)(R, {
+					children: [/* @__PURE__ */ (0, Q.jsx)(ut, { children: "浏览器添加的下载渠道" }), /* @__PURE__ */ (0, Q.jsx)(R, {
 						"aria-label": "浏览器添加的下载渠道",
 						selectedKey: i || null,
 						placeholder: "暂无可用渠道",
@@ -194,7 +194,7 @@ function sr({ initial: e, receipt: t }) {
 						children: n.providers.map((e) => /* @__PURE__ */ (0, Q.jsx)(z, {
 							id: e.key,
 							textValue: e.label,
-							children: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+							children: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 								source: e.key,
 								label: e.label
 							})
@@ -250,17 +250,17 @@ function sr({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/download-settings.tsx
-var cr = "/api/configuration/downloads", lr = "/api/configuration/downloads/check", ur = "/api/configuration/downloads/folder", dr = "/api/configuration/downloads/pikpak/login", fr = "/api/configuration/downloads/pikpak/logout", pr = "/api/configuration/downloads/pikpak/browser-login", mr = 2e3, hr = bn("pikpak");
-function gr({ initial: e, receipt: t, panel: n, issues: r }) {
+var gr = "/api/configuration/downloads", _r = "/api/configuration/downloads/check", vr = "/api/configuration/downloads/folder", yr = "/api/configuration/downloads/pikpak/login", br = "/api/configuration/downloads/pikpak/logout", xr = "/api/configuration/downloads/pikpak/browser-login", Sr = 2e3, Cr = Dn("pikpak");
+function wr({ initial: e, receipt: t, panel: n, issues: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
-		...tr(n),
-		children: [r, e ? /* @__PURE__ */ (0, Q.jsx)(_r, {
+		...lr(n),
+		children: [r, e ? /* @__PURE__ */ (0, Q.jsx)(Tr, {
 			initial: e,
 			receipt: t
 		}) : null]
 	});
 }
-function _r({ initial: e, receipt: t }) {
+function Tr({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)("");
 	(0, Z.useEffect)(() => {
 		r((t) => ({
@@ -271,20 +271,20 @@ function _r({ initial: e, receipt: t }) {
 	}, [e.media_sources, e.pikpak_roots]);
 	let o = n.media_sources ?? [], s = o.includes("pikpak"), c = o.some((e) => Ye.includes(e)), l = s && (n.pikpak.logged_in || !!i.trim());
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
-		c ? /* @__PURE__ */ (0, Q.jsx)(vr, {
+		c ? /* @__PURE__ */ (0, Q.jsx)(Er, {
 			state: n,
 			settle: r,
 			receipt: t,
 			pikpakAccount: l
 		}) : null,
-		s ? /* @__PURE__ */ (0, Q.jsx)(xr, {
+		s ? /* @__PURE__ */ (0, Q.jsx)(kr, {
 			state: n,
 			settle: r,
 			receipt: t,
 			username: i,
 			setUsername: a
 		}) : null,
-		/* @__PURE__ */ (0, Q.jsx)(or, {
+		/* @__PURE__ */ (0, Q.jsx)(mr, {
 			receipt: t,
 			refreshKey: JSON.stringify([
 				n.media_sources,
@@ -295,8 +295,8 @@ function _r({ initial: e, receipt: t }) {
 		})
 	] });
 }
-function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
-	let [i, a] = (0, Z.useState)(e.config), [o, s] = (0, Z.useState)(""), [c, l] = (0, Z.useState)(String(e.config.wait_hours)), [u, d] = (0, Z.useState)(null), [f, p] = (0, Z.useState)(""), [m, h] = (0, Z.useState)(yr), [g, _] = (0, Z.useState)(""), [v, y] = (0, Z.useState)(!1), b = Y(), x = e.media_sources ?? [], S = x.includes("115"), C = x.includes("pikpak"), w = (e) => i.targets[e] ?? "", T = (e, t) => a({
+function Er({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
+	let [i, a] = (0, Z.useState)(e.config), [o, s] = (0, Z.useState)(""), [c, l] = (0, Z.useState)(String(e.config.wait_hours)), [u, d] = (0, Z.useState)(null), [f, p] = (0, Z.useState)(""), [m, h] = (0, Z.useState)(Dr), [g, _] = (0, Z.useState)(""), [v, y] = (0, Z.useState)(!1), b = Y(), x = e.media_sources ?? [], S = x.includes("115"), C = x.includes("pikpak"), w = (e) => i.targets[e] ?? "", T = (e, t) => a({
 		...i,
 		targets: {
 			...i.targets,
@@ -325,7 +325,7 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 			target: !e.config.targets[115],
 			root: !e.config.pikpak_root
 		};
-		b.run("auto", (e) => W(lr, e), (e) => te(e, t), (e) => _(q(e)));
+		b.run("auto", (e) => W(_r, e), (e) => te(e, t), (e) => _(q(e)));
 	}, []), /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "download",
 		title: "云下载",
@@ -340,13 +340,13 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 				token: o,
 				pikpak_account: r
 			};
-			b.run("save", (e) => G(cr, f, "POST", e), (e) => {
+			b.run("save", (e) => G(gr, f, "POST", e), (e) => {
 				let { report: r, ...i } = e;
 				t(i), a(i.config), l(String(i.config.wait_hours)), s(""), r ? te(r, {
 					address: !i.config.clouddrive_address,
 					target: u,
 					root: !i.config.pikpak_root
-				}, i.config.targets[115] ?? "") : (d(null), p(""), h(yr), y(!1), _("")), n("已保存配置");
+				}, i.config.targets[115] ?? "") : (d(null), p(""), h(Dr), y(!1), _("")), n("已保存配置");
 			}, (e) => _(q(e)));
 		},
 		children: [
@@ -380,7 +380,7 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 					onChange: s
 				}),
 				S ? /* @__PURE__ */ (0, Q.jsx)(P, {
-					label: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+					label: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 						source: "115",
 						label: "115 目标目录"
 					}),
@@ -395,7 +395,7 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 					onChange: (e) => T("115", e)
 				}) : null,
 				C ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
-					label: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+					label: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 						source: "pikpak",
 						label: "PikPak 目标目录"
 					}),
@@ -408,7 +408,7 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 					onChange: (e) => T("pikpak", e)
 				}), /* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex flex-col gap-1",
-					children: [/* @__PURE__ */ (0, Q.jsx)(lt, { children: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+					children: [/* @__PURE__ */ (0, Q.jsx)(ut, { children: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 						source: "pikpak",
 						label: "PikPak 根目录对应的媒体目录"
 					}) }), e.pikpak_roots.length ? /* @__PURE__ */ (0, Q.jsx)(R, {
@@ -439,9 +439,9 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 			] }),
 			b.busy === "auto" ? /* @__PURE__ */ (0, Q.jsx)(V, {
 				divided: !0,
-				children: /* @__PURE__ */ (0, Q.jsx)(ht, { label: "正在检查 CloudDrive2" })
+				children: /* @__PURE__ */ (0, Q.jsx)(_t, { label: "正在检查 CloudDrive2" })
 			}) : null,
-			u ? /* @__PURE__ */ (0, Q.jsx)(br, {
+			u ? /* @__PURE__ */ (0, Q.jsx)(Or, {
 				report: u,
 				detected: f,
 				suggested: m,
@@ -453,7 +453,7 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 						pikpak_root: i.pikpak_root,
 						pikpak_account: r
 					};
-					b.run("folder", (e) => G(ur, t, "POST", e), (t) => {
+					b.run("folder", (e) => G(vr, t, "POST", e), (t) => {
 						d(t), h((t) => ({
 							...t,
 							target: {
@@ -485,7 +485,7 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 							pikpak_root: i.pikpak_root,
 							pikpak_account: r
 						};
-						b.run("check", (e) => G(lr, t, "POST", e), (t) => te(t, e), (e) => _(q(e)));
+						b.run("check", (e) => G(_r, t, "POST", e), (t) => te(t, e), (e) => _(q(e)));
 					},
 					disabled: !e.available,
 					...K(b.busy === "check"),
@@ -500,29 +500,29 @@ function vr({ state: e, settle: t, receipt: n, pikpakAccount: r }) {
 		]
 	});
 }
-var yr = {
+var Dr = {
 	target: null,
 	root: "",
 	saved: !1
 };
-function br({ report: e, detected: t, suggested: n, create: r, creating: i }) {
+function Or({ report: e, detected: t, suggested: n, create: r, creating: i }) {
 	let a = n.target, o = !!(t || a || n.root || e.permissions.length || e.folder || e.quota);
 	return !o && !e.problems.length ? null : /* @__PURE__ */ (0, Q.jsxs)(V, {
 		divided: !0,
-		children: [o ? /* @__PURE__ */ (0, Q.jsxs)(ct, { children: [
+		children: [o ? /* @__PURE__ */ (0, Q.jsxs)(lt, { children: [
 			t ? /* @__PURE__ */ (0, Q.jsx)(j, {
 				term: "CloudDrive2 地址",
 				children: `探测到 ${t}，保存配置后生效`
 			}) : null,
 			a?.exists ? /* @__PURE__ */ (0, Q.jsx)(j, {
-				term: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+				term: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 					source: "115",
 					label: "115 目标目录"
 				}),
 				children: n.saved ? `已根据媒体库目录填入 ${a.path}` : `根据媒体库目录填入 ${a.path}，保存配置后生效`
 			}) : null,
 			a && !a.exists ? /* @__PURE__ */ (0, Q.jsxs)(j, {
-				term: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+				term: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 					source: "115",
 					label: "115 目标目录"
 				}),
@@ -535,7 +535,7 @@ function br({ report: e, detected: t, suggested: n, create: r, creating: i }) {
 				}) : null]
 			}) : null,
 			n.root ? /* @__PURE__ */ (0, Q.jsx)(j, {
-				term: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+				term: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 					source: "pikpak",
 					label: "PikPak 根目录"
 				}),
@@ -558,7 +558,7 @@ function br({ report: e, detected: t, suggested: n, create: r, creating: i }) {
 				children: e.folder.can_offline ? `${e.folder.path} 可以离线下载` : `${e.folder.path} 不支持离线下载`
 			}) : null,
 			e.quota ? /* @__PURE__ */ (0, Q.jsx)(j, {
-				term: /* @__PURE__ */ (0, Q.jsx)(Rt, {
+				term: /* @__PURE__ */ (0, Q.jsx)(Bt, {
 					source: "115",
 					label: "115 离线配额"
 				}),
@@ -567,30 +567,30 @@ function br({ report: e, detected: t, suggested: n, create: r, creating: i }) {
 		] }) : null, e.problems.map((e) => /* @__PURE__ */ (0, Q.jsx)(k, { children: e }, e))]
 	});
 }
-function xr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
+function kr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 	let [a, o] = (0, Z.useState)(""), [s, c] = (0, Z.useState)(!1), [l, u] = (0, Z.useState)(""), [d, f] = (0, Z.useState)(""), [p, m] = (0, Z.useState)(""), h = Y(), g = e.pikpak, _ = e.pikpak_browser, v = _.state === "waiting";
 	(0, Z.useEffect)(() => {
 		if (!v) return;
 		let e = new AbortController(), r, i = async () => {
 			try {
-				let r = await W(pr, e.signal);
+				let r = await W(xr, e.signal);
 				if (e.signal.aborted || (t(r), r.pikpak_browser.state === "done" ? n("已登录 PikPak") : r.pikpak_browser.state !== "waiting" && m(r.pikpak_browser.message), r.pikpak_browser.state !== "waiting")) return;
 			} catch (t) {
 				if (e.signal.aborted) return;
 				f(q(t));
 			}
-			r = setTimeout(i, mr);
+			r = setTimeout(i, Sr);
 		};
-		return r = setTimeout(i, mr), () => {
+		return r = setTimeout(i, Sr), () => {
 			e.abort(), clearTimeout(r);
 		};
 	}, [v]);
 	let y = () => {
-		m(""), h.run("browser", (e) => G(pr, {}, "POST", e), (e) => {
+		m(""), h.run("browser", (e) => G(xr, {}, "POST", e), (e) => {
 			t(e), f("");
 		}, (e) => f(q(e)));
 	}, b = () => {
-		h.run("cancel", (e) => G(`${pr}/cancel`, {}, "POST", e), (e) => {
+		h.run("cancel", (e) => G(`${xr}/cancel`, {}, "POST", e), (e) => {
 			t(e), f(""), m(e.pikpak_browser.message);
 		}, (e) => f(q(e)));
 	}, x = (e) => {
@@ -600,11 +600,11 @@ function xr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 			password: a,
 			remember: s
 		};
-		h.run("login", (e) => G(dr, i, "POST", e), (e) => {
+		h.run("login", (e) => G(yr, i, "POST", e), (e) => {
 			t(e.settings), f(""), e.ok ? (u(""), o(""), n("已登录 PikPak")) : u(e.captcha_url ?? "");
 		}, (e) => f(q(e)));
 	}, S = () => {
-		h.run("logout", (e) => G(fr, {}, "POST", e), (e) => {
+		h.run("logout", (e) => G(br, {}, "POST", e), (e) => {
 			t(e), f(""), n("已登出 PikPak");
 		}, (e) => f(q(e)));
 	}, C = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
@@ -654,14 +654,14 @@ function xr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "pikpak",
 		title: "PikPak 账号",
-		icon: /* @__PURE__ */ (0, Q.jsx)(hr, {}),
+		icon: /* @__PURE__ */ (0, Q.jsx)(Cr, {}),
 		onSubmit: x,
 		aside: /* @__PURE__ */ (0, Q.jsx)(H, {
 			tone: g.logged_in ? "success" : v ? "progress" : T ? "error" : "neutral",
 			children: g.logged_in ? "已登录" : v ? "等待登录" : T ? "登录未完成" : "待登录"
 		}),
 		children: [
-			g.logged_in ? /* @__PURE__ */ (0, Q.jsxs)(ct, { children: [/* @__PURE__ */ (0, Q.jsx)(j, {
+			g.logged_in ? /* @__PURE__ */ (0, Q.jsxs)(lt, { children: [/* @__PURE__ */ (0, Q.jsx)(j, {
 				term: "账号",
 				children: g.username || "已登录"
 			}), g.method === "browser" ? /* @__PURE__ */ (0, Q.jsx)(j, {
@@ -679,7 +679,7 @@ function xr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 				children: /* @__PURE__ */ (0, Q.jsx)(k, { children: d || h.error })
 			}) : null,
 			/* @__PURE__ */ (0, Q.jsx)(M, {
-				status: !g.logged_in && v ? /* @__PURE__ */ (0, Q.jsx)(ht, { label: _.message || "等你在浏览器窗口里登录 PikPak" }) : null,
+				status: !g.logged_in && v ? /* @__PURE__ */ (0, Q.jsx)(_t, { label: _.message || "等你在浏览器窗口里登录 PikPak" }) : null,
 				children: g.logged_in ? /* @__PURE__ */ (0, Q.jsx)(E, {
 					variant: "secondary",
 					onClick: S,
@@ -705,7 +705,7 @@ function xr({ state: e, settle: t, receipt: n, username: r, setUsername: i }) {
 	});
 }
 // src/react/settings/library-sharing-settings.tsx
-function Sr({ initial: e, receipt: t }) {
+function Ar({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(null), [o, s] = (0, Z.useState)(!1), [c, l] = (0, Z.useState)(!1), u = (0, Z.useMemo)(() => i ? JSON.stringify(i.data, null, 2) : "", [i]), d = Y(), f = (e) => void d.run("save", (t) => G("/api/configuration/library-sharing", {
 		enabled: e,
 		schema: n.schema,
@@ -782,7 +782,7 @@ function Sr({ initial: e, receipt: t }) {
 				/* @__PURE__ */ (0, Q.jsx)(O, {
 					summary: "上传数据预览",
 					defaultOpen: !0,
-					children: /* @__PURE__ */ (0, Q.jsx)(Vn, {
+					children: /* @__PURE__ */ (0, Q.jsx)(Yn, {
 						code: u,
 						language: "json",
 						label: "馆藏与口味上传预览",
@@ -835,7 +835,7 @@ function Sr({ initial: e, receipt: t }) {
 	] });
 }
 // src/react/settings/remote-reporting-settings.tsx
-function Cr({ value: e, onChange: t, busy: n = !1 }) {
+function jr({ value: e, onChange: t, busy: n = !1 }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 		label: "发送版本统计与错误诊断（推荐）",
 		description: "上传版本、系统信息、故障类型、代码位置与发生次数。",
@@ -857,9 +857,9 @@ function Cr({ value: e, onChange: t, busy: n = !1 }) {
 		})
 	})] });
 }
-function wr({ initial: e, receipt: t }) {
+function Mr({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), i = Y();
-	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Cr, {
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(jr, {
 		value: n,
 		busy: i.busy === "save",
 		onChange: (e) => {
@@ -876,16 +876,16 @@ function wr({ initial: e, receipt: t }) {
 	}) : null] });
 }
 // src/react/components/animated-number.tsx
-var Tr = .6;
-function Er({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
-	let r = In(), [i, a] = (0, Z.useState)(e), o = (0, Z.useRef)(e);
+var Nr = .6;
+function Pr({ value: e, format: t = (e) => Math.round(e).toLocaleString(), className: n }) {
+	let r = Un(), [i, a] = (0, Z.useState)(e), o = (0, Z.useRef)(e);
 	return (0, Z.useEffect)(() => {
 		if (r || o.current === e) {
 			o.current = e, a(e);
 			return;
 		}
-		let t = Gt(o.current, e, {
-			duration: Tr,
+		let t = Yt(o.current, e, {
+			duration: Nr,
 			ease: "easeOut",
 			onUpdate: (e) => {
 				o.current = e, a(e);
@@ -898,7 +898,7 @@ function Er({ value: e, format: t = (e) => Math.round(e).toLocaleString(), class
 	});
 }
 // node_modules/recharts/es6/state/selectors/pieSelectors.js
-function Dr(e, t) {
+function Fr(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -908,30 +908,30 @@ function Dr(e, t) {
 	}
 	return n;
 }
-function Or(e) {
+function Ir(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? Dr(Object(n), !0).forEach(function(t) {
-			kr(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Dr(Object(n)).forEach(function(t) {
+		t % 2 ? Fr(Object(n), !0).forEach(function(t) {
+			Lr(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Fr(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-function kr(e, t, n) {
-	return (t = Ar(t)) in e ? Object.defineProperty(e, t, {
+function Lr(e, t, n) {
+	return (t = Rr(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-function Ar(e) {
-	var t = jr(e, "string");
+function Rr(e) {
+	var t = zr(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function jr(e, t) {
+function zr(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -941,20 +941,20 @@ function jr(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-var Mr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Nr = [], Pr = (e, t, n) => n?.length === 0 ? Nr : n, Fr = oe([
+var Br = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find((e) => e.id === t)), Vr = [], Hr = (e, t, n) => n?.length === 0 ? Vr : n, Ur = oe([
 	Te,
-	Mr,
-	Pr
+	Br,
+	Hr
 ], (e, t, n) => {
 	var r = e.chartData;
 	if (t != null) {
 		var i = t?.data != null && t.data.length > 0 ? t.data : r;
-		if (i && i.length || n == null || (i = n.map((e) => Or(Or({}, t.presentationProps), e.props))), i != null) return i;
+		if (i && i.length || n == null || (i = n.map((e) => Ir(Ir({}, t.presentationProps), e.props))), i != null) return i;
 	}
-}), Ir = oe([
-	Fr,
-	Mr,
-	Pr
+}), Wr = oe([
+	Ur,
+	Br,
+	Hr
 ], (e, t, n) => {
 	if (e != null && t != null) return e.map((e, r) => {
 		var i, a = he(e, t.nameKey, t.name), o = n != null && (i = n[r]) != null && (i = i.props) != null && i.fill ? n[r].props.fill : typeof e == "object" && e && "fill" in e ? e.fill : t.fill;
@@ -966,42 +966,42 @@ var Mr = oe([De, (e, t) => t], (e, t) => e.filter((e) => e.type === "pie").find(
 			type: t.legendType
 		};
 	});
-}), Lr = oe([
-	Fr,
-	Mr,
-	Pr,
+}), Gr = oe([
+	Ur,
+	Br,
+	Hr,
 	Ee
 ], (e, t, n, r) => {
-	if (t != null && e != null) return ci({
+	if (t != null && e != null) return gi({
 		offset: r,
 		pieSettings: t,
 		displayedData: e,
 		cells: n
 	});
-}), Rr = ["key"], zr = [
+}), Kr = ["key"], qr = [
 	"onMouseEnter",
 	"onClick",
 	"onMouseLeave"
-], Br = ["id"], Vr = ["id"];
-function Hr() {
-	return Hr = Object.assign ? Object.assign.bind() : function(e) {
+], Jr = ["id"], Yr = ["id"];
+function Xr() {
+	return Xr = Object.assign ? Object.assign.bind() : function(e) {
 		for (var t = 1; t < arguments.length; t++) {
 			var n = arguments[t];
 			for (var r in n) ({}).hasOwnProperty.call(n, r) && (e[r] = n[r]);
 		}
 		return e;
-	}, Hr.apply(null, arguments);
+	}, Xr.apply(null, arguments);
 }
-function Ur(e, t) {
+function Zr(e, t) {
 	if (e == null) return {};
-	var n, r, i = Wr(e, t);
+	var n, r, i = Qr(e, t);
 	if (Object.getOwnPropertySymbols) {
 		var a = Object.getOwnPropertySymbols(e);
 		for (r = 0; r < a.length; r++) n = a[r], t.indexOf(n) === -1 && {}.propertyIsEnumerable.call(e, n) && (i[n] = e[n]);
 	}
 	return i;
 }
-function Wr(e, t) {
+function Qr(e, t) {
 	if (e == null) return {};
 	var n = {};
 	for (var r in e) if ({}.hasOwnProperty.call(e, r)) {
@@ -1010,7 +1010,7 @@ function Wr(e, t) {
 	}
 	return n;
 }
-function Gr(e, t) {
+function $r(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1023,27 +1023,27 @@ function Gr(e, t) {
 function $(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? Gr(Object(n), !0).forEach(function(t) {
-			Kr(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : Gr(Object(n)).forEach(function(t) {
+		t % 2 ? $r(Object(n), !0).forEach(function(t) {
+			ei(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : $r(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-function Kr(e, t, n) {
-	return (t = qr(t)) in e ? Object.defineProperty(e, t, {
+function ei(e, t, n) {
+	return (t = ti(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-function qr(e) {
-	var t = Jr(e, "string");
+function ti(e) {
+	var t = ni(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function Jr(e, t) {
+function ni(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1053,12 +1053,12 @@ function Jr(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-var Yr = S;
-function Xr(e) {
-	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => Ir(t, e.id, n));
+var ri = S;
+function ii(e) {
+	var n = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), r = Me((t) => Wr(t, e.id, n));
 	return r == null ? null : /*#__PURE__*/ Z.createElement(w, { legendPayload: r });
 }
-function Zr(e) {
+function ai(e) {
 	if (e != null && typeof e != "boolean" && typeof e != "function") {
 		if (/*#__PURE__*/ Z.isValidElement(e)) {
 			var t = e.props?.fill;
@@ -1068,8 +1068,8 @@ function Zr(e) {
 		return typeof n == "string" ? n : void 0;
 	}
 }
-var Qr = /*#__PURE__*/ Z.memo((e) => {
-	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = Zr(f), m = {
+var oi = /*#__PURE__*/ Z.memo((e) => {
+	var t = e.dataKey, n = e.nameKey, r = e.sectors, i = e.stroke, a = e.strokeWidth, o = e.fill, s = e.name, c = e.hide, l = e.tooltipType, u = e.formatter, d = e.id, f = e.activeShape, p = ai(f), m = {
 		dataDefinedOnItem: r.map((e) => {
 			var t = e.tooltipPayload;
 			return p == null || t == null ? t : t.map((e) => $($({}, e), {}, {
@@ -1094,42 +1094,42 @@ var Qr = /*#__PURE__*/ Z.memo((e) => {
 		}
 	};
 	return /*#__PURE__*/ Z.createElement(T, { tooltipEntrySettings: m });
-}), $r = (e, t) => e > t ? "start" : e < t ? "end" : "middle", ei = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), ti = (e, t, n) => {
+}), si = (e, t) => e > t ? "start" : e < t ? "end" : "middle", ci = (e, t, n) => pe(typeof t == "function" ? t(e) : t, n, n * .8), li = (e, t, n) => {
 	var r = t.top, i = t.left, a = t.width, o = t.height, s = fe(a, o);
 	return {
 		cx: i + pe(e.cx, a, a / 2),
 		cy: r + pe(e.cy, o, o / 2),
 		innerRadius: pe(e.innerRadius, s, 0),
-		outerRadius: ei(n, e.outerRadius, s),
+		outerRadius: ci(n, e.outerRadius, s),
 		maxRadius: e.maxRadius || Math.sqrt(a * a + o * o) / 2
 	};
-}, ni = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), ri = (e, t) => {
+}, ui = (e, t) => ye(t - e) * Math.min(Math.abs(t - e), 360), di = (e, t) => {
 	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
 	if (typeof e == "function") return e(t);
-	var n = Xt("recharts-pie-label-line", typeof e == "boolean" ? "" : e.className);
+	var n = en("recharts-pie-label-line", typeof e == "boolean" ? "" : e.className);
 	t.key;
-	var r = Ur(t, Rr);
-	return /*#__PURE__*/ Z.createElement(l, Hr({}, r, {
+	var r = Zr(t, Kr);
+	return /*#__PURE__*/ Z.createElement(l, Xr({}, r, {
 		type: "linear",
 		className: n
 	}));
-}, ii = (e, t, n) => {
+}, fi = (e, t, n) => {
 	if (/*#__PURE__*/ Z.isValidElement(e)) return /*#__PURE__*/ Z.cloneElement(e, t);
 	var r = n;
 	if (typeof e == "function" && (r = e(t), /*#__PURE__*/ Z.isValidElement(r))) return r;
-	var i = Xt("recharts-pie-label-text", ue(e));
-	return /*#__PURE__*/ Z.createElement(ne, Hr({}, t, {
+	var i = en("recharts-pie-label-text", ue(e));
+	return /*#__PURE__*/ Z.createElement(ne, Xr({}, t, {
 		alignmentBaseline: "middle",
 		className: i
 	}), r);
 };
-function ai(e) {
+function pi(e) {
 	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label, a = n.labelLine, o = n.dataKey;
 	if (!r || !i || !t) return null;
 	var s = Oe(n), c = ke(i), l = ke(a), u = typeof i == "object" && "offsetRadius" in i && typeof i.offsetRadius == "number" && i.offsetRadius || 20, d = t.map((e, t) => {
 		var n = (e.startAngle + e.endAngle) / 2, r = be(e.cx, e.cy, e.outerRadius + u, n), d = $($($($({}, s), e), {}, { stroke: "none" }, c), {}, {
 			index: t,
-			textAnchor: $r(r.x, e.cx)
+			textAnchor: si(r.x, e.cx)
 		}, r), p = $($($($({}, s), e), {}, {
 			fill: "none",
 			stroke: e.fill
@@ -1141,20 +1141,20 @@ function ai(e) {
 		return /*#__PURE__*/ Z.createElement(re, {
 			zIndex: f.label,
 			key: `label-${e.startAngle}-${e.endAngle}-${e.midAngle}-${t}`
-		}, /*#__PURE__*/ Z.createElement(g, null, a && ri(a, p), ii(i, d, he(e, o))));
+		}, /*#__PURE__*/ Z.createElement(g, null, a && di(a, p), fi(i, d, he(e, o))));
 	});
 	return /*#__PURE__*/ Z.createElement(g, { className: "recharts-pie-labels" }, d);
 }
-function oi(e) {
+function mi(e) {
 	var t = e.sectors, n = e.props, r = e.showLabels, i = n.label;
-	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(ai, {
+	return typeof i == "object" && i && "position" in i ? /*#__PURE__*/ Z.createElement(h, { label: i }) : /*#__PURE__*/ Z.createElement(pi, {
 		sectors: t,
 		props: n,
 		showLabels: r
 	});
 }
-function si(e) {
-	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = Ur(i, zr), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
+function hi(e) {
+	var t = e.sectors, n = e.activeShape, r = e.inactiveShape, i = e.allOtherPieProps, a = e.shape, o = e.id, s = e.animationElapsedTime, c = e.isAnimating, l = e.isEntrance, f = Me(we), p = Me(Se), m = Me(Ce), h = i.onMouseEnter, _ = i.onClick, v = i.onMouseLeave, y = Zr(i, qr), b = Pe(h, i.dataKey, o), x = Fe(v), S = Ne(_, i.dataKey, o);
 	return t == null || t.length === 0 ? null : /*#__PURE__*/ Z.createElement(Z.Fragment, null, t.map((e, h) => {
 		if (e?.startAngle === 0 && e?.endAngle === 0 && t.length !== 1) return null;
 		var _ = m == null || m === o, v = String(h) === f && (p == null || i.dataKey === p) && _, C = n && v ? n : f ? r : null, w = $($({}, e), {}, {
@@ -1168,7 +1168,7 @@ function si(e) {
 			[d]: h,
 			[u]: o
 		});
-		return /*#__PURE__*/ Z.createElement(g, Hr({
+		return /*#__PURE__*/ Z.createElement(g, Xr({
 			key: `sector-${e?.startAngle}-${e?.endAngle}-${e.midAngle}-${h}`,
 			tabIndex: -1,
 			className: "recharts-pie-sector"
@@ -1178,13 +1178,13 @@ function si(e) {
 			onClick: S(e, h)
 		}), /*#__PURE__*/ Z.createElement(ee, {
 			option: C ?? a,
-			DefaultShape: Yr,
+			DefaultShape: ri,
 			shapeProps: w
 		}));
 	}));
 }
-function ci(e) {
-	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = ni(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
+function gi(e) {
+	var t = e.pieSettings, n = e.displayedData, r = e.cells, i = e.offset, a = t.cornerRadius, o = t.startAngle, s = t.endAngle, c = t.dataKey, l = t.nameKey, u = t.tooltipType, d = Math.abs(t.minAngle), f = ui(o, s), p = Math.abs(f), m = n.length <= 1 ? 0 : t.paddingAngle ?? 0, h = n.filter((e) => he(e, c, 0) !== 0).length, g = (p >= 360 ? h : h - 1) * m, _ = n.reduce((e, t) => {
 		var n = he(t, c, 0);
 		return e + (_e(n) ? n : 0);
 	}, 0), v = d > 0 && _ > 0 && n.some((e) => {
@@ -1194,7 +1194,7 @@ function ci(e) {
 	if (_ > 0) {
 		var x;
 		b = n.map((e, n) => {
-			var s = he(e, c, 0), d = he(e, l, n), p = ti(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
+			var s = he(e, c, 0), d = he(e, l, n), p = li(t, i, e), h = (_e(s) ? s : 0) / _, g, b = $($({}, e), r && r[n] && r[n].props), S = b != null && "fill" in b && typeof b.fill == "string" ? b.fill : t.fill;
 			g = n ? x.endAngle + ye(f) * m * (s === 0 ? 0 : 1) : o;
 			var C = g + ye(f) * ((s === 0 ? 0 : v) + h * y), w = (g + C) / 2, T = (p.innerRadius + p.outerRadius) / 2, ee = [{
 				name: d,
@@ -1226,7 +1226,7 @@ function ci(e) {
 	}
 	return b;
 }
-function li(e) {
+function _i(e) {
 	var t = e.showLabels, n = e.sectors, r = e.children, i = (0, Z.useMemo)(() => !t || !n ? [] : n.map((e) => ({
 		value: e.value,
 		payload: e.payload,
@@ -1245,7 +1245,7 @@ function li(e) {
 	})), [n, t]);
 	return /*#__PURE__*/ Z.createElement(b, { value: t ? i : void 0 }, r);
 }
-var ui = (e, t) => {
+var vi = (e, t) => {
 	if (e == null) return [];
 	var n = [], r = e.find((e) => e.status !== "removed"), i = r ? r.next.startAngle : 0;
 	return e.forEach((e, r) => {
@@ -1267,11 +1267,11 @@ var ui = (e, t) => {
 		}
 	}), n;
 };
-function di(t) {
+function yi(t) {
 	var n = t.props, r = t.previousSectorsRef, i = t.id, a = n.sectors, o = n.activeShape, s = n.inactiveShape, c = n.animationInterpolateFn, l = je(n.onAnimationStart, n.onAnimationEnd), u = l.isAnimating, d = l.handleAnimationStart, f = l.handleAnimationEnd, p = Ie();
 	if (p == null) return null;
 	var m = a[0];
-	return /*#__PURE__*/ Z.createElement(li, {
+	return /*#__PURE__*/ Z.createElement(_i, {
 		showLabels: !u,
 		sectors: a
 	}, /*#__PURE__*/ Z.createElement(e, {
@@ -1288,7 +1288,7 @@ function di(t) {
 		animationInterpolateFn: c,
 		animationMatchBy: n.animationMatchBy,
 		layout: p
-	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(si, {
+	}, (e, t, r) => /*#__PURE__*/ Z.createElement(g, null, /*#__PURE__*/ Z.createElement(hi, {
 		sectors: e,
 		activeShape: o,
 		inactiveShape: s,
@@ -1298,7 +1298,7 @@ function di(t) {
 		animationElapsedTime: t,
 		isAnimating: u || t < 1,
 		isEntrance: r
-	}))), /*#__PURE__*/ Z.createElement(oi, {
+	}))), /*#__PURE__*/ Z.createElement(mi, {
 		showLabels: !u,
 		sectors: a,
 		props: n
@@ -1312,11 +1312,11 @@ function di(t) {
 		clockWise: !1
 	}, n.children));
 }
-var fi = {
+var bi = {
 	animationBegin: 400,
 	animationDuration: 1500,
 	animationEasing: "ease",
-	animationInterpolateFn: ui,
+	animationInterpolateFn: vi,
 	animationMatchBy: ve,
 	cx: "50%",
 	cy: "50%",
@@ -1334,17 +1334,17 @@ var fi = {
 	outerRadius: "80%",
 	paddingAngle: 0,
 	rootTabIndex: 0,
-	shape: Yr,
+	shape: ri,
 	startAngle: 0,
 	stroke: "#fff",
 	zIndex: f.area
 };
-function pi(e) {
-	var n = e.id, r = Ur(e, Br), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => Lr(e, n, s)), l = (0, Z.useRef)(null), u = Xt("recharts-pie", a);
+function xi(e) {
+	var n = e.id, r = Zr(e, Jr), i = e.hide, a = e.className, o = e.rootTabIndex, s = (0, Z.useMemo)(() => ce(e.children, t), [e.children]), c = Me((e) => Gr(e, n, s)), l = (0, Z.useRef)(null), u = en("recharts-pie", a);
 	return i || c == null ? (l.current = null, /*#__PURE__*/ Z.createElement(g, {
 		tabIndex: o,
 		className: u
-	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(Qr, {
+	})) : /*#__PURE__*/ Z.createElement(re, { zIndex: e.zIndex }, /*#__PURE__*/ Z.createElement(oi, {
 		dataKey: e.dataKey,
 		nameKey: e.nameKey,
 		sectors: c,
@@ -1360,14 +1360,14 @@ function pi(e) {
 	}), /*#__PURE__*/ Z.createElement(g, {
 		tabIndex: o,
 		className: u
-	}, /*#__PURE__*/ Z.createElement(di, {
+	}, /*#__PURE__*/ Z.createElement(yi, {
 		props: $($({}, r), {}, { sectors: c }),
 		previousSectorsRef: l,
 		id: n
 	})));
 }
-function mi(e) {
-	var t = xe(e, fi), n = t.id, r = Ur(t, Vr), i = Oe(r);
+function Si(e) {
+	var t = xe(e, bi), n = t.id, r = Zr(t, Yr), i = Oe(r);
 	return /*#__PURE__*/ Z.createElement(x, {
 		id: n,
 		type: "pie"
@@ -1395,12 +1395,12 @@ function mi(e) {
 		cornerRadius: r.cornerRadius,
 		presentationProps: i,
 		maxRadius: t.maxRadius
-	}), /*#__PURE__*/ Z.createElement(Xr, Hr({}, r, { id: e })), /*#__PURE__*/ Z.createElement(pi, Hr({}, r, { id: e }))));
+	}), /*#__PURE__*/ Z.createElement(ii, Xr({}, r, { id: e })), /*#__PURE__*/ Z.createElement(xi, Xr({}, r, { id: e }))));
 }
-var hi = mi;
-hi.displayName = "Pie";
+var Ci = Si;
+Ci.displayName = "Pie";
 // node_modules/recharts/es6/chart/PieChart.js
-function gi(e, t) {
+function wi(e, t) {
 	var n = Object.keys(e);
 	if (Object.getOwnPropertySymbols) {
 		var r = Object.getOwnPropertySymbols(e);
@@ -1410,30 +1410,30 @@ function gi(e, t) {
 	}
 	return n;
 }
-function _i(e) {
+function Ti(e) {
 	for (var t = 1; t < arguments.length; t++) {
 		var n = arguments[t] == null ? {} : arguments[t];
-		t % 2 ? gi(Object(n), !0).forEach(function(t) {
-			vi(e, t, n[t]);
-		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : gi(Object(n)).forEach(function(t) {
+		t % 2 ? wi(Object(n), !0).forEach(function(t) {
+			Ei(e, t, n[t]);
+		}) : Object.getOwnPropertyDescriptors ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(n)) : wi(Object(n)).forEach(function(t) {
 			Object.defineProperty(e, t, Object.getOwnPropertyDescriptor(n, t));
 		});
 	}
 	return e;
 }
-function vi(e, t, n) {
-	return (t = yi(t)) in e ? Object.defineProperty(e, t, {
+function Ei(e, t, n) {
+	return (t = Di(t)) in e ? Object.defineProperty(e, t, {
 		value: n,
 		enumerable: !0,
 		configurable: !0,
 		writable: !0
 	}) : e[t] = n, e;
 }
-function yi(e) {
-	var t = bi(e, "string");
+function Di(e) {
+	var t = Oi(e, "string");
 	return typeof t == "symbol" ? t : t + "";
 }
-function bi(e, t) {
+function Oi(e, t) {
 	if (typeof e != "object" || !e) return e;
 	var n = e[Symbol.toPrimitive];
 	if (n !== void 0) {
@@ -1443,27 +1443,27 @@ function bi(e, t) {
 	}
 	return (t === "string" ? String : Number)(e);
 }
-var xi = ["item"], Si = _i(_i({}, se), {}, {
+var ki = ["item"], Ai = Ti(Ti({}, se), {}, {
 	layout: "centric",
 	startAngle: 0,
 	endAngle: 360
-}), Ci = /*#__PURE__*/ (0, Z.forwardRef)((e, t) => {
-	var n = xe(e, Si);
+}), ji = /*#__PURE__*/ (0, Z.forwardRef)((e, t) => {
+	var n = xe(e, Ai);
 	return /*#__PURE__*/ Z.createElement(v, {
 		chartName: "PieChart",
 		defaultTooltipEventType: "item",
-		validateTooltipEventTypes: xi,
+		validateTooltipEventTypes: ki,
 		tooltipPayloadSearcher: ae,
 		categoricalChartProps: n,
 		ref: t
 	});
-}), wi = 5, Ti = 2e3, Ei = 0, Di = "80%", Oi = 0, ki = 0, Ai = 0, ji = 360, Mi = [], Ni = (0, Z.createContext)(null);
-function Pi() {
-	let e = (0, Z.use)(Ni);
+}), Mi = 5, Ni = 2e3, Pi = 0, Fi = "80%", Ii = 0, Li = 0, Ri = 0, zi = 360, Bi = [], Vi = (0, Z.createContext)(null);
+function Hi() {
+	let e = (0, Z.use)(Vi);
 	if (!e) throw Error("Pie chart parts (<Pie />, <Tooltip />, …) must be used within <EvilPieChart />");
 	return e;
 }
-function Fi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
+function Ui({ config: e, data: t, dataKey: n, nameKey: i, children: a, className: o, chartProps: s, defaultSelectedSector: c = null, onSelectionChange: l, isLoading: u = !1 }) {
 	let [d, f] = (0, Z.useState)(c), p = (0, Z.useCallback)((e) => {
 		if (f(e), e === null) {
 			l?.(null);
@@ -1496,12 +1496,12 @@ function Fi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className
 		d,
 		p
 	]);
-	return /* @__PURE__ */ (0, Q.jsx)(Ni, {
+	return /* @__PURE__ */ (0, Q.jsx)(Vi, {
 		value: m,
 		children: /* @__PURE__ */ (0, Q.jsxs)(r, {
 			className: o,
 			config: e,
-			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(Ci, {
+			children: [/* @__PURE__ */ (0, Q.jsx)(_, { isLoading: u }), /* @__PURE__ */ (0, Q.jsx)(ji, {
 				id: "evil-charts-pie-chart",
 				accessibilityLayer: !0,
 				...s,
@@ -1510,10 +1510,10 @@ function Fi({ config: e, data: t, dataKey: n, nameKey: i, children: a, className
 		})
 	});
 }
-function Ii({ variant: e = "gradient", innerRadius: t = Ei, outerRadius: n = Di, cornerRadius: r = Oi, paddingAngle: i = ki, startAngle: a = Ai, endAngle: o = ji, isClickable: s = !1, glowingSectors: c = Mi, children: l, pieProps: u }) {
-	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = Pi(), v = (0, Z.useId)().replace(/:/g, "");
-	if (h) return /* @__PURE__ */ (0, Q.jsx)(hi, {
-		data: Wi,
+function Wi({ variant: e = "gradient", innerRadius: t = Pi, outerRadius: n = Fi, cornerRadius: r = Ii, paddingAngle: i = Li, startAngle: a = Ri, endAngle: o = zi, isClickable: s = !1, glowingSectors: c = Bi, children: l, pieProps: u }) {
+	let { config: d, data: f, dataKey: p, nameKey: m, isLoading: h, selectedSector: g, selectSector: _ } = Hi(), v = (0, Z.useId)().replace(/:/g, "");
+	if (h) return /* @__PURE__ */ (0, Q.jsx)(Ci, {
+		data: Qi,
 		dataKey: "value",
 		nameKey: "name",
 		innerRadius: t,
@@ -1524,13 +1524,13 @@ function Ii({ variant: e = "gradient", innerRadius: t = Ei, outerRadius: n = Di,
 		endAngle: o,
 		strokeWidth: 0,
 		isAnimationActive: !1,
-		shape: (e) => /* @__PURE__ */ (0, Q.jsx)(Gi, { ...e })
+		shape: (e) => /* @__PURE__ */ (0, Q.jsx)($i, { ...e })
 	});
-	let y = Vi(l, p), b = f.map((e) => ({
+	let y = Yi(l, p), b = f.map((e) => ({
 		...e,
 		fill: `url(#${v}-colors-${e[m]})`
 	}));
-	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(hi, {
+	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Ci, {
 		data: b,
 		dataKey: p,
 		nameKey: m,
@@ -1562,18 +1562,18 @@ function Ii({ variant: e = "gradient", innerRadius: t = Ei, outerRadius: n = Di,
 		},
 		...u,
 		children: y
-	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(Hi, {
+	}), /* @__PURE__ */ (0, Q.jsxs)("defs", { children: [/* @__PURE__ */ (0, Q.jsx)(Xi, {
 		id: v,
 		config: d,
 		variant: e
-	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(Ui, {
+	}), c.length > 0 && /* @__PURE__ */ (0, Q.jsx)(Zi, {
 		id: v,
 		glowingSectors: c
 	})] })] });
 }
-var Li = () => null;
-function Ri({ variant: e, roundness: t, defaultIndex: n }) {
-	let { isLoading: r, nameKey: i } = Pi();
+var Gi = () => null;
+function Ki({ variant: e, roundness: t, defaultIndex: n }) {
+	let { isLoading: r, nameKey: i } = Hi();
 	return r ? null : /* @__PURE__ */ (0, Q.jsx)(s, {
 		defaultIndex: n,
 		content: /* @__PURE__ */ (0, Q.jsx)(c, {
@@ -1584,8 +1584,8 @@ function Ri({ variant: e, roundness: t, defaultIndex: n }) {
 		})
 	});
 }
-function zi({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
-	let { nameKey: o, selectedSector: s, selectSector: c } = Pi();
+function qi({ variant: e, align: t = "center", verticalAlign: n = "bottom", isClickable: r = !1 }) {
+	let { nameKey: o, selectedSector: s, selectSector: c } = Hi();
 	return /* @__PURE__ */ (0, Q.jsx)(i, {
 		verticalAlign: n,
 		align: t,
@@ -1598,13 +1598,13 @@ function zi({ variant: e, align: t = "center", verticalAlign: n = "bottom", isCl
 		})
 	});
 }
-function Bi({ variant: e = "dots" }) {
+function Ji({ variant: e = "dots" }) {
 	return /* @__PURE__ */ (0, Q.jsx)(n, { variant: e });
 }
-var Vi = (e, t) => {
+var Yi = (e, t) => {
 	let n = null;
 	return Z.Children.forEach(e, (e) => {
-		if (!(0, Z.isValidElement)(e) || e.type !== Li) return;
+		if (!(0, Z.isValidElement)(e) || e.type !== Gi) return;
 		let { dataKey: r, labelListProps: i } = e.props;
 		n = /* @__PURE__ */ (0, Q.jsx)(m, {
 			dataKey: r ?? t,
@@ -1616,7 +1616,7 @@ var Vi = (e, t) => {
 			...i
 		});
 	}), n;
-}, Hi = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
+}, Xi = ({ id: e, config: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: Object.entries(t).map(([t, n]) => {
 	let r = de(n);
 	return /* @__PURE__ */ (0, Q.jsx)("linearGradient", {
 		id: `${e}-colors-${t}`,
@@ -1638,7 +1638,7 @@ var Vi = (e, t) => {
 			}, i);
 		})
 	}, `${e}-colors-${t}`);
-}) }), Ui = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
+}) }), Zi = ({ id: e, glowingSectors: t }) => /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => /* @__PURE__ */ (0, Q.jsxs)("filter", {
 	id: `${e}-glow-${t}`,
 	x: "-100%",
 	y: "-100%",
@@ -1658,12 +1658,12 @@ var Vi = (e, t) => {
 		}),
 		/* @__PURE__ */ (0, Q.jsxs)("feMerge", { children: [/* @__PURE__ */ (0, Q.jsx)("feMergeNode", { in: "glow" }), /* @__PURE__ */ (0, Q.jsx)("feMergeNode", { in: "SourceGraphic" })] })
 	]
-}, `${e}-glow-${t}`)) }), Wi = Array.from({ length: wi }, (e, t) => ({
+}, `${e}-glow-${t}`)) }), Qi = Array.from({ length: Mi }, (e, t) => ({
 	name: `loading${t}`,
-	value: 100 / wi
-})), Gi = (e) => {
-	let { index: t = 0, ...n } = e, r = t / wi * (Ti / 1e3);
-	return /* @__PURE__ */ (0, Q.jsx)(hn.g, {
+	value: 100 / Mi
+})), $i = (e) => {
+	let { index: t = 0, ...n } = e, r = t / Mi * (Ni / 1e3);
+	return /* @__PURE__ */ (0, Q.jsx)(Sn.g, {
 		initial: { opacity: .15 },
 		animate: { opacity: [
 			.15,
@@ -1671,7 +1671,7 @@ var Vi = (e, t) => {
 			.15
 		] },
 		transition: {
-			duration: Ti / 1e3,
+			duration: Ni / 1e3,
 			delay: r,
 			repeat: Infinity,
 			ease: "easeInOut"
@@ -1682,9 +1682,9 @@ var Vi = (e, t) => {
 		})
 	});
 };
-Fi.Pie = Ii, Fi.Label = Li, Fi.Tooltip = Ri, Fi.Legend = zi, Fi.Background = Bi;
+Ui.Pie = Wi, Ui.Label = Gi, Ui.Tooltip = Ki, Ui.Legend = qi, Ui.Background = Ji;
 // src/react/settings/storage-charts.tsx
-var Ki = {
+var ea = {
 	database: "var(--color-chart-1)",
 	backups: "var(--color-chart-2)",
 	playback: "var(--color-chart-3)",
@@ -1694,7 +1694,7 @@ var Ki = {
 	sources: "var(--color-chart-7)",
 	records: "var(--color-chart-8)",
 	tools: "var(--color-chart-9)"
-}, qi = "var(--color-text-tertiary)", Ji = {
+}, ta = "var(--color-text-tertiary)", na = {
 	database: "bg-chart-1",
 	backups: "bg-chart-2",
 	playback: "bg-chart-3",
@@ -1704,23 +1704,23 @@ var Ki = {
 	sources: "bg-chart-7",
 	records: "bg-chart-8",
 	tools: "bg-chart-9"
-}, Yi = (e) => J(e);
-function Xi(e) {
-	let t = e.filter((e) => Ki[e.key] && e.bytes > 0).map((e) => ({
+}, ra = (e) => J(e);
+function ia(e) {
+	let t = e.filter((e) => ea[e.key] && e.bytes > 0).map((e) => ({
 		key: e.key,
 		label: e.label,
 		bytes: e.bytes,
-		color: Ki[e.key]
-	})), n = e.filter((e) => !Ki[e.key]).reduce((e, t) => e + t.bytes, 0);
+		color: ea[e.key]
+	})), n = e.filter((e) => !ea[e.key]).reduce((e, t) => e + t.bytes, 0);
 	return n > 0 ? [...t, {
 		key: "rest",
 		label: "其余",
 		bytes: n,
-		color: qi
+		color: ta
 	}] : t;
 }
-function Zi({ storage: e }) {
-	let t = e.usage, n = Xi(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
+function aa({ storage: e }) {
+	let t = e.usage, n = ia(t.categories), r = Object.fromEntries(n.map((e) => [e.key, {
 		label: e.label,
 		colors: Ae(e.color)
 	}])), i = n.map((e) => ({
@@ -1732,14 +1732,14 @@ function Zi({ storage: e }) {
 		children: [/* @__PURE__ */ (0, Q.jsxs)("div", {
 			className: "relative mx-auto size-48 flex-none",
 			role: "img",
-			"aria-label": `数据目录共 ${Yi(t.total_bytes)}，各类占比`,
-			children: [/* @__PURE__ */ (0, Q.jsxs)(Fi, {
+			"aria-label": `数据目录共 ${ra(t.total_bytes)}，各类占比`,
+			children: [/* @__PURE__ */ (0, Q.jsxs)(Ui, {
 				data: i,
 				dataKey: "value",
 				nameKey: "slice",
 				config: r,
 				className: "aspect-square size-48 flex-none",
-				children: [/* @__PURE__ */ (0, Q.jsx)(Fi.Pie, {
+				children: [/* @__PURE__ */ (0, Q.jsx)(Ui.Pie, {
 					innerRadius: "68%",
 					outerRadius: "100%",
 					paddingAngle: 1,
@@ -1747,13 +1747,13 @@ function Zi({ storage: e }) {
 				}), /* @__PURE__ */ (0, Q.jsx)(o, {
 					nameKey: "slice",
 					hideLabel: !0,
-					format: Yi
+					format: ra
 				})]
 			}), /* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "pointer-events-none absolute inset-0 flex flex-col items-center justify-center",
 				children: [/* @__PURE__ */ (0, Q.jsx)("b", {
 					className: "text-title-2-medium tabular-nums text-text-primary",
-					children: Yi(t.total_bytes)
+					children: ra(t.total_bytes)
 				}), /* @__PURE__ */ (0, Q.jsxs)("small", {
 					className: "text-caption-1-regular tabular-nums text-text-secondary",
 					children: [t.total_files.toLocaleString(), " 个文件"]
@@ -1769,20 +1769,20 @@ function Zi({ storage: e }) {
 					children: [
 						/* @__PURE__ */ (0, Q.jsx)("i", {
 							"aria-hidden": !0,
-							className: `${te} ${Ji[e.key] || "bg-text-tertiary"}`
+							className: `${te} ${na[e.key] || "bg-text-tertiary"}`
 						}),
 						e.label,
 						/* @__PURE__ */ (0, Q.jsx)("span", {
 							className: "tabular-nums text-text-primary",
-							children: Yi(e.bytes)
+							children: ra(e.bytes)
 						})
 					]
 				}, e.key))
-			}), /* @__PURE__ */ (0, Q.jsx)(Qi, { storage: e })]
+			}), /* @__PURE__ */ (0, Q.jsx)(oa, { storage: e })]
 		})]
 	});
 }
-function Qi({ storage: e }) {
+function oa({ storage: e }) {
 	if (e.total_bytes === null || e.free_bytes === null || !e.usage) return null;
 	let t = Math.min(e.usage.total_bytes, e.total_bytes), n = e.free_bytes, r = Math.max(0, e.total_bytes - n - t), i = {
 		peach: {
@@ -1791,7 +1791,7 @@ function Qi({ storage: e }) {
 		},
 		others: {
 			label: "其他文件",
-			colors: Ae(qi)
+			colors: Ae(ta)
 		},
 		free: {
 			label: "可用",
@@ -1804,7 +1804,7 @@ function Qi({ storage: e }) {
 			className: "text-caption-1-regular text-text-secondary",
 			children: [
 				"所在磁盘共 ",
-				Yi(e.total_bytes),
+				ra(e.total_bytes),
 				e.system_drive ? "（系统盘）" : "",
 				"，Peach 占 ",
 				((t) => {
@@ -1812,7 +1812,7 @@ function Qi({ storage: e }) {
 					return n < .1 ? "不到 0.1%" : `${n.toFixed(+(n < 10))}%`;
 				})(t),
 				"， 可用 ",
-				Yi(n)
+				ra(n)
 			]
 		}), /* @__PURE__ */ (0, Q.jsxs)(p, {
 			data: [{
@@ -1843,26 +1843,26 @@ function Qi({ storage: e }) {
 				/* @__PURE__ */ (0, Q.jsx)(p.Bar, { dataKey: "free" }),
 				/* @__PURE__ */ (0, Q.jsx)(o, {
 					hideLabel: !0,
-					format: Yi
+					format: ra
 				})
 			]
 		})]
 	});
 }
 // src/react/settings/storage-settings.tsx
-var $i = "/api/configuration/storage", ea = 1500, ta = 864e5, na = (e) => e instanceof qe && e.body?.errors?.target || q(e);
-function ra(e) {
+var sa = "/api/configuration/storage", ca = 1500, la = 864e5, ua = (e) => e instanceof qe && e.body?.errors?.target || q(e);
+function da(e) {
 	if (e.free_bytes === null || e.total_bytes === null) return "未取得";
 	let t = `${J(e.free_bytes)} 可用，共 ${J(e.total_bytes)}`;
 	return e.system_drive ? `${t}（系统盘）` : t;
 }
-var ia = (e) => e.cleanable && e.reclaimable > 0;
-function aa({ job: e }) {
+var fa = (e) => e.cleanable && e.reclaimable > 0;
+function pa({ job: e }) {
 	let t = e.files || 0, n = e.expected_files || 0, r = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
 		"已统计 ",
-		/* @__PURE__ */ (0, Q.jsx)(Er, { value: t }),
+		/* @__PURE__ */ (0, Q.jsx)(Pr, { value: t }),
 		" 个文件 · ",
-		/* @__PURE__ */ (0, Q.jsx)(Er, {
+		/* @__PURE__ */ (0, Q.jsx)(Pr, {
 			value: e.bytes || 0,
 			format: J
 		})
@@ -1870,7 +1870,7 @@ function aa({ job: e }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"aria-live": "polite",
 		className: "flex flex-col gap-2",
-		children: [n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Ot, {
+		children: [n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(At, {
 			label: "统计进度",
 			value: Math.min(t, n * .99),
 			max: n
@@ -1879,11 +1879,11 @@ function aa({ job: e }) {
 			"，上次共 ",
 			n.toLocaleString(),
 			" 个"
-		] })] }) : /* @__PURE__ */ (0, Q.jsx)(ht, { label: "正在统计占用空间" }), n ? null : /* @__PURE__ */ (0, Q.jsx)(N, { children: r })]
+		] })] }) : /* @__PURE__ */ (0, Q.jsx)(_t, { label: "正在统计占用空间" }), n ? null : /* @__PURE__ */ (0, Q.jsx)(N, { children: r })]
 	});
 }
-function oa({ category: e, selected: t, disabled: n, onToggle: r }) {
-	let i = ia(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
+function ma({ category: e, selected: t, disabled: n, onToggle: r }) {
+	let i = fa(e), a = e.cleanable ? e.reclaimable > 0 ? `清理后${e.note}` : "没有可以清理的文件" : `不能清理：${e.note}`;
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"data-category": e.key,
 		className: "flex min-h-13 w-full items-start gap-3 border-b border-separator-border py-2.5 pr-3 last:border-b-0",
@@ -1902,7 +1902,7 @@ function oa({ category: e, selected: t, disabled: n, onToggle: r }) {
 						className: "flex items-center gap-2 text-body-regular text-text-primary",
 						children: [/* @__PURE__ */ (0, Q.jsx)("i", {
 							"aria-hidden": !0,
-							className: `size-2.5 shrink-0 rounded-xs ${Ji[e.key] || "bg-text-tertiary"}`
+							className: `size-2.5 shrink-0 rounded-xs ${na[e.key] || "bg-text-tertiary"}`
 						}), e.label]
 					}),
 					/* @__PURE__ */ (0, Q.jsx)("p", {
@@ -1917,7 +1917,7 @@ function oa({ category: e, selected: t, disabled: n, onToggle: r }) {
 			}),
 			/* @__PURE__ */ (0, Q.jsxs)("div", {
 				className: "flex shrink-0 flex-col items-end gap-0.5 text-right",
-				children: [/* @__PURE__ */ (0, Q.jsx)(Er, {
+				children: [/* @__PURE__ */ (0, Q.jsx)(Pr, {
 					value: e.bytes,
 					format: J,
 					className: "text-body-regular text-text-primary"
@@ -1929,48 +1929,48 @@ function oa({ category: e, selected: t, disabled: n, onToggle: r }) {
 		]
 	});
 }
-function sa({ initial: e, receipt: t }) {
+function ha({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(""), [o, s] = (0, Z.useState)(/* @__PURE__ */ new Set()), c = Y(), l = n.job.state !== "idle", u = (0, Z.useRef)(l);
 	(0, Z.useEffect)(() => {
 		if (!l) return;
 		let e = new AbortController(), t = setTimeout(() => {
-			W($i, e.signal).then(r, () => {
+			W(sa, e.signal).then(r, () => {
 				e.signal.aborted || r((e) => ({ ...e }));
 			});
-		}, ea);
+		}, ca);
 		return () => {
 			e.abort(), clearTimeout(t);
 		};
 	}, [n]), (0, Z.useEffect)(() => {
 		l ? u.current = !0 : u.current && (u.current = !1, s(/* @__PURE__ */ new Set()), n.job.error || t(n.job.message || "已统计占用空间"));
 	}, [l]);
-	let d = () => void c.run("measure", (e) => G(`${$i}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(ia) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
+	let d = () => void c.run("measure", (e) => G(`${sa}/measure`, {}, "POST", e), r), f = n.usage, p = f?.categories.filter(fa) ?? [], m = p.filter((e) => o.has(e.key)), h = (e, t) => {
 		if (!e.length) return;
 		let n = e.reduce((e, t) => e + t.reclaimable, 0);
-		Qt({
+		nn({
 			title: t,
 			body: `将删除 ${J(n)}：${e.map((e) => `${e.label} ${J(e.reclaimable)}（清理后${e.note}）`).join("；")}。`,
 			confirmLabel: `清理 ${J(n)}`,
 			danger: e.some((e) => e.key === "backups"),
-			onConfirm: async () => r(await G(`${$i}/clean`, { categories: e.map((e) => e.key) }))
+			onConfirm: async () => r(await G(`${sa}/clean`, { categories: e.map((e) => e.key) }))
 		});
 	}, g = () => void c.run("relocate", async (e) => {
-		let t = (await G(xt, { initial: n.data_root }, "POST", e)).path;
+		let t = (await G(Ct, { initial: n.data_root }, "POST", e)).path;
 		if (!t) return;
 		let r = n.usage ? J(n.usage.total_bytes) : "";
-		await Qt({
+		await nn({
 			title: "迁移数据目录",
 			body: `将 ${r} 数据从 ${n.data_root} 移到 ${t}。迁移期间 Peach 会退出，完成后自动重新打开；原位置的数据在新位置核对无误后删除。`,
 			confirmLabel: "迁移数据目录",
 			onConfirm: async () => {
 				try {
-					a((await G(`${$i}/relocate`, { target: t })).message);
+					a((await G(`${sa}/relocate`, { target: t })).message);
 				} catch (e) {
-					throw Error(na(e));
+					throw Error(ua(e));
 				}
 			}
 		});
-	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < ta), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
+	}, () => void 0), _ = n.relocation.last, v = _ && (_.state === "error" || (_.notes?.length ?? 0) > 0 || Date.now() - _.finished_at * 1e3 < la), y = f?.categories.find((e) => e.key === n.job.category)?.label, b = i || (n.job.state === "cleaning" ? `正在清理${y || ""}…` : n.job.state === "measuring" ? "正在统计占用空间…" : m.length ? `已选 ${m.length} 类，可释放 ${J(m.reduce((e, t) => e + t.reclaimable, 0))}` : f ? `统计于 ${(/* @__PURE__ */ new Date(f.measured_at * 1e3)).toLocaleString()}` : ""), x = l || !!i, S = (e) => (t) => s((n) => {
 		let r = new Set(n);
 		return t ? r.add(e) : r.delete(e), r;
 	});
@@ -1979,34 +1979,34 @@ function sa({ initial: e, receipt: t }) {
 		guide: "storage",
 		title: "存储空间",
 		children: [
-			/* @__PURE__ */ (0, Q.jsxs)(ct, { children: [/* @__PURE__ */ (0, Q.jsx)(j, {
+			/* @__PURE__ */ (0, Q.jsxs)(lt, { children: [/* @__PURE__ */ (0, Q.jsx)(j, {
 				term: "数据目录",
-				children: /* @__PURE__ */ (0, Q.jsx)(Et, {
+				children: /* @__PURE__ */ (0, Q.jsx)(Ot, {
 					path: n.data_root,
 					className: "text-body-regular text-text-primary",
 					onRevealed: t
 				})
 			}), /* @__PURE__ */ (0, Q.jsx)(j, {
 				term: "所在磁盘",
-				children: ra(n)
+				children: da(n)
 			})] }),
 			/* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
-					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(aa, { job: n.job }) : null,
+					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(pa, { job: n.job }) : null,
 					f ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 						"data-storage-result": "",
-						className: Jt({
+						className: Qt({
 							variant: "outlined",
 							padding: "none",
 							className: "flex flex-col"
 						}),
 						children: [/* @__PURE__ */ (0, Q.jsx)("div", {
 							className: "border-b border-separator-border p-4",
-							children: /* @__PURE__ */ (0, Q.jsx)(Zi, { storage: n })
+							children: /* @__PURE__ */ (0, Q.jsx)(aa, { storage: n })
 						}), /* @__PURE__ */ (0, Q.jsx)("div", {
 							className: "flex flex-col pl-4",
-							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(oa, {
+							children: f.categories.map((e) => /* @__PURE__ */ (0, Q.jsx)(ma, {
 								category: e,
 								selected: o.has(e.key),
 								disabled: x,
@@ -2065,16 +2065,16 @@ function sa({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/maintenance-settings.tsx
-var ca = [
+var ga = [
 	["6", "每 6 小时"],
 	["24", "每天"],
 	["168", "每周"]
 ];
-function la({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
+function _a({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
-		...tr(r),
+		...lr(r),
 		children: [
-			e.storage ? /* @__PURE__ */ (0, Q.jsx)(sa, {
+			e.storage ? /* @__PURE__ */ (0, Q.jsx)(ha, {
 				initial: e.storage,
 				receipt: t
 			}) : null,
@@ -2082,34 +2082,34 @@ function la({ data: e, receipt: t, reopenTutorial: n, panel: r }) {
 				id: "librarySharing",
 				guide: "reporting",
 				title: "数据上传",
-				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(wr, {
+				children: [e.remote_reporting ? /* @__PURE__ */ (0, Q.jsx)(Mr, {
 					initial: e.remote_reporting,
 					receipt: t
 				}) : null, e.library_sharing ? /* @__PURE__ */ (0, Q.jsx)("div", {
 					className: "border-t border-separator-border",
-					children: /* @__PURE__ */ (0, Q.jsx)(Sr, {
+					children: /* @__PURE__ */ (0, Q.jsx)(Ar, {
 						initial: e.library_sharing,
 						receipt: t
 					})
 				}) : null]
 			}) : null,
-			/* @__PURE__ */ (0, Q.jsx)(fa, { facts: e.facts }),
-			/* @__PURE__ */ (0, Q.jsx)(ua, {
+			/* @__PURE__ */ (0, Q.jsx)(ba, { facts: e.facts }),
+			/* @__PURE__ */ (0, Q.jsx)(va, {
 				receipt: t,
 				reopenTutorial: n
 			}),
-			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(pa, {
+			e.uninstall ? /* @__PURE__ */ (0, Q.jsx)(xa, {
 				uninstall: e.uninstall,
 				receipt: t
 			}) : null
 		]
 	});
 }
-function ua({ reopenTutorial: e }) {
+function va({ reopenTutorial: e }) {
 	return /* @__PURE__ */ (0, Q.jsx)("section", {
 		"aria-label": "新手教程",
 		className: "w-full",
-		children: /* @__PURE__ */ (0, Q.jsx)(It, { children: /* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
+		children: /* @__PURE__ */ (0, Q.jsx)(Rt, { children: /* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 			label: "新手教程",
 			description: "在所有设备上恢复右上角教程入口，保留已读进度",
 			children: /* @__PURE__ */ (0, Q.jsx)(E, {
@@ -2120,7 +2120,7 @@ function ua({ reopenTutorial: e }) {
 		}) }) })
 	});
 }
-function da({ initial: e, receipt: t }) {
+function ya({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.mode), [i, a] = (0, Z.useState)(e.interval_hours), o = Y(e.error), s = (r) => {
 		r.preventDefault(), e.available && o.run("save", (e) => G("/api/configuration/automatic-updates", {
 			mode: n,
@@ -2163,7 +2163,7 @@ function da({ initial: e, receipt: t }) {
 						onSelectionChange: (e) => {
 							e !== null && a(Number(e));
 						},
-						children: ca.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+						children: ga.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 							id: e,
 							children: t
 						}, e))
@@ -2183,11 +2183,11 @@ function da({ initial: e, receipt: t }) {
 		]
 	});
 }
-function fa({ facts: e }) {
+function ba({ facts: e }) {
 	return /* @__PURE__ */ (0, Q.jsx)(L, {
 		guide: "facts",
 		title: "运行信息",
-		children: /* @__PURE__ */ (0, Q.jsx)(ct, { children: e.map((e) => /* @__PURE__ */ (0, Q.jsxs)(j, {
+		children: /* @__PURE__ */ (0, Q.jsx)(lt, { children: e.map((e) => /* @__PURE__ */ (0, Q.jsxs)(j, {
 			term: e.term,
 			children: [e.value, e.download_url ? /* @__PURE__ */ (0, Q.jsx)(A, {
 				href: e.download_url,
@@ -2196,8 +2196,8 @@ function fa({ facts: e }) {
 		}, e.term)) })
 	});
 }
-function pa({ uninstall: e, receipt: t }) {
-	let [n, r] = (0, Z.useState)(!1), [i, a] = (0, Z.useState)(""), o = () => void Qt({
+function xa({ uninstall: e, receipt: t }) {
+	let [n, r] = (0, Z.useState)(!1), [i, a] = (0, Z.useState)(""), o = () => void nn({
 		title: "卸载 Peach",
 		danger: !0,
 		body: n ? "将退出 Peach，移除程序、开机自启、桌面图标、设置、本地数据库、观看记录、凭据和缓存。原始媒体文件保留。" : "将退出 Peach 并移除程序、开机自启和桌面图标。设置、本地数据库、观看记录与缓存保留。",
@@ -2230,7 +2230,7 @@ function pa({ uninstall: e, receipt: t }) {
 				divided: !0,
 				children: /* @__PURE__ */ (0, Q.jsx)(O, {
 					summary: "数据目录",
-					children: c.map((e) => /* @__PURE__ */ (0, Q.jsx)(Et, {
+					children: c.map((e) => /* @__PURE__ */ (0, Q.jsx)(Ot, {
 						path: e,
 						className: "text-body-2-regular text-text-secondary",
 						onRevealed: t
@@ -2253,30 +2253,30 @@ function pa({ uninstall: e, receipt: t }) {
 	});
 }
 // src/react/settings/release-updates.tsx
-var ma = /* @__PURE__ */ new Set([
+var Sa = /* @__PURE__ */ new Set([
 	"downloading",
 	"verifying",
 	"extracting",
 	"preparing",
 	"restarting",
 	"installing"
-]), ha = [
+]), Ca = [
 	65,
 	75,
 	90
-], ga = 120, _a = "https://github.com/peach-mitao/peach/releases";
-function va({ initial: e, initialJob: t }) {
+], wa = 120, Ta = "https://github.com/peach-mitao/peach/releases";
+function Ea({ initial: e, initialJob: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(t || {
 		state: "idle",
 		progress: 0
-	}), [o, s] = (0, Z.useState)(""), c = Y(), l = (0, Z.useRef)(!1), u = (0, Z.useRef)(!0), d = ma.has(i.state);
+	}), [o, s] = (0, Z.useState)(""), c = Y(), l = (0, Z.useRef)(!1), u = (0, Z.useRef)(!0), d = Sa.has(i.state);
 	(0, Z.useEffect)(() => (u.current = !0, () => {
 		u.current = !1;
 	}), []);
 	let f = async () => {
 		let e = await G("/api/configuration/update-restart", {});
 		u.current && a(e);
-	}, p = () => void Qt({
+	}, p = () => void nn({
 		title: "更新已准备好",
 		body: `Peach ${i.version || ""} 将在重启后安装。`,
 		confirmLabel: "立即重启",
@@ -2286,7 +2286,7 @@ function va({ initial: e, initialJob: t }) {
 	(0, Z.useEffect)(() => {
 		i.state !== "ready" || l.current || (l.current = !0, p());
 	}, [i.state]), (0, Z.useEffect)(() => {
-		let e = new AbortController(), t = ma.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
+		let e = new AbortController(), t = Sa.has(i.state) ? 1e3 : 3e4, n, o = 0, c = async () => {
 			try {
 				let t = await W("/api/configuration/update-status", e.signal);
 				if (e.signal.aborted) return;
@@ -2299,9 +2299,9 @@ function va({ initial: e, initialJob: t }) {
 				let n = await W("/api/configuration/automatic-updates", e.signal);
 				!e.signal.aborted && n.result && r(n.result);
 			} catch {
-				o += 1, o >= ga && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
+				o += 1, o >= wa && !e.signal.aborted && s("尚未连接到 Peach，请检查托盘后刷新页面。");
 			}
-			!e.signal.aborted && o < ga && (n = setTimeout(c, t));
+			!e.signal.aborted && o < wa && (n = setTimeout(c, t));
 		};
 		return n = setTimeout(c, t), () => {
 			e.abort(), clearTimeout(n);
@@ -2324,7 +2324,7 @@ function va({ initial: e, initialJob: t }) {
 			children: g || n.state === "error" || i.state === "error" ? "检查未完成" : d ? "准备更新中" : i.state === "ready" ? "可安装" : n.state === "available" ? "有可用更新" : n.state === "unchecked" ? "尚未检查" : "检查完成"
 		}),
 		children: [
-			/* @__PURE__ */ (0, Q.jsxs)(ct, { children: [
+			/* @__PURE__ */ (0, Q.jsxs)(lt, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "当前版本",
 					children: n.current_version
@@ -2364,10 +2364,10 @@ function va({ initial: e, initialJob: t }) {
 						"aria-live": "polite",
 						className: "flex flex-col gap-2",
 						children: [
-							/* @__PURE__ */ (0, Q.jsx)(Ot, {
+							/* @__PURE__ */ (0, Q.jsx)(At, {
 								label: "更新准备进度",
 								value: i.progress,
-								stops: ha
+								stops: Ca
 							}),
 							/* @__PURE__ */ (0, Q.jsxs)(N, { children: ["下载 → 校验 → 解压 → 准备安装 · ", i.message] }),
 							/* @__PURE__ */ (0, Q.jsx)(N, { children: _ })
@@ -2388,7 +2388,7 @@ function va({ initial: e, initialJob: t }) {
 							children: "GitHub"
 						}),
 						/* @__PURE__ */ (0, Q.jsx)(A, {
-							href: n.release_url || _a,
+							href: n.release_url || Ta,
 							children: "查看发布页"
 						})
 					]
@@ -2422,7 +2422,7 @@ function va({ initial: e, initialJob: t }) {
 	});
 }
 // src/react/settings/upgrade-repairs.tsx
-var ya = {
+var Da = {
 	pending: "等待修复",
 	running: "正在修复",
 	failed: "需要重试",
@@ -2430,8 +2430,8 @@ var ya = {
 	complete: "已完成",
 	unavailable: "当前部署未启用"
 };
-function ba() {
-	let { snapshot: e } = Nn(), [t, n] = (0, Z.useState)(null), r = Y();
+function Oa() {
+	let { snapshot: e } = Bn(), [t, n] = (0, Z.useState)(null), r = Y();
 	(0, Z.useEffect)(() => n(null), [e]);
 	let i = t ?? e?.repairs, a = i?.state || "pending", o = i?.items.reduce((e, t) => e + (t.pending || 0), 0) || 0, s = i?.items.reduce((e, t) => e + (t.failed || 0), 0) || 0, c = i?.items.reduce((e, t) => e + (t.review_count || 0), 0) || 0;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
@@ -2441,27 +2441,27 @@ function ba() {
 			tone: a === "failed" ? "error" : a === "running" ? "progress" : a === "review" ? "warning" : a === "complete" ? "success" : "neutral",
 			children: /* @__PURE__ */ (0, Q.jsx)("span", {
 				"data-copy-key": `upgradeRepairs.${a}.status`,
-				children: ya[a] || "未取得"
+				children: Da[a] || "未取得"
 			}, a)
 		}),
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(N, { children: "升级后自动修正资料、更新缓存。" }) }),
-			/* @__PURE__ */ (0, Q.jsxs)(ct, { children: [
+			/* @__PURE__ */ (0, Q.jsxs)(lt, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待完成",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Er, { value: o }), " 项"] })
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Pr, { value: o }), " 项"] })
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "失败",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Er, { value: s }), " 项"] })
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Pr, { value: s }), " 项"] })
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待复核",
-					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Er, { value: c }), " 项"] })
+					children: /* @__PURE__ */ (0, Q.jsxs)("span", { children: [/* @__PURE__ */ (0, Q.jsx)(Pr, { value: c }), " 项"] })
 				})
 			] }),
 			i?.message || r.error ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: r.error || i?.message }) }) : null,
-			a === "running" ? /* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "资料与预览正在后台补全。" }), /* @__PURE__ */ (0, Q.jsx)(Vt, {})] }) : null,
+			a === "running" ? /* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "资料与预览正在后台补全。" }), /* @__PURE__ */ (0, Q.jsx)(Ut, {})] }) : null,
 			/* @__PURE__ */ (0, Q.jsx)(M, {
 				status: c ? /* @__PURE__ */ (0, Q.jsx)(A, {
 					href: "/api/configuration/upgrade-repairs/review",
@@ -2481,27 +2481,27 @@ function ba() {
 	});
 }
 // src/react/settings/general-settings.tsx
-function xa({ data: e, receipt: t, panel: n }) {
+function ka({ data: e, receipt: t, panel: n }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
-		...tr(n),
+		...lr(n),
 		children: [
-			e.updates ? /* @__PURE__ */ (0, Q.jsx)(va, {
+			e.updates ? /* @__PURE__ */ (0, Q.jsx)(Ea, {
 				initial: e.updates,
 				initialJob: e.update_job
 			}) : null,
-			/* @__PURE__ */ (0, Q.jsx)(ba, {}),
-			e.automatic_updates ? /* @__PURE__ */ (0, Q.jsx)(da, {
+			/* @__PURE__ */ (0, Q.jsx)(Oa, {}),
+			e.automatic_updates ? /* @__PURE__ */ (0, Q.jsx)(ya, {
 				initial: e.automatic_updates,
 				receipt: t
 			}) : null,
-			e.startup ? /* @__PURE__ */ (0, Q.jsx)(Sa, {
+			e.startup ? /* @__PURE__ */ (0, Q.jsx)(Aa, {
 				startup: e.startup,
 				receipt: t
 			}) : null
 		]
 	});
 }
-function Sa({ startup: e, receipt: t }) {
+function Aa({ startup: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.enabled), [i, a] = (0, Z.useState)(e.silent), [o, s] = (0, Z.useState)(e.desktop), c = Y(), l = e.available && !e.desktop_message;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "startup",
@@ -2559,7 +2559,7 @@ function Sa({ startup: e, receipt: t }) {
 	});
 }
 // src/react/restart-redirect.ts
-var Ca = 8e3, wa = [
+var ja = 8e3, Ma = [
 	{
 		name: "机械硬盘，或内存 8 GB 以内",
 		cache: "10–20 GiB",
@@ -2578,12 +2578,12 @@ var Ca = 8e3, wa = [
 		read: "256 / 128 KB",
 		task: "2 个起步"
 	}
-], Ta = [
+], Na = [
 	["cache", "缓存上限"],
 	["read", "读取长度（默认 / 最小）"],
 	["task", "同时处理视频"]
 ];
-function Ea() {
+function Pa() {
 	return /* @__PURE__ */ (0, Q.jsx)("div", {
 		className: "@container flex flex-col gap-3",
 		children: /* @__PURE__ */ (0, Q.jsxs)(O, {
@@ -2598,14 +2598,14 @@ function Ea() {
 				/* @__PURE__ */ (0, Q.jsx)("ul", {
 					"aria-label": "按缓存所在硬盘分档",
 					className: "flex flex-col gap-2",
-					children: wa.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
+					children: Ma.map((e) => /* @__PURE__ */ (0, Q.jsxs)("li", {
 						className: "flex flex-col gap-2 rounded-2lg border border-separator-border bg-background-primary-default p-3",
 						children: [/* @__PURE__ */ (0, Q.jsx)("p", {
 							className: "text-body-medium text-text-primary",
 							children: e.name
 						}), /* @__PURE__ */ (0, Q.jsx)("dl", {
 							className: "inline-grid grid-cols-1 gap-2 @md:grid-cols-3",
-							children: Ta.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
+							children: Na.map(([t, n]) => /* @__PURE__ */ (0, Q.jsxs)("div", {
 								className: "flex flex-col",
 								children: [/* @__PURE__ */ (0, Q.jsx)("dt", {
 									className: "text-caption-1-regular text-text-secondary",
@@ -2635,15 +2635,15 @@ function Ea() {
 	});
 }
 // src/react/settings/cloud-proxy-settings.tsx
-var Da = "/api/configuration/cloud-proxies", Oa = [
+var Fa = "/api/configuration/cloud-proxies", Ia = [
 	["direct", "直连"],
 	["system", "跟随系统"],
 	["http", "HTTP 代理"],
 	["socks5", "SOCKS5 代理"]
 ];
-function ka({ receipt: e }) {
+function La({ receipt: e }) {
 	let [t, n] = (0, Z.useState)(null), [r, i] = (0, Z.useState)(!0), a = (0, Z.useRef)(/* @__PURE__ */ new Set()), o = (0, Z.useRef)(/* @__PURE__ */ new Set()), [s, c] = (0, Z.useState)(!1), l = (0, Z.useRef)(() => void 0), u = Y(), d = () => {
-		o.current.size || u.run("refresh", (e) => W(Da, e), (e) => {
+		o.current.size || u.run("refresh", (e) => W(Fa, e), (e) => {
 			a.current.clear(), n(e), i(!1);
 		}, (e) => {
 			i(!1), u.setError(e instanceof Error ? e.message : "无法读取网盘代理");
@@ -2658,14 +2658,14 @@ function ka({ receipt: e }) {
 	}, []), (0, Z.useEffect)(() => {
 		if (!t) return;
 		let e = (e) => e.mode === "http" || e.mode === "socks5";
-		Cn("cloudProxy", {
+		An("cloudProxy", {
 			configured: t.configured !== !1,
 			unlinked: t.unlinked?.length ?? 0,
 			accounts: t.accounts.map((t) => [e(t.data), e(t.api)])
 		});
-	}, [t]), r ? /* @__PURE__ */ (0, Q.jsx)(Nt, {
+	}, [t]), r ? /* @__PURE__ */ (0, Q.jsx)(Ft, {
 		label: "正在读取网盘代理",
-		html: Yt
+		html: $t
 	}) : /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "cloud-proxy",
 		title: "CloudDrive 代理",
@@ -2678,26 +2678,26 @@ function ka({ receipt: e }) {
 					children: [
 						u.error,
 						" ",
-						/* @__PURE__ */ (0, Q.jsx)(mt, {
+						/* @__PURE__ */ (0, Q.jsx)(gt, {
 							href: "/settings/downloads",
 							size: "small",
 							children: "下载设置"
 						})
 					]
 				}) : null,
-				t?.configured === !1 ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["填写 CloudDrive2 地址和 API 令牌后，在这里设置各网盘账号的代理。 ", /* @__PURE__ */ (0, Q.jsx)(mt, {
+				t?.configured === !1 ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["填写 CloudDrive2 地址和 API 令牌后，在这里设置各网盘账号的代理。 ", /* @__PURE__ */ (0, Q.jsx)(gt, {
 					href: "/settings/downloads",
 					size: "small",
 					children: "下载设置"
 				})] }) : t?.accounts.length === 0 && !t.unlinked?.length ? /* @__PURE__ */ (0, Q.jsx)(N, { children: "还没有使用 CloudDrive 的媒体库。" }) : null,
 				t?.unlinked?.map((e) => /* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex min-w-0 flex-col gap-1",
-					children: [/* @__PURE__ */ (0, Q.jsx)(lt, { children: /* @__PURE__ */ (0, Q.jsxs)("span", {
+					children: [/* @__PURE__ */ (0, Q.jsx)(ut, { children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 						className: "inline-flex items-center gap-2",
-						children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: Xn(e.location) }), e.name]
+						children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ir(e.location) }), e.name]
 					}) }), /* @__PURE__ */ (0, Q.jsx)(N, { children: "尚未匹配 CloudDrive 账号" })]
 				}, e.root)),
-				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(Aa, {
+				t?.accounts.map((t) => /* @__PURE__ */ (0, Q.jsx)(Ra, {
 					initial: t,
 					receipt: e,
 					onDirty: () => a.current.add(t.id),
@@ -2721,7 +2721,7 @@ function ka({ receipt: e }) {
 		}) })]
 	});
 }
-function Aa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
+function Ra({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 	let [a, o] = (0, Z.useState)(e), [s, c] = (0, Z.useState)([]), l = a.libraries?.map((e) => e.name).join("、") || a.name, u = Y(), d = (e, t) => {
 		o((n) => ({
 			...n,
@@ -2731,7 +2731,7 @@ function Aa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("form", {
 		"aria-label": `${l} 代理`,
 		onSubmit: (e) => {
-			e.preventDefault(), i(!0), u.run("save", (e) => G(Da, {
+			e.preventDefault(), i(!0), u.run("save", (e) => G(Fa, {
 				id: a.id,
 				revision: a.revision,
 				...s.includes("api") ? { api: a.api } : {},
@@ -2742,22 +2742,22 @@ function Aa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 		},
 		className: "flex min-w-0 flex-col gap-4 border-t border-separator-border pt-4",
 		children: [
-			/* @__PURE__ */ (0, Q.jsx)(lt, { children: /* @__PURE__ */ (0, Q.jsxs)("span", {
+			/* @__PURE__ */ (0, Q.jsx)(ut, { children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 				className: "inline-flex items-center gap-2",
-				children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: Xn(a.libraries?.[0]?.location || (a.cloud === "115open" ? "115" : a.cloud.toLowerCase())) }), l]
+				children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ir(a.libraries?.[0]?.location || (a.cloud === "115open" ? "115" : a.cloud.toLowerCase())) }), l]
 			}) }),
 			/* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 				a.name,
 				" · ",
 				a.path
 			] }),
-			/* @__PURE__ */ (0, Q.jsx)(ja, {
+			/* @__PURE__ */ (0, Q.jsx)(za, {
 				label: "数据代理",
 				value: a.data,
 				disabled: !a.writable || !!u.busy,
 				onChange: (e) => d("data", e)
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(ja, {
+			/* @__PURE__ */ (0, Q.jsx)(za, {
 				label: "API 代理",
 				value: a.api,
 				disabled: !a.writable || !!u.busy,
@@ -2781,12 +2781,12 @@ function Aa({ initial: e, receipt: t, onDirty: n, onSaved: r, onSaving: i }) {
 		]
 	});
 }
-function ja({ label: e, value: t, disabled: n, onChange: r }) {
+function za({ label: e, value: t, disabled: n, onChange: r }) {
 	let i = t.mode === "http" || t.mode === "socks5";
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-w-0 flex-col gap-3",
 		children: [
-			/* @__PURE__ */ (0, Q.jsx)(lt, { children: e }),
+			/* @__PURE__ */ (0, Q.jsx)(ut, { children: e }),
 			/* @__PURE__ */ (0, Q.jsxs)(R, {
 				"aria-label": e,
 				selectedKey: t.mode,
@@ -2800,7 +2800,7 @@ function ja({ label: e, value: t, disabled: n, onChange: r }) {
 				children: [t.mode === "unknown" ? /* @__PURE__ */ (0, Q.jsx)(z, {
 					id: "unknown",
 					children: "无法识别的代理类型"
-				}) : null, Oa.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+				}) : null, Ia.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 					id: e,
 					children: t
 				}, e))]
@@ -2868,7 +2868,7 @@ function ja({ label: e, value: t, disabled: n, onChange: r }) {
 	});
 }
 // src/react/settings/library-icon-picker.tsx
-var Ma = [
+var Ba = [
 	["", "自动识别"],
 	["hard-drive", "磁盘"],
 	["database", "资料库"],
@@ -2912,13 +2912,13 @@ var Ma = [
 	["star", "收藏"],
 	["tags", "主题"]
 ];
-function Na(e) {
-	let t = e === "local" ? "" : yt[e];
+function Va(e) {
+	let t = e === "local" ? "" : xt[e];
 	return t ? [t, "自动识别"] : ["hard-drive", "默认"];
 }
-var Pa = "auto";
-function Fa({ value: e, label: t, kind: n = "local", onChange: r }) {
-	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = Na(n);
+var Ha = "auto";
+function Ua({ value: e, label: t, kind: n = "local", onChange: r }) {
+	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), [s, c] = (0, Z.useState)(e), [l, u] = Va(n);
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(E, {
 		ref: i,
 		variant: "secondary",
@@ -2932,7 +2932,7 @@ function Fa({ value: e, label: t, kind: n = "local", onChange: r }) {
 		children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 			"data-icon-choice": !0,
 			className: "flex items-center gap-2",
-			children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: e || l }), ((e) => e && Ma.find(([t]) => t === e)?.[1] || u)(e)]
+			children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l }), ((e) => e && Ba.find(([t]) => t === e)?.[1] || u)(e)]
 		})
 	}), /* @__PURE__ */ (0, Q.jsx)(ze, {
 		triggerRef: i,
@@ -2940,7 +2940,7 @@ function Fa({ value: e, label: t, kind: n = "local", onChange: r }) {
 		onOpenChange: o,
 		placement: "bottom start",
 		offset: 4,
-		className: bt,
+		className: St,
 		children: /* @__PURE__ */ (0, Q.jsxs)(Ue, {
 			"aria-label": `${t}可选图标`,
 			className: "flex w-72 flex-col gap-3 outline-none",
@@ -2952,15 +2952,15 @@ function Fa({ value: e, label: t, kind: n = "local", onChange: r }) {
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(We, {
 					"aria-label": "可选图标",
-					value: s || Pa,
-					onChange: (e) => c(e === Pa ? "" : e),
+					value: s || Ha,
+					onChange: (e) => c(e === Ha ? "" : e),
 					className: "inline-grid grid-cols-7 gap-1",
-					children: Ma.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
-						value: e || Pa,
+					children: Ba.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
+						value: e || Ha,
 						"aria-label": e ? t : u,
 						className: "flex h-10 cursor-pointer items-center justify-center rounded-lg text-foreground-icon-secondary outline-none hover:bg-dropdown-item-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:bg-dropdown-item-hover-background data-selected:text-text-primary",
-						children: /* @__PURE__ */ (0, Q.jsx)(zt, { mark: e || l })
-					}, e || Pa))
+						children: /* @__PURE__ */ (0, Q.jsx)(Vt, { mark: e || l })
+					}, e || Ha))
 				}),
 				/* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex justify-end gap-2 border-t border-separator-border pt-2.5",
@@ -2981,19 +2981,19 @@ function Fa({ value: e, label: t, kind: n = "local", onChange: r }) {
 	})] });
 }
 // src/react/settings/library-policy-settings.tsx
-var Ia = [
+var Wa = [
 	["probe", "读取视频信息"],
 	["metadata", "联网补资料"],
 	["cover", "联网补封面"],
 	["people", "联网补人物图片"],
 	["preview", "生成九宫格预览"]
-], La = [
+], Ga = [
 	"probe",
 	"metadata",
 	"cover",
 	"people",
 	"preview"
-], Ra = [
+], Ka = [
 	[
 		"auto",
 		"自动补全",
@@ -3010,11 +3010,11 @@ var Ia = [
 		"逐项选择要做的步骤"
 	]
 ];
-function za() {
+function qa() {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		"data-policy-legend": "",
 		className: "flex flex-col gap-1",
-		children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: Tt }), /* @__PURE__ */ (0, Q.jsxs)(O, {
+		children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: Dt }), /* @__PURE__ */ (0, Q.jsxs)(O, {
 			summary: "三种处理方式对比",
 			children: [/* @__PURE__ */ (0, Q.jsxs)("table", {
 				"data-policy-matrix": "",
@@ -3022,10 +3022,10 @@ function za() {
 				children: [/* @__PURE__ */ (0, Q.jsx)("thead", { children: /* @__PURE__ */ (0, Q.jsxs)("tr", { children: [/* @__PURE__ */ (0, Q.jsx)("th", {
 					scope: "col",
 					children: /* @__PURE__ */ (0, Q.jsx)(He, { children: "步骤" })
-				}), St.map((e) => /* @__PURE__ */ (0, Q.jsx)("th", {
+				}), wt.map((e) => /* @__PURE__ */ (0, Q.jsx)("th", {
 					scope: "col",
 					children: e
-				}, e))] }) }), /* @__PURE__ */ (0, Q.jsx)("tbody", { children: wt.map(([e, ...t]) => /* @__PURE__ */ (0, Q.jsxs)("tr", { children: [/* @__PURE__ */ (0, Q.jsx)("th", {
+				}, e))] }) }), /* @__PURE__ */ (0, Q.jsx)("tbody", { children: Et.map(([e, ...t]) => /* @__PURE__ */ (0, Q.jsxs)("tr", { children: [/* @__PURE__ */ (0, Q.jsx)("th", {
 					scope: "row",
 					children: e
 				}), t.map((e, t) => /* @__PURE__ */ (0, Q.jsx)("td", {
@@ -3037,13 +3037,13 @@ function za() {
 						"aria-label": "不做",
 						children: "—"
 					}) : e
-				}, St[t]))] }, e)) })]
-			}), /* @__PURE__ */ (0, Q.jsx)(N, { children: Ct })]
+				}, wt[t]))] }, e)) })]
+			}), /* @__PURE__ */ (0, Q.jsx)(N, { children: Tt })]
 		})]
 	});
 }
-function Ba({ name: e, value: t, onChange: n }) {
-	return /* @__PURE__ */ (0, Q.jsx)(Ft, {
+function Ja({ name: e, value: t, onChange: n }) {
+	return /* @__PURE__ */ (0, Q.jsx)(Lt, {
 		"data-guide-target": "library-policy",
 		className: "w-full",
 		"aria-label": `${e} 处理方式`,
@@ -3051,10 +3051,10 @@ function Ba({ name: e, value: t, onChange: n }) {
 		prefix: "处理方式",
 		renderValue: /* @__PURE__ */ (0, Q.jsx)("span", {
 			className: "truncate",
-			children: Ra.find(([e]) => e === t)?.[1]
+			children: Ka.find(([e]) => e === t)?.[1]
 		}),
 		onSelectionChange: (e) => n(String(e)),
-		children: Ra.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+		children: Ka.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 			id: e,
 			textValue: t,
 			children: /* @__PURE__ */ (0, Q.jsxs)("span", {
@@ -3067,15 +3067,15 @@ function Ba({ name: e, value: t, onChange: n }) {
 		}, e))
 	});
 }
-function Va({ name: e, value: t, onChange: n }) {
+function Ya({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(O, {
 		defaultOpen: !0,
-		summary: `${e} 的处理步骤（${t.length}/${Ia.length}）`,
+		summary: `${e} 的处理步骤（${t.length}/${Wa.length}）`,
 		children: /* @__PURE__ */ (0, Q.jsx)("div", {
 			className: "flex flex-wrap gap-x-6 gap-y-2",
 			role: "group",
 			"aria-label": `${e} 处理步骤`,
-			children: Ia.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
+			children: Wa.map(([e, r]) => /* @__PURE__ */ (0, Q.jsx)(D, {
 				isSelected: t.includes(e),
 				onChange: (r) => n(r ? [...t, e] : t.filter((t) => t !== e)),
 				children: r
@@ -3083,9 +3083,9 @@ function Va({ name: e, value: t, onChange: n }) {
 		})
 	});
 }
-function Ha({ id: e, name: t, value: n, onChange: r }) {
+function Xa({ id: e, name: t, value: n, onChange: r }) {
 	let i = (0, Z.useRef)(null), [a, o] = (0, Z.useState)(!1), s = Ke.find(([e]) => e === n)?.[1] || "无颜色", c = (t) => {
-		r(t), vn(e, t), o(!1);
+		r(t), Tn(e, t), o(!1);
 	};
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsxs)("button", {
 		ref: i,
@@ -3116,7 +3116,7 @@ function Ha({ id: e, name: t, value: n, onChange: r }) {
 			/* @__PURE__ */ (0, Q.jsx)("span", { children: s })
 		]
 	}), /* @__PURE__ */ (0, Q.jsx)(Be, {
-		getContainer: () => gn(i.current),
+		getContainer: () => Cn(i.current),
 		children: /* @__PURE__ */ (0, Q.jsx)(ze, {
 			triggerRef: i,
 			isOpen: a,
@@ -3124,7 +3124,7 @@ function Ha({ id: e, name: t, value: n, onChange: r }) {
 			placement: "bottom start",
 			offset: 8,
 			containerPadding: 12,
-			className: bt,
+			className: St,
 			children: /* @__PURE__ */ (0, Q.jsxs)(Ue, {
 				"aria-label": `${t || "未命名媒体库"} 来源色`,
 				className: "outline-none",
@@ -3166,8 +3166,8 @@ function Ha({ id: e, name: t, value: n, onChange: r }) {
 	})] });
 }
 // src/react/settings/push-discovery-settings.tsx
-var Ua = "/api/configuration/push-discovery", Wa = "/api/configuration/push-discovery/secret";
-function Ga({ initial: e, receipt: t }) {
+var Za = "/api/configuration/push-discovery", Qa = "/api/configuration/push-discovery/secret";
+function $a({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.prefixes), [o, s] = (0, Z.useState)(""), c = Y(), l = n.media_roots, [u, d] = (0, Z.useState)(e), f = (e, n) => {
 		r(e), d(e), a(e.prefixes), s(""), t(n);
 	}, p = (e, t) => a((n) => n.map((n, r) => r === e ? {
@@ -3181,9 +3181,9 @@ function Ga({ initial: e, receipt: t }) {
 			cloud: n.cloud,
 			prefixes: i
 		};
-		c.run("save", (e) => G(Ua, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
+		c.run("save", (e) => G(Za, t, "POST", e), (e) => f(e, "已保存配置"), (e) => s(q(e)));
 	}, h = () => {
-		c.run("secret", (e) => G(Wa, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
+		c.run("secret", (e) => G(Qa, {}, "POST", e), (e) => f(e, "已更换共享密钥"), (e) => s(q(e)));
 	}, g = `已入库 ${u.queue.ingested} 个文件` + (u.queue.failed ? `，${u.queue.failed} 个入库失败` : "") + (u.queue.pending ? `，队列里还有 ${u.queue.pending} 条` : ""), _ = u.local_running ? `正在监视 ${u.local_roots.join("、")}` : u.local_message || "没有运行";
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "pushDiscovery",
@@ -3260,7 +3260,7 @@ function Ga({ initial: e, receipt: t }) {
 					className: "flex flex-col gap-3",
 					children: /* @__PURE__ */ (0, Q.jsxs)(O, {
 						summary: "查看配置",
-						children: [/* @__PURE__ */ (0, Q.jsx)(Vn, {
+						children: [/* @__PURE__ */ (0, Q.jsx)(Yn, {
 							code: u.config_toml,
 							language: "toml",
 							label: "CloudDrive2 配置",
@@ -3276,7 +3276,7 @@ function Ga({ initial: e, receipt: t }) {
 				children: /* @__PURE__ */ (0, Q.jsxs)("div", {
 					className: "flex flex-col gap-3",
 					children: [
-						/* @__PURE__ */ (0, Q.jsx)(lt, { children: "云端路径前缀" }),
+						/* @__PURE__ */ (0, Q.jsx)(ut, { children: "云端路径前缀" }),
 						/* @__PURE__ */ (0, Q.jsx)("div", {
 							role: "group",
 							"aria-label": "云端路径前缀",
@@ -3293,7 +3293,7 @@ function Ga({ initial: e, receipt: t }) {
 										value: e.prefix,
 										onChange: (e) => p(t, { prefix: e })
 									}),
-									/* @__PURE__ */ (0, Q.jsx)(Ft, {
+									/* @__PURE__ */ (0, Q.jsx)(Lt, {
 										"aria-label": `前缀 ${t + 1} 对应的媒体根`,
 										prefix: "对应目录",
 										selectedKey: e.root,
@@ -3308,7 +3308,7 @@ function Ga({ initial: e, receipt: t }) {
 									/* @__PURE__ */ (0, Q.jsx)(E, {
 										variant: "danger",
 										iconOnly: !0,
-										leadingIcon: gt,
+										leadingIcon: vt,
 										"aria-label": "移除这一条",
 										onClick: () => a((e) => e.filter((e, n) => n !== t))
 									})
@@ -3346,34 +3346,34 @@ function Ga({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/media-settings.tsx
-async function Ka(e) {
+async function eo(e) {
 	let t;
 	try {
-		t = await cn();
+		t = await mn();
 	} catch {
 		return !0;
 	}
-	if (!yn(t)) return !0;
-	let { confirmed: n } = await Qt({
+	if (!En(t)) return !0;
+	let { confirmed: n } = await nn({
 		title: "扫描与采集正在进行",
-		body: En(t, e),
+		body: Nn(t, e),
 		confirmLabel: "仍然保存"
 	});
 	return n;
 }
-var qa = (e) => Gn.find(([t]) => t === e)?.[1] ?? e, Ja = [...Gn, ["smb", "SMB 共享"]], Ya = (e) => e.library_icon || Na(e.transport === "smb" ? "smb" : e.location)[0], Xa = async (e) => (await G(xt, { initial: e })).path, Za = (e) => ({
+var to = (e) => $n.find(([t]) => t === e)?.[1] ?? e, no = [...$n, ["smb", "SMB 共享"]], ro = (e) => e.library_icon || Va(e.transport === "smb" ? "smb" : e.location)[0], io = async (e) => (await G(Ct, { initial: e })).path, ao = (e) => ({
 	library_id: e.library_id,
 	library: e.library,
 	library_icon: e.library_icon,
 	library_color: e.library_color,
 	library_policy: e.library_policy,
 	library_stages: e.library_stages
-}), Qa = (e) => e.library_stages ? La.filter((t) => e.library_stages.split(",").includes(t)) : [], $a = (e = "") => ({
+}), oo = (e) => e.library_stages ? Ga.filter((t) => e.library_stages.split(",").includes(t)) : [], so = (e = "") => ({
 	path: e,
 	transport: e.startsWith("smb://") ? "smb" : "filesystem",
 	location: "local",
 	root: "",
-	library_id: Sn(),
+	library_id: kn(),
 	library: "",
 	library_icon: "",
 	library_color: "",
@@ -3381,8 +3381,8 @@ var qa = (e) => Gn.find(([t]) => t === e)?.[1] ?? e, Ja = [...Gn, ["smb", "SMB �
 	library_stages: "",
 	cost: "free"
 });
-function eo(e) {
-	let t = e.media_sources?.filter((e) => Gn.some(([t]) => t === e.location));
+function co(e) {
+	let t = e.media_sources?.filter((e) => $n.some(([t]) => t === e.location));
 	return t?.length ? t.map((e) => ({
 		transport: e.transport === "smb" || e.path.startsWith("smb://") ? "smb" : "filesystem",
 		smb_username: e.smb_username,
@@ -3398,24 +3398,24 @@ function eo(e) {
 		library_policy: e.library_policy || "auto",
 		library_stages: e.library_stages || "",
 		root_id: e.root_id,
-		library_id: e.library_id || Sn(),
-		cost: e.cost ?? Mn(e.location)
-	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => $a(e));
+		library_id: e.library_id || kn(),
+		cost: e.cost ?? zn(e.location)
+	})) : (e.media_dirs.length ? e.media_dirs : [""]).map((e) => so(e));
 }
-var to = (e) => !(e instanceof qe) || e.status !== 400 ? null : e.body?.errors ?? null;
-function no({ data: e, receipt: t, panel: n }) {
-	let r = !!e.media_sources?.some((e) => Yn(e.location));
+var lo = (e) => !(e instanceof qe) || e.status !== 400 ? null : e.body?.errors ?? null;
+function uo({ data: e, receipt: t, panel: n }) {
+	let r = !!e.media_sources?.some((e) => rr(e.location));
 	return (0, Z.useEffect)(() => {
 		if (e.editable) {
 			let t = /* @__PURE__ */ new Map();
-			for (let n of eo(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
-			Cn("media", {
+			for (let n of co(e)) t.set(n.library_id, (t.get(n.library_id) ?? 0) + 1);
+			An("media", {
 				folders: [...t.values()],
 				cloud: r
 			});
 		}
 		let t = e.push_discovery;
-		t && Cn("discovery", {
+		t && An("discovery", {
 			enabled: t.enabled,
 			watchLocal: t.watch_local,
 			cloud: t.cloud,
@@ -3423,9 +3423,9 @@ function no({ data: e, receipt: t, panel: n }) {
 			prefixes: t.prefixes.length
 		});
 	}, [e, r]), /* @__PURE__ */ (0, Q.jsxs)("div", {
-		...tr(n),
+		...lr(n),
 		children: [
-			e.editable ? /* @__PURE__ */ (0, Q.jsx)(ro, {
+			e.editable ? /* @__PURE__ */ (0, Q.jsx)(fo, {
 				data: e,
 				receipt: t
 			}) : /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -3433,23 +3433,23 @@ function no({ data: e, receipt: t, panel: n }) {
 				title: "只读",
 				children: e.notice
 			}),
-			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(ao, { data: e }),
-			r ? /* @__PURE__ */ (0, Q.jsx)(ka, { receipt: t }) : null,
-			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)(Ga, {
+			e.editable ? null : /* @__PURE__ */ (0, Q.jsx)(mo, { data: e }),
+			r ? /* @__PURE__ */ (0, Q.jsx)(La, { receipt: t }) : null,
+			e.push_discovery ? /* @__PURE__ */ (0, Q.jsx)($a, {
 				initial: e.push_discovery,
 				receipt: t
 			}) : null
 		]
 	});
 }
-function ro({ data: e, receipt: t }) {
-	let { rows: n, edit: r, add: i, remove: a, errors: o, setErrors: s, picking: c, pick: l, inputRef: u } = Zn({
-		initial: () => eo(e),
-		blank: () => $a(),
-		pickFolder: Xa,
+function fo({ data: e, receipt: t }) {
+	let { rows: n, edit: r, add: i, remove: a, errors: o, setErrors: s, picking: c, pick: l, inputRef: u } = ar({
+		initial: () => co(e),
+		blank: () => so(),
+		pickFolder: io,
 		describe: q
 	}), [d, f] = (0, Z.useState)(!1), [p, m] = (0, Z.useState)(!1), [h, g] = (0, Z.useState)(""), [_, v] = (0, Z.useState)({}), [y, b] = (0, Z.useState)(null), x = (0, Z.useRef)(e.revision), S = (0, Z.useRef)(!1), C = Y();
-	Pn();
+	Vn();
 	let w = (e, t) => {
 		n.forEach((i, a) => {
 			i.library_id === n[e].library_id && r(a, t);
@@ -3463,10 +3463,10 @@ function ro({ data: e, receipt: t }) {
 	let ne = (e, t) => {
 		let i = n.find((e) => e.library_id === t);
 		if (i) {
-			r(e, Za(i));
+			r(e, ao(i));
 			return;
 		}
-		let a = Sn();
+		let a = kn();
 		r(e, {
 			library_id: a,
 			library: "",
@@ -3478,7 +3478,7 @@ function ro({ data: e, receipt: t }) {
 	};
 	(0, Z.useEffect)(() => {
 		if (!y) return;
-		let e = setTimeout(() => location.assign(y.url), Ca);
+		let e = setTimeout(() => location.assign(y.url), ja);
 		return () => clearTimeout(e);
 	}, [y]);
 	let re = (e) => {
@@ -3488,7 +3488,7 @@ function ro({ data: e, receipt: t }) {
 			m(!0);
 			let n = e.currentTarget;
 			requestAnimationFrame(() => n.querySelector(`[data-media-read-policy="${t}"] button`)?.focus());
-		} else C.busy || S.current || (g(""), S.current = !0, Ka(d).then((e) => {
+		} else C.busy || S.current || (g(""), S.current = !0, eo(d).then((e) => {
 			S.current = !1, e && ie();
 		}));
 	}, ie = () => {
@@ -3501,7 +3501,7 @@ function ro({ data: e, receipt: t }) {
 		}, "POST", t), (e) => {
 			x.current = e.revision, s([]), t("已保存配置"), b(e);
 		}, (e) => {
-			let t = to(e);
+			let t = lo(e);
 			s(t?.media_dirs ?? []), (!t || t.port) && g(t?.port || q(e));
 		});
 	};
@@ -3513,7 +3513,7 @@ function ro({ data: e, receipt: t }) {
 			title: "配置已保存",
 			children: [
 				"Peach 正在重新启动。稍后自动跳转，或点击",
-				/* @__PURE__ */ (0, Q.jsx)(mt, {
+				/* @__PURE__ */ (0, Q.jsx)(gt, {
 					href: y.url,
 					size: "small",
 					children: "进入馆藏"
@@ -3522,13 +3522,13 @@ function ro({ data: e, receipt: t }) {
 			]
 		}) })
 	});
-	let ae = (t) => e.media_sources?.find((e) => e.root_id === t.root_id && e.path === t.path), oe = n.some((e) => Yn(e.location)), se = oe ? (e.mount_dependencies ?? []).filter((e) => !e.available) : [];
+	let ae = (t) => e.media_sources?.find((e) => e.root_id === t.root_id && e.path === t.path), oe = n.some((e) => rr(e.location)), se = oe ? (e.mount_dependencies ?? []).filter((e) => !e.available) : [];
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "media",
 		title: "媒体库与目录",
 		onSubmit: re,
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
-			/* @__PURE__ */ (0, Q.jsx)(za, {}),
+			/* @__PURE__ */ (0, Q.jsx)(qa, {}),
 			/* @__PURE__ */ (0, Q.jsx)("div", {
 				role: "group",
 				"aria-label": "媒体库与目录",
@@ -3541,7 +3541,7 @@ function ro({ data: e, receipt: t }) {
 					return /* @__PURE__ */ (0, Q.jsxs)("div", {
 						"data-library-block": "",
 						"data-library-key": e.library_id,
-						className: Jt({
+						className: Qt({
 							variant: "raised",
 							padding: "none",
 							className: "flex flex-col p-2"
@@ -3551,7 +3551,7 @@ function ro({ data: e, receipt: t }) {
 							/* @__PURE__ */ (0, Q.jsxs)("div", {
 								"data-library-head": "",
 								children: [
-									/* @__PURE__ */ (0, Q.jsx)(Fa, {
+									/* @__PURE__ */ (0, Q.jsx)(Ua, {
 										label: `${f} 图标`,
 										value: e.library_icon,
 										kind: e.transport === "smb" ? "smb" : e.location,
@@ -3565,32 +3565,32 @@ function ro({ data: e, receipt: t }) {
 										value: e.library,
 										onChange: (e) => w(t, { library: e })
 									}),
-									/* @__PURE__ */ (0, Q.jsx)(Ha, {
+									/* @__PURE__ */ (0, Q.jsx)(Xa, {
 										id: e.library_id,
 										name: e.library,
 										value: e.library_color,
 										onChange: (e) => w(t, { library_color: e })
 									}),
-									/* @__PURE__ */ (0, Q.jsx)(Ba, {
+									/* @__PURE__ */ (0, Q.jsx)(Ja, {
 										name: f,
 										value: d,
 										onChange: (n) => w(t, {
 											library_policy: n,
-											library_stages: n === "custom" ? e.library_stages || La.join(",") : ""
+											library_stages: n === "custom" ? e.library_stages || Ga.join(",") : ""
 										})
 									})
 								]
 							}),
-							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(Va, {
+							d === "custom" ? /* @__PURE__ */ (0, Q.jsx)(Ya, {
 								name: f,
-								value: Qa(e),
-								onChange: (e) => w(t, { library_stages: La.filter((t) => e.includes(t)).join(",") })
+								value: oo(e),
+								onChange: (e) => w(t, { library_stages: Ga.filter((t) => e.includes(t)).join(",") })
 							}) : null,
 							/* @__PURE__ */ (0, Q.jsxs)("div", {
 								"data-library-folders": "",
 								role: "group",
 								"aria-label": `${f} 的文件夹`,
-								children: [s.map(({ row: t, index: i }) => /* @__PURE__ */ (0, Q.jsxs)(Wn, {
+								children: [s.map(({ row: t, index: i }) => /* @__PURE__ */ (0, Q.jsxs)(Qn, {
 									label: `媒体目录 ${i + 1}`,
 									path: t.path,
 									onPath: (e) => r(i, {
@@ -3602,12 +3602,12 @@ function ro({ data: e, receipt: t }) {
 									picking: c === i,
 									onPick: () => void l(i),
 									onRemove: n.length > 1 ? () => a(i) : void 0,
-									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(io, { online: ae(t)?.online }) : null,
-									children: [/* @__PURE__ */ (0, Q.jsxs)(Un, { children: [
-										/* @__PURE__ */ (0, Q.jsx)(Jn, {
+									status: ae(t) ? /* @__PURE__ */ (0, Q.jsx)(po, { online: ae(t)?.online }) : null,
+									children: [/* @__PURE__ */ (0, Q.jsxs)(Zn, { children: [
+										/* @__PURE__ */ (0, Q.jsx)(nr, {
 											index: i,
 											value: t.transport === "smb" ? "smb" : t.location,
-											options: Ja,
+											options: no,
 											onChange: (e) => {
 												let n = e === "smb";
 												r(i, {
@@ -3621,13 +3621,13 @@ function ro({ data: e, receipt: t }) {
 												});
 											}
 										}),
-										/* @__PURE__ */ (0, Q.jsx)(Kn, {
+										/* @__PURE__ */ (0, Q.jsx)(er, {
 											index: i,
 											cost: t.cost,
 											onChange: (e) => r(i, { cost: e }),
 											error: p && !t.cost ? "请选择媒体读取策略" : void 0
 										}),
-										t.root_id && !ae(t) ? /* @__PURE__ */ (0, Q.jsx)(Hn, {
+										t.root_id && !ae(t) ? /* @__PURE__ */ (0, Q.jsx)(Xn, {
 											label: "变更方式",
 											className: "w-full @lg:w-auto @lg:flex-1",
 											children: /* @__PURE__ */ (0, Q.jsxs)(R, {
@@ -3651,7 +3651,7 @@ function ro({ data: e, receipt: t }) {
 												})]
 											})
 										}) : null,
-										T.length > 1 ? /* @__PURE__ */ (0, Q.jsx)(Hn, {
+										T.length > 1 ? /* @__PURE__ */ (0, Q.jsx)(Xn, {
 											label: "移到媒体库",
 											className: "w-full @lg:w-48",
 											children: /* @__PURE__ */ (0, Q.jsxs)(R, {
@@ -3660,7 +3660,7 @@ function ro({ data: e, receipt: t }) {
 												selectedKey: t.library_id,
 												renderValue: /* @__PURE__ */ (0, Q.jsxs)("span", {
 													className: "flex min-w-0 items-center gap-2",
-													children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: Ya(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
+													children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ro(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
 														className: "truncate",
 														children: f
 													})]
@@ -3673,7 +3673,7 @@ function ro({ data: e, receipt: t }) {
 													textValue: e.library || "未命名媒体库",
 													children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 														className: "flex min-w-0 items-center gap-2",
-														children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: Ya(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
+														children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ro(e) }), /* @__PURE__ */ (0, Q.jsx)("span", {
 															className: "truncate",
 															children: e.library || "未命名媒体库"
 														})]
@@ -3683,7 +3683,7 @@ function ro({ data: e, receipt: t }) {
 													textValue: "新建媒体库",
 													children: /* @__PURE__ */ (0, Q.jsxs)("span", {
 														className: "flex min-w-0 items-center gap-2",
-														children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: "plus" }), /* @__PURE__ */ (0, Q.jsx)("span", { children: "新建媒体库" })]
+														children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: "plus" }), /* @__PURE__ */ (0, Q.jsx)("span", { children: "新建媒体库" })]
 													})
 												}) : null]
 											})
@@ -3691,7 +3691,7 @@ function ro({ data: e, receipt: t }) {
 									] }), t.transport === "smb" ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 										className: "flex w-full flex-col gap-2",
 										children: [
-											/* @__PURE__ */ (0, Q.jsxs)(Un, { children: [/* @__PURE__ */ (0, Q.jsx)(Hn, {
+											/* @__PURE__ */ (0, Q.jsxs)(Zn, { children: [/* @__PURE__ */ (0, Q.jsx)(Xn, {
 												label: "SMB 账号",
 												className: "w-full @lg:flex-1",
 												children: /* @__PURE__ */ (0, Q.jsx)(P, {
@@ -3700,7 +3700,7 @@ function ro({ data: e, receipt: t }) {
 													autoComplete: "off",
 													onChange: (e) => r(i, { smb_username: e })
 												})
-											}), /* @__PURE__ */ (0, Q.jsx)(Hn, {
+											}), /* @__PURE__ */ (0, Q.jsx)(Xn, {
 												label: "SMB 密码",
 												className: "w-full @lg:flex-1",
 												children: /* @__PURE__ */ (0, Q.jsx)(P, {
@@ -3770,7 +3770,7 @@ function ro({ data: e, receipt: t }) {
 										"aria-label": `给 ${f} 添加文件夹`,
 										onClick: () => {
 											i(), r(n.length, {
-												...Za(e),
+												...ao(e),
 												location: e.location,
 												cost: e.cost
 											});
@@ -3789,8 +3789,8 @@ function ro({ data: e, receipt: t }) {
 				onClick: i,
 				children: "添加媒体库"
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(N, { children: dt }),
-			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(qn, {}), /* @__PURE__ */ (0, Q.jsx)(Ea, {})] }) : null,
+			/* @__PURE__ */ (0, Q.jsx)(N, { children: pt }),
+			oe ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(tr, {}), /* @__PURE__ */ (0, Q.jsx)(Pa, {})] }) : null,
 			se.map((e) => /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 				"未检测到 ",
 				e.name,
@@ -3820,18 +3820,18 @@ function ro({ data: e, receipt: t }) {
 		})]
 	});
 }
-function io({ online: e }) {
-	return /* @__PURE__ */ (0, Q.jsx)(Qn, { online: e });
+function po({ online: e }) {
+	return /* @__PURE__ */ (0, Q.jsx)(or, { online: e });
 }
-function ao({ data: e }) {
+function mo({ data: e }) {
 	let t = e.media_sources, n = Y();
 	return t ? /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "mounts",
 		title: "挂载状态",
 		children: [
-			/* @__PURE__ */ (0, Q.jsx)(ct, { children: t.map((e, t) => /* @__PURE__ */ (0, Q.jsxs)(j, {
-				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(zt, { mark: Xn(e.location) }), qa(e.location)] }),
-				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(io, { online: e.online })]
+			/* @__PURE__ */ (0, Q.jsx)(lt, { children: t.map((e, t) => /* @__PURE__ */ (0, Q.jsxs)(j, {
+				term: /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Vt, { mark: ir(e.location) }), to(e.location)] }),
+				children: [e.path || "未配置挂载点", /* @__PURE__ */ (0, Q.jsx)(po, { online: e.online })]
 			}, t)) }),
 			n.error ? /* @__PURE__ */ (0, Q.jsx)(V, {
 				divided: !0,
@@ -3839,7 +3839,7 @@ function ao({ data: e }) {
 			}) : null,
 			/* @__PURE__ */ (0, Q.jsx)(M, { children: /* @__PURE__ */ (0, Q.jsx)(E, {
 				variant: "secondary",
-				onClick: () => void n.run("refresh", (e) => rn(e), (e) => xn.setQueryData(Ze, e)),
+				onClick: () => void n.run("refresh", (e) => un(e), (e) => On.setQueryData(Ze, e)),
 				...K(n.busy === "refresh"),
 				children: "刷新挂载状态"
 			}) })
@@ -3847,17 +3847,17 @@ function ao({ data: e }) {
 	}) : null;
 }
 // src/react/settings/service-preferences.tsx
-var oo = [
+var ho = [
 	["off", "关闭"],
 	["precise", "每 10 秒一张"],
 	["coarse", "每 30 秒一张"]
 ];
-function so({ epoch: e = 0, disabled: t = !1 }) {
+function go({ epoch: e = 0, disabled: t = !1 }) {
 	let n = X({
-		queryKey: Bt,
-		queryFn: ({ signal: e }) => dn(e),
+		queryKey: Ht,
+		queryFn: ({ signal: e }) => _n(e),
 		refetchOnMount: "always"
-	}), r = Bn(), i = r.reset;
+	}), r = qn(), i = r.reset;
 	(0, Z.useEffect)(() => {
 		i();
 	}, [e, i]);
@@ -3875,7 +3875,7 @@ function so({ epoch: e = 0, disabled: t = !1 }) {
 					onSelectionChange: (e) => {
 						e !== null && r.mutate(String(e));
 					},
-					children: oo.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+					children: ho.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 						id: e,
 						children: t
 					}, e))
@@ -3887,7 +3887,7 @@ function so({ epoch: e = 0, disabled: t = !1 }) {
 			children: [/* @__PURE__ */ (0, Q.jsx)(N, {
 				role: "status",
 				children: r.isPending ? "正在保存…" : "正在采集。"
-			}), r.isPending ? null : /* @__PURE__ */ (0, Q.jsx)(Vt, {})]
+			}), r.isPending ? null : /* @__PURE__ */ (0, Q.jsx)(Ut, {})]
 		}) : null,
 		o ? /* @__PURE__ */ (0, Q.jsx)(V, {
 			divided: !0,
@@ -3895,20 +3895,20 @@ function so({ epoch: e = 0, disabled: t = !1 }) {
 		}) : null
 	] });
 }
-function co({ receipt: e }) {
-	let t = Kt();
+function _o({ receipt: e }) {
+	let t = Xt();
 	(0, Z.useSyncExternalStore)(t.subscribe, t.version);
 	let n = X({
-		queryKey: jt,
-		queryFn: ({ signal: e }) => un(e),
+		queryKey: Nt,
+		queryFn: ({ signal: e }) => gn(e),
 		refetchOnMount: "always"
-	}), r = zn(), i = n.data?.followInitialDays ?? t.value.followInitialDays, a = r.error || n.error;
+	}), r = Kn(), i = n.data?.followInitialDays ?? t.value.followInitialDays, a = r.error || n.error;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "follow-options",
 		title: "关注采集",
 		children: [/* @__PURE__ */ (0, Q.jsxs)(I, { children: [
-			/* @__PURE__ */ (0, Q.jsx)(lo, {}),
-			/* @__PURE__ */ (0, Q.jsx)(uo, {}),
+			/* @__PURE__ */ (0, Q.jsx)(vo, {}),
+			/* @__PURE__ */ (0, Q.jsx)(yo, {}),
 			/* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "首次采集范围",
 				description: "新关注的来源第一次回看多久以前的内容。",
@@ -3924,7 +3924,7 @@ function co({ receipt: e }) {
 								typeof n.followInitialDays == "number" && (t.value.followInitialDays = n.followInitialDays), t.save(), e("已保存首次采集范围");
 							} });
 						},
-						children: ot.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+						children: st.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 							id: e,
 							children: t
 						}, e))
@@ -3953,13 +3953,13 @@ function co({ receipt: e }) {
 		}) : null]
 	});
 }
-function lo() {
+function vo() {
 	let e = X({
-		queryKey: st,
-		queryFn: ({ signal: e }) => sn(e),
+		queryKey: ct,
+		queryFn: ({ signal: e }) => pn(e),
 		refetchOnMount: "always",
-		refetchInterval: (e) => On(e.state.data)
-	}), t = Rn(), n = e.data, r = (0, Z.useRef)(qt(Number(localStorage.getItem("peach.number.followScheduleSetting")), 15, 10080, 60)), [i, a] = (0, Z.useState)("60"), [o, s] = (0, Z.useState)(!1);
+		refetchInterval: (e) => Fn(e.state.data)
+	}), t = Gn(), n = e.data, r = (0, Z.useRef)(Zt(Number(localStorage.getItem("peach.number.followScheduleSetting")), 15, 10080, 60)), [i, a] = (0, Z.useState)("60"), [o, s] = (0, Z.useState)(!1);
 	(0, Z.useEffect)(() => {
 		n?.enabled && (r.current = n.interval_minutes, a(String(n.interval_minutes)));
 	}, [n]);
@@ -4012,7 +4012,7 @@ function lo() {
 			role: "status",
 			children: t.isPending ? "正在保存…" : "正在检查来源更新…"
 		}) }) : null,
-		/* @__PURE__ */ (0, Q.jsx)(fo, {
+		/* @__PURE__ */ (0, Q.jsx)(bo, {
 			kind: "follow",
 			status: n,
 			title: "上次自动检查失败"
@@ -4020,12 +4020,12 @@ function lo() {
 		u ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: q(u) }) }) : null
 	] });
 }
-function uo() {
+function yo() {
 	let e = X({
-		queryKey: it,
-		queryFn: ({ signal: e }) => on(e),
+		queryKey: at,
+		queryFn: ({ signal: e }) => fn(e),
 		refetchOnMount: "always",
-		refetchInterval: (e) => On(e.state.data)
+		refetchInterval: (e) => Fn(e.state.data)
 	}), t = e.data;
 	if (!t) return e.isPending ? /* @__PURE__ */ (0, Q.jsx)(B, {
 		label: "订阅源拉取",
@@ -4049,17 +4049,17 @@ function uo() {
 			role: "status",
 			children: "正在拉取订阅源…"
 		}) }) : null,
-		/* @__PURE__ */ (0, Q.jsx)(fo, {
+		/* @__PURE__ */ (0, Q.jsx)(bo, {
 			kind: "feed",
 			status: t,
 			title: "上次自动拉取失败"
 		})
 	] });
 }
-function fo({ kind: e, status: t, title: n }) {
-	let r = Ln(e);
+function bo({ kind: e, status: t, title: n }) {
+	let r = Wn(e);
 	if (!t?.enabled || t.running || !t.last_error) return null;
-	let i = t.consecutive_failures ?? 0, a = mn(t.next_run_at), o = [i > 1 ? `已连续失败 ${i} 次` : "", a ? `下一轮 ${a}` : ""].filter(Boolean).join("，"), s = [
+	let i = t.consecutive_failures ?? 0, a = xn(t.next_run_at), o = [i > 1 ? `已连续失败 ${i} 次` : "", a ? `下一轮 ${a}` : ""].filter(Boolean).join("，"), s = [
 		t.last_error,
 		o,
 		r.error ? `没有重试：${q(r.error)}` : ""
@@ -4079,10 +4079,10 @@ function fo({ kind: e, status: t, title: n }) {
 	}) });
 }
 // src/react/settings/media-processing-settings.tsx
-function po({ receipt: e }) {
+function xo({ receipt: e }) {
 	let t = X({
-		queryKey: _t,
-		queryFn: ({ signal: e }) => ln(e)
+		queryKey: yt,
+		queryFn: ({ signal: e }) => hn(e)
 	}), n = Y(), r = n.error || (t.error ? q(t.error) : ""), i = !t.data || t.isFetching || !!n.busy;
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "preview",
@@ -4095,12 +4095,12 @@ function po({ receipt: e }) {
 					"aria-label": "生成视频预览",
 					isSelected: !!t.data && !t.data.metadata_only,
 					isDisabled: i,
-					onChange: (t) => void n.run("save", (e) => G(vt, { metadata_only: !t }, "POST", e), (t) => {
-						xn.setQueryData(_t, t), xn.invalidateQueries({ queryKey: Bt }), xn.invalidateQueries({ queryKey: ft }), e(t.metadata_only ? "已关闭视频预览生成" : "已开启视频预览生成");
+					onChange: (t) => void n.run("save", (e) => G(bt, { metadata_only: !t }, "POST", e), (t) => {
+						On.setQueryData(yt, t), On.invalidateQueries({ queryKey: Ht }), On.invalidateQueries({ queryKey: mt }), e(t.metadata_only ? "已关闭视频预览生成" : "已开启视频预览生成");
 					})
 				})
 			}) }),
-			/* @__PURE__ */ (0, Q.jsx)(so, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
+			/* @__PURE__ */ (0, Q.jsx)(go, { disabled: !t.data || t.data.metadata_only || !!n.busy }),
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "抽帧解码方式",
 				description: "用于生成封面、九宫格和时间轴。",
@@ -4111,8 +4111,8 @@ function po({ receipt: e }) {
 						selectedKey: t.data?.preview_acceleration || "auto",
 						isDisabled: i,
 						onSelectionChange: (t) => {
-							t !== null && n.run("preview_acceleration", (e) => G(vt, { preview_acceleration: String(t) }, "POST", e), (t) => {
-								xn.setQueryData(_t, t), e("已保存抽帧解码方式");
+							t !== null && n.run("preview_acceleration", (e) => G(bt, { preview_acceleration: String(t) }, "POST", e), (t) => {
+								On.setQueryData(yt, t), e("已保存抽帧解码方式");
 							});
 						},
 						children: [/* @__PURE__ */ (0, Q.jsx)(z, {
@@ -4139,10 +4139,10 @@ function po({ receipt: e }) {
 		]
 	});
 }
-function mo({ receipt: e }) {
+function So({ receipt: e }) {
 	let t = X({
-		queryKey: _t,
-		queryFn: ({ signal: e }) => ln(e)
+		queryKey: yt,
+		queryFn: ({ signal: e }) => hn(e)
 	}), n = Y(), r = n.error || (t.error ? q(t.error) : "");
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "transcode",
@@ -4158,8 +4158,8 @@ function mo({ receipt: e }) {
 						selectedKey: t.data?.playback_acceleration || "auto",
 						isDisabled: !t.data || t.isFetching || !!n.busy,
 						onSelectionChange: (t) => {
-							t !== null && n.run("playback_acceleration", (e) => G(vt, { playback_acceleration: String(t) }, "POST", e), (t) => {
-								xn.setQueryData(_t, t), e("已保存转码方式");
+							t !== null && n.run("playback_acceleration", (e) => G(bt, { playback_acceleration: String(t) }, "POST", e), (t) => {
+								On.setQueryData(yt, t), e("已保存转码方式");
 							});
 						},
 						children: [/* @__PURE__ */ (0, Q.jsx)(z, {
@@ -4187,7 +4187,7 @@ function mo({ receipt: e }) {
 	});
 }
 // src/react/boardui/components/base/textarea/textarea.tsx
-var ho = jn({
+var Co = Rn({
 	field: "relative flex w-full flex-col rounded-2lg bg-background-tertiary-default text-foreground-icon-tertiary ring-2 ring-inset ring-transparent transition-[background-color,box-shadow,color] duration-[var(--input-transition-ms)] ease",
 	fieldSize: {
 		medium: "p-2",
@@ -4200,9 +4200,9 @@ var ho = jn({
 	},
 	footer: "flex w-full items-start justify-between gap-3",
 	count: "ms-auto shrink-0 pt-px text-caption-1-medium text-text-tertiary tabular-nums"
-}), go = 20;
-function _o({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
-	let d = (0, Z.useContext)(Ut), f = e ?? d.size ?? "medium", p = (0, Z.useRef)(null), m = (e) => {
+}), wo = 20;
+function To({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = "vertical", fieldClassName: a, className: o, ref: s, groupRef: c, onInput: l, ...u }) {
+	let d = (0, Z.useContext)(Gt), f = e ?? d.size ?? "medium", p = (0, Z.useRef)(null), m = (e) => {
 		p.current = e, typeof s == "function" ? s(e) : s && (s.current = e);
 	}, h = () => {
 		let e = p.current;
@@ -4211,14 +4211,14 @@ function _o({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = 
 			e.style.height = "", e.style.maxHeight = "", e.style.overflowY = "";
 			return;
 		}
-		let i = parseFloat(window.getComputedStyle(e).lineHeight) || go, a = r ? r * i : Infinity;
+		let i = parseFloat(window.getComputedStyle(e).lineHeight) || wo, a = r ? r * i : Infinity;
 		e.style.height = "0px";
 		let o = Math.max(e.scrollHeight, t * i);
 		e.style.height = `${Math.min(o, a)}px`, e.style.maxHeight = r ? `${a}px` : "", e.style.overflowY = o > a ? "auto" : "hidden";
 	};
 	return (0, Z.useLayoutEffect)(h), /* @__PURE__ */ (0, Q.jsx)(Re, {
 		ref: c,
-		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => tn(ho.field, ho.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
+		className: ({ isFocusWithin: e, isHovered: t, isDisabled: n, isInvalid: r }) => on(Co.field, Co.fieldSize[f], t && !e && !n && !r && "ring-border-button-hover", e && !n && !r && "ring-border-button-active", n && "bg-input-disabled-background text-input-disabled-foreground", r && "bg-background-tertiary-error text-foreground-icon-error", d.fieldClassName, a),
 		children: /* @__PURE__ */ (0, Q.jsx)(Ve, {
 			ref: m,
 			rows: t,
@@ -4226,14 +4226,14 @@ function _o({ size: e, rows: t = 3, autoResize: n = !1, maxRows: r, resize: i = 
 			onInput: (e) => {
 				h(), l?.(e);
 			},
-			className: tn(ho.textarea, ho.resize[n ? "none" : i], d.inputClassName, o)
+			className: on(Co.textarea, Co.resize[n ? "none" : i], d.inputClassName, o)
 		})
 	});
 }
-_o.displayName = "TextareaBase";
-function vo({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
+To.displayName = "TextareaBase";
+function Eo({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize: a, maxRows: o, resize: s, maxLength: c, showCount: l = !1, fieldClassName: u, ref: d, groupRef: f, className: p, value: m, defaultValue: h, onChange: g, ..._ }) {
 	let [v, y] = (0, Z.useState)(() => (h ?? "").length), b = m === void 0 ? v : m.length;
-	return /* @__PURE__ */ (0, Q.jsx)(Ht, {
+	return /* @__PURE__ */ (0, Q.jsx)(Wt, {
 		..._,
 		value: m,
 		defaultValue: h,
@@ -4243,13 +4243,13 @@ function vo({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize
 		className: p,
 		"aria-label": _["aria-label"] ?? (!e && typeof r == "string" ? r : void 0),
 		children: ({ isRequired: p, isInvalid: m }) => /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
-			e && /* @__PURE__ */ (0, Q.jsx)(pt, {
+			e && /* @__PURE__ */ (0, Q.jsx)(ht, {
 				isRequired: p,
 				isInvalid: m,
 				tooltip: n,
 				children: e
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(_o, {
+			/* @__PURE__ */ (0, Q.jsx)(To, {
 				ref: d,
 				groupRef: f,
 				placeholder: r,
@@ -4261,25 +4261,25 @@ function vo({ label: e, hint: t, tooltip: n, placeholder: r, rows: i, autoResize
 				fieldClassName: u
 			}),
 			(t || l) && /* @__PURE__ */ (0, Q.jsxs)("div", {
-				className: ho.footer,
-				children: [t && /* @__PURE__ */ (0, Q.jsx)(ut, {
+				className: Co.footer,
+				children: [t && /* @__PURE__ */ (0, Q.jsx)(dt, {
 					isInvalid: m,
 					children: t
 				}), l && /* @__PURE__ */ (0, Q.jsx)("span", {
-					className: tn(ho.count, m && "text-text-error-primary"),
+					className: on(Co.count, m && "text-text-error-primary"),
 					children: c ? `${b}/${c}` : b
 				})]
 			})
 		] })
 	});
 }
-vo.displayName = "Textarea";
+Eo.displayName = "Textarea";
 // src/react/settings/code-pattern-settings.tsx
-var yo = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
-function bo({ receipt: e }) {
+var Do = "^\\+{3}\\s*(?<code>FC2-PPV-\\d+)\n\\[(?<code>[A-Z]+-\\d+)\\]";
+function Oo({ receipt: e }) {
 	let t = X({
-		queryKey: jt,
-		queryFn: ({ signal: e }) => un(e)
+		queryKey: Nt,
+		queryFn: ({ signal: e }) => gn(e)
 	}), [n, r] = (0, Z.useState)(null), i = Y(), a = n ?? (t.data?.codePatterns ?? []).join("\n"), o = i.error || (t.error ? q(t.error) : "");
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "codes",
@@ -4287,11 +4287,11 @@ function bo({ receipt: e }) {
 		onSubmit: (t) => {
 			t.preventDefault();
 			let n = a.split("\n").map((e) => e.trim()).filter(Boolean);
-			i.run("save", (e) => G(Mt, { codePatterns: n }, "POST", e), (t) => {
-				xn.setQueryData(jt, t), r(null), e("已保存配置");
+			i.run("save", (e) => G(Pt, { codePatterns: n }, "POST", e), (t) => {
+				On.setQueryData(Nt, t), r(null), e("已保存配置");
 			});
 		},
-		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(vo, {
+		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "内置规则认不出番号时，按这里的规则从文件名里取。每行一条正则表达式，番号写在 (?<code>…) 里，没有命名组就取第一个括号。规则在下一次处理时对还没有番号的视频生效。" }), /* @__PURE__ */ (0, Q.jsx)(Eo, {
 			id: "codePatternSetting",
 			"aria-label": "番号识别规则",
 			rows: 3,
@@ -4299,7 +4299,7 @@ function bo({ receipt: e }) {
 			maxRows: 12,
 			spellCheck: "false",
 			autoComplete: "off",
-			placeholder: yo,
+			placeholder: Do,
 			value: a,
 			isDisabled: !t.data,
 			isInvalid: !!o,
@@ -4313,7 +4313,7 @@ function bo({ receipt: e }) {
 	});
 }
 // src/react/settings/password-pair.tsx
-function xo({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
+function ko({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
 		id: "access-password",
 		type: "password",
@@ -4343,12 +4343,12 @@ function xo({ label: e, password: t, confirmation: n, onPassword: r, onConfirmat
 	})] });
 }
 // src/react/settings/access-settings.tsx
-var So = {
+var Ao = {
 	legacy: "当前使用系统生成的访问口令。改设自己的密码，或关闭登录要求。",
 	locked: "访问设置无法读取，请在本机检查配置文件。",
 	password: "已设置密码。新设备需要登录，登录时勾选「保持登录」可保持 30 天。"
 };
-function Co({ initial: e, receipt: t, devices: n }) {
+function jo({ initial: e, receipt: t, devices: n }) {
 	let [r, i] = (0, Z.useState)(e), [a, o] = (0, Z.useState)(""), [s, c] = (0, Z.useState)(""), [l, u] = (0, Z.useState)(""), [d, f] = (0, Z.useState)(!1), [p, m] = (0, Z.useState)({}), h = (0, Z.useRef)(null), g = Y(), _ = (e) => {
 		e.preventDefault();
 		let n = {};
@@ -4365,7 +4365,7 @@ function Co({ initial: e, receipt: t, devices: n }) {
 			let t = e instanceof qe ? e.body : null, n = t?.errors || t?.detail?.errors;
 			n ? m(n) : g.setError(q(e));
 		});
-	}, v = So[r.mode], y = r.mode !== "locked";
+	}, v = Ao[r.mode], y = r.mode !== "locked";
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsxs)(L, {
 		guide: "access",
 		title: "访问密码",
@@ -4397,7 +4397,7 @@ function Co({ initial: e, receipt: t, devices: n }) {
 					isInvalid: !!p.current_password,
 					hint: p.current_password
 				}) : null,
-				y && !d ? /* @__PURE__ */ (0, Q.jsx)(xo, {
+				y && !d ? /* @__PURE__ */ (0, Q.jsx)(ko, {
 					label: r.mode === "password" ? "新访问密码" : "设置访问密码",
 					password: s,
 					confirmation: l,
@@ -4422,48 +4422,96 @@ function Co({ initial: e, receipt: t, devices: n }) {
 	}), n && (r.mode === "password" || r.mode === "legacy") ? n(r) : null] });
 }
 // src/react/settings/device-sessions.tsx
-var wo = "/api/configuration/access/sessions", To = (e) => e.device || "未识别的浏览器";
-function Eo(e, t = Date.now() / 1e3) {
+var Mo = "/api/configuration/access/sessions", No = (e) => e.device || "未识别的浏览器", Po = {
+	iPhone: {
+		platform: ft,
+		terminal: Jt
+	},
+	iPad: {
+		platform: ft,
+		terminal: it
+	},
+	Android: {
+		platform: bn,
+		terminal: Jt
+	},
+	"Android 平板": {
+		platform: bn,
+		terminal: it
+	},
+	ChromeOS: {
+		platform: cn,
+		terminal: Jn
+	},
+	Windows: {
+		platform: Kt,
+		terminal: Jn
+	},
+	macOS: {
+		platform: ft,
+		terminal: Jn
+	},
+	Linux: { terminal: Jn }
+};
+function Fo({ row: e }) {
+	let t = e.device.split(" · "), n = t.at(-1) ?? "", r = Po[n]?.platform;
+	return r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
+		t.length > 1 ? `${t[0]} · ` : "",
+		/* @__PURE__ */ (0, Q.jsx)(r, {
+			"aria-hidden": !0,
+			className: "inline size-4 -mt-0.5 mr-1 align-middle text-foreground-icon-secondary"
+		}),
+		n
+	] }) : No(e);
+}
+function Io({ row: e }) {
+	let t = Po[e.device.split(" · ").at(-1) ?? ""]?.terminal ?? sn;
+	return /* @__PURE__ */ (0, Q.jsx)(t, {
+		"aria-hidden": !0,
+		className: "size-5 shrink-0 text-foreground-icon-secondary"
+	});
+}
+function Lo(e, t = Date.now() / 1e3) {
 	let n = Math.max(0, t - e);
 	return n < 60 ? "刚刚" : n < 3600 ? `${Math.floor(n / 60)} 分钟前` : n < 86400 ? `${Math.floor(n / 3600)} 小时前` : n < 2592e3 ? `${Math.floor(n / 86400)} 天前` : (/* @__PURE__ */ new Date(e * 1e3)).toLocaleDateString("zh-CN");
 }
-function Do(e) {
+function Ro(e) {
 	return e.network === "loopback" ? "运行 Peach 的电脑" : e.network ? e.remote ? `公网入口 · ${e.network}` : e.network : "";
 }
-var Oo = (e) => [`最近活动 ${Eo(e.last_seen)}`, Do(e)].filter(Boolean).join(" · ");
-function ko({ revision: e, receipt: t }) {
+var zo = (e) => [`最近活动 ${Lo(e.last_seen)}`, Ro(e)].filter(Boolean).join(" · ");
+function Bo({ revision: e, receipt: t }) {
 	let n = X({
 		queryKey: ["access-sessions", e],
 		refetchOnMount: "always",
-		queryFn: ({ signal: e }) => W(wo, e)
+		queryFn: ({ signal: e }) => W(Mo, e)
 	});
 	return n.error ? /* @__PURE__ */ (0, Q.jsx)(L, {
 		title: "已登录的设备",
 		children: /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: q(n.error) }) })
-	}) : n.isFetching || !n.data ? /* @__PURE__ */ (0, Q.jsx)(Nt, {
+	}) : n.isFetching || !n.data ? /* @__PURE__ */ (0, Q.jsx)(Ft, {
 		label: "正在读取已登录的设备",
-		html: nn
-	}) : /* @__PURE__ */ (0, Q.jsx)(Ao, {
+		html: ln
+	}) : /* @__PURE__ */ (0, Q.jsx)(Vo, {
 		initial: n.data,
 		receipt: t
 	});
 }
-function Ao({ initial: e, receipt: t }) {
+function Vo({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e);
 	(0, Z.useEffect)(() => r(e), [e]);
 	let i = n.sessions.filter((e) => !e.current);
 	(0, Z.useEffect)(() => {
-		Cn("devices", {
+		An("devices", {
 			rows: Math.min(n.sessions.length, 8),
 			manageable: n.manageable && i.length > 0
 		});
 	}, [n, i.length]);
-	let a = (e) => void Qt({
+	let a = (e) => void nn({
 		title: "撤销这台设备的登录",
-		body: `${To(e)}（${Oo(e)}）下次打开 Peach 需要重新输入访问密码。`,
+		body: `${No(e)}（${zo(e)}）下次打开 Peach 需要重新输入访问密码。`,
 		confirmLabel: "撤销登录",
 		onConfirm: async () => {
-			r(await G(`${wo}/revoke`, {
+			r(await G(`${Mo}/revoke`, {
 				revision: n.revision,
 				id: e.id
 			})), t("已撤销登录");
@@ -4473,8 +4521,9 @@ function Ao({ initial: e, receipt: t }) {
 		title: "已登录的设备",
 		children: [
 			n.sessions.length ? /* @__PURE__ */ (0, Q.jsx)(I, { children: n.sessions.map((e) => /* @__PURE__ */ (0, Q.jsx)(B, {
-				label: To(e),
-				description: Oo(e),
+				label: /* @__PURE__ */ (0, Q.jsx)(Fo, { row: e }),
+				description: zo(e),
+				icon: /* @__PURE__ */ (0, Q.jsx)(Io, { row: e }),
 				children: e.current ? /* @__PURE__ */ (0, Q.jsx)(et, {
 					color: "blue",
 					variant: "caption",
@@ -4482,7 +4531,7 @@ function Ao({ initial: e, receipt: t }) {
 				}) : n.manageable ? /* @__PURE__ */ (0, Q.jsx)(E, {
 					size: "small",
 					variant: "secondary",
-					"aria-label": `撤销 ${To(e)} 的登录`,
+					"aria-label": `撤销 ${No(e)} 的登录`,
 					onClick: () => a(e),
 					children: "撤销"
 				}) : null
@@ -4495,12 +4544,12 @@ function Ao({ initial: e, receipt: t }) {
 				status: "修改访问密码会让全部设备退出。",
 				children: /* @__PURE__ */ (0, Q.jsx)(E, {
 					variant: "secondary",
-					onClick: () => void Qt({
+					onClick: () => void nn({
 						title: "撤销其他设备的登录",
 						body: `除本机以外的 ${i.length} 台设备下次打开 Peach 需要重新输入访问密码。`,
 						confirmLabel: "撤销登录",
 						onConfirm: async () => {
-							let e = await G(`${wo}/revoke`, {
+							let e = await G(`${Mo}/revoke`, {
 								revision: n.revision,
 								scope: "others"
 							});
@@ -4514,28 +4563,28 @@ function Ao({ initial: e, receipt: t }) {
 	});
 }
 // src/react/components/configuration-fields.tsx
-function jo({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
+function Ho({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a, isInvalid: o, children: s }) {
 	let c = `${e}-label`;
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex flex-col gap-1.5",
 		children: [
-			/* @__PURE__ */ (0, Q.jsx)(pt, {
+			/* @__PURE__ */ (0, Q.jsx)(ht, {
 				id: c,
 				elementType: "span",
 				children: t
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(Pt, {
+			/* @__PURE__ */ (0, Q.jsx)(It, {
 				id: e,
 				"aria-labelledby": c,
 				orientation: "horizontal",
-				className: At,
+				className: Mt,
 				value: n,
 				onChange: r,
 				isDisabled: a,
 				isInvalid: o,
 				children: i.map((e) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
 					value: e.value,
-					className: kt,
+					className: jt,
 					children: e.label
 				}, e.value))
 			}),
@@ -4543,7 +4592,7 @@ function jo({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a,
 		]
 	});
 }
-function Mo({ prefix: e, suffix: t, ...n }) {
+function Uo({ prefix: e, suffix: t, ...n }) {
 	let r = () => /* @__PURE__ */ (0, Q.jsx)("span", {
 		className: "shrink-0 pr-1 text-body-regular text-text-secondary",
 		children: t
@@ -4558,18 +4607,18 @@ function Mo({ prefix: e, suffix: t, ...n }) {
 	});
 }
 // src/react/settings/port-settings.tsx
-var No = [{
+var Wo = [{
 	value: "0.0.0.0",
 	label: "同一局域网的设备"
 }, {
 	value: "127.0.0.1",
 	label: "只有这台电脑"
 }];
-function Po({ data: e, receipt: t }) {
+function Go({ data: e, receipt: t }) {
 	let n = e.network, r = n ? n.editable : e.editable && e.port_editable !== !1, [i, a] = (0, Z.useState)(n?.host ?? "127.0.0.1"), [o, s] = (0, Z.useState)(n?.mdns_name ?? "peach"), [c, l] = (0, Z.useState)(String(e.port)), [u, d] = (0, Z.useState)({}), [f, p] = (0, Z.useState)(null), m = Y();
 	return (0, Z.useEffect)(() => {
 		if (!f) return;
-		let e = setTimeout(() => location.assign(f.url), Ca);
+		let e = setTimeout(() => location.assign(f.url), ja);
 		return () => clearTimeout(e);
 	}, [f]), f ? /* @__PURE__ */ (0, Q.jsx)(L, {
 		guide: "port",
@@ -4577,7 +4626,7 @@ function Po({ data: e, receipt: t }) {
 		children: /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsxs)(F, {
 			tone: "success",
 			title: "配置已保存",
-			children: ["Peach 正在重新启动。", /* @__PURE__ */ (0, Q.jsx)(mt, {
+			children: ["Peach 正在重新启动。", /* @__PURE__ */ (0, Q.jsx)(gt, {
 				href: f.url,
 				size: "small",
 				children: "返回网络与访问"
@@ -4605,33 +4654,33 @@ function Po({ data: e, receipt: t }) {
 			});
 		} : void 0,
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
-			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Fo, {
+			n ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Ko, {
 				label: "本机地址",
 				value: n.local_url,
 				receipt: t
 			}), n.lan_url || n.ip_url ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
-				/* @__PURE__ */ (0, Q.jsx)(Fo, {
+				/* @__PURE__ */ (0, Q.jsx)(Ko, {
 					label: "手机连接地址",
 					value: n.lan_url || n.ip_url,
 					receipt: t
 				}),
-				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(Fo, {
+				n.lan_url && n.ip_url ? /* @__PURE__ */ (0, Q.jsx)(Ko, {
 					label: "备用 IP 地址",
 					value: n.ip_url,
 					receipt: t
 				}) : null,
 				/* @__PURE__ */ (0, Q.jsxs)(N, { children: ["手机与电脑连接同一 Wi-Fi。", n.ip_url && n.lan_url ? "名称地址打不开时，可尝试备用 IP 地址。" : ""] })
 			] }) : /* @__PURE__ */ (0, Q.jsx)(N, { children: n.scope === "local" ? "当前只允许这台电脑访问，手机无法连接。" : "局域网连接地址未取得，请检查电脑的网络连接和服务启动配置。" })] }) : null,
-			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(jo, {
+			r ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [n?.editable ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(Ho, {
 				id: "configHost",
 				label: "谁可以访问",
 				value: i,
 				onChange: a,
-				options: No,
+				options: Wo,
 				isDisabled: !!m.busy,
 				isInvalid: !!u.host,
 				children: u.host ? /* @__PURE__ */ (0, Q.jsx)(k, { children: u.host }) : null
-			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(Mo, {
+			}), i === "0.0.0.0" ? /* @__PURE__ */ (0, Q.jsx)(Uo, {
 				id: "configMdnsName",
 				label: "局域网访问地址",
 				value: o,
@@ -4645,7 +4694,7 @@ function Po({ data: e, receipt: t }) {
 				validationBehavior: "aria",
 				isInvalid: !!u.mdns_name,
 				hint: u.mdns_name || void 0
-			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(Mo, {
+			}) : null] }) : null, /* @__PURE__ */ (0, Q.jsx)(Uo, {
 				id: "configPort",
 				label: "端口",
 				prefix: "localhost:",
@@ -4673,7 +4722,7 @@ function Po({ data: e, receipt: t }) {
 		}) : null]
 	});
 }
-function Fo({ label: e, value: t, receipt: n }) {
+function Ko({ label: e, value: t, receipt: n }) {
 	let r = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		className: "flex min-w-0 flex-col gap-2",
@@ -4698,12 +4747,12 @@ function Fo({ label: e, value: t, receipt: n }) {
 	});
 }
 // src/react/settings/peach-proxy-fields.tsx
-var Io = [
+var qo = [
 	["environment", "跟随环境"],
 	["direct", "直连"],
 	["proxy", "自定义"]
 ];
-function Lo({ mode: e, onChange: t, labelledBy: n }) {
+function Jo({ mode: e, onChange: t, labelledBy: n }) {
 	return /* @__PURE__ */ (0, Q.jsx)(R, {
 		"aria-label": n ? void 0 : "连接方式",
 		"aria-labelledby": n,
@@ -4711,13 +4760,13 @@ function Lo({ mode: e, onChange: t, labelledBy: n }) {
 		onSelectionChange: (e) => {
 			e !== null && t(String(e));
 		},
-		children: Io.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
+		children: qo.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(z, {
 			id: e,
 			children: t
 		}, e))
 	});
 }
-function Ro({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
+function Yo({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 	return /* @__PURE__ */ (0, Q.jsx)(P, {
 		id: e,
 		type: "password",
@@ -4733,19 +4782,19 @@ function Ro({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 	});
 }
 // src/react/settings/tunnel-settings.tsx
-var zo = 2e3, Bo = [["quick", "临时链接"], ["named", "命名隧道"]], Vo = {
+var Xo = 2e3, Zo = [["quick", "临时链接"], ["named", "命名隧道"]], Qo = {
 	quick: "临时预览用，地址随机，重启后会变。启动前要先设置访问密码。",
 	named: "使用你在 Cloudflare 绑定的固定域名。启动前要先设置访问密码。"
 };
-function Ho({ revision: e, initial: t, receipt: n }) {
+function $o({ revision: e, initial: t, receipt: n }) {
 	let [r, i] = (0, Z.useState)(t), [a, o] = (0, Z.useState)(e), [s, c] = (0, Z.useState)(t.mode), [l, u] = (0, Z.useState)(t.hostname), [d, f] = (0, Z.useState)(""), [p, m] = (0, Z.useState)({}), h = Y(), g = r.state === "starting" || r.state === "running", _ = r.named_available && s === "named";
 	(0, Z.useEffect)(() => {
 		if (r.state !== "starting") return;
 		let e = new AbortController(), t = window.setInterval(() => {
-			rn(e.signal).then((t) => {
-				!e.signal.aborted && t.tunnel && (xn.setQueryData(Ze, t), i(t.tunnel), o(t.revision));
+			un(e.signal).then((t) => {
+				!e.signal.aborted && t.tunnel && (On.setQueryData(Ze, t), i(t.tunnel), o(t.revision));
 			}).catch(() => void 0);
-		}, zo);
+		}, Xo);
 		return () => {
 			e.abort(), window.clearInterval(t);
 		};
@@ -4776,19 +4825,19 @@ function Ho({ revision: e, initial: t, receipt: n }) {
 			children: r.error ? "连接失败" : r.state === "running" ? "运行中" : r.state === "starting" ? "连接中" : "已停止"
 		}),
 		children: [/* @__PURE__ */ (0, Q.jsxs)(V, { children: [
-			r.named_available ? /* @__PURE__ */ (0, Q.jsx)(Pt, {
+			r.named_available ? /* @__PURE__ */ (0, Q.jsx)(It, {
 				"aria-label": "公网入口的形态（二选一）",
 				value: s,
 				isDisabled: g,
 				onChange: (e) => c(e),
-				className: At,
-				children: Bo.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
+				className: Mt,
+				children: Zo.map(([e, t]) => /* @__PURE__ */ (0, Q.jsx)(Ge, {
 					value: e,
-					className: kt,
+					className: jt,
 					children: t
 				}, e))
 			}) : null,
-			/* @__PURE__ */ (0, Q.jsx)(N, { children: Vo[_ ? "named" : "quick"] }),
+			/* @__PURE__ */ (0, Q.jsx)(N, { children: Qo[_ ? "named" : "quick"] }),
 			_ ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(P, {
 				id: "tunnel-hostname",
 				label: "公开主机名",
@@ -4848,36 +4897,36 @@ function Ho({ revision: e, initial: t, receipt: n }) {
 	});
 }
 // src/react/settings/network-settings.tsx
-function Uo({ data: e, receipt: t, panel: n, issues: r }) {
+function es({ data: e, receipt: t, panel: n, issues: r }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
-		...tr(n),
+		...lr(n),
 		children: [
 			r,
-			e.network || e.editable && e.port_editable !== !1 && !e.section_errors?.media_sources ? /* @__PURE__ */ (0, Q.jsx)(Po, {
+			e.network || e.editable && e.port_editable !== !1 && !e.section_errors?.media_sources ? /* @__PURE__ */ (0, Q.jsx)(Go, {
 				data: e,
 				receipt: t
 			}) : null,
-			e.access ? /* @__PURE__ */ (0, Q.jsx)(Co, {
+			e.access ? /* @__PURE__ */ (0, Q.jsx)(jo, {
 				initial: e.access,
 				receipt: t,
-				devices: (e) => /* @__PURE__ */ (0, Q.jsx)(ko, {
+				devices: (e) => /* @__PURE__ */ (0, Q.jsx)(Bo, {
 					revision: e.revision,
 					receipt: t
 				})
 			}) : null,
-			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)(Ho, {
+			e.tunnel ? /* @__PURE__ */ (0, Q.jsx)($o, {
 				revision: e.revision,
 				initial: e.tunnel,
 				receipt: t
 			}) : null,
-			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(Wo, {
+			e.peach_proxy ? /* @__PURE__ */ (0, Q.jsx)(ts, {
 				initial: e.peach_proxy,
 				receipt: t
 			}) : null
 		]
 	});
 }
-function Wo({ initial: e, receipt: t }) {
+function ts({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(e.mode), [o, s] = (0, Z.useState)(""), c = Y();
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "peachProxy",
@@ -4895,7 +4944,7 @@ function Wo({ initial: e, receipt: t }) {
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "连接方式",
 				description: "Peach 访问外网和采集来源时使用。",
-				children: /* @__PURE__ */ (0, Q.jsx)(Lo, {
+				children: /* @__PURE__ */ (0, Q.jsx)(Jo, {
 					mode: i,
 					onChange: a
 				})
@@ -4903,7 +4952,7 @@ function Wo({ initial: e, receipt: t }) {
 			i === "proxy" || n.needs_selection || c.error ? /* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
-					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(Ro, {
+					i === "proxy" ? /* @__PURE__ */ (0, Q.jsx)(Yo, {
 						id: "peachProxyAddress",
 						value: o,
 						onChange: s,
@@ -4926,12 +4975,12 @@ function Wo({ initial: e, receipt: t }) {
 	});
 }
 // src/react/follow-manage/credentials.tsx
-var Go = "将清除这个来源在本机和共享副本中的登录凭据。", Ko = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
-function qo(e, t) {
+var ns = "将清除这个来源在本机和共享副本中的登录凭据。", rs = "其他系统用户可以读取此凭据文件。请在运行 Peach 的 Mac 或 Linux 电脑上，将文件权限设为仅当前用户可读写（0600）。";
+function is(e, t) {
 	return (e.shared_fields || []).includes(t) ? "来自共享，留空表示不改" : e.fields.includes(t) ? "已保存，留空表示不改" : "未填写";
 }
-function Jo({ row: e }) {
-	if ($t(e)) return /* @__PURE__ */ (0, Q.jsx)(et, {
+function as({ row: e }) {
+	if (rn(e)) return /* @__PURE__ */ (0, Q.jsx)(et, {
 		variant: "caption",
 		color: "lime",
 		children: "已配置"
@@ -4943,12 +4992,12 @@ function Jo({ row: e }) {
 		children: $e[e.requirement] || ""
 	});
 }
-function Yo({ row: e, readOnly: t, toast: n }) {
-	let [r, i] = (0, Z.useState)({}), [a, o] = (0, Z.useState)(""), s = $t(e), c = Fn({
-		mutationFn: (t) => Dn(e.provider, t),
+function os({ row: e, readOnly: t, toast: n }) {
+	let [r, i] = (0, Z.useState)({}), [a, o] = (0, Z.useState)(""), s = rn(e), c = Hn({
+		mutationFn: (t) => Pn(e.provider, t),
 		onSuccess: (e, t) => {
-			e.note ? o(e.note) : (o(""), i({}), xn.invalidateQueries({
-				queryKey: at,
+			e.note ? o(e.note) : (o(""), i({}), On.invalidateQueries({
+				queryKey: ot,
 				exact: !0
 			}), n(Object.keys(t).length ? "已保存来源凭据" : "已清除来源凭据"));
 		},
@@ -4970,7 +5019,7 @@ function Yo({ row: e, readOnly: t, toast: n }) {
 				children: (e.needs || []).map((n) => /* @__PURE__ */ (0, Q.jsx)(P, {
 					type: "password",
 					label: n,
-					placeholder: qo(e, n),
+					placeholder: is(e, n),
 					autoComplete: "off",
 					spellCheck: "false",
 					isDisabled: t,
@@ -4988,9 +5037,9 @@ function Yo({ row: e, readOnly: t, toast: n }) {
 					variant: "danger",
 					disabled: t,
 					...K(c.isPending),
-					onClick: () => void Qt({
+					onClick: () => void nn({
 						title: "清除来源凭据",
-						body: Go,
+						body: ns,
 						confirmLabel: "清除来源凭据",
 						danger: !0,
 						onConfirm: () => c.mutateAsync({})
@@ -5008,7 +5057,7 @@ function Yo({ row: e, readOnly: t, toast: n }) {
 			(e.shared_fields || []).length ? /* @__PURE__ */ (0, Q.jsx)(N, { children: `${e.shared_fields.join("、")} 使用共享副本中的登录信息，本机没有单独保存。清除时，本机和共享副本中的登录信息都会删除。` }) : null,
 			e.path ? /* @__PURE__ */ (0, Q.jsx)(O, {
 				summary: "凭据文件",
-				children: /* @__PURE__ */ (0, Q.jsx)(Et, {
+				children: /* @__PURE__ */ (0, Q.jsx)(Ot, {
 					path: e.path,
 					className: "font-mono text-caption-1-regular text-text-tertiary",
 					onRevealed: n
@@ -5017,19 +5066,19 @@ function Yo({ row: e, readOnly: t, toast: n }) {
 		]
 	});
 }
-function Xo({ row: e, readOnly: t, toast: n }) {
+function ss({ row: e, readOnly: t, toast: n }) {
 	let r = /* @__PURE__ */ (0, Q.jsxs)("span", {
 		className: "flex min-w-0 flex-wrap items-center gap-2",
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)("span", {
 				className: "inline-flex size-3.5 shrink-0 items-center justify-center",
-				children: /* @__PURE__ */ (0, Q.jsx)($n, { provider: e.provider })
+				children: /* @__PURE__ */ (0, Q.jsx)(sr, { provider: e.provider })
 			}),
 			/* @__PURE__ */ (0, Q.jsx)("b", {
 				className: "min-w-0 text-body-medium wrap-anywhere text-text-primary",
 				children: e.provider_label
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(Jo, { row: e }),
+			/* @__PURE__ */ (0, Q.jsx)(as, { row: e }),
 			e.missing.map((e) => /* @__PURE__ */ (0, Q.jsx)(et, {
 				variant: "caption",
 				color: "rose",
@@ -5045,9 +5094,9 @@ function Xo({ row: e, readOnly: t, toast: n }) {
 		children: [
 			r,
 			/* @__PURE__ */ (0, Q.jsx)(O, {
-				summary: $t(e) ? "修改凭据" : "填写凭据",
-				defaultOpen: e.requirement === "required" && !$t(e),
-				children: /* @__PURE__ */ (0, Q.jsx)(Yo, {
+				summary: rn(e) ? "修改凭据" : "填写凭据",
+				defaultOpen: e.requirement === "required" && !rn(e),
+				children: /* @__PURE__ */ (0, Q.jsx)(os, {
 					row: e,
 					readOnly: t,
 					toast: n
@@ -5056,18 +5105,18 @@ function Xo({ row: e, readOnly: t, toast: n }) {
 			e.world_readable ? /* @__PURE__ */ (0, Q.jsx)(F, {
 				tone: "error",
 				title: "凭据文件权限过宽",
-				children: Ko
+				children: rs
 			}) : null
 		]
 	});
 }
-function Zo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
-	let i = e.providers || [], a = i.filter((e) => e.requirement === "required" && !$t(e));
+function cs({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
+	let i = e.providers || [], a = i.filter((e) => e.requirement === "required" && !rn(e));
 	if ((0, Z.useEffect)(() => {
-		Cn("credentials", { done: i.filter($t).map((e) => e.provider) });
+		An("credentials", { done: i.filter(rn).map((e) => e.provider) });
 	}, [e]), !i.length) return /* @__PURE__ */ (0, Q.jsx)(rt, {
 		size: "compact",
-		icon: Zt,
+		icon: tn,
 		title: "没有可配置的来源",
 		children: "已接入的站点及其凭据状态会显示在这里。"
 	});
@@ -5094,12 +5143,12 @@ function Zo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 			className: "text-body-medium text-text-secondary",
 			children: e.title
 		}), /* @__PURE__ */ (0, Q.jsx)("div", {
-			className: Jt({
+			className: Qt({
 				variant: "outlined",
 				padding: "none",
 				className: "flex flex-col overflow-hidden"
 			}),
-			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(Xo, {
+			children: e.rows.map((e) => /* @__PURE__ */ (0, Q.jsx)(ss, {
 				row: e,
 				readOnly: t,
 				toast: n
@@ -5115,7 +5164,7 @@ function Zo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 			children: s
 		}) })
 	}) : /* @__PURE__ */ (0, Q.jsxs)("div", {
-		className: Jt({
+		className: Qt({
 			padding: "none",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 		}),
@@ -5129,7 +5178,7 @@ function Zo({ data: e, readOnly: t, toast: n, embedded: r = !1 }) {
 	});
 }
 // src/react/settings/entry-links-settings.tsx
-function Qo({ initial: e, receipt: t }) {
+function ls({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.sites), i = Y(), a = (e, t) => r((n) => n.map((n) => n.key === e ? {
 		...n,
 		host: t
@@ -5148,7 +5197,7 @@ function Qo({ initial: e, receipt: t }) {
 			/* @__PURE__ */ (0, Q.jsx)(N, { children: tt }),
 			n.map((e) => /* @__PURE__ */ (0, Q.jsx)(P, {
 				id: `entry-link-${e.key}`,
-				label: /* @__PURE__ */ (0, Q.jsx)(Lt, {
+				label: /* @__PURE__ */ (0, Q.jsx)(zt, {
 					site: e.key,
 					label: `${e.label} 地址`
 				}),
@@ -5169,31 +5218,31 @@ function Qo({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/indexer-settings.tsx
-var $o = "/api/configuration/indexers";
-function es({ receipt: e }) {
+var us = "/api/configuration/indexers";
+function ds({ receipt: e }) {
 	let t = X({
 		queryKey: ["indexers"],
-		queryFn: ({ signal: e }) => W($o, e),
+		queryFn: ({ signal: e }) => W(us, e),
 		refetchOnMount: "always"
 	});
-	return t.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(t.error) }) : t.isFetching ? /* @__PURE__ */ (0, Q.jsx)(Nt, {
+	return t.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: q(t.error) }) : t.isFetching ? /* @__PURE__ */ (0, Q.jsx)(Ft, {
 		label: "正在读取资源搜索设置",
-		html: fn
-	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(rs, {
+		html: vn
+	}) : t.data ? /* @__PURE__ */ (0, Q.jsx)(ms, {
 		initial: t.data,
 		receipt: e
 	}) : null;
 }
-function ts(e) {
+function fs(e) {
 	try {
 		return new globalThis.URL(e).host;
 	} catch {
 		return e;
 	}
 }
-function ns({ row: e, index: t }) {
+function ps({ row: e, index: t }) {
 	let n = [
-		e.url ? ts(e.url) : "未填地址",
+		e.url ? fs(e.url) : "未填地址",
 		e.enabled ? "已启用" : "已停用",
 		e.api_key_set && !e.clear_api_key ? "已保存 API key" : e.api_key ? "API key 待保存" : "没有 API key"
 	];
@@ -5208,10 +5257,10 @@ function ns({ row: e, index: t }) {
 		})]
 	});
 }
-function rs({ initial: e, receipt: t }) {
+function ms({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e.indexers), i = Y();
 	(0, Z.useEffect)(() => {
-		Cn("indexers", { open: e.indexers.map((e) => !e.url) });
+		An("indexers", { open: e.indexers.map((e) => !e.url) });
 	}, [e]);
 	let a = (e, t) => r((n) => n.map((n) => n.key === e ? {
 		...n,
@@ -5221,7 +5270,7 @@ function rs({ initial: e, receipt: t }) {
 		guide: "indexers",
 		title: "资源搜索",
 		onSubmit: (e) => {
-			e.preventDefault(), i.run("save", (e) => G($o, { indexers: n }, "POST", e), (e) => {
+			e.preventDefault(), i.run("save", (e) => G(us, { indexers: n }, "POST", e), (e) => {
 				r(e.indexers), t("已保存索引器");
 			});
 		},
@@ -5241,7 +5290,7 @@ function rs({ initial: e, receipt: t }) {
 				className: "min-w-0 border-t border-separator-border pt-2",
 				children: /* @__PURE__ */ (0, Q.jsx)(O, {
 					defaultOpen: !e.url,
-					summary: /* @__PURE__ */ (0, Q.jsx)(ns, {
+					summary: /* @__PURE__ */ (0, Q.jsx)(ps, {
 						row: e,
 						index: t
 					}),
@@ -5311,7 +5360,7 @@ function rs({ initial: e, receipt: t }) {
 			type: "button",
 			disabled: !!i.busy || n.length >= e.max_indexers,
 			onClick: () => r([...n, {
-				key: Sn(),
+				key: kn(),
 				name: "",
 				url: "",
 				enabled: !0,
@@ -5326,15 +5375,15 @@ function rs({ initial: e, receipt: t }) {
 	});
 }
 // src/react/settings/source-settings.tsx
-function is({ data: e, receipt: t, panel: n, issues: r }) {
+function hs({ data: e, receipt: t, panel: n, issues: r }) {
 	let i = X({
-		queryKey: at,
-		queryFn: ({ signal: e }) => an(e),
+		queryKey: ot,
+		queryFn: ({ signal: e }) => dn(e),
 		enabled: n?.active !== !1,
 		refetchOnMount: "always"
 	});
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
-		...tr(n),
+		...lr(n),
 		children: [
 			r,
 			/* @__PURE__ */ (0, Q.jsx)("div", {
@@ -5345,7 +5394,7 @@ function is({ data: e, receipt: t, panel: n, issues: r }) {
 					children: "采集来源与登录状态"
 				})
 			}),
-			i.data ? /* @__PURE__ */ (0, Q.jsx)(Zo, {
+			i.data ? /* @__PURE__ */ (0, Q.jsx)(cs, {
 				data: i.data,
 				readOnly: !!e.ledger_read_only,
 				toast: t,
@@ -5354,13 +5403,13 @@ function is({ data: e, receipt: t, panel: n, issues: r }) {
 				tone: "error",
 				title: "来源凭据未取得",
 				children: q(i.error)
-			}) : n?.active === !1 ? null : /* @__PURE__ */ (0, Q.jsx)(Nt, {
+			}) : n?.active === !1 ? null : /* @__PURE__ */ (0, Q.jsx)(Ft, {
 				label: "正在读取来源凭据",
-				html: en
+				html: an
 			}),
-			/* @__PURE__ */ (0, Q.jsx)(co, { receipt: t }),
-			/* @__PURE__ */ (0, Q.jsx)(es, { receipt: t }),
-			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(Qo, {
+			/* @__PURE__ */ (0, Q.jsx)(_o, { receipt: t }),
+			/* @__PURE__ */ (0, Q.jsx)(ds, { receipt: t }),
+			e.entry_links ? /* @__PURE__ */ (0, Q.jsx)(ls, {
 				initial: e.entry_links,
 				receipt: t
 			}) : null
@@ -5368,7 +5417,7 @@ function is({ data: e, receipt: t, panel: n, issues: r }) {
 	});
 }
 // src/react/settings/configuration-shape.ts
-function as(e) {
+function gs(e) {
 	let t = e.downloads;
 	if (!t) return null;
 	let n = t.media_sources ?? [];
@@ -5381,7 +5430,7 @@ function as(e) {
 		browserLogin: t.pikpak_browser.available
 	};
 }
-function os(e) {
+function _s(e) {
 	let t = e.tunnel;
 	return {
 		port: !!(e.editable && e.port_editable !== !1),
@@ -5395,7 +5444,7 @@ function os(e) {
 		tunnelNote: !!(t && (!t.available || t.state === "starting" || t.state === "running" && t.url))
 	};
 }
-function ss(e) {
+function vs(e) {
 	let t = e.updates, n = e.update_job?.state ?? "idle", r = !t || t.state === "unchecked" && !t.checked_at && n === "idle", i = +!!t?.package_kind + (r ? 0 : +!!t?.checked_at + (t?.state === "unchecked" ? 0 : 1) + (n === "idle" ? 0 : 1)), a = e.automatic_updates, o = e.storage;
 	return {
 		releaseFacts: t?.package_kind ? 5 : 4,
@@ -5416,12 +5465,12 @@ function ss(e) {
 	};
 }
 // src/react/settings/configuration-page.tsx
-function cs({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
+function ys({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) {
 	let i = X({
 		queryKey: Ze,
-		queryFn: ({ signal: e }) => rn(e)
+		queryFn: ({ signal: e }) => un(e)
 	}), a = i.data;
-	return a ? /* @__PURE__ */ (0, Q.jsx)(ds, {
+	return a ? /* @__PURE__ */ (0, Q.jsx)(Ss, {
 		data: a,
 		receipt: e,
 		reopenTutorial: t,
@@ -5440,7 +5489,7 @@ function cs({ receipt: e, reopenTutorial: t, section: n = "", diagnostics: r }) 
 		})
 	});
 }
-function ls({ data: e, sections: t, reload: n, refreshing: r }) {
+function bs({ data: e, sections: t, reload: n, refreshing: r }) {
 	return /* @__PURE__ */ (0, Q.jsx)(Q.Fragment, { children: t.map((t) => {
 		let i = e.section_errors?.[t];
 		return i ? /* @__PURE__ */ (0, Q.jsx)(F, {
@@ -5457,14 +5506,14 @@ function ls({ data: e, sections: t, reload: n, refreshing: r }) {
 		}, t) : null;
 	}) });
 }
-var us = 0;
-function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
-	let [s] = (0, Z.useState)(() => `board-tabs-${++us}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
+var xs = 0;
+function Ss({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i, reload: a, refreshing: o }) {
+	let [s] = (0, Z.useState)(() => `board-tabs-${++xs}`), [c, l] = (0, Z.useState)(r), u = (0, Z.useRef)(null), d = (0, Z.useRef)(c);
 	(0, Z.useEffect)(() => {
 		l(r);
 	}, [r]), (0, Z.useEffect)(() => {
-		let t = as(e);
-		t && Cn("downloads", t), Cn("network", os(e)), Cn("maintenance", ss(e));
+		let t = gs(e);
+		t && An("downloads", t), An("network", _s(e)), An("maintenance", vs(e));
 	}, [e]), (0, Z.useLayoutEffect)(() => {
 		if (d.current === c) return;
 		d.current = c;
@@ -5476,9 +5525,9 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		window.scrollTo(0, Math.max(0, window.scrollY + t.getBoundingClientRect().top - r));
 	}, [c]);
 	let f = (e) => {
-		l(e), An(kn(e), {
+		l(e), Ln(In(e), {
 			replace: !0,
-			state: _n.navigation.location.state
+			state: wn.navigation.location.state
 		});
 	}, [p, m] = (0, Z.useState)(() => matchMedia("(max-width:900px)").matches);
 	(0, Z.useEffect)(() => {
@@ -5488,7 +5537,7 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 	let h = (0, Z.useRef)([]), g = {
 		data: e,
 		receipt: t
-	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(ls, {
+	}, _ = (t) => /* @__PURE__ */ (0, Q.jsx)(bs, {
 		data: e,
 		sections: t,
 		reload: a,
@@ -5503,22 +5552,22 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		{
 			title: "媒体库与入库",
 			body: (n) => /* @__PURE__ */ (0, Q.jsxs)("div", {
-				...tr(n),
+				...lr(n),
 				children: [
 					_([
 						"media_sources",
 						"library_count",
 						"mount_dependencies"
 					]),
-					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(no, { ...g }) : null,
-					/* @__PURE__ */ (0, Q.jsx)(bo, { receipt: t }),
-					/* @__PURE__ */ (0, Q.jsx)(po, { receipt: t })
+					!e.section_errors?.media_sources && !e.section_errors?.library_count ? /* @__PURE__ */ (0, Q.jsx)(uo, { ...g }) : null,
+					/* @__PURE__ */ (0, Q.jsx)(Oo, { receipt: t }),
+					/* @__PURE__ */ (0, Q.jsx)(xo, { receipt: t })
 				]
 			})
 		},
 		{
 			title: "来源与订阅",
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(is, {
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(hs, {
 				...g,
 				panel: e,
 				issues: _(["entry_links"])
@@ -5526,7 +5575,7 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		},
 		...b || e.section_errors?.downloads ? [{
 			title: "下载渠道",
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(gr, {
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(wr, {
 				initial: b,
 				receipt: t,
 				panel: e,
@@ -5535,7 +5584,7 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		}] : [],
 		...y ? [{
 			title: "网络与访问",
-			body: (e) => /* @__PURE__ */ (0, Q.jsx)(Uo, {
+			body: (e) => /* @__PURE__ */ (0, Q.jsx)(es, {
 				...g,
 				panel: e,
 				issues: _(v)
@@ -5544,7 +5593,7 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		{
 			title: "应用与维护",
 			body: (e) => /* @__PURE__ */ (0, Q.jsxs)("div", {
-				...tr(e),
+				...lr(e),
 				children: [
 					_([
 						"startup",
@@ -5557,9 +5606,9 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 						"automatic_updates",
 						"facts"
 					]),
-					/* @__PURE__ */ (0, Q.jsx)(xa, { ...g }),
-					/* @__PURE__ */ (0, Q.jsx)(mo, { receipt: t }),
-					/* @__PURE__ */ (0, Q.jsx)(la, {
+					/* @__PURE__ */ (0, Q.jsx)(ka, { ...g }),
+					/* @__PURE__ */ (0, Q.jsx)(So, { receipt: t }),
+					/* @__PURE__ */ (0, Q.jsx)(_a, {
 						...g,
 						reopenTutorial: n
 					})
@@ -5569,7 +5618,7 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		{
 			title: "系统诊断",
 			body: (e) => /* @__PURE__ */ (0, Q.jsx)("div", {
-				...tr(e),
+				...lr(e),
 				children: e.active ? i : null
 			})
 		}
@@ -5585,7 +5634,7 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 	return /* @__PURE__ */ (0, Q.jsxs)("div", {
 		ref: u,
 		className: "ui-configpage",
-		children: [/* @__PURE__ */ (0, Q.jsx)(Dt, {
+		children: [/* @__PURE__ */ (0, Q.jsx)(kt, {
 			className: "ui-board-local-nav",
 			role: "tablist",
 			"aria-label": "配置分区",
@@ -5620,6 +5669,6 @@ function ds({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 		})] }, e))]
 	});
 }
-export { cs as ConfigurationPage };
+export { ys as ConfigurationPage };
 
-//# debugId=f3c641e8-e5d8-4620-a286-6c2979aa9c7f
+//# debugId=e94f4b51-17e0-4c78-bb81-65399db4a550

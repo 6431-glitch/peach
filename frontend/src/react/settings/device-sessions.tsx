@@ -1,10 +1,14 @@
 /* 用访问密码登录过的浏览器，逐台撤销。
  *
  * 列表单独取：服务端要拿这次请求的 cookie 认出哪一行是本机。撤销与改密码同一条边界，
- * 只在运行 Peach 的电脑上做，别处打开只能看。行是 BoardUI `SettingsRow`，本机标记是 `Chip`，
+ * 只在运行 Peach 的电脑上做，别处打开只能看。行是 BoardUI `SettingsRow`，行首是终端形态图标，
+ * 系统词前是平台标志（Remix Icon），本机标记是 `Chip`，
  * 撤销键是 BoardUI `Button`，确认走 `confirmModal()`。 */
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import {
+  RiAndroidFill, RiAppleFill, RiChromeFill, RiComputerLine, RiDeviceLine, RiSmartphoneLine, RiTabletLine, RiWindowsFill,
+} from '@remixicon/react';
 import { confirmModal } from '@peach/legacy/ui';
 
 import { Chip } from '@/components/base/badges/chip';
@@ -24,6 +28,33 @@ export interface DeviceSession {
 export interface DeviceSessionList { revision: string; sessions: DeviceSession[]; manageable: boolean }
 
 const deviceName = (row: DeviceSession) => row.device || '未识别的浏览器';
+
+type Glyph = typeof RiComputerLine;
+/** 服务端 `device_name()` 写出的系统词 → 平台标志与终端形态。没有 Linux 通用标志，只给终端图标。 */
+const SYSTEMS: Record<string, { platform?: Glyph; terminal: Glyph }> = {
+  iPhone: { platform: RiAppleFill, terminal: RiSmartphoneLine },
+  iPad: { platform: RiAppleFill, terminal: RiTabletLine },
+  Android: { platform: RiAndroidFill, terminal: RiSmartphoneLine },
+  'Android 平板': { platform: RiAndroidFill, terminal: RiTabletLine },
+  ChromeOS: { platform: RiChromeFill, terminal: RiComputerLine },
+  Windows: { platform: RiWindowsFill, terminal: RiComputerLine },
+  macOS: { platform: RiAppleFill, terminal: RiComputerLine },
+  Linux: { terminal: RiComputerLine },
+};
+
+/** 设备名是「浏览器 · 系统」，系统词前放平台标志；认不出系统时照原文。 */
+function DeviceLabel({ row }: { row: DeviceSession }) {
+  const parts = row.device.split(' · ');
+  const system = parts.at(-1) ?? '';
+  const Platform = SYSTEMS[system]?.platform;
+  if (!Platform) return deviceName(row);
+  return <>{parts.length > 1 ? `${parts[0]} · ` : ''}<Platform aria-hidden className="inline size-4 -mt-0.5 mr-1 align-middle text-foreground-icon-secondary" />{system}</>;
+}
+
+function TerminalIcon({ row }: { row: DeviceSession }) {
+  const Terminal = SYSTEMS[row.device.split(' · ').at(-1) ?? '']?.terminal ?? RiDeviceLine;
+  return <Terminal aria-hidden className="size-5 shrink-0 text-foreground-icon-secondary" />;
+}
 
 /** 最近活动按分钟落盘，所以一分钟以内都写「刚刚」。 */
 export function lastSeen(seconds: number, now = Date.now() / 1000): string {
@@ -89,7 +120,8 @@ function DeviceList({ initial, receipt }: { initial: DeviceSessionList; receipt(
       {list.sessions.length
         ? <Rows>
             {list.sessions.map(row => (
-              <SettingsRow key={row.id} label={deviceName(row)} description={describe(row)}>
+              <SettingsRow key={row.id} label={<DeviceLabel row={row} />} description={describe(row)}
+                icon={<TerminalIcon row={row} />}>
                 {row.current
                   ? <Chip color="blue" variant="caption">本机</Chip>
                   : list.manageable
