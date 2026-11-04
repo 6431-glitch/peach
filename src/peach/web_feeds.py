@@ -242,10 +242,21 @@ def _execute_check(contract, body, job_id: str) -> dict:
         if close:
             close()
     contract.cache_bust()
-    # 取资料：新发现的先排，没取到资料的旧壳留着保底名额，同一批一条后继。只缺封面的另成一批
-    # 补封面。定时那一轮只带到了重试时间的，手动点的那一轮全带；已在队里的番号都不再带。
-    # 存量部分（旧壳、封面、头像）定时那几轮隔 `STOCK_INTERVAL` 才派一次，新番号每轮都派。
-    automatic = bool(body.get("automatic"))
+    planned, stock = _plan_followups(contract, codes, automatic=bool(body.get("automatic")))
+    return {"ok": True, "checked": len(results), "total": len(rows), "results": results,
+            "added": len(codes), "deferred": deferred, "stock": stock,
+            # 后继由结果声明，调度端统一派（ADR-0040）：这里只把清单交出去。
+            "followups": [dict(key=item.key, task_key=item.task_key, label=item.label)
+                          for item in planned]}
+
+
+def _plan_followups(contract, codes: list[str], *, automatic: bool) -> tuple[list, bool]:
+    """这一轮拉完要派的后继，以及这一轮有没有带上存量。
+
+    取资料：新发现的先排，没取到资料的旧壳留着保底名额，同一批一条后继。只缺封面的另成一批
+    补封面。定时那一轮只带到了重试时间的，手动点的那一轮全带；已在队里的番号都不再带。
+    存量部分（旧壳、封面、头像）定时那几轮隔 `STOCK_INTERVAL` 才派一次，新番号每轮都派。
+    """
     stock = _stock_due(contract) if automatic else True
     retry_after = feed_followup.RETRY_AFTER if automatic else timedelta(0)
     hidden = web_settings.hidden_compilations(contract.database)
@@ -253,26 +264,20 @@ def _execute_check(contract, body, job_id: str) -> dict:
     fresh = [code for code in dict.fromkeys(codes) if normalise_code_key(code) not in busy]
     with contract.database.read_connection() as connection:
         if not stock:
-            planned = feed_followup.plan(fresh[:feed_followup.MAX_BATCH])
-        else:
-            batch = feed_followup.scrape_batch(
-                connection, fresh, exclude=[*codes, *busy], retry_after=retry_after, hidden=hidden)
-            covers = feed_followup.cover_backlog(
-                connection, contract.cover_root, exclude=[*codes, *batch, *busy],
-                retry_after=retry_after, hidden=hidden)
-            planned = feed_followup.plan(batch) + feed_followup.plan_covers(covers)
-            # 余下的名额给缺头像的存量女优（ADR-0097）。资料处理收尾也派这一份，但没有新片
-            # 入库的日子它一轮都不跑，存量就一直停在原地；定时拉取每天都跑。
-            planned += avatar_followup.stock(
-                connection, contract.avatar_root, Attempts(attempts_root(contract.candidate_root)),
-                limit=MAX_FOLLOWUPS - len(planned))
-    if stock:
-        contract.feed_stock_planned_at = time.monotonic()
-    return {"ok": True, "checked": len(results), "total": len(rows), "results": results,
-            "added": len(codes), "deferred": deferred, "stock": stock,
-            # 后继由结果声明，调度端统一派（ADR-0040）：这里只把清单交出去。
-            "followups": [dict(key=item.key, task_key=item.task_key, label=item.label)
-                          for item in planned]}
+            return feed_followup.plan(fresh[:feed_followup.MAX_BATCH]), False
+        batch = feed_followup.scrape_batch(
+            connection, fresh, exclude=[*codes, *busy], retry_after=retry_after, hidden=hidden)
+        covers = feed_followup.cover_backlog(
+            connection, contract.cover_root, exclude=[*codes, *batch, *busy],
+            retry_after=retry_after, hidden=hidden)
+        planned = feed_followup.plan(batch) + feed_followup.plan_covers(covers)
+        # 余下的名额给缺头像的存量女优（ADR-0097）。资料处理收尾也派这一份，但没有新片
+        # 入库的日子它一轮都不跑，存量就一直停在原地；定时拉取每天都跑。
+        planned += avatar_followup.stock(
+            connection, contract.avatar_root, Attempts(attempts_root(contract.candidate_root)),
+            limit=MAX_FOLLOWUPS - len(planned))
+    contract.feed_stock_planned_at = time.monotonic()
+    return planned, True
 
 
 def _defer_round(contract, pending, until: datetime, results: list) -> tuple[list, int]:
