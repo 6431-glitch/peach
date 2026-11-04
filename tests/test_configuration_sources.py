@@ -90,6 +90,8 @@ class ConfigurationIsolationTests(unittest.TestCase):
                 stack.enter_context(patch.object(routes, "snapshot", return_value={"media_dirs": [], "port": 8900}))
                 stack.enter_context(patch.object(routes, "network_payload", return_value={"scope": "local"}))
                 stack.enter_context(patch.object(routes, "tunnel_payload", return_value={"state": "idle"}))
+                stack.enter_context(patch.object(routes, "api_token_payload", return_value={"rotatable": False}))
+                stack.enter_context(patch.object(routes, "certificate_payload", return_value=None))
                 for key, module, name in (("push_discovery", routes, "push_discovery_payload"),
                                           ("downloads", routes.web_downloads, "settings_payload")):
                     stack.enter_context(patch.object(module, name, side_effect=OSError("private-detail"))
