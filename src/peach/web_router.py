@@ -38,12 +38,15 @@ from .web_catalog import (
     w_item_tag,
 )
 from .web_entity import (
+    FEED_SHAPE_TABLES,
     SUGGEST_GROUP_LIMIT,
     SUGGEST_KIND_LIMIT,
+    entity_shape_feed,
+    entity_shape_rest,
+    entity_shapes,
     q_entity,
     q_entity_latest,
     q_entity_photos,
-    q_entity_shapes,
     q_index,
     q_photo_set,
     q_suggest,
@@ -290,9 +293,13 @@ def _get_review(contract, args):
 
 
 def _get_entity_shapes(contract, args):
-    # 每一页开头都要这一份（骨架照它留位），全部来自账本，账本不变就一直用同一份。
-    return contract.cached_until_changed("entity-shapes",
-                                         lambda: q_entity_shapes(contract, args))
+    # 每一页开头都要这一份（骨架照它留位），全部来自账本，账本不变就一直用同一份。后台采集每几秒
+    # 写一次订阅表，只让新作那一小份跟着重算；其余部分按订阅表以外的表失效。
+    rest = contract.cached_until_changed(
+        "entity-shapes", lambda: entity_shape_rest(contract),
+        tables=contract.ledger_tables_except(FEED_SHAPE_TABLES))
+    feed = contract.cached_until_changed("entity-shapes-feed", lambda: entity_shape_feed(contract))
+    return entity_shapes(rest, feed)
 
 
 #: 安装教程每一项只读这几个字段。载荷形状由 `test_post_setup_tutorial_only_carries_progress_counts`

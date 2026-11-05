@@ -154,7 +154,7 @@ def q_jav_discoveries(contract, args):
     """口味采用 IDF/MMR；资料补齐只处理一次请求确定的有限集合。"""
     scope = "library" if args.get("scope") == "library" else "external"
     limit = max(1, min(int(args.get("limit") or 60), 100))
-    with contract.read_connection() as connection:
+    with contract.read_connection() as connection, entities.memoized_resolution():
         strengths, names, evidence = preference_profile(connection, contract.taste_history_store)
         profile = {"id": 0, "entities": {kind: set(values) for kind, values in strengths.items()}}
         candidates = _library(connection) if scope == "library" else _external(connection, contract)
@@ -267,7 +267,7 @@ def q_jav_releases(contract, args):
     descending = args.get("direction") != "asc"
     matches = _release_matcher({facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS},
                                str(args.get("q") or "").strip().casefold())
-    with contract.read_connection() as connection:
+    with contract.read_connection() as connection, entities.memoized_resolution():
         rows = _release_order(_release_rows(contract, connection, taste=sort == "taste"), sort, descending,
                               str(args.get("seed") or ""))
         facets = {facet: _release_facet(contract, rows, facet, matches) for facet in RELEASE_FACETS}
