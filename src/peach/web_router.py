@@ -113,7 +113,7 @@ from .web_scraping import (
     w_scraping_check, w_scraping_check_all, w_scraping_cover, w_scraping_settings,
 )
 from .web_state import WebContract, path_version
-from .web_tasks import q_tasks
+from .web_tasks import q_result_updates, q_tasks
 from .web_timeline_thumbnails import (
     q_media_processing, q_thumbnail_jobs, q_timeline, w_media_processing, w_thumbnail_jobs,
 )
@@ -352,6 +352,7 @@ GET_HANDLERS = {
     "/api/media-processing": q_media_processing,
     "/api/folders": q_folders,
     "/api/tasks": q_tasks,
+    "/api/result-updates": q_result_updates,
     "/api/downloads": q_downloads,
     "/api/resources/search": q_resource_search,
     "/api/jav/detail": q_jav_detail,

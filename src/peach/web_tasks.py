@@ -29,6 +29,20 @@ RECENT_LIMIT = 20
 NO_TABLE = "数据库缺少任务记录表，请按运行文档检查备份后执行 peach migrate upgrade --yes"
 
 
+def q_result_updates(contract, _args):
+    """每个页面常驻的轻量轮询：结果版本、入库通知与有没有任务在排或在跑，不组装任务列表。
+
+    全局组件只用这三样，却曾每两秒取一次完整的 `/api/tasks`；任务一多，那份组装就把服务进程
+    占满，所有页面一起变慢。完整列表只留给任务中心页。
+    """
+    try:
+        busy = any(contract.task_runs.query(status=status, limit=1) for status in ACTIVE_STATUSES)
+    except sqlite3.OperationalError:
+        busy = False
+    return {"ok": True, "result_versions": result_versions(contract),
+            "ingest_notices": NOTICES.snapshot(), "busy": busy}
+
+
 def q_tasks(contract, args):
     try:
         return _tasks(contract, args)
