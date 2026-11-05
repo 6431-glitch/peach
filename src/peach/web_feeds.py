@@ -314,8 +314,8 @@ def _execute_check(contract, body, job_id: str) -> dict:
 def _plan_followups(contract, codes: list[str], *, automatic: bool) -> tuple[list, bool]:
     """这一轮拉完要派的后继，以及这一轮有没有带上存量。
 
-    取资料：新发现的先排，没取到资料的旧壳留着保底名额，同一批一条后继。只缺封面的另成一批
-    补封面。定时那一轮只带到了重试时间的，手动点的那一轮全带；已在队里的番号都不再带。
+    取资料：新发现的先排，没取到资料的旧壳留着保底名额，同一批一条后继。不在这一批里的缺封面
+    壳另成一批补封面，还没轮到取资料的也在内。定时那一轮只带到了重试时间的，手动点的那一轮全带；已在队里的番号都不再带。
     存量部分（旧壳、封面、头像）定时那几轮隔 `STOCK_INTERVAL` 才派一次，新番号每轮都派。
     """
     stock = _stock_due(contract) if automatic else True
@@ -736,6 +736,13 @@ def _discovery_performers(connection, contract, rows) -> dict[int, list[dict]]:
     return performers
 
 
+def cover_state_fields(states: dict, code: str) -> dict:
+    """新作卡封面格的两个字段：`cover_state`（`fetching`／`queued`／`missing`，有封面时为 None）与原因。
+    首页这一行和 JAV 页「新作」「发现」两个分区共用同一份口径。"""
+    state, reason = states.get(normalise_code_key(code), (None, ""))
+    return {"cover_state": state, "cover_reason": reason}
+
+
 def q_feed_discoveries(contract, args) -> dict:
     """未入库的新作。`entity` 限定到某个人，`state` 切换忽略视图。
 
@@ -778,7 +785,8 @@ def q_feed_discoveries(contract, args) -> dict:
             for run in contract.task_runs.query(status="succeeded", task_key=task_key, limit=1)]
     latest = max(last, key=lambda run: run.finished_at or "", default=None)
     cover_network = int(latest.result_summary.get("cover_network") or 0) if latest else 0
-    fetching = feed_followup.in_flight(contract.task_runs)
+    # 还没有封面的那几部，封面格说清在等什么、为什么没有（`cover_states`）。
+    states = feed_followup.cover_states(contract, rows[:limit])
     return {"ok": True, "more": more, "cover_network": cover_network, "items": [{
         "id": int(row["id"]),
         "code": row["code"],
@@ -787,7 +795,7 @@ def q_feed_discoveries(contract, args) -> dict:
         "cover_url": row["cover_url"],
         # 本机封面与它的两份边车，形状和资产卡的同名字段一致，页面按同一套取景。
         "has_cover": contract.has_cover(row["code"]),
-        "cover_fetching": normalise_code_key(row["code"]) in fetching,
+        **cover_state_fields(states, row["code"]),
         "cover_frame": contract.cover_frame(row["code"]),
         "cover_version": contract.cover_version(row["code"]),
         "poster_box": contract.poster_box(row["code"]),

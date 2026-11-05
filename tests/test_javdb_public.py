@@ -13,7 +13,7 @@ from PIL import Image
 
 from peach.http import HttpResponse
 from peach.javdb_public import PublicAPI, PublicSourceUnavailable, decode_image, preview_video_url, public_signature_parts
-from peach.javdb_public import PublicBudgetExceeded, PublicRequestBudget, actor_gender
+from peach.javdb_public import PublicBudgetExceeded, PublicNotFound, PublicRequestBudget, PublicSourcePaused, actor_gender
 from peach.web_jav_detail import (JAV_ACTOR_IMAGE_MAX_AGE, JAV_IMAGE_MAX_AGE, jav_image, q_jav_detail,
                                   q_jav_reviews, q_jav_resources)
 from peach.web_state import WebContract
@@ -184,6 +184,18 @@ class PublicProtocolTests(unittest.TestCase):
             api._get('https://javdb.com/example')
             limiter.assert_called_once()
 
+    def test_api_requests_wait_half_a_second_apart(self):
+        now, slept = [100.0], []
+
+        def sleeper(seconds):
+            slept.append(round(seconds, 3))
+            now[0] += seconds
+
+        api = PublicAPI(lambda *_: HttpResponse(200, {}, b'{}'), clock=lambda: now[0], sleeper=sleeper)
+        api._get('https://jdforrepam.com/api/first')
+        api._get('https://jdforrepam.com/api/second')
+        self.assertEqual(slept, [0.5])
+
     def test_gender_uses_only_explicit_supported_source_values(self):
         for value, expected in ((0, "female"), (1, "male"), (None, "unknown"),
                                 (False, "unknown"), (2, "unknown"), ("male", "male"), ("0", "unknown")):
@@ -249,6 +261,25 @@ class PublicProtocolTests(unittest.TestCase):
         self.assertEqual(parse_qs(urlsplit(search.url).query)['q'], ['1627464'])
         with self.assertRaises(PublicSourceUnavailable):
             self.api().movie('FC2-PPV-1627464')
+
+    def test_mgs_prefixed_code_searches_source_number_and_keeps_identity(self):
+        api = self.api(number='LUXU-891')
+        self.assertEqual(api.movie('259LUXU-891')['number'], 'LUXU-891')
+        search = next(request for request in self.requests if '/v2/search' in request.url)
+        self.assertEqual(parse_qs(urlsplit(search.url).query)['q'], ['LUXU-891'])
+        self.assertEqual(api.movie('259LUXU-891', source_id='Exact')['id'], 'Exact')
+        with self.assertRaisesRegex(PublicSourceUnavailable, '身份不匹配'):
+            self.api(number='LUXU-892').movie('259LUXU-891', source_id='Exact')
+
+    def test_missing_search_result_and_cooldown_have_their_own_kinds(self):
+        with self.assertRaises(PublicNotFound):
+            self.api().movie('EXM-999')
+        api = self.api(blocked=True)
+        with self.assertRaises(PublicSourceUnavailable) as first:
+            api.movie('EXM-001')
+        self.assertNotIsInstance(first.exception, PublicSourcePaused)
+        with self.assertRaises(PublicSourcePaused):
+            api.movie('EXM-002')
 
     def test_exact_work_is_cached_and_signed_without_credentials(self):
         api = self.api()
