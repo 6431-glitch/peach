@@ -21,6 +21,8 @@ Removed / Fixed / Security。
 
 ## [未发布]
 
+## [0.55.1] - 2026-11-05
+
 ### 修复
 
 - **界面**：后台任务成批写账本之后第一次打开页面不再那么慢：统计页、作品列表、艺人与标签索引重算时不再把所有文件名重新解析一遍，JAV 新作不再对同一批演员和厂牌反复查库；搜索推荐几分钟内复用同一池，不再每开一页都在服务端现凑。
@@ -987,7 +989,8 @@ Removed / Fixed / Security。
 - **桌面**：独立包使用 UTF-8 启动日志。
 - **配置**：首次设置后的跳转目标取新鲜读到的 mDNS 名。
 
-[未发布]: https://github.com/peach-mitao/peach/compare/v0.55.0...HEAD
+[未发布]: https://github.com/peach-mitao/peach/compare/v0.55.1...HEAD
+[0.55.1]: https://github.com/peach-mitao/peach/compare/v0.55.0...v0.55.1
 [0.55.0]: https://github.com/peach-mitao/peach/compare/v0.54.0...v0.55.0
 [0.54.0]: https://github.com/peach-mitao/peach/compare/v0.53.0...v0.54.0
 [0.53.0]: https://github.com/peach-mitao/peach/compare/v0.52.0...v0.53.0
