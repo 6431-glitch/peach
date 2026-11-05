@@ -113,15 +113,16 @@ function JunkCardView({ item, view, selected, selectMode, helpers, actions }: Ju
         <button type="button" data-junk-action="reveal" title="在资源管理器中显示" aria-label="在资源管理器中显示"
           {...busyAttrs('reveal')} onClick={reveal}>
           {busy === 'reveal' ? <span data-junk-spinner="" dangerouslySetInnerHTML={{ __html: spinnerHtml('正在定位') }} /> : <Icon name="folder-open" />}
-          <span data-junk-label="">打开位置</span>
         </button>
         <button type="button" data-junk-action={decision.operation} title={decision.label} aria-label={decision.label}
           {...busyAttrs(decision.operation)} onClick={operate(decision.operation)}>
-          <Icon name={decision.glyph} /><span data-junk-label="">{decision.label}</span>
+          {decision.operation === 'dismiss-junk' ? <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M4 3l16 18" />
+          </svg> : <Icon name={decision.glyph} />}
         </button>
         <button type="button" data-junk-action="dispose" title="移入回收站" aria-label="移入回收站"
           {...busyAttrs('dispose')} onClick={operate('dispose')}>
-          <Icon name="trash" /><span data-junk-label="">移入回收站</span>
+          <Icon name="trash" />
         </button>
         <span data-junk-state="" aria-live="polite">{status}</span>
       </footer>

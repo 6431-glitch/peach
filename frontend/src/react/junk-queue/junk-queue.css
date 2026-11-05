@@ -134,7 +134,7 @@
 .peach-react [data-junk-why] { overflow-wrap: anywhere; }
 .peach-react [data-junk-size] { margin-left: auto; white-space: nowrap; }
 
-/* 三颗键等宽，图标加标签在各自那一格里居中；状态行跨满一行，没有话时不占地方。 */
+/* Three equal-width icon buttons; status spans the row when present. */
 .peach-react [data-junk-actions] {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -207,8 +207,6 @@
 .peach-react [data-junk-state]:empty { display: none; }
 /* 多选时整张卡都是切换选中，键行不接指针。 */
 .peach-react [data-select-mode] [data-junk-actions] { pointer-events: none; opacity: .52; }
-/* 紧凑密度下只剩图标。 */
-body[data-density="dense"] .peach-react [data-junk-actions] [data-junk-label] { display: none; }
 
 /* 手机上够手指点：分类与三颗键都到 44px。 */
 @media (max-width: 760px) {
@@ -216,12 +214,4 @@ body[data-density="dense"] .peach-react [data-junk-actions] [data-junk-label] { 
   .peach-react [data-junk-filters] a { height: 44px; }
   .peach-react [data-junk-actions] button { min-height: 44px; }
   .peach-react [data-junk-actions] button[data-junk-action="dispose"] { padding-inline: 7px; }
-}
-
-/* 键行按自己的宽度判：卡片窄到三格放不下「图标＋五个字」时（单列手机上约 290px 宽的卡）
- * 收掉图标、收窄内边距，字留着；无障碍名与 title 不变。 */
-.peach-react [data-junk-actions] { container-type: inline-size; }
-@container (max-width: 340px) {
-  .peach-react [data-junk-actions] button[data-junk-action] { gap: 4px; padding-inline: 6px; }
-  .peach-react [data-junk-actions] button > svg { display: none; }
 }
