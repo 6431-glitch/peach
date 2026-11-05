@@ -15,6 +15,7 @@ import { errorMessage } from '../../api';
 import { entityDisplayName } from '../../core/entity-names';
 import type { DownloadPrefill } from '../activity/cloud-download-dialog';
 import { Note } from '../components/note';
+import { CoverQueue } from '../components/cover-queue';
 import { TaskProgress } from '../components/task-progress';
 import { EmptyState } from '../components/empty-state';
 import { Pagination } from '../components/table-pagination';
@@ -26,7 +27,7 @@ import { addWant, invalidateWants } from '../wants/wants';
 import { useAction } from '../settings/use-action';
 import { useEntityNames } from '../use-entity-names';
 import { DiscoveryCard, resourcePrefill } from './discovery-card';
-import { fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, type Discovery, type ReleaseFacetPerformer, type ReleaseFacetStudio,
+import { coverArrived, fetchCoverNow, fetchReleases, releaseFilters, releaseKey, RELEASE_PAGE_SIZE, type Discovery, type ReleaseFacetPerformer, type ReleaseFacetStudio,
   type ReleaseFilters, writeJavQuery } from './jav';
 import { ReleaseTable } from './jav-release-table';
 import { CatalogViewToggle } from '../catalog-grid/catalog-view-toggle';
@@ -54,6 +55,12 @@ function StudioMark({ studio }: { studio: ReleaseFacetStudio }) {
       loading="lazy" decoding="async" onError={() => setBroken(true)} /> : leadingGraphemes(studio.name, 2)}
   </span>;
 }
+
+/** 本页一键插队当场取一部：取到就补进已取回的数据（`coverArrived`），卡片换成本机那张。 */
+const fetchReleaseCover = (code: string) => fetchCoverNow(code).then(result => {
+  if (result.has_cover) coverArrived(code, result);
+  return result.has_cover;
+});
 
 export function Releases({ readOnly, receipt, resource, query, navigate, clearText }: {
   readOnly: boolean; receipt(message: string): void; resource(work: DownloadPrefill): void; query: string;
@@ -171,6 +178,12 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
     {releases.error ? <Note tone="error" title="新作未取得">{errorMessage(releases.error)}</Note> : null}
     {reading && metadata ? <div data-jav-metadata="" className="min-w-0"><TaskProgress
       label={`正在读取作品资料 · ${metadata.completed} / ${metadata.total} 部`} value={metadata.completed} total={metadata.total} /></div> : null}
+    {readOnly ? null : <CoverQueue scope="本页" fetchOne={fetchReleaseCover}
+      codes={(data?.items || []).filter(item => item.cover_state === 'queued' && !item.cover_url).map(item => item.code)}
+      settled={(got, total) => {
+        receipt(got === total ? `已取到 ${total} 部封面` : `已取到 ${got} / ${total} 部封面，没取到的在卡上写了原因`);
+        void releases.refetch();
+      }} />}
     {!waiting && !releases.error && !data?.items.length ? <EmptyState icon={RiRssLine} title={filtered ? '没有符合条件的新作' : '暂无未入库的新作'}
       actions={filtered ? <Button size="small" onClick={clear}>清除筛选</Button>
         : <ButtonLink size="small" href="/subscriptions?tab=add">添加订阅</ButtonLink>}>

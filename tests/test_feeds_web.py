@@ -440,13 +440,39 @@ class FeedWebTest(FeedWebFixture):
         while not self.contract.task_runs.query(status="active", task_key=feed_followup.TASK_KEY):
             self.assertLess(time.monotonic(), deadline, "取资料后继未入队")
             time.sleep(0.01)
-        items = dispatch_api_get(self.contract, "/api/feeds/discoveries", {})["items"]
-        self.assertTrue(all(item["cover_fetching"] for item in items))
-        self.assertTrue(all(not item["has_cover"] for item in items))
+        # 还排在通道里的那一批是「排队中」，说得出排在哪条队后面；领走开跑才算抓取中。
+        states = lambda: [(item["cover_state"], item["cover_reason"]) for item in
+                          dispatch_api_get(self.contract, "/api/feeds/discoveries", {})["items"]]
+        self.assertEqual(states(), [("queued", "排在新作资料采集后面，资料取完就取封面")] * 2)
+        [run] = self.contract.task_runs.query(status="active", task_key=feed_followup.TASK_KEY)
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE task_run SET status='running' WHERE id=?", (run.id,))
+        self.assertEqual({state for state, _ in states()}, {"fetching"})
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE task_run SET status='pending' WHERE id=?", (run.id,))
         self._drain(1)
         items = dispatch_api_get(self.contract, "/api/feeds/discoveries", {})["items"]
-        self.assertFalse(any(item["cover_fetching"] for item in items))
-        self.assertTrue(all(item["has_cover"] for item in items))
+        self.assertTrue(all(item["has_cover"] and item["cover_state"] is None for item in items))
+
+    def test_the_cover_cell_says_why_a_release_has_no_cover(self):
+        """取过没取到的写上次的原因；韩国 MIB 后台不替它取图，也不该说在排队；新作页与首页同一口径。"""
+        self.cover_misses.add("HMN-071")
+        self._add()
+        self._check()
+        self._drain(1)
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("INSERT INTO feed_discovery(code,source_id,title,link,release_date,discovered_at)"
+                               " VALUES('NOAH-101',1,'',NULL,'2026-09-22',?)", (feeds.stamp(),))
+            connection.execute("INSERT INTO feed_discovery(code,source_id,title,link,release_date,discovered_at)"
+                               " VALUES('ABP-123',1,'',NULL,'2026-09-22',?)", (feeds.stamp(),))
+        expected = {"HMN-071": ("missing", "上次没取到：封面处理未完成"),
+                    "NOAH-101": ("missing", "韩国 MIB 不适用 JAV 封面来源"),
+                    "ABP-123": ("queued", "等下一轮订阅检查分批取图")}
+        with patch("peach.jav_discovery_metadata.DiscoveryMetadata.ensure", return_value=None):
+            for path in ("/api/feeds/discoveries", "/api/jav/releases"):
+                items = {item["code"]: (item["cover_state"], item["cover_reason"])
+                         for item in dispatch_api_get(self.contract, path, {})["items"]}
+                self.assertEqual({code: items[code] for code in expected}, expected, path)
 
     def test_a_failing_source_reports_on_its_own_row_and_stays_scheduled(self):
         self._add()
@@ -949,6 +975,30 @@ class FeedWebTest(FeedWebFixture):
         if thread is not None:
             thread.join(5)
         self.assertEqual([item["key"] for item in self._check()["followups"]], ["feed-scrape:ABP-123"])
+
+    def test_shells_still_waiting_for_their_scrape_get_covers_in_their_own_lane(self):
+        """取资料一批装不下的壳不等写账本的那条通道，先只凭番号补封面；两批互不重复。"""
+        self._add()
+        self._check()
+        fresh = [f"NEW-{number:03d}" for number in range(feed_followup.MAX_BATCH + 2)]
+        with self.contract.database.write_transaction() as connection:
+            for code in fresh:
+                connection.execute("INSERT INTO feed_discovery(code,source_id,title,link,release_date,discovered_at)"
+                                   " VALUES(?,1,'',NULL,'2026-12-01',?)", (code, feeds.stamp()))
+        self.transport.responses[self.url] = HttpResponse(304, {}, b"", self.url)
+        thread = self.contract.feed_job.thread
+        if thread is not None:
+            thread.join(5)
+        planned = {item["task_key"]: item["key"] for item in self._check()["followups"]}
+        scrape = feed_followup.parse_key(planned[feed_followup.TASK_KEY])
+        covers = feed_followup.parse_key(planned[feed_followup.COVER_TASK_KEY], feed_followup.COVER_TASK_KEY)
+        self.assertEqual(len(scrape), feed_followup.MAX_BATCH)
+        self.assertEqual(sorted(covers), sorted(set(fresh) - set(scrape)))
+        # 上次没取到资料的仍归取资料重试，不进补封面。
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE feed_discovery SET scraped_at=?,scrape_error='来源连接未取得'"
+                               " WHERE code=?", (feeds.stamp(), covers[0]))
+        self.assertNotIn(covers[0], self._cover_backlog(exclude=scrape))
 
     def test_a_missing_cover_gets_its_own_batch_outside_the_ledger_lane(self):
         """资料齐了只缺封面的壳另派补封面：只取图，不再问资料来源，也不排在写账本的后继后面。"""

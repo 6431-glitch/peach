@@ -5,7 +5,7 @@ import { Button } from '@/components/base/buttons/button';
 import { Table, TableBody, TableCell, TableColumn, TableHeader, TableRow } from '@/components/base/table/table';
 import { ChevronSortDown } from '@/components/foundations/icons/chevrons';
 import { entityPath, fmtDur, leadingGraphemes } from '@peach/legacy/core';
-import { logoUrl } from '@peach/card-art';
+import { COVER_STATE_TITLE, logoUrl } from '@peach/card-art';
 import { relayoutCovers } from '../../card-art/framing';
 import { catalogListSkeletonCellHtml } from '../../catalog-content-skeleton';
 import { textLang } from '../../core/text-lang';
@@ -49,7 +49,9 @@ export function ReleaseTable({ items, waiting, filters, studios, javImage, readO
         return <div data-list-identity="">
           <button type="button" data-list-open="" tabIndex={-1} aria-hidden="true" onClick={open(item)}>
             <span data-list-picture="">{artwork
-              ? <ArtSlot artwork={{ kind: 'cover', html: artwork }} relayout={root => relayoutCovers(root, 'small')} /> : <span>无封面</span>}</span>
+              ? <ArtSlot artwork={{ kind: 'cover', html: artwork }} relayout={root => relayoutCovers(root, 'small')} />
+              // 缩略格只放得下状态字，原因放进悬停说明；当场取的键在卡片模式与分区顶上那条提示里。
+              : <span title={item.cover_reason || undefined}>{item.cover_state ? COVER_STATE_TITLE[item.cover_state] : '无封面'}</span>}</span>
           </button>
           <span data-list-text="">
             <button type="button" data-list-name="" title={`${item.code} · ${item.title || '标题未取得'}`} aria-label={`查看 ${item.code} 详情`}
