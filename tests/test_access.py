@@ -565,7 +565,7 @@ class DockerFirstAccessTests(ConfigurationPageCase):
         return await client.post("/api/configuration/access/first", json=body)
 
     async def test_docker_without_a_policy_opens_access_setup_for_local_and_private_peers(self):
-        for peer in ("127.0.0.1", "172.17.0.1", "192.168.1.20", "fd00::5"):
+        for peer in ("127.0.0.1", "198.51.100.1", "192.0.2.20", "fd00::5"):
             with self.subTest(peer=peer):
                 page = await self.device(peer=(peer, 1)).get("/login", params={"next": "/stats"})
                 self.assertEqual(page.status_code, 200)
@@ -574,8 +574,8 @@ class DockerFirstAccessTests(ConfigurationPageCase):
 
     async def test_public_peers_and_forwarded_requests_get_the_explanation_and_cannot_submit(self):
         body = {"mode": "password", "password": "correct-password", "confirmation": "correct-password"}
-        cases = ((("8.8.8.8", 1), {}), (("192.168.1.20", 1), {"X-Forwarded-For": "8.8.8.8"}),
-                 (("127.0.0.1", 1), {"Forwarded": "for=8.8.8.8"}), (("172.17.0.1", 1), {"CF-Connecting-IP": "8.8.8.8"}))
+        cases = ((("8.8.8.8", 1), {}), (("192.0.2.20", 1), {"X-Forwarded-For": "8.8.8.8"}),
+                 (("127.0.0.1", 1), {"Forwarded": "for=8.8.8.8"}), (("198.51.100.1", 1), {"CF-Connecting-IP": "8.8.8.8"}))
         for peer, headers in cases:
             with self.subTest(peer=peer, headers=headers):
                 client = self.device(peer=peer)
@@ -591,7 +591,7 @@ class DockerFirstAccessTests(ConfigurationPageCase):
         self.assertFalse(self.path.exists())
 
     async def test_setting_a_password_writes_the_policy_and_lets_this_browser_in(self):
-        desk = self.device(peer=("192.168.1.20", 1))
+        desk = self.device(peer=("192.0.2.20", 1))
         self.assertEqual((await self.submit(desk, mode="password", password="short", confirmation="short")).json()["detail"]["errors"],
                          {"password": "访问密码需为 8–256 个字符"})
         mismatch = await self.submit(desk, mode="password", password="correct-password", confirmation="other-password")
@@ -607,7 +607,7 @@ class DockerFirstAccessTests(ConfigurationPageCase):
         self.assertEqual(policy["mode"], "password")
         self.assertTrue(access.verify(policy, "correct-password"))
         self.assertEqual((await desk.get("/private")).status_code, 200)
-        stranger = self.device(peer=("192.168.1.30", 1))
+        stranger = self.device(peer=("192.0.2.30", 1))
         self.assertEqual((await stranger.get("/private")).status_code, 401)
         self.assertEqual(self.mode(await stranger.get("/login")), "password")
         again = await self.submit(stranger, mode="open")
@@ -615,11 +615,11 @@ class DockerFirstAccessTests(ConfigurationPageCase):
         self.assertEqual(access.load(self.path)["revision"], policy["revision"])
 
     async def test_choosing_no_password_writes_an_open_policy(self):
-        desk = self.device(peer=("172.17.0.1", 1))
+        desk = self.device(peer=("198.51.100.1", 1))
         accepted = await self.submit(desk, mode="open", next="//evil.example/")
         self.assertEqual(accepted.json(), {"url": "/"})
         self.assertEqual(access.load(self.path)["mode"], "open")
-        self.assertEqual((await self.device(peer=("192.168.1.30", 1)).get("/private")).status_code, 200)
+        self.assertEqual((await self.device(peer=("192.0.2.30", 1)).get("/private")).status_code, 200)
 
     async def test_the_token_still_works_and_other_deployments_keep_the_token_login(self):
         remote = self.device(peer=("8.8.8.8", 1))
