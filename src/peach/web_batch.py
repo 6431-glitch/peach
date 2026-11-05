@@ -57,6 +57,10 @@ from .junk import (
     promo_residue as promo_residue,
 )
 
+#: 垃圾评分读的账本表。不声明时任何一次提交（关注检查、任务记录）都让下一次打开当场重评
+#: 十万行；声明后后台任务的提交先回上一份、后台重算（ADR-0146），前台写入照旧当场重算。
+JUNK_SCORE_TABLES = ("asset", "review_decision", "download_task")
+
 # Linux 容器可从 mountinfo 识别媒体实际所在的 FUSE 文件系统。
 MOUNTINFO_PATH = Path("/proc/self/mountinfo")
 
@@ -114,7 +118,7 @@ def q_ads(contract: WebContract, limit=200, offset=0, kind="", status="pending")
     if status not in {"pending", "dismissed"}:
         raise ValueError("invalid junk status")
     out, dismissed_ids = contract.cached_until_changed(
-        "junk-scored", lambda: _scored_junk(contract))
+        "junk-scored", lambda: _scored_junk(contract), tables=JUNK_SCORE_TABLES)
     pending = [item for item in out if item["id"] not in dismissed_ids]
     dismissed = [item for item in out if item["id"] in dismissed_ids]
     pool = dismissed if status == "dismissed" else pending
