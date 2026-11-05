@@ -1086,6 +1086,13 @@ class DockerFirstSetupTests(_SetupHttpCase):
         self.assertEqual(response.status_code, 200, response.text)
         self.assertTrue(access.verify(access.load(path), "container-secret"))
 
+    def test_the_setup_service_reports_ready_so_the_container_healthcheck_passes(self):
+        ready = self._send("GET", "/healthz?ready=1")
+        self.assertEqual(ready.status_code, 200)
+        self.assertEqual((ready.json()["ready"], ready.json()["setup"]), (True, True))
+        with mock.patch.dict(os.environ, {"PEACH_DISTRIBUTION": "source"}):
+            self.assertEqual(self._send("GET", "/healthz?ready=1").status_code, 503, "桌面引导服务照旧不算就绪")
+
     def test_restoring_another_data_root_is_not_offered(self):
         response = self._send("POST", "/api/setup/restore", json={"data_root": str(self.root)}, client=self.LAN)
         self.assertEqual(response.status_code, 404)
