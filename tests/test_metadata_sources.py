@@ -417,8 +417,9 @@ class ConfigConsistencyTests(unittest.TestCase):
                          {"makers", "prestige", "faleno", "dahlia", "mgstage"})
 
     def test_seesaa_brings_its_own_transport_and_keeps_its_source_identity(self):
-        """Seesaa 作品表不经 `SourceTransport`：不收 Cookie、采集设置页没有它的卡片，冷却只在本批内，
-        取页、缓存与限额在 `WikiPages`，间隔与页面上限取自配置；provenance 是账本里已有的 `sougouwiki`。"""
+        """Seesaa 作品表不收 Cookie、采集设置页没有它的卡片，冷却只在本批内，取页、缓存与限额在 `WikiPages`，
+        间隔与页面上限取自配置；provenance 是账本里已有的 `sougouwiki`。`scrape_codes` 点名时它自带传输，
+        素人链上则借资料处理那一份（`LibraryMetadataProvider.wiki`）。"""
         self.assertEqual(set(WIKI_SOURCES), {"sougouwiki", "av_neme", "av_name"})
         for name, site in WIKI_SOURCES.items():
             config = site.DEFAULT
