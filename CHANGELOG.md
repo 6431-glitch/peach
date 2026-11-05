@@ -25,6 +25,8 @@ Removed / Fixed / Security。
 
 ## [未发布]
 
+## [0.56.0] - 2026-11-05
+
 ### 新增
 
 - **更新**：Docker 镜像同时发布到 `ghcr.io/peach-mitao/peach`，Docker Hub 拉取受限时可以改用。
@@ -936,7 +938,8 @@ Removed / Fixed / Security。
 - **桌面**：独立包使用 UTF-8 启动日志。
 - **配置**：首次设置后的跳转目标取新鲜读到的 mDNS 名。
 
-[未发布]: https://github.com/peach-mitao/peach/compare/v0.55.1...HEAD
+[未发布]: https://github.com/peach-mitao/peach/compare/v0.56.0...HEAD
+[0.56.0]: https://github.com/peach-mitao/peach/compare/v0.55.1...v0.56.0
 [0.55.1]: https://github.com/peach-mitao/peach/compare/v0.55.0...v0.55.1
 [0.55.0]: https://github.com/peach-mitao/peach/compare/v0.54.0...v0.55.0
 [0.54.0]: https://github.com/peach-mitao/peach/compare/v0.53.0...v0.54.0
