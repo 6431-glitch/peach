@@ -105,8 +105,8 @@ class LibraryShortcutsTests(unittest.TestCase):
         from peach.web_catalog import entity_ref
         with closing(sqlite3.connect(self.path)) as c, c:
             c.executescript("""
-                INSERT INTO entity VALUES(4,'creator','创作者');
-                INSERT INTO entity VALUES(5,'creator','同名待确认');
+                INSERT INTO entity VALUES(4,'creator','创作者','创作者');
+                INSERT INTO entity VALUES(5,'creator','同名待确认','同名待确认');
                 CREATE TABLE follow_source(id INTEGER PRIMARY KEY,provider TEXT,ref TEXT,entity_id INTEGER,metadata_json TEXT);
                 INSERT INTO follow_source VALUES(1,'kemono','fanbox/123',4,'{}');
                 INSERT INTO follow_source VALUES(2,'pawchive','fanbox/123',4,'{}');
