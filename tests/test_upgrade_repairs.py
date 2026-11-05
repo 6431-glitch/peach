@@ -454,8 +454,9 @@ class UpgradeRepairTests(unittest.TestCase):
         snapshot_bytes = {name: path.read_bytes() for name, path in snapshots.items()}
         self.service.prepare()
         after = self.candidate_rows(output)
-        # 批准过的标题行原样留着；未批准的行只摘认旧番号的候选，留下的改按现番号核身份。
-        self.assertEqual(after['asset:1:title'], before['asset:1:title'])
+        # 批准过的标题行候选原样留着，只改按现番号核身份：按现番号重采回来的标题才进得了这一行的比对。
+        self.assertEqual(after['asset:1:title'], {**before['asset:1:title'], 'code': 'MCDV-24', 'query': 'MCDV-24'})
+        # 未批准的行只摘认旧番号的候选，留下的改按现番号核身份。
         studio = after['asset:1:studio']
         self.assertEqual([choice['candidate_key'] for choice in json.loads(studio['candidates_json'])],
                          ['javdb-studio', 'nfo-studio'])

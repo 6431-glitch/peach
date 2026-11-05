@@ -102,6 +102,36 @@ CODE_EVIDENCE_RULE = 'code-evidence-1'
 CANDIDATE_FILE = 'library-metadata-field-candidates.csv'
 
 
+def _split_by_code(row: dict, old: str, current: str) -> tuple[list[dict], dict | None]:
+    """一行候选按旧、现番号拆开：撤下的候选，与改按现番号核身份的那一行（摘空了是 None）。"""
+    from .metadata_auto_apply import _candidate_identifies_code
+    try:
+        choices = [choice for choice in json.loads(row.get('candidates_json') or '[]') if isinstance(choice, dict)]
+    except ValueError:
+        return [], row
+    stale = [choice for choice in choices
+             if _candidate_identifies_code(old, choice) and not _candidate_identifies_code(current, choice)]
+    remaining = [choice for choice in choices if choice not in stale]
+    if not remaining:
+        return stale, None
+    # 留下的候选按现番号核身份；`refresh_current_values` 也按这一栏找影片。
+    return stale, {**row, 'code': current, 'query': current, 'source_count': len(remaining),
+                   'candidates_json': json.dumps(remaining, ensure_ascii=False)}
+
+
+def _orphan_snapshots(sources: Path, withdrawn: list[dict], codes) -> list[str]:
+    """撤下的候选出自哪几份旧番号快照；库里还有影片是那部片的不算。"""
+    from .catalog_rules import same_release_code
+    snapshots = []
+    pairs = {(row['code'], str(choice.get('source') or '')) for row in withdrawn for choice in row['candidates']}
+    for old, source in sorted(pairs):
+        path = sources / f'{old}-{source}.json'
+        if (source and path.is_file() and not path.is_symlink()
+                and not any(same_release_code(old, code) for code in codes)):
+            snapshots.append(str(path))
+    return snapshots
+
+
 def stale_code_evidence(connection, candidates: Path, sources: Path) -> dict:
     """番号改过之后，旧番号下取到的资料候选和来源快照（#296）。
 
@@ -110,11 +140,12 @@ def stale_code_evidence(connection, candidates: Path, sources: Path) -> dict:
 
     判据是候选级的：这一行记的番号与影片现番号不是同一部片（`same_release_code`），且这条
     候选认得旧番号、不认现番号。同一部片只是写法变了（`HEYZO-707` 改成 `HEYZO-0707`）的整行
-    放过；两个番号都不认的候选身份不明，也放过。用户批准过的行整行不动，那是人的结论。
-    旧番号的快照只在库里已没有任何影片还是那部片时失效：真有 2004 年那部 `MCDV-024` 的，快照是对的。
+    放过；两个番号都不认的候选身份不明，也放过。用户批准过的行候选与账本值都不动，那是人的
+    结论，只把这一行的番号改成现番号：复核页按它核身份，按现番号重采回来的资料与批准值不同时，
+    这一行会以差异重新摆出。旧番号的快照只在库里已没有任何影片还是那部片时失效：真有 2004 年
+    那部 `MCDV-024` 的，快照是对的。
     """
     from .catalog_rules import same_release_code
-    from .metadata_auto_apply import _candidate_identifies_code
     from .review_csv import read_rows
     rows = read_rows(candidates, missing_ok=True)
     codes = {row[0]: row[1] for row in connection.execute(
@@ -124,42 +155,24 @@ def stale_code_evidence(connection, candidates: Path, sources: Path) -> dict:
     kept, withdrawn, held, changed = [], [], [], False
     for row in rows:
         old = str(row.get('code') or '').strip()
-        try:
-            asset_id = int(row.get('asset_id') or 0)
-        except ValueError:
-            asset_id = 0
+        asset_id = int(row['asset_id']) if str(row.get('asset_id') or '').isdigit() else 0
         current = codes.get(asset_id)
         if not old or not current or same_release_code(old, current):
             kept.append(row)
             continue
+        changed = True
         if row['item_key'] in approved:
             held.append(row['item_key'])
-            kept.append(row)
+            kept.append({**row, 'code': current, 'query': current})
             continue
-        try:
-            choices = [choice for choice in json.loads(row.get('candidates_json') or '[]') if isinstance(choice, dict)]
-        except ValueError:
-            kept.append(row)
-            continue
-        stale = [choice for choice in choices
-                 if _candidate_identifies_code(old, choice) and not _candidate_identifies_code(current, choice)]
-        remaining = [choice for choice in choices if choice not in stale]
-        changed = True
+        stale, rest = _split_by_code(row, old, current)
         if stale:
             withdrawn.append({'item_key': row['item_key'], 'asset_id': asset_id, 'code': old, 'target': current,
                               'candidates': stale})
-        if remaining:
-            # 留下的候选按现番号核身份；`refresh_current_values` 也按这一栏找影片。
-            kept.append({**row, 'code': current, 'query': current, 'source_count': len(remaining),
-                         'candidates_json': json.dumps(remaining, ensure_ascii=False)})
-    snapshots = []
-    pairs = {(row['code'], str(choice.get('source') or '')) for row in withdrawn for choice in row['candidates']}
-    for old, source in sorted(pairs):
-        path = sources / f'{old}-{source}.json'
-        if (source and path.is_file() and not path.is_symlink()
-                and not any(same_release_code(old, code) for code in codes.values())):
-            snapshots.append(str(path))
-    return {'rows': kept if changed else None, 'withdrawn': withdrawn, 'snapshots': snapshots,
+        if rest is not None:
+            kept.append(rest)
+    return {'rows': kept if changed else None, 'withdrawn': withdrawn,
+            'snapshots': _orphan_snapshots(sources, withdrawn, codes.values()),
             'approved_kept': held, 'asset_ids': sorted({row['asset_id'] for row in withdrawn})}
 
 
