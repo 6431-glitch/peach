@@ -360,6 +360,23 @@ class ReviewQueueTests(unittest.TestCase):
 
         self.assertEqual([row["item_key"] for row in rows], ["FALENO"])
 
+    def test_reread_candidates_follow_the_file_and_stay_private_to_each_reader(self):
+        batch = self.candidates / "studio-logo-candidate-20260923.csv"
+        batch.write_text("studio,saved\nFALENO,FALENO.jpg\n", encoding="utf-8")
+        os.utime(batch, (2000, 2000))
+
+        first, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
+        first[0]["saved"] = "改过.jpg"
+        again, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
+        self.assertEqual(again[0]["saved"], "FALENO.jpg")
+
+        # 处理任务写完新一批：同名文件原地换内容，读到的必须是新那份。
+        batch.write_text("studio,saved\nFALENO,FALENO-v2.jpg\nSOD,SOD.jpg\n", encoding="utf-8")
+        os.utime(batch, (3000, 3000))
+        rows, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
+        self.assertEqual([(row["item_key"], row["saved"]) for row in rows],
+                         [("FALENO", "FALENO-v2.jpg"), ("SOD", "SOD.jpg")])
+
     def test_older_batches_keep_their_undecided_rows_in_the_queue(self):
         """跑了新批次不该让上一批未复核的行消失。
 

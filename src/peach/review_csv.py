@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import os
+import threading
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 
@@ -219,7 +220,7 @@ def read_candidates(category: str, root: Path | None = None) -> tuple[list[dict]
     key_column = CANDIDATE_KEY[category]
     rows, skipped, seen = [], 0, set()
     for candidate_path in paths:
-        for row in read_rows(candidate_path):
+        for row in _parsed_rows(candidate_path):
             key = str(row.get(key_column) or "").strip()
             if not key:
                 skipped += 1
@@ -227,6 +228,27 @@ def read_candidates(category: str, root: Path | None = None) -> tuple[list[dict]
             if key in seen:
                 continue
             seen.add(key)
-            row["item_key"] = key
-            rows.append(row)
+            # 缓存里那一份是共用的：交出去的每一行都是副本，调用方往里添字段不会串到下一次。
+            rows.append({**row, "item_key": key})
     return rows, _candidate_source_label(paths), skipped
+
+
+#: 每份候选文件最近一次解析的结果，键是路径，值是（文件标识, 行）。元数据候选有七十多 MB、
+#: 三万多行，复核页每次重算都整份重解析要好几秒；文件只在处理任务写完一批时才换。
+_PARSED: dict[str, tuple[tuple[int, int, int], tuple[dict[str, str], ...]]] = {}
+_PARSED_LOCK = threading.Lock()
+
+
+def _parsed_rows(path: Path) -> tuple[dict[str, str], ...]:
+    """按文件标识（修改时间、大小、inode）缓存的 `read_rows`；文件一换就重读。"""
+    stat = path.stat()
+    stamp = (stat.st_mtime_ns, stat.st_size, stat.st_ino)
+    key = str(path)
+    with _PARSED_LOCK:
+        cached = _PARSED.get(key)
+    if cached is not None and cached[0] == stamp:
+        return cached[1]
+    rows = tuple(read_rows(path))
+    with _PARSED_LOCK:
+        _PARSED[key] = (stamp, rows)
+    return rows
