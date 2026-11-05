@@ -188,6 +188,18 @@ class LedgerRevisionTests(unittest.TestCase):
         self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 3)
         self.assertEqual(self.contract.stale_refreshing, set())
 
+    def test_startup_warms_the_aggregates_every_page_reads(self):
+        """重启后第一个打开页面的人不等形状名单、作品分组快照与推荐池一起冷算：开机就先算好。"""
+        import asyncio
+        from peach import api
+        insert_asset(self.db_path, 1)
+        # 只看每页都碰到的那几份；口味、复核、关注那几份另有后台线程，不在这条测试里起。
+        pages = [entry for entry in api.WARM_AGGREGATES if entry[0] not in {"/api/taste", "/api/review", "/api/ads", "/api/follow"}]
+        with mock.patch.object(api, "WARM_AGGREGATES", tuple(pages)):
+            asyncio.run(api._warm_ledger_aggregates(True, self.contract, asyncio.Event()))
+        for key in ("entity-shapes", "catalog-group-rows", "search-recommendations:"):
+            self.assertIn(key, self.contract.cache)
+
     def test_a_commit_during_a_versioned_computation_keeps_the_result(self):
         def derive():
             self.calls += 1
