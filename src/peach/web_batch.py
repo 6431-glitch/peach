@@ -710,10 +710,31 @@ def _duplicate_groups(grouped: dict[str, list[dict]]):
     return groups
 
 
+#: 重复项分组读的账本表。整库十万条视频逐条判番号、按时长聚簇要一两秒，页面每翻一页、每次
+#: 轮询都重来一遍；声明后只在这两张表变了才重算，后台任务的提交先回上一份（ADR-0146）。
+DUPLICATE_TABLES = ("asset", "review_decision")
+
+
 def q_duplicates(contract: WebContract, args):
     """按番号 + 时长找真重复，也收同番号的大体积短版本。"""
     limit = min(max(int(args.get("limit", "60")), 1), 300)
     offset = max(int(args.get("offset", "0")), 0)
+    groups, found = contract.cached_until_changed(
+        "duplicate-groups", lambda: _duplicate_listing(contract), tables=DUPLICATE_TABLES)
+    window = groups[offset:offset + limit]
+    return {
+        "total": len(groups),
+        "files": sum(g["count"] for g in groups),
+        "reclaimable": sum(g["reclaimable"] for g in groups),
+        "groups": window,
+        "has_more": offset + limit < len(groups),
+        # 标过「都保留」、组员没变的组数；它们不进上面任何一项。
+        "kept": found - len(groups),
+    }
+
+
+def _duplicate_listing(contract: WebContract) -> tuple[list[dict], int]:
+    """没标过「都保留」的重复组（按可腾出空间从大到小）与找到的组数，各页共用这一份。"""
     with contract.read_connection() as connection:
         rows = connection.execute(
             "SELECT id,code,location,path,name,size,duration,hash,disposal "
@@ -736,13 +757,4 @@ def q_duplicates(contract: WebContract, args):
     found = _duplicate_groups(grouped)
     groups = [g for g in found if duplicate_group_key(f["id"] for f in g["files"]) not in kept]
     groups.sort(key=lambda g: -g["reclaimable"])
-    window = groups[offset:offset + limit]
-    return {
-        "total": len(groups),
-        "files": sum(g["count"] for g in groups),
-        "reclaimable": sum(g["reclaimable"] for g in groups),
-        "groups": window,
-        "has_more": offset + limit < len(groups),
-        # 标过「都保留」、组员没变的组数；它们不进上面任何一项。
-        "kept": len(found) - len(groups),
-    }
+    return groups, len(found)
