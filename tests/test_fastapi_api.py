@@ -2238,7 +2238,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         refused = await self.client.post("/login", content=body, headers=page)
         self.assertEqual(refused.status_code, 400)
         self.assertTrue(refused.headers["content-type"].startswith("text/html"))
-        self.assertIn('data-page="login" data-next="/stats" data-error="请选择有效的保持登录时间">', refused.text)
+        self.assertIn('data-page="login" data-next="/stats" data-mode="legacy" data-error="请选择有效的保持登录时间">', refused.text)
         self.assertNotIn("set-cookie", refused.headers)
         refused = await self.client.post("/login", content=body, headers=form)
         self.assertEqual(refused.status_code, 400)
@@ -2251,7 +2251,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(limited.status_code, 429)
         self.assertEqual(limited.headers["retry-after"], "60")
         self.assertTrue(limited.headers["content-type"].startswith("text/html"))
-        self.assertIn('data-page="login" data-next="/stats" data-error="尝试次数较多，请一分钟后重试">',
+        self.assertIn('data-page="login" data-next="/stats" data-mode="legacy" data-error="尝试次数较多，请一分钟后重试">',
                       limited.text)
         limited = await self.client.post("/login", content="token=secret&next=%2Fstats", headers=form)
         self.assertEqual(limited.status_code, 429)
@@ -4178,6 +4178,10 @@ PUBLIC_ROUTES = {
     ("GET", "/api/setup/questions"),
     ("POST", "/api/setup"),
     ("POST", "/api/setup/restore"),
+    # Docker 首次访问设置的提交（ADR-0148）。这时还没有访问策略，没有密码可验；只在 Docker 且
+    # 没有策略时收，来源须是本机或私有网络、不带代理转发头（403），再看 Origin（403）；已有策略
+    # 就 409，非 Docker 是 404。
+    ("POST", "/api/configuration/access/first"),
     # 首启与登录页的浏览器尚无会话；此接口仅向本机同源开放，限流、限长后只写脱敏错误日志。
     ("POST", "/api/diagnostics/client-error"),
     # 登录页在拿到会话之前就要出图，书签与历史记录也从这三个固定路径取图标。
