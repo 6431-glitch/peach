@@ -8,6 +8,8 @@ import json
 import os
 import sqlite3
 import tempfile
+import threading
+import time
 import unittest
 from contextlib import closing
 from datetime import datetime, timezone
@@ -18,7 +20,7 @@ from peach import taste_history, taste_preferences, web_follow, web_state, web_s
 from peach.follow_sources import FollowCandidate, SourceFetch
 from peach.follow_store import FollowStore
 from peach.previews import entity_image_key, logo_key
-from peach.repository import LedgerDatabase
+from peach.repository import LedgerDatabase, in_background
 from peach.web_catalog import FACETS_TABLES, GROUP_TABLES, TOPS_TABLES
 from peach.web_contract import dispatch_api_get
 from peach.web_entity import INDEX_TABLES
@@ -147,6 +149,44 @@ class LedgerRevisionTests(unittest.TestCase):
         self.assertEqual(self.contract.cached_until_changed("author:0", self.compute, tables=("asset",)),
                          3 * web_state.CACHE_KEYS + 1)
         self.assertIn("author:0", self.contract.revision_cache_keys)
+
+    def write_asset(self, asset_id: int, *, background: bool) -> None:
+        def write():
+            with self.contract.write_transaction() as connection:
+                connection.execute(
+                    "INSERT INTO asset(id,location,path,name,medium,size) VALUES(?,?,?,?,?,?)",
+                    (asset_id, "local", f"R:\\media\\{asset_id}.mp4", f"{asset_id}.mp4", "video", 1))
+        thread = threading.Thread(target=in_background(write) if background else write)
+        thread.start()
+        thread.join(5)
+
+    def wait_refreshed(self, key: str) -> None:
+        deadline = time.monotonic() + 5
+        while key in self.contract.stale_refreshing and time.monotonic() < deadline:
+            time.sleep(0.01)
+        self.assertNotIn(key, self.contract.stale_refreshing)
+
+    def test_background_commits_serve_the_previous_result_until_the_refresh_lands(self):
+        """后台任务写账本后先回上一份、另起重算；写回后结果版本跟着变，页面再取拿到新值。"""
+        self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 1)
+        before = dispatch_api_get(self.contract, "/api/result-updates", {})["result_versions"]["catalog"]
+        self.write_asset(1, background=True)
+        self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 1)
+        self.wait_refreshed("catalog")
+        self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 2)
+        self.assertEqual(self.calls, 2)
+        after = dispatch_api_get(self.contract, "/api/result-updates", {})["result_versions"]["catalog"]
+        self.assertNotEqual(after, before)
+
+    def test_foreground_and_out_of_process_writes_still_recompute_on_the_spot(self):
+        """写的人要立刻看到自己写的：前台提交之后，以及命令行、账本同步这类进程外的写之后，都当场重算。"""
+        self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 1)
+        self.write_asset(1, background=True)
+        self.write_asset(2, background=False)
+        self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 2)
+        insert_asset(self.db_path, 3)
+        self.assertEqual(self.contract.cached_until_changed("catalog", self.compute, tables=("asset",)), 3)
+        self.assertEqual(self.contract.stale_refreshing, set())
 
     def test_a_commit_during_a_versioned_computation_keeps_the_result(self):
         def derive():
