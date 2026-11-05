@@ -18,7 +18,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from peach import feed_followup, feeds, web_feeds, web_settings, web_state  # noqa: E402
+from peach import feed_followup, feeds, web_entity, web_feeds, web_settings, web_state  # noqa: E402
 from peach import web_jav_browser_performer as performer  # noqa: E402
 from peach.http import HttpResponse  # noqa: E402
 from peach.web_contract import WebContract  # noqa: E402
@@ -343,6 +343,14 @@ class FeedWebTest(FeedWebFixture):
         dispatch_api_post(self.contract, "/api/feeds/discovery",
                           {"action": "ignore", "ids": [item["id"] for item in items]})
         self.assertFalse(has_feed())
+
+    def test_new_discoveries_only_recompute_the_feed_part_of_the_shapes(self):
+        """采集每几秒写一次订阅表：形状名单只重算新作那一份，同台、资料表与版式那部分照旧命中缓存。"""
+        self.assertFalse(dispatch_api_get(self.contract, "/api/entity/shapes", {})["home"]["feed"])
+        with patch.object(web_entity, "_entity_shape_parts", side_effect=AssertionError("其余部分被重算了")):
+            self._add()
+            self._check()
+            self.assertTrue(dispatch_api_get(self.contract, "/api/entity/shapes", {})["home"]["feed"])
 
     def test_home_shape_applies_library_and_compilation_filters(self):
         self._compilation("波多野結衣、篠田ゆう")
