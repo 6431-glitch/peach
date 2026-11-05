@@ -430,9 +430,11 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           cd release
-          tail -n +4 ../macos-candidates/scripts/MACOS_DOWNLOADS.md >> RELEASE_NOTES.md
-          printf '\n' >> RELEASE_NOTES.md
-          tail -n +4 ../scripts/DOCKER_DOWNLOADS.md | sed "s/{version}/${GITHUB_REF_NAME#v}/g" >> RELEASE_NOTES.md
+          {
+            tail -n +4 ../macos-candidates/scripts/MACOS_DOWNLOADS.md
+            printf '\n'
+            tail -n +4 ../scripts/DOCKER_DOWNLOADS.md | sed "s/{version}/${GITHUB_REF_NAME#v}/g"
+          } >> RELEASE_NOTES.md
           files=(./*.zip ./*-setup.exe ./*.dmg SHA256SUMS.txt)
           if [ -f SHA256SUMS.txt.sig ]; then files+=(SHA256SUMS.txt.sig); fi
           gh release create "$GITHUB_REF_NAME" "${files[@]}" --verify-tag --prerelease --title "$GITHUB_REF_NAME" --notes-file RELEASE_NOTES.md
