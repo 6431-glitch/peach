@@ -439,7 +439,7 @@ def _without_descriptive_performers(code: str, field: str, candidates: list[dict
                                     resolve=None) -> tuple[list[dict], list[dict]]:
     """FC2 出演者候选里一个艺名都没有的那些不算证据（ADR-0079），剩下的照常比。
 
-    素人番号同理（ADR-0144）：MGStage、r18.dev 写 `早見さん`、`Mana(23)` 这类片中称呼，认人 Wiki
+    素人番号同理（ADR-0145）：MGStage、r18.dev 写 `早見さん`、`Mana(23)` 这类片中称呼，认人 Wiki
     给出艺名时，不该让称呼把整行拖进人工。
 
     返回 `(留下的候选, 被剔掉的候选)`。全都剔光时原样返回：那一行交给自动否决判，

@@ -1349,7 +1349,7 @@ class LibraryNfoTests(unittest.TestCase):
     @windows_ledger_roots
     def test_a_missing_amateur_cast_asks_the_name_wikis_after_mgstage_and_stops_at_the_first_answer(self):
         """MGStage 只给素人名义，缺演员的素人片接着问认人 Wiki；素人系総合 Wiki 没有就问 av_neme，
-        有一个给出艺名就停，不再落到综合索引（ADR-0144）。"""
+        有一个给出艺名就停，不再落到综合索引（ADR-0145）。"""
         provider, rows = self._collect_amateur('259LUXU-1378', {'av_neme': '優梨まいな'})
         self.assertEqual([call.args[0] for call in provider.wiki.call_args_list], ['sougouwiki', 'av_neme'])
         provider.community.assert_not_called()

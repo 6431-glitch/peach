@@ -696,7 +696,7 @@ class LibraryMetadataProvider:
             return SITE_SOURCES[source]().query(code, session=Session(self.transport, deadline)).payload()
 
     def wiki(self, source, code, *, deadline=None):
-        """素人链上的认人 Wiki（`metadata_routes.WIKI_STAGE`，ADR-0144），返回 `[(来源, 资料)]`。
+        """素人链上的认人 Wiki（`metadata_routes.WIKI_STAGE`，ADR-0145），返回 `[(来源, 资料)]`。
 
         一个 provider 里每站只建一个 `SeesaaSource`：素人系総合 Wiki 一张厂牌表列着几十上百部，
         读过的表记在实例里，同厂牌的下一部不再搜索。取页层是 `sources.seesaa.WikiPages`（落盘页缓存），
@@ -1779,11 +1779,11 @@ class _RemoteSession:
         封面）不参与短路——多一家就多一批标签和一个图源，而免复核本来就要两家一致
         （ADR-0030、ADR-0034）、封面互证要两个图源（ADR-0032）。例外有两条：缺标签的行
         在官方档之间多问一家（`metadata_routes.settles` 的 `wants_tags`）；素人缺演员的行，
-        MGStage 给了素人名义也接着问认人 Wiki，直到有一个 Wiki 给出演员（`wants_cast`，ADR-0144）；
+        MGStage 给了素人名义也接着问认人 Wiki，直到有一个 Wiki 给出演员（`wants_cast`，ADR-0145）；
         两个 Wiki 都没给时，MGStage 给的字段够了就停，不落到综合索引。
 
         社区那一档的值照常进候选，只剩一家也补空，几家不一时按字段优先级链取：FC2 的演员栏
-        取 fc2cmadb，素人的演员栏取认人 Wiki，其余取 javdb（ADR-0034、ADR-0038、ADR-0144）。
+        取 fc2cmadb，素人的演员栏取认人 Wiki，其余取 javdb（ADR-0034、ADR-0038、ADR-0145）。
         「没有」的记忆按站记：一档里说过没有的站一周内不再问，全档都说过就直接问下一档。
         """
         action = 'querying_metadata'
@@ -1796,7 +1796,7 @@ class _RemoteSession:
         chain = self._chain(code, *evidence)
         required = list(metadata_routes.required_scalars(missing))
         wants_tags = 'tags' in missing
-        # 素人缺演员：MGStage 给的是素人名义，直到有一个认人 Wiki 给出演员才算问到（ADR-0144）。
+        # 素人缺演员：MGStage 给的是素人名义，直到有一个认人 Wiki 给出演员才算问到（ADR-0145）。
         wants_cast = 'performers' in missing and any(name in metadata_routes.WIKI_STAGE for name in chain)
         results = _MetadataResults(self, code, received)
         problems, held, entries = [], [], results.entries

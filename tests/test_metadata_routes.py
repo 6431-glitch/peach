@@ -92,7 +92,7 @@ class RouteTableTests(unittest.TestCase):
     def test_amateur_asks_mgstage_first_and_never_the_makers_nor_dmm(self):
         """MGS 素人系由 MGS 自己发行；片商官网对素人号一个请求都不发，DMM 的目录上也没有它们。
 
-        MGS 只给素人名义，紧接着问两个认人 Wiki（ADR-0144）；r18.dev 在本机来源快照里一份素人号
+        MGS 只给素人名义，紧接着问两个认人 Wiki（ADR-0145）；r18.dev 在本机来源快照里一份素人号
         都没给过，垫在最后，不让每部片先白等它一次。
         """
         for code in ('300MIUM-1239', '259LUXU-1475', 'SIRO-4630'):

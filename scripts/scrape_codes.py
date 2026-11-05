@@ -847,7 +847,7 @@ def _collect_code_fields(*, code, query, variants, chain, profile, sources, adap
                   if sources is None and not args.english_title_only else None)
     scalar_settled = False
     asked: set[str] = set()
-    # 素人链：MGStage 给的是素人名义，直到有一个认人 Wiki 给出演员才不再问它们（ADR-0144）。
+    # 素人链：MGStage 给的是素人名义，直到有一个认人 Wiki 给出演员才不再问它们（ADR-0145）。
     wants_cast = any(name in metadata_routes.WIKI_STAGE for name in chain)
     for stage, then in zip(stages, (*stages[1:], "")):
         members = throttle.open_members(metadata_routes.stage_members(stage, chain))

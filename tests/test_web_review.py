@@ -1023,7 +1023,7 @@ class ReviewQueueTests(unittest.TestCase):
         return landed, json.loads(row[0]) if row else None
 
     def test_the_name_wiki_names_the_amateur_cast_over_the_store_nickname(self):
-        """素人片 MGStage 写片中称呼、认人 Wiki 写艺名：落艺名，称呼记进被压下的取值（ADR-0144）。"""
+        """素人片 MGStage 写片中称呼、认人 Wiki 写艺名：落艺名，称呼记进被压下的取值（ADR-0145）。"""
         self._asset(130, "300NTK-619", "300NTK-619.mp4")
         self.write_metadata_rows([
             {"item_key": "NTK", "field": "performers", "current": "", "code": "300NTK-619",
@@ -1037,7 +1037,7 @@ class ReviewQueueTests(unittest.TestCase):
         self.assertEqual(note["overruled"], [{"source": "mgstage", "value": "まいな"}])
 
     def test_the_name_wiki_names_the_cast_over_an_honorific_from_r18dev(self):
-        """r18.dev 写 `早見さん` 这种带称谓的片中称呼时，同样落 Wiki 给的艺名（ADR-0144）。"""
+        """r18.dev 写 `早見さん` 这种带称谓的片中称呼时，同样落 Wiki 给的艺名（ADR-0145）。"""
         self._asset(131, "230ORETD-615", "230ORETD-615.mp4")
         self.write_metadata_rows([
             {"item_key": "ORETD", "field": "performers", "current": "", "code": "230ORETD-615",
@@ -1051,7 +1051,7 @@ class ReviewQueueTests(unittest.TestCase):
         self.assertEqual(note["descriptive_dropped"], [{"source": "r18dev", "value": "早見さん"}])
 
     def test_a_store_nickname_without_a_wiki_name_still_goes_to_review(self):
-        """没有别家给艺名时，片中称呼照旧交人工，不替人认（ADR-0144 只在有艺名时剔掉称呼）。"""
+        """没有别家给艺名时，片中称呼照旧交人工，不替人认（ADR-0145 只在有艺名时剔掉称呼）。"""
         self._asset(132, "230ORETD-615", "230ORETD-615.mp4")
         self.write_metadata_rows([
             {"item_key": "ORETD", "field": "performers", "current": "", "code": "230ORETD-615",

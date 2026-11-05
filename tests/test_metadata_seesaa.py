@@ -297,7 +297,7 @@ class SeesaaContractTests(unittest.TestCase):
 
 
 class ChainWikiTests(unittest.TestCase):
-    """素人链上的认人 Wiki 经 `LibraryMetadataProvider.wiki` 问（ADR-0144）。"""
+    """素人链上的认人 Wiki 经 `LibraryMetadataProvider.wiki` 问（ADR-0145）。"""
 
     SEARCH = b'<div class="result-box"><div class="body"><h3><a href="/w/sougouwiki/d/Person">Person</a></h3></div></div>'
     PERSON = '<div id="page-body"><div class="user-area"><a href="/w/sougouwiki/d/Label">(レーベル一覧)</a></div></div>'.encode('euc_jp')

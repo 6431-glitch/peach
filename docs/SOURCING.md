@@ -79,7 +79,7 @@
 
 这节讲怎样从 Seesaa 上的素人认人 Wiki 取番号的出演、标题和日期候选。
 
-素人系総合 Wiki 与 av_neme 在素人链上，缺演员的素人片由资料处理按链问到（ADR-0144，见「按内容类型的来源链」）。
+素人系総合 Wiki 与 av_neme 在素人链上，缺演员的素人片由资料处理按链问到（ADR-0145，见「按内容类型的来源链」）。
 批量取证的入口是 `scripts/scrape_codes.py --profile seesaa`（素人系総合 Wiki），两个认人 Wiki 用
 `--sources av_neme,av_name` 点名。三站同一个模块、同一套取页层，产出既有的
 `metadata-field-candidates` CSV。
@@ -192,7 +192,7 @@ Wiki 与视频作品资料无关。
 - 综合索引那一档整档一起问，不逐家短路。免复核要两家取值一致（ADR-0030、ADR-0034），封面互证要两个
   不同图源（ADR-0032），问到第一家就停等于把这两条判据的样本降到下限。
 - 这一行要的本来就只有标签或封面时，第一家给了就停（ADR-0033）。
-- 素人片缺演员时，MGStage 给齐了也接着问认人 Wiki：MGS 写的是片中称呼或干脆不写（ADR-0144）。素人系総合 Wiki
+- 素人片缺演员时，MGStage 给齐了也接着问认人 Wiki：MGS 写的是片中称呼或干脆不写（ADR-0145）。素人系総合 Wiki
   给出演员就不问 av_neme；两站都没给，MGStage 给的字段够了就停，不落到综合索引。已有演员的行不问 Wiki。
   演员栏上两个 Wiki 排在官方档前面（`FIELD_SOURCE_PRIORITY`），标题与日期仍听 MGStage。
 - 唯一例外：FALENO、DAHLIA 官网不给类别，缺标签的行在片商站答完标量后再问一次 r18.dev；下一档是综合索引

@@ -124,7 +124,7 @@ CHAIN_COMMUNITY, CHAIN_FALLBACK, CHAIN_UNKNOWN = 3, 4, 5
 #: fc2cmadb 写日文原名 `あんな`。FC2PPV-DB 的女优栏同样按片中人整理、写日文原名
 #: （2026-09-24 `FC2-PPV-4898837` 写 `川北すずね`），排在 fc2cmadb 之后、javdb 之前。
 #:
-#: 演员栏的两个认人 Wiki（ADR-0144）：只有素人番号会问到它们。MGStage 与 r18.dev 是官方档，
+#: 演员栏的两个认人 Wiki（ADR-0145）：只有素人番号会问到它们。MGStage 与 r18.dev 是官方档，
 #: 素人片上写的却是片中称呼：本机账本 `348NTR-076` 记着 mgstage 的 `アミ`、`857OMG-048` 记着
 #: `七○舞`、`230ORETD-615` 记着 r18dev 的 `早見さん`；2026-11-05 素人系総合 Wiki 给
 #: `348NTR-076` 的是 `稲森あみ`。
