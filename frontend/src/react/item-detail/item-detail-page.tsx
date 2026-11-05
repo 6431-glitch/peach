@@ -456,7 +456,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   const [source, setSource] = useState('stashdb');
   const [javCode, setJavCode] = useState(String(item.code || ''));
   const [javResult, setJavResult] = useState<JavMatch | null>(null);
-  const [title, setTitle] = useState(String(item.name || ''));
+  const [title, setTitle] = useState(String(item.name || '').replace(/\.(?:mp4|m4v|mkv|avi|mov|wmv|webm|mpg|mpeg|ts|m2ts)$/i, ''));
   const [actor, setActor] = useState('');
   const [studio, setStudio] = useState('');
   const [date, setDate] = useState('');

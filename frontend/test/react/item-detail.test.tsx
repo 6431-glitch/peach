@@ -94,7 +94,7 @@ describe('metadata search', () => {
     const panel = document.querySelector('section[aria-label="Find metadata"]')!;
     const fields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
     expect(fields).toHaveLength(4);
-    expect(fields[0].value).toBe(item(1, { code: 'ROE-064' }).name);
+    expect(fields[0].value).toBe('sample_1');
     await type(fields[0], 'Example title');
     await type(fields[1], 'Example actor');
     await type(fields[2], 'Example studio');
