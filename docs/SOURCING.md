@@ -280,7 +280,7 @@ Wiki 与视频作品资料无关。
 | 站 | 状态 | 位置 | 说明 |
 | --- | --- | --- | --- |
 | JavBus | 已套契约 | `sources/javbus.py` | 年龄门归 `auth_required`；404 与番号对不上归 `not_found` |
-| javdb | 已套契约 | `sources/javdb.py` | 搜索页与详情页两跳都在 `fetch` 里；登录页归 `auth_required`，详情页番号与搜索结果不一致归 `parse_error`；主机间隔 3 秒进配置 |
+| javdb | 已套契约 | `sources/javdb.py` | 刮削登记 `JavDBPublicSource`：匿名接口搜索与详情两跳，解析器名 `javdb-api`，类别经 `javdb_genres` 按 id 换回详情页原词，搜索无命中归 `not_found`、同番号多个作品归 `parse_error`、接口冷却抛 `SourcePaused`（ADR-0144）。详情页解析 `JavDBSource` 只留给视频预览：登录页归 `auth_required`，详情页番号与搜索结果不一致归 `parse_error`；主机间隔 3 秒进配置 |
 | fc2club、freejavbt、airav、avsox | 已套契约（经桥） | `metadata_amane.py` | amane 的十六档 reason 经 `AMANE_REASONS` 一对一翻成契约细档，先套进 `SiteRecord` 再投影；`SITE_CONFIGS` 只持有站名、界面名与档位，主域与 Cookie 由 amane 管 |
 | makers、prestige、faleno、dahlia、mgstage | 已套契约（经桥） | `metadata_amane.py` | 档位 `official`（`OFFICIAL_SITES`）；`http_error` 带 401/403 经 `contract_reason` 归 `auth_required`；prestige 的 `release` 进 `extra['delivery_date']` |
 | AVBase | 已套契约 | `sources/avbase.py` | 搜索页一跳，从 `__NEXT_DATA__` 里挑出本作与它自己的商品条目；搜索无命中归 `not_found`，Cloudflare 验证页归 `cloudflare_challenge`，别的结构对不上归 `parse_error`；不给时长，`runtime` 留空 |
@@ -437,12 +437,14 @@ minnano-av 也在 Cloudflare 后面，但对 HTTP 客户端是间歇拦截：202
 
 ### 库内采集的节奏
 
-- javdb 的主机间隔由用户定：`library_processing.SOURCE_INTERVALS` 里 `javdb.com` 与 `jdbstatic.com` 都是 3 秒，
-  两个主机要一起改。这份间隔由 `SOURCE_LIMITER` 整个进程共用：资料处理、想要作品资料采集、新作资料采集与订阅检查
-  同时跑时，问同一主机仍按一条队排。
+- javdb 的刮削走匿名接口（ADR-0144），不带 Cookie，不占 javdb.com 的出口配额。接口间隔 0.5 秒由用户
+  2026-11-05 定，实测依据见 ADR-0144；间隔、失败冷却与每问 4 次请求的预算在 `javdb_public.PUBLIC_API`，
+  与新作页、发现、待找磁链共用一条队；快照写进 `<生成目录>/jav-public`。
+- 详情页那一路（视频预览）的主机间隔由用户定：`library_processing.SOURCE_INTERVALS` 里 `javdb.com` 与
+  `jdbstatic.com` 都是 3 秒，两个主机要一起改。这份间隔由 `SOURCE_LIMITER` 整个进程共用，问同一主机仍按一条队排。
 - **FC2 的商品号在三家里只问 javdb**（`community_catalog.community_sources_for`）。本机来源证据里 AVBase 与 JavBus
   对 FC2 一份都没给过；javdb 能补约一半的演员与发行日，厂牌、标签、封面不给，所以它问得慢却砍不掉。
-- 一轮采集的长短约等于 javdb 请求数乘这个间隔（实测相差约一成）。`HostLimiter` 等的是「距上次满 N 秒」，别家的
+- 一轮采集的长短约等于 javdb 请求数乘接口间隔。`HostLimiter` 等的是「距上次满 N 秒」，别家的
   往返落在这个窗口里被吸收，所以跳过两家省的是配额和撞 Cloudflare 的次数，不是时间；改成并行也省不出时间。
 
 ### 撞上 403 或验证页之后

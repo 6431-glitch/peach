@@ -11,7 +11,7 @@ import threading
 import time
 import uuid
 import xml.etree.ElementTree as ET
-from contextlib import closing, contextmanager
+from contextlib import closing, contextmanager, nullcontext
 from contextvars import copy_context
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from dataclasses import dataclass
@@ -109,7 +109,7 @@ SOURCE_LABELS = {'r18dev': 'r18.dev', 'dmm': 'DMM / FANZA', 'avbase': 'AVBase', 
                  'sougouwiki': '素人系総合 Wiki', 'av_neme': 'このAV女優の名前教えてwiki',
                  'av_name': 'AV女優の名前特定wiki'}
 PROVIDER_NAMES = {'local_nfo': 'local-nfo', 'r18dev': 'r18-json', 'dmm': 'dmm-graphql', 'avbase': 'avbase-search',
-                  'javbus': 'javbus-page', 'javdb': 'javdb-page', 'fc2': 'fc2-article',
+                  'javbus': 'javbus-page', 'javdb': 'javdb-api', 'fc2': 'fc2-article',
                   'fc2cmadb': 'fc2cmadb-article', 'fc2ppvdb': 'fc2ppvdb-page', 'javten': 'javten-page',
                   'javarchive': 'javarchive-page',
                   '1pondo': '1pondo-json',
@@ -332,17 +332,24 @@ class LibraryMetadataProvider:
     `secrets_root` 是凭据根本身（`peach-data/secrets`），不是它底下的 `follow`：
     `CredentialStore` 自己会拼上那一层。多给一层的表现不是报错，是每个来源都读成
     「没有凭据」——采集设置里贴好的 JavBus、javdb Cookie 一条都不会被带上。
+
+    `public_cache` 是匿名 JavDB 资料的快照目录（`<生成目录>/jav-public`），与新作页、发现共用；
+    不给就只在本进程内存里复用。
     """
-    def __init__(self, secrets_root, *, tools_root=None):
+    def __init__(self, secrets_root, *, tools_root=None, public_cache=None):
         from .scraping_access import SourceTransport
         from .jav_cover_fetch import HostLimitedTransport
         self.secrets_root = Path(secrets_root)
         #: amane 桥的 venv 所在的工具区（`<Peach 数据目录>/tools`）；不给就用配置里的默认位置。
         self.tools_root = Path(tools_root) if tools_root is not None else None
+        self.public_cache = Path(public_cache) if public_cache is not None else None
         self.transport = HostLimitedTransport(
             SourceTransport(secrets_root, max_requests=MAX_SOURCE_REQUESTS,
                             max_bytes=MAX_SOURCE_BYTES, max_seconds=MAX_SOURCE_SECONDS),
             2.0, limiter=SOURCE_LIMITER)
+
+    #: 匿名 JavDB 资料的快照目录；没有时只在进程内存里复用。
+    public_cache = None
 
     #: 由本机浏览器过验证的来源累计等人点验证的秒数（`_excuse`）。调用方拿它前后相减，把这段时间
     #: 从单项动作预算里扣掉：一个站第一次弹验证窗口时，那一问要等 `min(40, timeout) + 120` 秒，
@@ -654,8 +661,10 @@ class LibraryMetadataProvider:
         没取到抛的是 `SourceFailure`：`not_found` 那一档由 `is_missing` 认，其余由 `describe_failure`
         写成一句。冷却、动作预算与连接失败由传输层抛出、原样放过。
         """
+        from .javdb_public import public_cache_scope
         from .sources import SITE_SOURCES, Session
-        return SITE_SOURCES[source]().query(code, session=Session(self.transport, deadline)).payload()
+        with public_cache_scope(self.public_cache) if self.public_cache is not None else nullcontext():
+            return SITE_SOURCES[source]().query(code, session=Session(self.transport, deadline)).payload()
 
     def query(self, code, source='r18dev', *, deadline=None):
         """有码与素人链上逐个成档的官方来源：默认是 r18.dev（`sources/r18dev.py`），有码链上它之后是 DMM 的
@@ -1139,6 +1148,26 @@ def _candidate_review_mode(groups, row, field, source, value, local_fields, veri
     return 'review' if verify_existing and baseline and (not local or current) else 'fill'
 
 
+def _previous_order(group, source, value):
+    """同一来源再给的出演者只换了次序时沿用上一份。
+
+    候选身份按取值算（`_candidate_identity`），次序一变身份就变，已批准的那一行会被当成来源
+    换了说法、重新摆回复核页。javdb 的详情页与匿名接口列女优的次序不同，人却是同一批。
+    """
+    try:
+        previous = next(entry['value'] for entry in json.loads(group['candidates_json'])
+                        if entry.get('source') == source)
+    except (StopIteration, KeyError, TypeError, ValueError):
+        return value
+    fresh = value['value']
+    if (not isinstance(previous, list) or not isinstance(fresh, list) or previous == fresh
+            or sorted(json.dumps(one, ensure_ascii=False, sort_keys=True) for one in previous)
+            != sorted(json.dumps(one, ensure_ascii=False, sort_keys=True) for one in fresh)):
+        return value
+    return {**value, 'value': previous,
+            'display_value': '、'.join(str(person.get('name') or '') for person in previous if isinstance(person, dict))}
+
+
 def _merge_candidates(groups, row, code, source, document, evidence_path, genre_decisions, local_fields=(),
                       *, verify_existing=False):
     """把 `document` 里认得出的字段并进 `groups`：同来源的旧候选换掉，别的来源保留。
@@ -1150,6 +1179,8 @@ def _merge_candidates(groups, row, code, source, document, evidence_path, genre_
     official = bool(spec and spec.official)
     for field, value in _fields(document, genre_decisions).items():
         key = f"asset:{row['id']}:{field}"
+        if field == 'performers':
+            value = _previous_order(groups.get(key), source, value)
         if not local and field == 'performers' and field in local_fields:
             _merge_local_performer_profiles(groups, key, value, source)
         mode = _candidate_review_mode(groups, row, field, source, value, local_fields, verify_existing)
@@ -1471,8 +1502,9 @@ class _RemoteSession:
     def provider(self):
         if self._provider is None:
             self._provider = (self._factory() if self._factory
-                              else LibraryMetadataProvider(self._config.directory('secrets'),
-                                                           tools_root=self._config.directory('tools')))
+                              else LibraryMetadataProvider(
+                                  self._config.directory('secrets'), tools_root=self._config.directory('tools'),
+                                  public_cache=self._config.directory('generated') / 'jav-public'))
         return self._provider
 
     def reset(self):

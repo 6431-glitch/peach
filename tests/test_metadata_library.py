@@ -1875,7 +1875,7 @@ class LibraryNfoTests(unittest.TestCase):
         self.assertEqual(sorted((c['source'], c['provider'], c['source_kind'], c['official'], c['provider_id'])
                                 for c in title),
                          [('avbase', 'avbase-search', 'community', False, 'ORETD-615'),
-                          ('javdb', 'javdb-page', 'community', False, 'ORETD-615')])
+                          ('javdb', 'javdb-api', 'community', False, 'ORETD-615')])
         self.assertEqual(rows['title']['source_profile'], 'library')
         self.assertEqual(len(json.loads(rows['release_date']['candidates_json'])), 2)
 
