@@ -21,11 +21,11 @@ class LibraryShortcutsTests(unittest.TestCase):
             c.executescript("""
                 CREATE TABLE profile(id TEXT PRIMARY KEY,settings_json TEXT,updated_at TEXT);
                 INSERT INTO profile VALUES('local-default','{"sidebarOrder":["tags"]}','');
-                CREATE TABLE entity(id INTEGER PRIMARY KEY,kind TEXT,canonical_name TEXT);
-                INSERT INTO entity VALUES(1,'studio','厂牌'),(2,'series','系列'),(3,'tag','剧情');
+                CREATE TABLE entity(id INTEGER PRIMARY KEY,kind TEXT,canonical_name TEXT,normalized_name TEXT);
+                INSERT INTO entity VALUES(1,'studio','厂牌','厂牌'),(2,'series','系列','系列'),(3,'tag','剧情','剧情');
                 CREATE TABLE entity_redirect(old_id INTEGER,target_id INTEGER);
-                CREATE TABLE entity_alias(entity_id INTEGER,alias TEXT);
-                INSERT INTO entity_alias VALUES(3,'故事');
+                CREATE TABLE entity_alias(entity_id INTEGER,alias TEXT,normalized_alias TEXT);
+                INSERT INTO entity_alias VALUES(3,'故事','故事');
                 CREATE TABLE asset(id INTEGER PRIMARY KEY,medium TEXT,disposal TEXT,size INTEGER,snapshot_path TEXT,name TEXT,path TEXT);
                 CREATE TABLE asset_entity(asset_id INTEGER,entity_id INTEGER,role TEXT);
             """)
