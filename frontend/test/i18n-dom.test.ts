@@ -92,4 +92,11 @@ describe('imperative interface localization', () => {
       .not.toMatch(/[\u3400-\u9fff]/);
     expect(translate('通知 alt+T')).toBe('Notifications alt+T');
   });
+  it('translates connection-check labels and dynamic progress', () => {
+    document.body.innerHTML = '<h2>连接检查</h2><button>全部检查</button><span>登录或人机验证</span>';
+    localizeDom(document.body);
+    expect(document.body.textContent).toBe('Connection checksCheck allLogin or verification required');
+    expect(translate('已检查 3 / 12 个来源')).toBe('Checked 3 / 12 sources');
+    expect(translate('检查完成，2 项未通过')).toBe('Check complete; 2 checks failed');
+  });
 });
