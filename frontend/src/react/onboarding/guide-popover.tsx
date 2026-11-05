@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import { Button } from '@/components/base/buttons/button';
 import type { GuideStep } from '../../onboarding/guide-catalog';
 import { guideEntry } from '../../onboarding/guide-entry';
+import { translate } from '../../i18n';
 import { RiRouteLine, RiArrowRightSLine } from '@remixicon/react';
 import { Note } from '../components/note';
 import { SettingsDialogClose } from '../components/settings-dialog-close';
@@ -20,7 +21,7 @@ function GuidePopover({ step, position, total, missing, next, previous, close, i
   const entry = guideEntry(step);
   return <div className="peach-guide-popover-content" onPointerDown={event => event.stopPropagation()}>
     <header className="flex shrink-0 items-center justify-between gap-3 px-4 pt-4 pb-3">
-      <h3 id="driver-popover-title" className="text-body-medium text-text-primary">{step.title}</h3>
+      <h3 id="driver-popover-title" className="text-body-medium text-text-primary">{translate(step.title)}</h3>
       <SettingsDialogClose label={invitation ? '关闭教程提示' : '结束导览'} onPress={close} />
     </header>
     <div className="peach-guide-step-frame"><div ref={body} className="peach-guide-step-body flex flex-col gap-3 px-4 pb-4">
@@ -33,7 +34,7 @@ function GuidePopover({ step, position, total, missing, next, previous, close, i
         </ol>
         {entry.hint ? <p className="text-caption-1-regular text-text-secondary">{entry.hint}</p> : null}
       </section> : null}
-      <p id="driver-popover-description" className="text-body-regular text-text-secondary">{step.body}</p>
+      <p id="driver-popover-description" className="text-body-regular text-text-secondary">{translate(step.body)}</p>
       {step.surface ? <p className="text-caption-1-regular text-text-secondary">导览期间不自动播放；退出后仍按原来的播放设置使用。</p> : null}
       {step.details?.length ? <Disclosure summary="更多说明"><GuideFieldDetails details={step.details} /></Disclosure> : null}
       {step.scope ? <p className="text-body-2-regular text-text-secondary">{step.scope}</p> : null}
@@ -41,8 +42,8 @@ function GuidePopover({ step, position, total, missing, next, previous, close, i
     </div></div>
     <footer className="flex shrink-0 flex-wrap items-center gap-2 border-t border-separator-border px-4 py-3">
       {invitation ? <>
-        <Button variant="ghost" size="small" className="ml-auto" onClick={close}>稍后再说</Button>
-        <Button size="small" data-guide-next="" onClick={() => next()}>打开教程</Button>
+        <Button variant="ghost" size="small" className="ml-auto" onClick={close}>{translate('稍后再说')}</Button>
+        <Button size="small" data-guide-next="" onClick={() => next()}>{translate('打开教程')}</Button>
       </> : <>
       <span className="mr-auto text-body-2-regular tabular-nums text-text-secondary">{position + 1} / {total} 步</span>
       <Button variant="ghost" size="small" onClick={close}>跳过本章</Button>
