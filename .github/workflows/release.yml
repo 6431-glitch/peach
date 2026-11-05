@@ -550,6 +550,9 @@ jobs:
     needs: [release, validate]
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: read
+      packages: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -566,11 +569,19 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      # Docker Hub 是应用内更新与 Watchtower 认的来源，先推；ghcr 推同一镜像，挂到仓库侧栏的 Packages（ADR-0147）。
       - name: 推送版本号与 edge
         run: |
-          for tag in "${GITHUB_REF_NAME#v}" edge; do
-            docker tag longmeidao/peach:candidate "longmeidao/peach:$tag"
-            docker push "longmeidao/peach:$tag"
+          for image in longmeidao/peach ghcr.io/peach-mitao/peach; do
+            for tag in "${GITHUB_REF_NAME#v}" edge; do
+              docker tag longmeidao/peach:candidate "$image:$tag"
+              docker push "$image:$tag"
+            done
           done
 
   project-board:
