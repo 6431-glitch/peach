@@ -707,6 +707,24 @@ class TaskRunStore:
                 f"SELECT {_COLUMNS} FROM task_run WHERE id=?", (run_id,)).fetchone()
         return _row(row) if row else None
 
+    def active_descendants(self, run_id: int, *, limit: int | None = None) -> list[TaskRun]:
+        """还在排或在跑的全部后代（不含自己），一条查询取回整行。
+
+        一轮补全能派出上千条后继；逐条 `get` 每条都开一次连接，任务中心每次轮询都要等好几秒。
+        只想知道有没有时给 `limit=1`。
+        """
+        sql = ("WITH RECURSIVE family(id) AS (SELECT id FROM task_run WHERE parent_run_id=? "
+               "UNION ALL SELECT t.id FROM task_run t JOIN family f ON t.parent_run_id=f.id) "
+               f"SELECT {_COLUMNS} FROM task_run WHERE id IN (SELECT id FROM family) "
+               "AND status IN ('pending','running') ORDER BY id")
+        params: tuple = (run_id,)
+        if limit is not None:
+            sql += " LIMIT ?"
+            params += (limit,)
+        with self.database.read_connection() as connection:
+            rows = connection.execute(sql, params).fetchall()
+        return [_row(row) for row in rows]
+
     def blocking(self, mutex_key: str) -> TaskRun | None:
         """当前占着这把锁的那一轮。冲突时用它回答「是谁挡的」。"""
         marks = ",".join(f"'{name}'" for name in ACTIVE_STATUSES)
