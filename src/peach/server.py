@@ -54,6 +54,9 @@ def initialize() -> None:
         return
     if config.directory("database").joinpath("ledger.db").exists():
         raise RuntimeError("已有数据库但缺少配置文件，请恢复 config.toml 后启动")
+    if distribution.docker():
+        # 全新数据卷不替用户答题：服务以未配置状态起来，浏览器打开就是首次设置页（ADR-0148）。
+        return
     process = launch("init", "--no-input")
     try:
         code = process.wait(timeout=120)
@@ -67,7 +70,8 @@ def seed_access_password(config) -> str:
     """还没有访问策略时，用 `PEACH_ACCESS_PASSWORD` 写下 password 策略；返回给日志的一行，不含明文。
 
     已有策略时忽略它：改密码走配置页，环境变量不能在每次重启时把它改回去。值不合规时只报原因、
-    照常启动，浏览器打开后仍会进入访问设置；拒绝启动会让容器反复重启。
+    照常启动，浏览器打开后仍可在首次设置或访问设置里设密码；拒绝启动会让容器反复重启。
+    还没有设置文件时也照写：首次设置会沿用这份策略，访问那一项标成已设置。
     """
     password = os.environ.pop(ACCESS_PASSWORD_ENV, "")
     if not password:
@@ -86,9 +90,15 @@ def seed_access_password(config) -> str:
 
 def supervise(host: str, port: int, stopping: threading.Event) -> int:
     service = scanner = None
+    serving_configured = False
 
     def serve() -> subprocess.Popen:
-        return launch("serve", "--host", host, "--port", str(port), "--no-mdns", "--no-ledger-sync")
+        # 还没有设置文件时起的是首次设置服务，与托盘首启同一个 `--setup`；设置一提交、设置文件
+        # 出现，下面的循环就把它换成正常服务。
+        nonlocal serving_configured
+        serving_configured = settings_file.load_config().present
+        setup = () if serving_configured else ("--setup",)
+        return launch("serve", *setup, "--host", host, "--port", str(port), "--no-mdns", "--no-ledger-sync")
 
     def stop_all() -> None:
         nonlocal service, scanner
@@ -110,7 +120,7 @@ def supervise(host: str, port: int, stopping: threading.Event) -> int:
                 continue
             config = settings_file.load_config()
             reload_path = config.directory("state") / onboarding.RELOAD_NAME
-            if service is None or reload_path.exists():
+            if service is None or reload_path.exists() or config.present != serving_configured:
                 stop_process(service)
                 service = serve()
                 reload_path.unlink(missing_ok=True)
@@ -153,7 +163,9 @@ def main(argv: list[str] | None = None) -> int:
     if seeded:
         print(seeded, flush=True)
     print(f"Peach 服务监听：{args.host}:{args.port}。容器外部访问地址以宿主机端口映射为准。", flush=True)
-    if access.load(config.directory("secrets") / "access.json")["mode"] == "legacy":
+    if distribution.docker() and not config.present:
+        print("首次设置：从部署机器或局域网的浏览器打开 Peach，按页面完成设置。", flush=True)
+    elif access.load(config.directory("secrets") / "access.json")["mode"] == "legacy":
         print("首次打开：从部署机器或局域网的浏览器打开 Peach，设置访问密码或选择免登录。" if distribution.docker()
               else "首次登录：在运行 Peach 的环境中执行 peach token 查看口令，登录后设置访问密码。", flush=True)
     if os.environ.get('PEACH_DISTRIBUTION') == 'docker':

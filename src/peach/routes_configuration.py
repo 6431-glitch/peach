@@ -32,7 +32,7 @@ from . import (access, auth, certs, data_storage, distribution, entry_links, err
                web_downloads)
 from .config import REPLICATION_ENABLED
 from .jobs import JobAlreadyRunning
-from .routes_auth import (login_mode, origin_allowed, require_auth, require_authenticated_client, safe_next, same_origin,
+from .routes_auth import (FIRST_ACCESS_DENIED, login_mode, origin_allowed, require_auth, require_authenticated_client, safe_next, same_origin,
                           set_auth_cookie, sessions as access_sessions)
 from .web_entry import runtime_fact_entries
 from .web_local_access import local_client, managed_configuration
@@ -1073,13 +1073,9 @@ def save_access(request: Request, body: dict[str, Any] = Body(default_factory=di
     return response
 
 
-#: Docker 首次访问设置的来源不满足时给的那句话；页面上的同一句写在登录页里。
-FIRST_ACCESS_DENIED = "请从部署 Peach 的机器或同一局域网打开 Peach 完成访问设置，或在启动容器时设置 PEACH_ACCESS_PASSWORD。"
-
-
 @router.post("/api/configuration/access/first")
 def first_access(request: Request, body: dict[str, Any] = Body(default_factory=dict)):
-    """Docker 首次访问设置：还没有访问策略时，设访问密码或明确选择免登录（ADR-0148）。
+    """Docker 访问设置：已经配置过、还没有访问策略的部署设访问密码或明确选择免登录（ADR-0148）。
 
     这时没有登录可言，边界只剩来源：`login_mode` 判 `setup` 才收，即本机或私有网络、
     不带代理转发头；提交再按 `origin_allowed` 看是不是 Peach 自己的页面发的，首次设置时隧道

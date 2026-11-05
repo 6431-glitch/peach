@@ -322,11 +322,15 @@ def set_auth_cookie(response: Response, request: Request, *, days: int = 30, log
         response.delete_cookie("tok", path="/")
 
 
+#: Docker 首次设置或访问设置的来源不满足时给的那句话；页面上的同一句写在页面包里。
+FIRST_ACCESS_DENIED = "请从部署 Peach 的机器或同一局域网打开 Peach 完成设置，或在启动容器时设置 PEACH_ACCESS_PASSWORD。"
+
+
 def login_mode(request: Request) -> str:
     """登录页画哪一种，由服务端判定后交给页面，页面不自己猜。
 
     有访问策略时是 `password`，框里填访问密码。没有策略（`legacy`）时，非 Docker 部署
-    填自动生成的访问口令；Docker 没有只绑回环的首次设置页，改在这里设访问密码或选免登录
+    填自动生成的访问口令；Docker 已经配置过（全新部署走首次设置页）时改在这里设访问密码或选免登录
     （`setup`），来源须过 `local_client`：本机或私有网络、不带代理转发头。来源不满足的是
     `denied`，只能用口令登录（ADR-0148）。
     """

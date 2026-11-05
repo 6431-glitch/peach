@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { ErrorPage } from '../../src/react/pages/error/error-page';
 import { AccessSetup, FIRST_ACCESS_URL } from '../../src/react/pages/login/access-setup';
-import { FIRST_ACCESS_DENIED, LoginPage, WRONG_PASSWORD, WRONG_TOKEN } from '../../src/react/pages/login/login-page';
+import { FIRST_ACCESS_DENIED } from '../../src/react/pages/first-access';
+import { LoginPage, WRONG_PASSWORD, WRONG_TOKEN } from '../../src/react/pages/login/login-page';
 import { buttonNamed, click, fetchMock, mount, sentBody, settle, submit, switches, type } from './render';
 
 const tokenInput = (root: ParentNode) => root.querySelector<HTMLInputElement>('input[name="token"]');

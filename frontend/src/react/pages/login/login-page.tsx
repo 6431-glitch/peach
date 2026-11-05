@@ -19,13 +19,12 @@ import { Input } from '@/components/base/input/input';
 import { Note } from '../../components/note';
 import { AuthCard } from '../auth-card';
 import type { PageData } from '../page-data';
+import { FIRST_ACCESS_DENIED } from '../first-access';
 import { AccessSetup } from './access-setup';
 
 /** 口令不对时框下那句话。限流与参数错误的原因由服务端给。 */
 export const WRONG_PASSWORD = '访问密码不正确';
 export const WRONG_TOKEN = '访问口令不正确';
-/** Docker 还没有访问策略、来源又不是本机或局域网时，卡头下面那句话。 */
-export const FIRST_ACCESS_DENIED = '请从部署 Peach 的机器或同一局域网打开 Peach 完成访问设置，或在启动容器时设置 PEACH_ACCESS_PASSWORD。';
 
 const tokenHint = (docker: boolean) => (
   <>在{docker ? '宿主机' : '运行 Peach 的环境中'}执行 <code className="wrap-anywhere">{docker ? 'docker compose exec peach peach token' : 'peach token'}</code> 查看。</>

@@ -1,4 +1,4 @@
-/* Docker 首次访问设置：还没有访问策略时，登录页换成这一张卡（ADR-0148）。
+/* Docker 访问设置：已经配置过、还没有访问策略的部署，登录页换成这一张卡（ADR-0148）。全新部署走首次设置页。
  *
  * 和桌面首次设置的访问部分同一套控件：「访问密码」开关、两框密码与一句说明。开着时设访问密码，
  * 关掉就是明确选了免登录，按钮跟着写清楚是哪一种。提交走 `POST /api/configuration/access/first`，
@@ -59,7 +59,7 @@ export function AccessSetup({ data, navigate = go }: { data: PageData; navigate?
   };
 
   return (
-    <AuthCard title="访问设置" lede="第一次打开 Peach，先决定打开时要不要登录。">
+    <AuthCard title="访问设置" lede="这台 Peach 还没有访问设置，先决定打开时要不要登录。">
       <form aria-labelledby="auth-card-title" className="flex flex-col gap-6" onSubmit={onSubmit} noValidate>
         <CardGroup first>
           <div className="flex items-start justify-between gap-4">

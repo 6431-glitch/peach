@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "3db88257-e295-4896-9c98-6d8a7be05798", e._sentryDebugIdIdentifier = "sentry-dbid-3db88257-e295-4896-9c98-6d8a7be05798");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "56a3ac81-61da-4987-ab16-4073f28b195b", e._sentryDebugIdIdentifier = "sentry-dbid-56a3ac81-61da-4987-ab16-4073f28b195b");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -19254,8 +19254,8 @@ function mm({ tone: e, title: t, action: n, extra: r, children: i, actionLayout:
 		});
 	}
 }
-// src/react/boardui/components/base/switch/switch.tsx
-var hm = Ft({
+// src/react/pages/first-access.ts
+var hm = "请从部署 Peach 的机器或同一局域网打开 Peach 完成设置，或在启动容器时设置 PEACH_ACCESS_PASSWORD。", gm = Ft({
 	sm: {
 		track: "h-4 w-7",
 		trackRadius: {
@@ -19317,8 +19317,8 @@ var hm = Ft({
 		}
 	}
 });
-function gm({ state: e, size: t = "md", shape: n = "pill" }) {
-	let r = hm[t];
+function _m({ state: e, size: t = "md", shape: n = "pill" }) {
+	let r = gm[t];
 	return /* @__PURE__ */ (0, z.jsx)("span", {
 		"aria-hidden": !0,
 		className: R("relative shrink-0 transition-colors duration-200 ease", r.track, r.trackRadius[n], e.isSelected ? R("bg-linear-to-b from-accent-500 to-accent-600", r.onShadow) : "bg-background-tertiary-default", e.isDisabled && "opacity-50", e.isFocusVisible && "ring-2 ring-border-focus-ring ring-offset-2"),
@@ -19328,12 +19328,12 @@ function gm({ state: e, size: t = "md", shape: n = "pill" }) {
 		})
 	});
 }
-function _m({ className: e, children: t, size: n = "md", shape: r = "pill", ref: i, ...a }) {
+function vm({ className: e, children: t, size: n = "md", shape: r = "pill", ref: i, ...a }) {
 	return /* @__PURE__ */ (0, z.jsx)(Wp, {
 		ref: i,
 		...a,
 		className: (t) => R("group inline-flex items-center gap-2 select-none", t.isDisabled ? "cursor-not-allowed" : "cursor-pointer", typeof e == "function" ? e(t) : e),
-		children: (e) => /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(gm, {
+		children: (e) => /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(_m, {
 			state: e,
 			size: n,
 			shape: r
@@ -19344,7 +19344,7 @@ function _m({ className: e, children: t, size: n = "md", shape: r = "pill", ref:
 	});
 }
 // src/react/settings/password-pair.tsx
-function vm({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
+function ym({ label: e, password: t, confirmation: n, onPassword: r, onConfirmation: i, disabled: a = !1, passwordError: o, passwordHint: s, confirmationError: c, confirmationInvalid: l = !1 }) {
 	return /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(pm, {
 		id: "access-password",
 		type: "password",
@@ -19374,45 +19374,45 @@ function vm({ label: e, password: t, confirmation: n, onPassword: r, onConfirmat
 	})] });
 }
 // src/react/settings/busy-props.ts
-function ym(e) {
+function bm(e) {
 	return e ? {
 		"aria-busy": !0,
 		"aria-disabled": !0
 	} : {};
 }
 // src/ui-kit/collapse.ts
-var bm = /* @__PURE__ */ new WeakMap();
-function xm(e, t, n) {
-	Sm(t, n, () => e.open, (t) => {
+var xm = /* @__PURE__ */ new WeakMap();
+function Sm(e, t, n) {
+	Cm(t, n, () => e.open, (t) => {
 		e.open = t;
 	});
 }
-function Sm(e, t, n, r) {
+function Cm(e, t, n, r) {
 	e.classList.add("ui-fcollapse");
-	let i = (bm.get(e) || 0) + 1;
-	bm.set(e, i);
-	let a = () => bm.get(e) === i;
+	let i = (xm.get(e) || 0) + 1;
+	xm.set(e, i);
+	let a = () => xm.get(e) === i;
 	if (t) {
 		e.inert = !1;
 		let t = n() ? e.getBoundingClientRect().height : 0;
-		r(!0), wm(e, t, a);
-	} else e.inert = !0, e.classList.remove("ui-fcollapse-settled"), e.style.height = e.getBoundingClientRect().height + "px", e.getBoundingClientRect(), e.style.height = "0px", Cm(e, () => {
+		r(!0), Tm(e, t, a);
+	} else e.inert = !0, e.classList.remove("ui-fcollapse-settled"), e.style.height = e.getBoundingClientRect().height + "px", e.getBoundingClientRect(), e.style.height = "0px", wm(e, () => {
 		a() && (r(!1), e.style.height = "");
 	});
 }
-function Cm(e, t) {
+function wm(e, t) {
 	let n = !1, r, i = (a) => {
 		a && a.propertyName !== "height" || n || (n = !0, e.removeEventListener("transitionend", i), clearTimeout(r), t());
 	};
 	e.addEventListener("transitionend", i), r = setTimeout(i, 260);
 }
-function wm(e, t, n = () => !0) {
-	e.classList.remove("ui-fcollapse-settled"), e.style.height = t + "px", e.getBoundingClientRect(), e.style.height = e.scrollHeight + "px", Cm(e, () => {
+function Tm(e, t, n = () => !0) {
+	e.classList.remove("ui-fcollapse-settled"), e.style.height = t + "px", e.getBoundingClientRect(), e.style.height = e.scrollHeight + "px", wm(e, () => {
 		n() && (e.style.height = "auto", e.classList.add("ui-fcollapse-settled"));
 	});
 }
 // ../resources/media-sources.json
-var Tm = [
+var Em = [
 	{
 		id: "local",
 		name: "本地磁盘",
@@ -19461,21 +19461,21 @@ var Tm = [
 		cloud: !0,
 		icon: "database"
 	}
-], Em = Tm, Dm = Tm.map((e) => [e.id, e.label]);
-Tm.map((e) => e.id);
-var Om = Tm.filter((e) => e.cloud).map((e) => e.id), km = Object.fromEntries(Tm.map((e) => [e.id, e.name])), Am = {
+], Dm = Em, Om = Em.map((e) => [e.id, e.label]);
+Em.map((e) => e.id);
+var km = Em.filter((e) => e.cloud).map((e) => e.id), Am = Object.fromEntries(Em.map((e) => [e.id, e.name])), jm = {
 	local: "hard-drive",
 	guangya: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAEWUlEQVR42sWXT2hcVRTGf/fNYCZdNNPGTaHaSUXFVQZSLLowoe3GdpEERHFhYqTQRBATcWlpSly56YQu4ipNZivYxCK46Z9EsBGkHdwItdhXrLixzaASo2bucXHve/feNzOagqQXHnPf/XPOd77z3XPfKLwmkxTZit4lkiEiykQK8wA5+5v0c5i5nNj3ZJ03nwPyKpmvEekFpGNZvV6PE58qdT7BEIoLRKqYOo0g6PtOogQEDkDWeS4DVgQ0MVpNqbGNpRSATDCEcLHJYcAAzWz4QHIqZCcdswwloWr7iBpWJzeWlIxTAq4CJSK7MNmQOhXrSGXeWzj205AGAiiLQAAt0JA6HZ09eRRDCKV0UmGoUsq8SzJoKRS7DgFJxpQxmjhRXsRg5pU4AAKIKvL7xmQeGPVWerJIHBACSX9TQw5EAlB75lLnnm1t18NgHqHsAPjGvCj8KHN27rEuONgPnV3w96/wVx3urZrotefMj0n5DABalfME59CjUXwGPGDlEegbgZ5+mtpmHW5fgusz8NtdF30AwKZCa9AKJeNIYERZ4anM0esuwWvzJurttK8+hLUZY1B5gaUpMIHlW+8Wh0YL7O2BU5dhb4lttxc/sEBmnE3lmba6yrf0re1RE7vj7RbOf1iBWhXqdw1D+3rh8DtQLIUgNuvwzXmaUm3T25yCJA3Kgjg+DS+fcXMPYvjkLYhXw1Ql/YHT0H861MXcs7C5bo+2BCzkpg8x3ZpDZTa8cQE6i274XB/8/K0TVt8oPDcI67FxFq9AYQ/sP2zm8wXIdcDWn7D7AOwuGdZsRWzNQFJMegfh1EU3tjoLy+85oR4agVfnzdydFZg/ZuY6izD1PRSKzXbjFageS2tF1FZEIvD0QDj29aKt41bJHV0Z7YiZ31iH7z5rbfdmFRruTsj/q5K7D4TvP9Ys9fZofXkeuntgz5Nw6X1jNDn363FzjbgyAzeqnhCzKXhmAKauuk2LY7C2YAWJExyJ6CyQ5LL5aMvtvVE1YlWZtBIexTAF9zOonyg7tCn1Ht2JohsCPS+Fe3+quas3eRpi6G9o82hpAWCj7t5fGIVdxRCE9mt5ereb0+C3ezWnCS1eXweAmkW4tuj6nUU4fiZTQPCMmijY1wvPj4a14vaKi1pjhScOsG6VAoArlZCFo5NwIgvCA/JUP5z8NLTxxVnn2Hx8uPUND1TbOnB0El45R1N6Ls8aagEeL5kUZY/qgximD3riU5n7Jbz62xeikQXj4GHa/RhmjxgQqkV5F3sSRKfA2hei6pvw+dntO791DSpH4Jc7nuCyAhT3NWTT0Z6BtBiV4MR0ezZuXTPCvb7Q8jpJo/aveNyF9N8AkrarCPvL7lr+o270kK0dD9mUTHAz/C7cwSbUIoRlHlWLWIwoUEGoPwL3McJSpCrUiRjbcfeKKfUxcQSg5lhCMQzEO5D3OophNcdS8O8YQMYpoRkix+j/LkxFDWGZAhVVcSn/Bw2n+w/oK+fWAAAAAElFTkSuQmCC",
 	115: "data:image/png;base64,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",
 	pikpak: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAACY0lEQVR4nNWXy2tTQRSHv7m5RUWttqlNW1OairhKNbrU+lhE/AOkdCOIIO7arty0QhSxCIIQ7VJwIfgfCIJdFB+rgC32AVIflD5CbFUsoohJRiZzb5Ne05p4kxv94HCTc+bO+c0MM3eOoICD/TJswAAQBdoBH5UhA8wDo1mIv7ojpuyAsH9EBuQgkmuASXVJI4lN3BXDawIifXIQwQ28RDA0ERfDwpr2cQ9G7iSdhcOGteZeJ1eYKreB5DS1I2oiCJba2hDQVA9tjdDaCHMfICuhMwDJz5D8BMtftK9E2s2NttrJMOxvzSdT1rIb6goW69KIXsjr5/K+nxlIWWKWrOebJIxNFhXgK7r20QjcPL+59PllGH8LarDvU3oWFHU+CDZpK+TKA3j88vd+zGKd93av/y8lrKxao7Ls6bROrrj6EE6E9WzZppZKrJ0y0Hu8RAGhZuhohqk5nShp2Y/0+nZqxPaoFQsr2my2mNDSkBe01w/7AvAu9QcB/nrYs0vboU4qSsNOwCHAoMYY/5WAsckNt1NJ8WKY5TS+fF8/E7f/Lu5aQDrjLu5agOlzF3ct4NYFd3HXAk51uYv/k9vQLPeFr9/h4gh0dcCBNu17vaiP7nt9sGNblQVs3wo9x+DZNCRm9aUyFICebh0rF9PpWP22+QvqC3f2qLZyKda34XTMLsGLGSrO8xndtxMR6ZfqQ+tz7uczRyDor0zyxY/6LlDkoMqYVsUSKvSqho8SVB/JglqCUWqF4ImharVcueQ96j4bN3KFoiDmeXpJTOXO7QJVoyEZ8mgm0rm6sLA4talFef4LaurBZfZxNPMAAAAASUVORK5CYII=",
 	onedrive: "data:image/png;base64,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"
-}, jm = {
-	...Object.fromEntries(Em.map((e) => [e.id, Am[e.id] || e.icon])),
+}, Mm = {
+	...Object.fromEntries(Dm.map((e) => [e.id, jm[e.id] || e.icon])),
 	online: "rss",
 	smb: "network"
 };
 // src/react/boardui/components/application/settings/settings-rows.tsx
-function Mm({ label: e, description: t, children: n }) {
+function Nm({ label: e, description: t, children: n }) {
 	return /* @__PURE__ */ (0, z.jsxs)("div", {
 		className: R("flex min-h-[52px] w-full items-center justify-between gap-4 py-2.5 pr-2.5", "border-b border-separator-border last:border-b-0"),
 		children: [/* @__PURE__ */ (0, z.jsxs)("div", {
@@ -19491,7 +19491,7 @@ function Mm({ label: e, description: t, children: n }) {
 	});
 }
 // src/react/boardui/components/base/buttons/link-button.tsx
-var Nm = Ft({
+var Pm = Ft({
 	base: "inline-flex items-center justify-center gap-1 whitespace-nowrap font-sans select-none cursor-pointer rounded-sm underline-offset-3 hover:underline transition-colors duration-150 ease outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-border-focus-ring disabled:cursor-not-allowed disabled:no-underline aria-disabled:cursor-not-allowed aria-disabled:no-underline",
 	size: {
 		medium: "text-body-medium",
@@ -19508,15 +19508,15 @@ var Nm = Ft({
 		secondary: "text-text-secondary active:text-text-primary disabled:text-text-tertiary aria-disabled:text-text-tertiary"
 	}
 });
-function Pm({ variant: e = "primary", size: t = "medium", leadingIcon: n, trailingIcon: r, children: i, className: a, disabled: o = !1, ...s }) {
-	let c = R(Nm.base, Nm.size[t], Nm.variant[e], a), l = /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
+function Fm({ variant: e = "primary", size: t = "medium", leadingIcon: n, trailingIcon: r, children: i, className: a, disabled: o = !1, ...s }) {
+	let c = R(Pm.base, Pm.size[t], Pm.variant[e], a), l = /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
 		n ? /* @__PURE__ */ (0, z.jsx)(n, {
-			className: Nm.icon[t],
+			className: Pm.icon[t],
 			"aria-hidden": !0
 		}) : null,
 		i != null && /* @__PURE__ */ (0, z.jsx)("span", { children: i }),
 		r ? /* @__PURE__ */ (0, z.jsx)(r, {
-			className: Nm.icon[t],
+			className: Pm.icon[t],
 			"aria-hidden": !0
 		}) : null
 	] });
@@ -19542,13 +19542,13 @@ function Pm({ variant: e = "primary", size: t = "medium", leadingIcon: n, traili
 	});
 }
 // src/react/settings/section.tsx
-function Fm({ children: e }) {
+function Im({ children: e }) {
 	return /* @__PURE__ */ (0, z.jsx)("div", {
 		className: "ui-settings-rows flex flex-col empty:hidden",
 		children: e
 	});
 }
-function Im({ divided: e = !1, children: t }) {
+function Lm({ divided: e = !1, children: t }) {
 	return e ? /* @__PURE__ */ (0, z.jsx)("div", {
 		className: "flex flex-col gap-4 border-t border-separator-border py-4 pr-3 empty:hidden [&>.ui-settings-facts]:-mr-3",
 		children: t
@@ -19557,22 +19557,22 @@ function Im({ divided: e = !1, children: t }) {
 		children: t
 	});
 }
-function Lm({ role: e, children: t }) {
+function Rm({ role: e, children: t }) {
 	return /* @__PURE__ */ (0, z.jsx)("p", {
 		role: e,
 		className: "text-body-2-regular text-text-secondary",
 		children: t
 	});
 }
-function Rm({ children: e }) {
+function zm({ children: e }) {
 	return /* @__PURE__ */ (0, z.jsx)("p", {
 		role: "alert",
 		className: "text-body-2-regular text-text-error-primary",
 		children: e
 	});
 }
-function zm({ href: e, children: t, leadingIcon: n }) {
-	return /* @__PURE__ */ (0, z.jsx)(Pm, {
+function Bm({ href: e, children: t, leadingIcon: n }) {
+	return /* @__PURE__ */ (0, z.jsx)(Fm, {
 		href: e,
 		target: "_blank",
 		rel: "noopener noreferrer",
@@ -19586,13 +19586,13 @@ function zm({ href: e, children: t, leadingIcon: n }) {
 		})
 	});
 }
-function Bm({ children: e }) {
+function Vm({ children: e }) {
 	return /* @__PURE__ */ (0, z.jsx)("dl", {
 		className: "ui-settings-facts flex flex-col empty:hidden",
 		children: e
 	});
 }
-function Vm({ term: e, children: t }) {
+function Hm({ term: e, children: t }) {
 	return /* @__PURE__ */ (0, z.jsxs)("div", {
 		className: "flex min-h-11 items-center justify-between gap-4 border-b border-separator-border py-2.5 pr-3 last:border-b-0",
 		children: [/* @__PURE__ */ (0, z.jsx)("dt", {
@@ -19604,10 +19604,10 @@ function Vm({ term: e, children: t }) {
 		})]
 	});
 }
-function Hm({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing: i = !1, onOpenChange: a, contentClassName: o }) {
+function Um({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing: i = !1, onOpenChange: a, contentClassName: o }) {
 	let s = (0, j.useId)(), c = (0, j.useRef)(null), l = (0, j.useRef)(null), u = (0, j.useRef)(!1), [d, f] = (0, j.useState)(n ?? t);
 	return (0, j.useLayoutEffect)(() => {
-		n !== void 0 && n !== d && c.current && l.current && (xm(c.current, l.current, n), f(n));
+		n !== void 0 && n !== d && c.current && l.current && (Sm(c.current, l.current, n), f(n));
 	}, [n, d]), /* @__PURE__ */ (0, z.jsxs)("details", {
 		ref: (e) => {
 			c.current = e, e && (n ?? t) && !u.current && (u.current = !0, e.open = !0);
@@ -19616,7 +19616,7 @@ function Hm({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing:
 			"aria-expanded": d,
 			"aria-controls": s,
 			onClick: (e) => {
-				e.preventDefault(), c.current && l.current && (xm(c.current, l.current, !d), f(!d), a?.(!d));
+				e.preventDefault(), c.current && l.current && (Sm(c.current, l.current, !d), f(!d), a?.(!d));
 			},
 			className: `${i ? "w-full" : "w-fit"} flex cursor-pointer list-none items-center gap-1 rounded-sm text-body-2-medium text-text-secondary outline-none select-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring`,
 			children: [
@@ -19641,7 +19641,7 @@ function Hm({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing:
 		})]
 	});
 }
-function Um({ name: e }) {
+function Wm({ name: e }) {
 	return /* @__PURE__ */ (0, z.jsx)("svg", {
 		"aria-hidden": !0,
 		"data-source-mark": e,
@@ -19651,22 +19651,22 @@ function Um({ name: e }) {
 		children: /* @__PURE__ */ (0, z.jsx)("use", { href: `#i-${e}` })
 	});
 }
-function Wm({ mark: e }) {
+function Gm({ mark: e }) {
 	return e.startsWith("data:image/png;base64,") ? /* @__PURE__ */ (0, z.jsx)("img", {
 		src: e,
 		alt: "",
 		width: 16,
 		height: 16,
 		className: "size-(--icon-inline) shrink-0"
-	}) : /* @__PURE__ */ (0, z.jsx)(Um, { name: e });
+	}) : /* @__PURE__ */ (0, z.jsx)(Wm, { name: e });
 }
 // src/react/pages/login/access-setup.tsx
-var Gm = "/api/configuration/access/first", Km = (e) => window.location.assign(e);
-function qm({ data: e, navigate: t = Km }) {
+var Km = "/api/configuration/access/first", qm = (e) => window.location.assign(e);
+function Jm({ data: e, navigate: t = qm }) {
 	let [n, r] = (0, j.useState)(!0), [i, a] = (0, j.useState)(""), [o, s] = (0, j.useState)(""), [c, l] = (0, j.useState)({}), [u, d] = (0, j.useState)(""), [f, p] = (0, j.useState)(!1);
 	return /* @__PURE__ */ (0, z.jsx)(Bt, {
 		title: "访问设置",
-		lede: "第一次打开 Peach，先决定打开时要不要登录。",
+		lede: "这台 Peach 还没有访问设置，先决定打开时要不要登录。",
 		children: /* @__PURE__ */ (0, z.jsxs)("form", {
 			"aria-labelledby": "auth-card-title",
 			className: "flex flex-col gap-6",
@@ -19683,7 +19683,7 @@ function qm({ data: e, navigate: t = Km }) {
 					next: e.next || "/"
 				};
 				try {
-					let e = await fetch(Gm, {
+					let e = await fetch(Km, {
 						method: "POST",
 						credentials: "same-origin",
 						body: JSON.stringify(a),
@@ -19720,7 +19720,7 @@ function qm({ data: e, navigate: t = Km }) {
 									className: "text-body-2-regular text-text-secondary",
 									children: "开启后，访问 Peach 需要先登录。"
 								})]
-							}), /* @__PURE__ */ (0, z.jsx)(_m, {
+							}), /* @__PURE__ */ (0, z.jsx)(vm, {
 								"aria-labelledby": "access-setup-title",
 								"aria-describedby": "access-setup-description",
 								isSelected: n,
@@ -19729,8 +19729,8 @@ function qm({ data: e, navigate: t = Km }) {
 								}
 							})]
 						}),
-						/* @__PURE__ */ (0, z.jsx)(Lm, { children: "局域网访问推荐设置密码。未设置时，同一网络中能连接 Peach 的设备可直接进入。" }),
-						n ? /* @__PURE__ */ (0, z.jsx)(vm, {
+						/* @__PURE__ */ (0, z.jsx)(Rm, { children: "局域网访问推荐设置密码。未设置时，同一网络中能连接 Peach 的设备可直接进入。" }),
+						n ? /* @__PURE__ */ (0, z.jsx)(ym, {
 							label: "访问密码",
 							password: i,
 							confirmation: o,
@@ -19759,14 +19759,14 @@ function qm({ data: e, navigate: t = Km }) {
 				/* @__PURE__ */ (0, z.jsx)(Rt, {
 					type: "submit",
 					className: "w-full",
-					...ym(f),
+					...bm(f),
 					children: n ? "设置密码并进入" : "免登录进入"
 				})
 			]
 		})
 	});
 }
-var Jm = "请从部署 Peach 的机器或同一局域网打开 Peach 完成访问设置，或在启动容器时设置 PEACH_ACCESS_PASSWORD。", Ym = (e) => /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
+var Ym = (e) => /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
 	"在",
 	e ? "宿主机" : "运行 Peach 的环境中",
 	"执行 ",
@@ -19777,7 +19777,7 @@ var Jm = "请从部署 Peach 的机器或同一局域网打开 Peach 完成访�
 	" 查看。"
 ] });
 function Xm({ data: e }) {
-	return e.mode === "setup" ? /* @__PURE__ */ (0, z.jsx)(qm, { data: e }) : /* @__PURE__ */ (0, z.jsx)(Zm, { data: e });
+	return e.mode === "setup" ? /* @__PURE__ */ (0, z.jsx)(Jm, { data: e }) : /* @__PURE__ */ (0, z.jsx)(Zm, { data: e });
 }
 function Zm({ data: e }) {
 	let t = e.mode === "legacy" || e.mode === "denied", [n, r] = (0, j.useState)(e.error || (e.invalid === "true" ? t ? "访问口令不正确" : "访问密码不正确" : ""));
@@ -19785,7 +19785,7 @@ function Zm({ data: e }) {
 		title: "Peach",
 		children: [e.mode === "denied" ? /* @__PURE__ */ (0, z.jsx)(mm, {
 			tone: "warning",
-			children: Jm
+			children: hm
 		}) : null, /* @__PURE__ */ (0, z.jsxs)("form", {
 			method: "post",
 			action: "/login",
@@ -19832,8 +19832,9 @@ function Zm({ data: e }) {
 var Qm = "/api/pick-folder", $m = "/api/setup/questions", eh = "/api/setup", th = class extends Error {
 	status;
 	errors;
-	constructor(e, t, n) {
-		super(t), this.status = e, this.errors = n;
+	docker;
+	constructor(e, t, n, r = !1) {
+		super(t), this.status = e, this.errors = n, this.docker = r;
 	}
 };
 async function nh(e, t, n) {
@@ -19851,7 +19852,7 @@ async function nh(e, t, n) {
 		throw t.signal?.aborted ? e : new th(0, "连接不到 Peach，请确认它仍在运行后重试");
 	}
 	let i = await r.json().catch(() => null);
-	if (!r.ok) throw new th(r.status, i?.error || n, i?.errors);
+	if (!r.ok) throw new th(r.status, i?.error || n, i?.errors, i?.docker === !0);
 	return i;
 }
 var rh = (e) => nh($m, { signal: e }, "没能读取设置题目"), ih = (e) => nh(eh, {
@@ -20016,14 +20017,14 @@ function hh({ done: e }) {
 						}), /* @__PURE__ */ (0, z.jsxs)("div", { children: [/* @__PURE__ */ (0, z.jsx)("p", {
 							className: "text-body-regular text-text-primary",
 							children: e.restored ? "已连接已有数据目录。" : e.skip_media ? "可在「媒体库与入库」添加媒体目录并开始扫描。" : e.scan_requested ? "首次扫描已排队，在后台整理媒体库，期间可以照常使用 Peach。" : "稍后在配置页开始扫描媒体库。"
-						}), /* @__PURE__ */ (0, z.jsx)(Hm, {
+						}), /* @__PURE__ */ (0, z.jsx)(Um, {
 							summary: "运行信息",
-							children: /* @__PURE__ */ (0, z.jsx)(Bm, { children: e.facts.map((e) => /* @__PURE__ */ (0, z.jsxs)(Vm, {
+							children: /* @__PURE__ */ (0, z.jsx)(Vm, { children: e.facts.map((e) => /* @__PURE__ */ (0, z.jsxs)(Hm, {
 								term: e.term,
 								children: [e.value, e.install_tool ? /* @__PURE__ */ (0, z.jsx)("span", {
 									className: "text-text-secondary",
 									children: "可在配置页「应用与维护」里安装。"
-								}) : e.download_url ? /* @__PURE__ */ (0, z.jsx)(zm, {
+								}) : e.download_url ? /* @__PURE__ */ (0, z.jsx)(Bm, {
 									href: e.download_url,
 									children: e.download_label ?? e.download_url
 								}) : null]
@@ -20778,7 +20779,7 @@ Object.fromEntries(Object.entries({
 	later: "/watch-later",
 	flagged: "/flagged",
 	ads: "/junk-files"
-}).map(([e, t]) => [t, e])), typeof Intl < "u" && typeof Intl.Segmenter == "function" && new Intl.Segmenter(void 0, { granularity: "grapheme" }), { ...km };
+}).map(([e, t]) => [t, e])), typeof Intl < "u" && typeof Intl.Segmenter == "function" && new Intl.Segmenter(void 0, { granularity: "grapheme" }), { ...Am };
 // src/ui-kit/scroll.ts
 var Zg = /* @__PURE__ */ new Map(), Qg, $g = 240, e_ = 50, t_ = 70, n_ = .55, r_ = .35, i_ = 480;
 function a_(e, t) {
@@ -21015,7 +21016,7 @@ function g_({ className: e }) {
 		children: /* @__PURE__ */ (0, z.jsx)("use", { href: "#i-folder-search" })
 	});
 }
-var __ = Dm, v_ = (e) => jm[e] || "database", y_ = (e) => Om.includes(e);
+var __ = Om, v_ = (e) => Mm[e] || "database", y_ = (e) => km.includes(e);
 function b_({ label: e, className: t, children: n }) {
 	return /* @__PURE__ */ (0, z.jsxs)("div", {
 		className: R("flex min-w-0 flex-col gap-1", t),
@@ -21060,12 +21061,12 @@ function S_({ index: e, cost: t, error: n, onChange: r }) {
 					children: "代理保护"
 				})]
 			}),
-			n ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: n }) : null
+			n ? /* @__PURE__ */ (0, z.jsx)(zm, { children: n }) : null
 		]
 	});
 }
 function C_() {
-	return /* @__PURE__ */ (0, z.jsx)(Lm, { children: "读取策略选「代理保护」时，会限制自动读取视频。" });
+	return /* @__PURE__ */ (0, z.jsx)(Rm, { children: "读取策略选「代理保护」时，会限制自动读取视频。" });
 }
 function w_({ initial: e, blank: t, pickFolder: n, describe: r, focusAfterPick: i = !1 }) {
 	let [a, o] = (0, j.useState)(e), [s, c] = (0, j.useState)([]), [l, u] = (0, j.useState)(null), [d, f] = (0, j.useState)(null), p = (0, j.useRef)(!1), m = (0, j.useRef)([]);
@@ -21145,7 +21146,7 @@ function T_({ label: e, path: t, onPath: n, error: r, inputRef: i, picking: a, o
 					icon: g_,
 					"aria-label": "选择文件夹",
 					onClick: o,
-					...ym(a)
+					...bm(a)
 				}),
 				s ? /* @__PURE__ */ (0, z.jsx)(Rt, {
 					variant: "danger",
@@ -21175,7 +21176,7 @@ function E_({ index: e, value: t, onChange: n, options: r = __ }) {
 			children: r.map(([e, t]) => /* @__PURE__ */ (0, z.jsxs)(Dh, {
 				id: e,
 				textValue: t,
-				children: [/* @__PURE__ */ (0, z.jsx)(Wm, { mark: v_(e) }), t]
+				children: [/* @__PURE__ */ (0, z.jsx)(Gm, { mark: v_(e) }), t]
 			}, e))
 		})
 	});
@@ -21226,7 +21227,7 @@ var D_ = [
 	["tags", "主题"]
 ];
 function O_(e) {
-	let t = e === "local" ? "" : jm[e];
+	let t = e === "local" ? "" : Mm[e];
 	return t ? [t, "自动识别"] : ["hard-drive", "默认"];
 }
 var k_ = "auto";
@@ -21245,7 +21246,7 @@ function A_({ value: e, label: t, kind: n = "local", onChange: r }) {
 		children: /* @__PURE__ */ (0, z.jsxs)("span", {
 			"data-icon-choice": !0,
 			className: "flex items-center gap-2",
-			children: [/* @__PURE__ */ (0, z.jsx)(Wm, { mark: e || l }), ((e) => e && D_.find(([t]) => t === e)?.[1] || u)(e)]
+			children: [/* @__PURE__ */ (0, z.jsx)(Gm, { mark: e || l }), ((e) => e && D_.find(([t]) => t === e)?.[1] || u)(e)]
 		})
 	}), /* @__PURE__ */ (0, z.jsx)(Cf, {
 		triggerRef: i,
@@ -21272,7 +21273,7 @@ function A_({ value: e, label: t, kind: n = "local", onChange: r }) {
 						value: e || k_,
 						"aria-label": e ? t : u,
 						className: "flex h-10 cursor-pointer items-center justify-center rounded-lg text-foreground-icon-secondary outline-none hover:bg-dropdown-item-hover-background focus-visible:ring-2 focus-visible:ring-border-focus-ring data-selected:bg-dropdown-item-hover-background data-selected:text-text-primary",
-						children: /* @__PURE__ */ (0, z.jsx)(Wm, { mark: e || l })
+						children: /* @__PURE__ */ (0, z.jsx)(Gm, { mark: e || l })
 					}, e || k_))
 				}),
 				/* @__PURE__ */ (0, z.jsxs)("div", {
@@ -21748,7 +21749,7 @@ function K_({ name: e, value: t, onChange: n }) {
 	});
 }
 function q_({ name: e, value: t, onChange: n }) {
-	return /* @__PURE__ */ (0, z.jsx)(Hm, {
+	return /* @__PURE__ */ (0, z.jsx)(Um, {
 		defaultOpen: !0,
 		summary: `${e} 的处理步骤（${t.length}/${U_.length}）`,
 		children: /* @__PURE__ */ (0, z.jsx)("div", {
@@ -21937,10 +21938,10 @@ function nv({ tone: e = "neutral", ...t }) {
 }
 // src/react/settings/remote-reporting-settings.tsx
 function rv({ value: e, onChange: t, busy: n = !1 }) {
-	return /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(Fm, { children: /* @__PURE__ */ (0, z.jsx)(Mm, {
+	return /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(Im, { children: /* @__PURE__ */ (0, z.jsx)(Nm, {
 		label: "发送版本统计与错误诊断（推荐）",
 		description: "上传版本、系统信息、故障类型、代码位置与发生次数。",
-		children: /* @__PURE__ */ (0, z.jsx)(_m, {
+		children: /* @__PURE__ */ (0, z.jsx)(vm, {
 			"aria-label": "发送版本统计与错误诊断（推荐）",
 			isSelected: e.usage && e.errors,
 			onChange: (n) => t({
@@ -21948,9 +21949,9 @@ function rv({ value: e, onChange: t, busy: n = !1 }) {
 				usage: n,
 				errors: n
 			}),
-			...ym(n)
+			...bm(n)
 		})
-	}) }), e.available ? null : /* @__PURE__ */ (0, z.jsx)(Im, {
+	}) }), e.available ? null : /* @__PURE__ */ (0, z.jsx)(Lm, {
 		divided: !0,
 		children: /* @__PURE__ */ (0, z.jsx)("span", {
 			className: "self-start",
@@ -22013,78 +22014,78 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 		...g.current,
 		cost: e.media_source_default === "local" ? "free" : ""
 	}), v = w_({
-		initial: () => [_()],
+		initial: () => [_(e.docker ? u?.default ?? "" : "")],
 		blank: () => _(),
 		pickFolder: oh,
 		describe: sh,
 		focusAfterPick: !0
 	});
 	g.current = iv(v.rows[0]);
-	let [y, b] = (0, j.useState)(() => Object.fromEntries(f.map((e) => [e.key, e.default]))), [x, S] = (0, j.useState)(!1), [C, w] = (0, j.useState)(""), [T, E] = (0, j.useState)(e.access_enabled), [D, O] = (0, j.useState)(""), [k, ee] = (0, j.useState)(""), [A, te] = (0, j.useState)(e.scan_now), [ne, re] = (0, j.useState)(!1), [M, ie] = (0, j.useState)(e.remote_reporting), [ae, oe] = (0, j.useState)(e.peach_proxy?.mode ?? "environment"), [se, ce] = (0, j.useState)(""), [le, ue] = (0, j.useState)({}), [de, fe] = (0, j.useState)(""), [pe, me] = (0, j.useState)(""), [he, ge] = (0, j.useState)(!1), [_e, N] = (0, j.useState)(!1), [P, ve] = (0, j.useState)(0), ye = (0, j.useRef)(null), be = (0, j.useRef)(null), [xe, Se] = (0, j.useState)(0);
+	let [y, b] = (0, j.useState)(() => Object.fromEntries(f.map((e) => [e.key, e.default]))), [x, S] = (0, j.useState)(!1), [C, w] = (0, j.useState)(""), T = !!e.access_preset, [E, D] = (0, j.useState)(e.access_enabled && !T), [O, k] = (0, j.useState)(""), [ee, A] = (0, j.useState)(""), [te, ne] = (0, j.useState)(e.scan_now), [re, M] = (0, j.useState)(!1), [ie, ae] = (0, j.useState)(e.remote_reporting), [oe, se] = (0, j.useState)(e.peach_proxy?.mode ?? "environment"), [ce, le] = (0, j.useState)(""), [ue, de] = (0, j.useState)({}), [fe, pe] = (0, j.useState)(""), [me, he] = (0, j.useState)(""), [ge, _e] = (0, j.useState)(!1), [N, P] = (0, j.useState)(!1), [ve, ye] = (0, j.useState)(0), be = (0, j.useRef)(null), xe = (0, j.useRef)(null), [Se, Ce] = (0, j.useState)(0);
 	(0, j.useEffect)(() => {
-		xe && [...ye.current?.querySelectorAll("input[aria-invalid=\"true\"]") ?? []].find((e) => !e.closest("[hidden]"))?.focus();
-	}, [xe]);
-	let Ce = (e) => e ? /* @__PURE__ */ (0, z.jsx)("span", {
+		Se && [...be.current?.querySelectorAll("input[aria-invalid=\"true\"]") ?? []].find((e) => !e.closest("[hidden]"))?.focus();
+	}, [Se]);
+	let we = (e) => e ? /* @__PURE__ */ (0, z.jsx)("span", {
 		role: "alert",
 		children: e
-	}, xe) : void 0, we = (e) => !e.visible_when || Object.entries(e.visible_when).every(([e, t]) => y[e] === t), Te = (e, t) => b((n) => ({
+	}, Se) : void 0, Te = (e) => !e.visible_when || Object.entries(e.visible_when).every(([e, t]) => y[e] === t), Ee = (e, t) => b((n) => ({
 		...n,
 		[e]: t
-	})), Ee = async (n) => {
-		if (n.preventDefault(), he) return;
+	})), De = async (n) => {
+		if (n.preventDefault(), ge) return;
 		if (r < 3) {
 			l(r + 1);
 			return;
 		}
-		let i = ne ? -1 : v.rows.findIndex((e) => !e.cost);
+		let i = re ? -1 : v.rows.findIndex((e) => !e.cost);
 		if (i >= 0) {
-			N(!0), l(1), requestAnimationFrame(() => ye.current?.querySelector(`[data-media-read-policy="${i}"] button`)?.focus());
+			P(!0), l(1), requestAnimationFrame(() => be.current?.querySelector(`[data-media-read-policy="${i}"] button`)?.focus());
 			return;
 		}
-		ge(!0), me("");
+		_e(!0), he("");
 		let a = {
-			media_dir: ne ? [] : v.rows.map((e) => ({
+			media_dir: re ? [] : v.rows.map((e) => ({
 				...e,
 				library: e.library?.trim() || "未命名媒体库"
 			})),
-			skip_media: ne,
-			access_enabled: T,
-			scan_now: !ne && A,
+			skip_media: re,
+			access_enabled: E,
+			scan_now: !re && te,
 			peach_proxy: {
-				mode: ae,
-				proxy: ae === "proxy" ? se : ""
+				mode: oe,
+				proxy: oe === "proxy" ? ce : ""
 			},
 			...e.history_guide ? { history_guide: !0 } : {},
-			...M ? { remote_reporting: {
-				usage: M.usage,
-				errors: M.errors
+			...ie ? { remote_reporting: {
+				usage: ie.usage,
+				errors: ie.errors
 			} } : {}
 		};
-		for (let e of f) we(e) && (a[e.key] = y[e.key] ?? "");
-		T && Object.assign(a, {
-			access_password: D,
-			access_confirm: k
+		for (let e of f) Te(e) && (a[e.key] = y[e.key] ?? "");
+		E && Object.assign(a, {
+			access_password: O,
+			access_confirm: ee
 		});
 		try {
 			t(await ih(a));
 		} catch (e) {
 			if (e instanceof th && e.status === 400 && e.errors) {
 				let t = e.errors, { rows: n, table: r } = sv(t.media_dir, v.rows.length);
-				v.setErrors(n), fe(r), ue(t), ov.some((e) => t[e]) && ve((e) => e + 1), t.access_password && E(!0), l(t.media_dir || d && t[d.key] ? 1 : 2), Se((e) => e + 1);
-			} else me(sh(e));
+				v.setErrors(n), pe(r), de(t), ov.some((e) => t[e]) && ye((e) => e + 1), t.access_password && D(!0), l(t.media_dir || d && t[d.key] ? 1 : 2), Ce((e) => e + 1);
+			} else he(sh(e));
 		} finally {
-			ge(!1);
+			_e(!1);
 		}
-	}, De = (e) => {
-		let t = lv(le[e.key]), n = e.help.join("");
+	}, Oe = (e) => {
+		let t = lv(ue[e.key]), n = e.help.join("");
 		return e.input === "choice" ? /* @__PURE__ */ (0, z.jsxs)(m_, {
 			id: `setup-${e.key}`,
 			label: e.label,
 			value: y[e.key] ?? e.default,
-			onChange: (t) => Te(e.key, t),
+			onChange: (t) => Ee(e.key, t),
 			options: e.options ?? [],
 			isInvalid: !!t,
-			children: [n ? /* @__PURE__ */ (0, z.jsx)(Lm, { children: n }) : null, t ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: t }, xe) : null]
+			children: [n ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: n }) : null, t ? /* @__PURE__ */ (0, z.jsx)(zm, { children: t }, Se) : null]
 		}, e.key) : /* @__PURE__ */ (0, z.jsx)(h_, {
 			id: `f-${e.key}`,
 			label: e.label,
@@ -22093,34 +22094,34 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 			autoComplete: "off",
 			spellCheck: "false",
 			value: y[e.key] ?? "",
-			onChange: (t) => Te(e.key, t),
+			onChange: (t) => Ee(e.key, t),
 			prefix: e.prefix,
 			suffix: e.suffix,
 			validationBehavior: "aria",
 			isInvalid: !!t,
-			hint: Ce(t) ?? (n || void 0)
+			hint: we(t) ?? (n || void 0)
 		}, e.key);
-	}, Oe = async () => {
+	}, ke = async () => {
 		if (d && !x) {
 			S(!0), w("");
 			try {
 				let e = await oh(y[d.key] ?? "");
-				e && Te(d.key, e);
+				e && Ee(d.key, e);
 			} catch (e) {
 				w(sh(e));
 			} finally {
 				S(!1);
 			}
 		}
-	}, ke = d ? lv(le[d.key]) || C : "", Ae = v.rows.map((e) => e.path.trim()).filter(Boolean), je = v.rows.some((e) => y_(e.location)), Me = [...new Map(v.rows.map((e) => [e.library_id, e])).values()], Ne = (e, t) => v.rows.forEach((n, r) => {
+	}, Ae = d ? lv(ue[d.key]) || C : "", je = v.rows.map((e) => e.path.trim()).filter(Boolean), Me = v.rows.some((e) => y_(e.location)), Ne = [...new Map(v.rows.map((e) => [e.library_id, e])).values()], Pe = (e, t) => v.rows.forEach((n, r) => {
 		n.library_id === e.library_id && v.edit(r, t);
-	}), Pe = y.host === "2", Fe = Pe && !e.standalone ? `https://${y.mdns_name || "peach"}.local/` : `http://${Pe ? `${y.mdns_name || "peach"}.local` : "127.0.0.1"}:${y.port || "8900"}/`;
+	}), Fe = y.host === "2", Ie = Fe && !e.standalone ? `https://${y.mdns_name || "peach"}.local/` : `http://${Fe ? `${y.mdns_name || "peach"}.local` : "127.0.0.1"}:${y.port || "8900"}/`;
 	return /* @__PURE__ */ (0, z.jsx)(mh, {
 		step: r,
 		children: /* @__PURE__ */ (0, z.jsxs)("form", {
-			ref: ye,
+			ref: be,
 			noValidate: !0,
-			onSubmit: (e) => void Ee(e),
+			onSubmit: (e) => void De(e),
 			"aria-labelledby": "auth-card-title",
 			"data-setup-form-panel": "",
 			children: [
@@ -22159,11 +22160,11 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 									ref: s,
 									tabIndex: -1,
 									className: "text-title-1-semibold text-text-primary",
-									children: r === 0 ? "欢迎使用 Peach" : r === 1 ? "你的媒体，放在哪里？" : r === 2 ? "在哪里使用 Peach？" : "准备好开始了"
+									children: r === 0 ? "欢迎使用 Peach" : r === 1 ? "你的媒体，放在哪里？" : r === 2 ? e.docker ? "访问与网络" : "在哪里使用 Peach？" : "准备好开始了"
 								}), /* @__PURE__ */ (0, z.jsx)("p", {
 									"data-copy-key": `setup.description.${r}`,
 									className: "text-body-regular text-text-secondary",
-									children: r === 0 ? "花一点时间，让 Peach 更适合你。" : r === 1 ? "连接已有文件夹，或先进入界面看看。" : r === 2 ? "选择访问范围，也可以为馆藏设置密码。" : "确认这些选择，剩下的交给 Peach。"
+									children: r === 0 ? "花一点时间，让 Peach 更适合你。" : r === 1 ? "连接已有文件夹，或先进入界面看看。" : r === 2 ? e.docker ? "为馆藏设置访问密码，并选择资料采集的连接方式。" : "选择访问范围，也可以为馆藏设置密码。" : "确认这些选择，剩下的交给 Peach。"
 								})]
 							}, r),
 							/* @__PURE__ */ (0, z.jsx)("div", {
@@ -22215,17 +22216,17 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 											children: u.label
 										}),
 										/* @__PURE__ */ (0, z.jsx)(Qp, {
-											isSelected: ne,
-											onChange: re,
+											isSelected: re,
+											onChange: M,
 											children: "稍后添加媒体库"
 										}),
-										ne ? /* @__PURE__ */ (0, z.jsx)(Lm, { children: "完成设置后，可在「媒体库与入库」添加自己的媒体目录。" }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
-											de ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: de }, xe) : null,
+										re ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: "完成设置后，可在「媒体库与入库」添加自己的媒体目录。" }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
+											fe ? /* @__PURE__ */ (0, z.jsx)(zm, { children: fe }, Se) : null,
 											/* @__PURE__ */ (0, z.jsx)("div", {
 												role: "group",
 												"aria-labelledby": "setup-media-title",
 												className: "flex flex-col gap-3",
-												children: Me.map((e) => /* @__PURE__ */ (0, z.jsxs)("div", {
+												children: Ne.map((e) => /* @__PURE__ */ (0, z.jsxs)("div", {
 													"data-library-block": "",
 													"data-setup-library-block": "",
 													children: [
@@ -22236,7 +22237,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																	label: `${e.library || "未命名媒体库"} 图标`,
 																	value: e.library_icon || "",
 																	kind: e.location,
-																	onChange: (t) => Ne(e, { library_icon: t })
+																	onChange: (t) => Pe(e, { library_icon: t })
 																}),
 																/* @__PURE__ */ (0, z.jsx)(pm, {
 																	className: "w-full",
@@ -22244,20 +22245,20 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																	placeholder: "媒体库名称",
 																	maxLength: 80,
 																	value: e.library || "",
-																	onChange: (t) => Ne(e, { library: t })
+																	onChange: (t) => Pe(e, { library: t })
 																}),
 																/* @__PURE__ */ (0, z.jsx)(J_, {
 																	id: e.library_id || "",
 																	name: e.library || "未命名媒体库",
 																	value: e.library_color || "",
-																	onChange: (t) => Ne(e, { library_color: t })
+																	onChange: (t) => Pe(e, { library_color: t })
 																}),
 																/* @__PURE__ */ (0, z.jsx)("div", {
 																	"data-setup-library-policy": "",
 																	children: /* @__PURE__ */ (0, z.jsx)(K_, {
 																		name: e.library || "未命名媒体库",
 																		value: e.library_policy || "auto",
-																		onChange: (t) => Ne(e, {
+																		onChange: (t) => Pe(e, {
 																			library_policy: t,
 																			library_stages: t === "custom" ? e.library_stages || W_.join(",") : ""
 																		})
@@ -22268,7 +22269,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 														e.library_policy === "custom" ? /* @__PURE__ */ (0, z.jsx)(q_, {
 															name: e.library || "未命名媒体库",
 															value: e.library_stages?.split(",").filter(Boolean) ?? W_,
-															onChange: (t) => Ne(e, { library_stages: t.join(",") })
+															onChange: (t) => Pe(e, { library_stages: t.join(",") })
 														}) : null,
 														/* @__PURE__ */ (0, z.jsxs)("div", {
 															"data-library-folders": "",
@@ -22278,12 +22279,12 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																label: `${u.label} ${n + 1}`,
 																path: t.path,
 																onPath: (e) => v.edit(n, { path: e }),
-																error: Ce(v.errors[n]),
+																error: we(v.errors[n]),
 																inputRef: v.inputRef(n),
 																picking: v.picking === n,
 																onPick: () => void v.pick(n),
 																onRemove: v.rows.length > 1 ? () => {
-																	v.remove(n), be.current?.focus();
+																	v.remove(n), xe.current?.focus();
 																} : void 0,
 																children: /* @__PURE__ */ (0, z.jsxs)(x_, { children: [
 																	/* @__PURE__ */ (0, z.jsx)(E_, {
@@ -22298,10 +22299,10 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																	/* @__PURE__ */ (0, z.jsx)(S_, {
 																		index: n,
 																		cost: t.cost ?? "",
-																		error: _e && !t.cost ? "请选择媒体读取策略" : void 0,
+																		error: N && !t.cost ? "请选择媒体读取策略" : void 0,
 																		onChange: (e) => v.edit(n, { cost: e })
 																	}),
-																	Me.length > 1 ? /* @__PURE__ */ (0, z.jsx)(b_, {
+																	Ne.length > 1 ? /* @__PURE__ */ (0, z.jsx)(b_, {
 																		label: "移到媒体库",
 																		className: "w-full @lg:w-60",
 																		children: /* @__PURE__ */ (0, z.jsx)(Eh, {
@@ -22310,7 +22311,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																			selectedKey: t.library_id,
 																			renderValue: /* @__PURE__ */ (0, z.jsxs)("span", {
 																				className: "flex min-w-0 items-center gap-2",
-																				children: [/* @__PURE__ */ (0, z.jsx)(Wm, { mark: t.library_icon || O_(t.location)[0] }), /* @__PURE__ */ (0, z.jsx)("span", {
+																				children: [/* @__PURE__ */ (0, z.jsx)(Gm, { mark: t.library_icon || O_(t.location)[0] }), /* @__PURE__ */ (0, z.jsx)("span", {
 																					className: "truncate",
 																					children: t.library || "未命名媒体库"
 																				})]
@@ -22347,14 +22348,14 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 												}, e.library_id))
 											}),
 											/* @__PURE__ */ (0, z.jsx)(Rt, {
-												ref: be,
+												ref: xe,
 												variant: "secondary",
 												className: "self-start",
 												"data-copy-interact": !0,
 												onClick: () => {
 													v.add(), v.edit(v.rows.length, {
 														library_id: Oh(),
-														library: `媒体库 ${Me.length + 1}`,
+														library: `媒体库 ${Ne.length + 1}`,
 														library_icon: "",
 														library_color: "",
 														library_policy: "auto",
@@ -22363,18 +22364,18 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 												},
 												children: "添加媒体库"
 											}),
-											je ? /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
+											Me ? /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [
 												/* @__PURE__ */ (0, z.jsx)(C_, {}),
-												/* @__PURE__ */ (0, z.jsxs)(Lm, { children: [e.cloud.help, /* @__PURE__ */ (0, z.jsx)(zm, {
+												/* @__PURE__ */ (0, z.jsxs)(Rm, { children: [e.cloud.help, /* @__PURE__ */ (0, z.jsx)(Bm, {
 													href: e.cloud.link.url,
 													children: e.cloud.link.label
 												})] }),
-												e.cloud.dependencies.map((e) => /* @__PURE__ */ (0, z.jsxs)(Lm, { children: [e.message, /* @__PURE__ */ (0, z.jsx)(zm, {
+												e.cloud.dependencies.map((e) => /* @__PURE__ */ (0, z.jsxs)(Rm, { children: [e.message, /* @__PURE__ */ (0, z.jsx)(Bm, {
 													href: e.download_url,
 													children: e.download_label
 												})] }, e.name))
 											] }) : null,
-											u.help.map((e) => /* @__PURE__ */ (0, z.jsx)(Lm, { children: e }, e))
+											u.help.map((e) => /* @__PURE__ */ (0, z.jsx)(Rm, { children: e }, e))
 										] })
 									]
 								}) : null, d ? /* @__PURE__ */ (0, z.jsxs)(Vt, {
@@ -22398,18 +22399,18 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 												autoComplete: "off",
 												spellCheck: "false",
 												value: y[d.key] ?? "",
-												onChange: (e) => Te(d.key, e),
+												onChange: (e) => Ee(d.key, e),
 												validationBehavior: "aria",
-												isInvalid: !!ke,
-												hint: Ce(ke)
+												isInvalid: !!Ae,
+												hint: we(Ae)
 											}), /* @__PURE__ */ (0, z.jsx)(_h, {
 												icon: g_,
 												"aria-label": "选择数据目录",
-												onClick: () => void Oe(),
-												...ym(x)
+												onClick: () => void ke(),
+												...bm(x)
 											})]
 										}),
-										d.help.map((e) => /* @__PURE__ */ (0, z.jsx)(Lm, { children: e }, e))
+										d.help.map((e) => /* @__PURE__ */ (0, z.jsx)(Rm, { children: e }, e))
 									]
 								}) : null]
 							}),
@@ -22420,8 +22421,14 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 										first: !0,
 										labelledBy: "auth-card-title",
 										children: [
-											p ? De(p) : null,
-											/* @__PURE__ */ (0, z.jsxs)("div", {
+											p ? Oe(p) : null,
+											T ? /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(sm, {
+												elementType: "span",
+												children: "访问密码"
+											}), /* @__PURE__ */ (0, z.jsx)(mm, {
+												tone: "info",
+												children: "已按 PEACH_ACCESS_PASSWORD 设置访问密码，可在配置页「网络与访问」修改。"
+											})] }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsxs)("div", {
 												className: "flex items-start justify-between gap-4",
 												children: [/* @__PURE__ */ (0, z.jsxs)("div", {
 													className: "flex min-w-0 flex-col gap-0.5",
@@ -22434,23 +22441,22 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 														className: "text-body-2-regular text-text-secondary",
 														children: "开启后，访问 Peach 需要先登录。"
 													})]
-												}), /* @__PURE__ */ (0, z.jsx)(_m, {
+												}), /* @__PURE__ */ (0, z.jsx)(vm, {
 													"aria-labelledby": "setup-password-title",
 													"aria-describedby": "setup-access-description",
-													isSelected: T,
-													onChange: E
+													isSelected: E,
+													onChange: D
 												})]
-											}),
-											/* @__PURE__ */ (0, z.jsx)(Lm, { children: Pe ? "局域网访问推荐设置密码。未设置时，同一网络中能连接 Peach 的设备可直接进入。" : "只有这台电脑可以访问；设置密码后，打开 Peach 仍需登录。" }),
-											T ? /* @__PURE__ */ (0, z.jsx)(vm, {
+											}), /* @__PURE__ */ (0, z.jsx)(Rm, { children: Fe || e.docker ? "局域网访问推荐设置密码。未设置时，同一网络中能连接 Peach 的设备可直接进入。" : "只有这台电脑可以访问；设置密码后，打开 Peach 仍需登录。" })] }),
+											E ? /* @__PURE__ */ (0, z.jsx)(ym, {
 												label: "访问密码",
-												password: D,
-												confirmation: k,
-												onPassword: O,
-												onConfirmation: ee,
-												passwordError: Ce(lv(le.access_password)),
+												password: O,
+												confirmation: ee,
+												onPassword: k,
+												onConfirmation: A,
+												passwordError: we(lv(ue.access_password)),
 												passwordHint: "请输入 8–256 个字符。",
-												confirmationInvalid: !!le.access_password
+												confirmationInvalid: !!ue.access_password
 											}) : null
 										]
 									}),
@@ -22461,7 +22467,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 												id: "setup-proxy-title",
 												children: "Peach 代理"
 											}),
-											/* @__PURE__ */ (0, z.jsx)(Lm, { children: "用于资料采集、封面和工具下载，可在配置页修改。" }),
+											/* @__PURE__ */ (0, z.jsx)(Rm, { children: "用于资料采集、封面和工具下载，可在配置页修改。" }),
 											/* @__PURE__ */ (0, z.jsxs)("div", {
 												className: "flex flex-col items-start gap-1.5",
 												children: [/* @__PURE__ */ (0, z.jsx)(sm, {
@@ -22469,19 +22475,19 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 													id: "setup-proxy-mode-label",
 													children: "连接方式"
 												}), /* @__PURE__ */ (0, z.jsx)(X_, {
-													mode: ae,
-													onChange: oe,
+													mode: oe,
+													onChange: se,
 													labelledBy: "setup-proxy-mode-label"
 												})]
 											}),
-											ae === "proxy" ? /* @__PURE__ */ (0, z.jsx)(Z_, {
+											oe === "proxy" ? /* @__PURE__ */ (0, z.jsx)(Z_, {
 												id: "setupProxyAddress",
-												value: se,
-												onChange: ce,
+												value: ce,
+												onChange: le,
 												saved: e.peach_proxy?.proxy_saved,
-												error: Ce(lv(le.peach_proxy))
-											}) : le.peach_proxy ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: lv(le.peach_proxy) }, xe) : null,
-											e.docker && ae === "proxy" && Q_(se) ? /* @__PURE__ */ (0, z.jsx)(mm, {
+												error: we(lv(ue.peach_proxy))
+											}) : ue.peach_proxy ? /* @__PURE__ */ (0, z.jsx)(zm, { children: lv(ue.peach_proxy) }, Se) : null,
+											e.docker && oe === "proxy" && Q_(ce) ? /* @__PURE__ */ (0, z.jsx)(mm, {
 												tone: "warning",
 												title: "请填写容器可访问的代理地址",
 												children: "回环地址指向容器自身；宿主机代理需使用容器可访问的宿主机地址。"
@@ -22493,16 +22499,16 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 											}) : null
 										]
 									}),
-									/* @__PURE__ */ (0, z.jsxs)(Vt, { children: [/* @__PURE__ */ (0, z.jsx)(Hm, {
+									e.docker ? null : /* @__PURE__ */ (0, z.jsxs)(Vt, { children: [/* @__PURE__ */ (0, z.jsx)(Um, {
 										summary: "高级设置",
-										defaultOpen: P > 0,
+										defaultOpen: ve > 0,
 										children: /* @__PURE__ */ (0, z.jsx)("div", {
 											className: "flex flex-col gap-4",
-											children: m.filter(we).map(De)
+											children: m.filter(Te).map(Oe)
 										})
-									}, P), /* @__PURE__ */ (0, z.jsx)(Lm, { children: /* @__PURE__ */ (0, z.jsxs)("span", {
+									}, ve), /* @__PURE__ */ (0, z.jsx)(Rm, { children: /* @__PURE__ */ (0, z.jsxs)("span", {
 										className: "break-all",
-										children: ["访问地址：", Fe]
+										children: ["访问地址：", Ie]
 									}) })] })
 								]
 							}),
@@ -22515,58 +22521,58 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 										children: [/* @__PURE__ */ (0, z.jsx)(Ht, {
 											id: "setup-options-title",
 											children: "首次扫描"
-										}), ne ? /* @__PURE__ */ (0, z.jsx)(Lm, { children: "添加媒体目录后，再选择处理方式并开始扫描。" }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsxs)("div", {
+										}), re ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: "添加媒体目录后，再选择处理方式并开始扫描。" }) : /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsxs)("div", {
 											className: "flex flex-col gap-1.5",
 											children: [/* @__PURE__ */ (0, z.jsx)(Qp, {
-												isSelected: A,
-												onChange: te,
-												children: cv(Ae)
-											}), /* @__PURE__ */ (0, z.jsx)(Lm, { children: A ? "扫描会在后台开始，期间可以进入 Peach。" : "先保存处理方式，稍后在「媒体库与入库」开始扫描。" })]
-										}), v.rows.some((e) => e.cost === "metered") ? /* @__PURE__ */ (0, z.jsx)(Lm, { children: "开启代理保护的目录不会自动读取视频信息或生成预览；播放时会读取视频。" }) : null] })]
+												isSelected: te,
+												onChange: ne,
+												children: cv(je)
+											}), /* @__PURE__ */ (0, z.jsx)(Rm, { children: te ? "扫描会在后台开始，期间可以进入 Peach。" : "先保存处理方式，稍后在「媒体库与入库」开始扫描。" })]
+										}), v.rows.some((e) => e.cost === "metered") ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: "开启代理保护的目录不会自动读取视频信息或生成预览；播放时会读取视频。" }) : null] })]
 									}),
-									pe ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: pe }) : null,
-									M ? /* @__PURE__ */ (0, z.jsxs)(Vt, { children: [
+									me ? /* @__PURE__ */ (0, z.jsx)(zm, { children: me }) : null,
+									ie ? /* @__PURE__ */ (0, z.jsxs)(Vt, { children: [
 										/* @__PURE__ */ (0, z.jsx)(Ht, { children: "版本统计与错误诊断" }),
 										/* @__PURE__ */ (0, z.jsx)(rv, {
-											value: M,
-											onChange: ie
+											value: ie,
+											onChange: ae
 										}),
-										/* @__PURE__ */ (0, z.jsx)(Lm, { children: "馆藏与口味明细上传默认关闭，可在「应用与维护」查看并选择。" })
+										/* @__PURE__ */ (0, z.jsx)(Rm, { children: "馆藏与口味明细上传默认关闭，可在「应用与维护」查看并选择。" })
 									] }) : null,
 									/* @__PURE__ */ (0, z.jsxs)(Vt, {
 										labelledBy: "setup-summary-title",
 										children: [/* @__PURE__ */ (0, z.jsx)(Ht, {
 											id: "setup-summary-title",
 											children: "确认设置"
-										}), /* @__PURE__ */ (0, z.jsxs)(Bm, { children: [
-											/* @__PURE__ */ (0, z.jsx)(Vm, {
+										}), /* @__PURE__ */ (0, z.jsxs)(Vm, { children: [
+											/* @__PURE__ */ (0, z.jsx)(Hm, {
 												term: "媒体目录",
-												children: ne ? "稍后添加" : Ae.length ? `${Ae.length} 个文件夹 · ${Me.length} 个媒体库` : "尚未填写"
+												children: re ? "稍后添加" : je.length ? `${je.length} 个文件夹 · ${Ne.length} 个媒体库` : "尚未填写"
 											}),
-											/* @__PURE__ */ (0, z.jsx)(Vm, {
+											/* @__PURE__ */ (0, z.jsx)(Hm, {
 												term: "数据目录",
 												children: /* @__PURE__ */ (0, z.jsx)("span", {
 													className: "break-all",
-													children: d ? y[d.key] || "尚未填写" : "未取得"
+													children: d ? y[d.key] || "尚未填写" : e.data_root || "未取得"
 												})
 											}),
-											/* @__PURE__ */ (0, z.jsxs)(Vm, {
+											/* @__PURE__ */ (0, z.jsxs)(Hm, {
 												term: "访问范围",
 												children: [
-													Pe ? "同一局域网的设备" : "只有这台电脑",
+													e.docker ? "按 Compose 端口映射" : Fe ? "同一局域网的设备" : "只有这台电脑",
 													" · ",
-													T ? "使用访问密码" : "未设置访问密码"
+													T ? "已按 PEACH_ACCESS_PASSWORD 设置访问密码" : E ? "使用访问密码" : "未设置访问密码"
 												]
 											}),
-											/* @__PURE__ */ (0, z.jsx)(Vm, {
+											/* @__PURE__ */ (0, z.jsx)(Hm, {
 												term: "首次扫描",
-												children: !ne && A ? "完成设置后开始" : "稍后手动开始"
+												children: !re && te ? "完成设置后开始" : "稍后手动开始"
 											}),
-											M ? /* @__PURE__ */ (0, z.jsx)(Vm, {
+											ie ? /* @__PURE__ */ (0, z.jsx)(Hm, {
 												term: "诊断反馈",
-												children: M.usage || M.errors ? "已开启，可在上方调整" : "已关闭"
+												children: ie.usage || ie.errors ? "已开启，可在上方调整" : "已关闭"
 											}) : null,
-											ne ? null : Me.map((e) => /* @__PURE__ */ (0, z.jsx)(Vm, {
+											re ? null : Ne.map((e) => /* @__PURE__ */ (0, z.jsx)(Hm, {
 												term: e.library || "未命名媒体库",
 												children: av(e)
 											}, e.library_id))
@@ -22579,21 +22585,22 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 				}),
 				/* @__PURE__ */ (0, z.jsxs)("footer", {
 					"data-setup-footer": "",
+					"data-setup-footer-end": r === 0 && !n ? "" : void 0,
 					"data-copy-interact": !0,
 					children: [r > 0 ? /* @__PURE__ */ (0, z.jsx)(Rt, {
 						variant: "ghost",
 						onClick: () => {
-							he || l(r - 1);
+							ge || l(r - 1);
 						},
-						"aria-disabled": he || void 0,
+						"aria-disabled": ge || void 0,
 						children: "返回"
-					}) : /* @__PURE__ */ (0, z.jsx)(Rt, {
+					}) : n ? /* @__PURE__ */ (0, z.jsx)(Rt, {
 						variant: "ghost",
 						onClick: n,
 						children: "使用已有数据"
-					}), /* @__PURE__ */ (0, z.jsx)(Rt, {
+					}) : null, /* @__PURE__ */ (0, z.jsx)(Rt, {
 						type: "submit",
-						...ym(he),
+						...bm(ge),
 						children: r === 0 ? "开始设置" : r === 3 ? "完成设置" : "继续"
 					})]
 				}, r)
@@ -22677,7 +22684,7 @@ function dv({ onDone: e, onBack: t }) {
 						children: "返回首次设置"
 					}), /* @__PURE__ */ (0, z.jsx)(Rt, {
 						type: "submit",
-						...ym(o),
+						...bm(o),
 						children: o ? "正在连接数据目录…" : "使用此目录"
 					})]
 				})
@@ -22694,14 +22701,17 @@ function fv() {
 			kind: "form",
 			setup: e
 		}), (n) => {
-			e.signal.aborted || t(n instanceof th && n.status === 403 ? { kind: "denied" } : {
+			e.signal.aborted || t(n instanceof th && n.status === 403 ? {
+				kind: "denied",
+				docker: n.docker
+			} : {
 				kind: "failed",
 				message: sh(n)
 			});
 		}), () => e.abort();
 	}, [n]), e.kind === "done" ? /* @__PURE__ */ (0, z.jsx)(hh, { done: e.done }) : e.kind === "form" && !i ? /* @__PURE__ */ (0, z.jsx)(uv, {
 		setup: e.setup,
-		onRestore: () => a(!0),
+		onRestore: e.setup.docker ? void 0 : () => a(!0),
 		onDone: (e) => t({
 			kind: "done",
 			done: e
@@ -22753,7 +22763,7 @@ function fv() {
 						}) : null,
 						e.kind === "denied" ? /* @__PURE__ */ (0, z.jsx)(mm, {
 							tone: "error",
-							children: "请在运行 Peach 的这台电脑上打开设置。"
+							children: e.docker ? hm : "请在运行 Peach 的这台电脑上打开设置。"
 						}) : null,
 						e.kind === "failed" ? /* @__PURE__ */ (0, z.jsx)(mm, {
 							tone: "error",
@@ -22782,4 +22792,4 @@ E();
 var mv = document.getElementById("peach-page"), hv = mv ? pv[mv.dataset.page ?? ""] : void 0;
 mv && hv && (0, M.createRoot)(mv).render(/* @__PURE__ */ (0, z.jsx)(hv, { data: { ...mv.dataset } }));
 
-//# debugId=3db88257-e295-4896-9c98-6d8a7be05798
+//# debugId=56a3ac81-61da-4987-ab16-4073f28b195b
