@@ -20,7 +20,7 @@ from urllib.parse import quote
 from .avatar_provider import install_entity_avatar
 from .catalog_rules import current_tags, is_korean_mib_code, normalise_code_key
 from .code_creators import collect
-from .entities import resolve_entity, resolve_entity_id, upsert_asset_entity
+from .entities import memoized_resolution, resolve_entity, resolve_entity_id, upsert_asset_entity
 from .field_owners import (
     EXPECTED_REVISION_FIELD,
     owner_label,
@@ -384,7 +384,9 @@ def _review_rows(contract: ReviewContract, category: str, *, queue: str | None =
     #: 用户对来源 genre 的决定。判「这一行还有没有词等着收录」要用它，而那一步在库
     #: 连接关掉之后才跑，所以先取出来。
     genre_decisions: dict[str, str | None] = {}
-    with contract.read_connection() as connection:
+    # 只读连接里名字解析不会变：整队列判几千行时同一批厂牌、演员名要解析上万次，
+    # 厂牌每次还要把全部厂牌名与别名逐个归一化比一遍。
+    with contract.read_connection() as connection, memoized_resolution():
         rows, source, skipped = _queue_rows(contract, category, connection)
         decisions = {
             row["item_key"]: dict(row) for row in connection.execute(
