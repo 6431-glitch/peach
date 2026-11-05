@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e119031d-bd4c-43a2-afa8-5619e4cc34e3", e._sentryDebugIdIdentifier = "sentry-dbid-e119031d-bd4c-43a2-afa8-5619e4cc34e3");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e85f08f7-739a-469c-95db-71f704bd0836", e._sentryDebugIdIdentifier = "sentry-dbid-e85f08f7-739a-469c-95db-71f704bd0836");
 	} catch {}
 })();
 import { Button as e, CloudDownloadDialog as t, CollectionSummary as n, EmptyState as r, LOC as i, Note as a, OA as o, QUALITY_GOALS_KEY as s, __toESM as c, cardClass as l, errorMessage as u, fetchQualityGoals as d, fmtDur as f, fmtSize as p, jsx as m, jsxs as h, previewUrl as g, require_react as _, useQuery as v } from "./peach-app.js";
@@ -14,7 +14,6 @@ function x({ item: t, openItem: n, searchResources: r, javTitleHtml: a, javDispl
 		"data-goal-id": t.id,
 		className: l({
 			padding: "none",
-			bordered: "soft",
 			className: "flex flex-col gap-3 p-3"
 		}),
 		children: [/* @__PURE__ */ h("div", {
@@ -130,4 +129,4 @@ function S({ toast: e, ...i }) {
 }
 export { S as QualityGoalsPage };
 
-//# debugId=e119031d-bd4c-43a2-afa8-5619e4cc34e3
+//# debugId=e85f08f7-739a-469c-95db-71f704bd0836

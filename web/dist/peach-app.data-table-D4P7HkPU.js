@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "35282da1-b05e-4594-9efb-d39544c76391", e._sentryDebugIdIdentifier = "sentry-dbid-35282da1-b05e-4594-9efb-d39544c76391");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "37b10412-f7af-4d33-a87c-9a3846378946", e._sentryDebugIdIdentifier = "sentry-dbid-37b10412-f7af-4d33-a87c-9a3846378946");
 	} catch {}
 })();
 import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
@@ -93,7 +93,6 @@ function F({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 		"data-data-table-panel": z || void 0,
 		className: z ? b({
 			padding: "none",
-			bordered: "line",
 			className: "flex flex-col gap-4 px-6 py-5 max-sm:px-4"
 		}) : "flex min-w-0 flex-col gap-4",
 		children: [
@@ -214,4 +213,4 @@ function F({ label: e, items: t, columns: y, rowId: x, rowLabel: D, selected: O,
 }
 export { F as DataTable };
 
-//# debugId=35282da1-b05e-4594-9efb-d39544c76391
+//# debugId=37b10412-f7af-4d33-a87c-9a3846378946

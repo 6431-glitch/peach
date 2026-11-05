@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "bad4198e-1cdd-4835-8da4-504f016334c8", e._sentryDebugIdIdentifier = "sentry-dbid-bad4198e-1cdd-4835-8da4-504f016334c8");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "081e99be-0aa8-40fc-ae52-fc82c5e912f5", e._sentryDebugIdIdentifier = "sentry-dbid-081e99be-0aa8-40fc-ae52-fc82c5e912f5");
 	} catch {}
 })();
 import { $b4f18e3395fe64d7$export$3d96ec278d3efce4 as e, $b4f18e3395fe64d7$export$3e41faf802a29e71 as t, $b4f18e3395fe64d7$export$b2539bed5023c21c as n, $ea3928288112382f$export$439d29a4e110a164 as r, $fe21c36db05242bb$export$d7b12c4107be0d61 as i, Button as a, ButtonLink as o, Checkbox as s, CheckboxGlyph as c, Chip as l, CollapseChevron as u, CollapseRegion as d, DEFAULT_CATEGORY as f, ENTITY_REVIEW_KINDS as p, Ea as m, EmptyState as h, ExternalLink as ee, FIELDSET_FOOT as g, FilterGlassRows as _, Gg as v, InputBase as y, LinkButton as te, Note as b, REVIEW_CATEGORIES as x, REVIEW_DECISION_LABELS as ne, REVIEW_KEY as S, REVIEW_LABELS as C, REVIEW_QUEUES as re, REVIEW_QUEUE_LABELS as w, RadioDot as T, RadioGroup as E, Select as D, SelectItem as O, SelectionActions as k, SelectionDock as A, TextField as j, Wt as M, __toESM as N, avatarInner as ie, busyProps as P, canApprove as ae, cardClass as F, commonReviewSources as I, currentReviewRow as oe, cx as se, decisionPayload as ce, decisionReceipt as le, defaultChoice as ue, errorMessage as de, fetchReview as fe, filterReviewRows as pe, groupReviewRows as me, import_jsx_runtime as L, isReviewCategory as he, jsx as R, jsxs as z, l7 as ge, m7 as _e, mirrorText as ve, paginationRange as ye, pendingGenres as be, recordGenre as xe, reloadReview as Se, require_react as Ce, reviewGroupingOptions as we, reviewQueueData as Te, reviewQueueOf as Ee, reviewWindow as De, rowEvidence as B, rowFieldName as Oe, rowSubject as ke, rowTags as Ae, rowTitle as V, selectReviewRange as je, settleReviewRows as Me, spinnerHtml as H, submitDecision as Ne, useMutation as Pe, useOverlayScrollbar as Fe, useQuery as Ie, useViewGlide as Le } from "./peach-app.js";
@@ -1043,7 +1043,6 @@ function _t({ assets: e, picked: t, onPicked: n, locked: i }) {
 var vt = F({
 	variant: "filled",
 	padding: "none",
-	bordered: "soft",
 	className: "flex flex-col overflow-hidden"
 }), yt = "flex min-h-6 min-w-0 items-center", bt = 2, xt = (e) => e === "western_identity" ? "h-review-card-tall" : "h-review-card";
 function St(e) {
@@ -1634,4 +1633,4 @@ function Tt(r) {
 }
 export { Tt as ReviewPage };
 
-//# debugId=bad4198e-1cdd-4835-8da4-504f016334c8
+//# debugId=081e99be-0aa8-40fc-ae52-fc82c5e912f5

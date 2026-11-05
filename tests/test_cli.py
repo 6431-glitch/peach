@@ -600,6 +600,23 @@ class ProcessCommandTests(unittest.TestCase):
         self.assertEqual(rows,[('cancelled',None)])
         self.assertIn('已保存结果保留',output.getvalue())
 
+    def test_progress_lines_show_files_found_while_scanning_and_skip_repeats(self):
+        def process(*_args, report, **_kwargs):
+            scanning = {"stage": "扫描文件", "checked": 0, "total": 0, "current_action": "scanning_files"}
+            report({**scanning, "scanned": 0})
+            report({**scanning, "scanned": 8096})
+            report({**scanning, "scanned": 8096})
+            report({"stage": "读取时长与分辨率", "checked": 12, "total": 40, "scanned": 8096})
+            report({"stage": "整理结果", "checked": 0, "total": 0, "scanned": 8096})
+            return {"status": "complete", "followups": []}
+        with mock.patch("peach.library_processing.process_library", side_effect=process), \
+                redirect_stdout(io.StringIO()) as output:
+            code = cli.main(["process", "--db", str(self.db)])
+        self.assertEqual(code, 0)
+        self.assertEqual(output.getvalue().splitlines(), [
+            "扫描文件：已发现 0 个文件", "扫描文件：已发现 8,096 个文件",
+            "读取时长与分辨率：12/40", "整理结果"])
+
 
 class ReplicationAssemblyTests(unittest.TestCase):
     """ADR-0023 第 3 阶段：整条复制链路按 `replication.enabled` 装配或完全不装配。"""
