@@ -36,14 +36,16 @@ class IssueIntakeTests(unittest.TestCase):
         self.assertEqual(issue_intake.verdict(event(body=BUG_BODY)), "type Bug")
         self.assertEqual(issue_intake.verdict(event("edited", BUG_BODY)), "type Bug")
 
-    def test_untyped_issue_without_sections_in_rule_jargon_is_closed(self):
-        self.assertEqual(issue_intake.verdict(event()), "close")
+    def test_untyped_new_issue_without_template_sections_is_closed(self):
+        for body in (JARGON_BODY, "希望垃圾文件可以批量删除", ""):
+            with self.subTest(body=body[:12]):
+                self.assertEqual(issue_intake.verdict(event(body=body)), "close")
         self.assertEqual(issue_intake.verdict(event("edited")), "keep")
 
-    def test_web_form_issues_and_plain_free_text_are_left_alone(self):
+    def test_web_form_issues_keep_their_text_even_without_sections(self):
         for payload in (event(type={"name": "Feature"}),
                         event(body=FEATURE_BODY, type={"name": "Feature"}),
-                        event(body="希望垃圾文件可以批量删除")):
+                        event(body="希望垃圾文件可以批量删除", type={"name": "Feature"})):
             with self.subTest(body=payload["issue"]["body"][:12]):
                 self.assertEqual(issue_intake.verdict(payload), "keep")
 

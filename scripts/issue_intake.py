@@ -1,9 +1,9 @@
 """外部 issue 的模板检查：让命令行和 API 提交的 issue 与网页模板提交的结果一致。
 
-网页「New issue」按模板提交时会带上模板的 Issue Type；用 `gh` 或 API 提交则不经过模板。
-作者不是维护者、也没有 Issue Type 的新 issue 按下列规则处理：正文含有某个模板的章节，
-补上那个模板的 Issue Type；缺少模板章节又套用了 `AGENTS.md` 与技能里的交付用语，关闭；
-按模板补齐章节后重开并补上类型。GitHub 写操作由 `.github/workflows/issue-intake.yml` 完成，
+网页「New issue」按模板提交时，即使删光模板文字也会带上模板的 Issue Type；用 `gh` 或 API
+提交则不经过模板。作者不是维护者、也没有 Issue Type 的新 issue 按下列规则处理：正文含有
+某个模板的章节，补上那个模板的 Issue Type；缺少模板章节，关闭；按模板补齐章节后重开并
+补上类型。GitHub 写操作由 `.github/workflows/issue-intake.yml` 完成，
 本脚本只输出 `keep`、`close`、`type <类型>` 或 `reopen <类型>`。
 """
 from __future__ import annotations
@@ -18,9 +18,6 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATES = ROOT / ".github/ISSUE_TEMPLATE"
 LABEL = "status:needs-template"
 MAINTAINERS = frozenset({"OWNER", "MEMBER", "COLLABORATOR"})
-# 智能体规则里的交付用语，用户自己描述问题时很少写到。
-INTERNAL_TERMS = ("账本", "真相字段", "影响面", "落库", "复核产物", "兼容投影", "授权边界",
-                  "合成样本", "验收", "交接", "明确不做", "分批交付", "隔离工作树")
 HEADING = re.compile(r"^ {0,3}#{1,6}\s*(.+?)\s*#*\s*$", re.M)
 TYPE_LINE = re.compile(r"^type:\s*(\S+)\s*$", re.M)
 OPTIONAL = re.compile(r"[（(][^）)]*[）)]")
@@ -64,10 +61,6 @@ def matched_type(body: str, templates: list[Template] | None = None) -> str | No
     return None
 
 
-def internal_terms(body: str) -> list[str]:
-    return [term for term in INTERNAL_TERMS if term in (body or "")]
-
-
 def verdict(payload: dict, templates: list[Template] | None = None) -> str:
     issue = payload.get("issue") or {}
     if issue.get("pull_request") or (issue.get("user") or {}).get("type") == "Bot" \
@@ -83,7 +76,7 @@ def verdict(payload: dict, templates: list[Template] | None = None) -> str:
         return "keep"
     if kind:
         return f"type {kind}"
-    return "close" if action == "opened" and internal_terms(body) else "keep"
+    return "close" if action == "opened" else "keep"
 
 
 def main(argv: list[str] | None = None) -> int:
