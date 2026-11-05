@@ -20,6 +20,7 @@ from PIL import Image
 from .catalog_rules import normalise_code_key, release_identity, same_release_code
 from .http import HttpRequest, HttpxTransport, response_text
 from .scripting import HostLimiter
+from .user_agent import JAVDB_APP_USER_AGENT
 from .jav_cache import DAY, PublicSnapshots, cache_lifetime
 from .javdb_identity import RULE, cache_key as identity_cache_key, current_evidence
 
@@ -33,7 +34,7 @@ APP_SIGNATURE = ("lpw6vgqzsp", "71cf27bb3c0bcdf207b64abecddc970098c7421ee7203b9c
 APP_QUERY = {"platform": "android", "app_channel": "official", "app_version": "official",
              "app_version_number": "1.9.35", "system_version": "13", "device_model": "Pixel 6",
              "device_name": "Pixel", "device_uuid": "1d26b2df-f042-5138-90b3-28980fe1d98a"}
-APP_HEADERS = {"accept-language": "zh", "User-Agent": "Dart/3.5 (dart:io)"}
+APP_HEADERS = {"accept-language": "zh", "User-Agent": JAVDB_APP_USER_AGENT}
 PAGE_SIZE = 10
 MAX_REVIEW_PAGES = 8
 #: 资料请求的主机间隔，由用户 2026-11-05 定为 0.5 秒。同日实测：2 秒逐档降到 0.25 秒各 40 次，
