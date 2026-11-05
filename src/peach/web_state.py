@@ -302,6 +302,15 @@ class WebContract:
                     self.aggregate_locks.pop(evicted, None)
         return value
 
+    def cached_for(self, key, fn, *, ttl: float):
+        """只按时间过期、不随提交通知清掉的缓存，给允许旧上几分钟的结果用（搜索推荐池）。
+
+        `cached` 的键每次提交都被 `cache_bust` 清掉；后台任务每几秒提交一次时，这类结果等于没有缓存。
+        """
+        with self.cache_lock:
+            self.revision_cache_keys.add(key)
+        return self.cached(key, fn, ttl=ttl)
+
     def cached_lru(self, key, fn, *, maxsize: int = 192, ttl: float = CACHE_TTL):
         """带 TTL 的 LRU 读缓存，给键空间不封闭的场景用（`/api/related` 按资产取键）。
 
