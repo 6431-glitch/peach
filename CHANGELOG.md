@@ -28,6 +28,7 @@ Removed / Fixed / Security。
 ### 新增
 
 - **更新**：Docker 镜像同时发布到 `ghcr.io/peach-mitao/peach`，Docker Hub 拉取受限时可以改用。
+- **配置**：Docker 首次打开先进入访问设置，可设密码或免登录，不再要口令；也可用 `PEACH_ACCESS_PASSWORD` 预设。
 
 ### 修复
 
