@@ -377,6 +377,27 @@ class ReviewQueueTests(unittest.TestCase):
         self.assertEqual([(row["item_key"], row["saved"]) for row in rows],
                          [("FALENO", "FALENO-v2.jpg"), ("SOD", "SOD.jpg")])
 
+    def test_a_rewrite_by_the_writer_is_read_back_without_parsing_the_file_again(self):
+        batch = self.candidates / "library-metadata-field-candidates.csv"
+        batch.write_text("item_key,field,candidates_json\nA:title,title,[]\n", encoding="utf-8")
+        rm_candidates.read_candidates("metadata_fields", self.candidates)
+
+        # 处理任务写回的是未转成字符串的值：数字、None、带换行的文本。
+        rm_candidates.write_rows(batch, ["item_key", "field", "candidates_json"], [
+            {"item_key": "A:title", "field": "title", "candidates_json": None},
+            {"item_key": "B:release_date", "field": 7, "candidates_json": '[{"value": "一\r\n二"}]'},
+        ], atomic=True)
+        with mock.patch.object(rm_candidates, "read_rows", side_effect=AssertionError("又整份解析了")):
+            cached, _source, _skipped = rm_candidates.read_candidates("metadata_fields", self.candidates)
+            shared = rm_candidates.read_rows_shared(batch)
+        fresh = rm_candidates.read_rows(batch)
+        self.assertEqual(shared, fresh)
+        self.assertEqual(cached, [{**row, "item_key": row["item_key"]} for row in fresh])
+        self.assertEqual(fresh[1]["candidates_json"], '[{"value": "一\r\n二"}]')
+
+        shared[0]["field"] = "改过"
+        self.assertEqual(rm_candidates.read_rows_shared(batch)[0]["field"], "title")
+
     def test_older_batches_keep_their_undecided_rows_in_the_queue(self):
         """跑了新批次不该让上一批未复核的行消失。
 
