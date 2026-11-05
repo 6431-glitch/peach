@@ -12,7 +12,9 @@
 
 **一、发布作业把同一个已验收镜像推到 `ghcr.io/peach-mitao/peach`。** 版本号与 `edge` 两个标签与 Docker Hub 一致，先推 Docker Hub，再推 ghcr。登录用作业自带的 `GITHUB_TOKEN`（`packages: write`），不新增凭据。
 
-**二、Docker Hub 仍是主来源。** 配置页检查更新（`docker_update.py`）与 Watchtower 一键更新照旧按 Docker Hub 判断新版本；ghcr 只是多一个拉取地址。
+**二、漏推的版本用「补发 ghcr 镜像」工作流按摘要复制。** 手动触发、填版本号，把 Docker Hub 上已发布的同一份镜像原样复制到 ghcr，复制后核对两边摘要一致，不重新构建。本 ADR 之前的版本（0.55.1 起）用它补发。
+
+**三、Docker Hub 仍是主来源。** 配置页检查更新（`docker_update.py`）与 Watchtower 一键更新照旧按 Docker Hub 判断新版本；ghcr 只是多一个拉取地址。
 
 ## 代价
 
