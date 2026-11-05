@@ -39,6 +39,7 @@
   .top:has(.search.open) #filterBtn,
   .top:has(.search.open) .brand,
   .top:has(.search.open) #searchBtn,
+  .top:has(.search.open) #randomizerBtn,
   .top:has(.search.open) #immerseBtn,
   .top:has(.search.open) #selectMode,
   .top:has(.search.open) #settingsBtn{display:none!important}
@@ -53,7 +54,8 @@
   /* 宽屏靠 `.search{flex:1}` 把动作按钮顶到右边；窄屏搜索框收成绝对定位后脱离
      了流，没有东西再撑开中间，按钮会全部挤在品牌名右侧、右半条留空。
      动作组的第一个按钮吃掉剩余空间，整组回到右边。 */
-  #searchBtn{margin-left:auto}
+  #randomizerBtn:not([hidden]){margin-left:auto}
+  #randomizerBtn[hidden] ~ #searchBtn{margin-left:auto}
   /* 窄屏改成单列居中，头像在名字上方——参考 beeg 的资料页。
      左像右文那套是给宽屏的：手机上 92 px 头像旁边只剩两百多像素，别名和链接被挤成
      两三行，头像下面又空着一大片。居中之后名字和链接都拿到整行宽度。 */
@@ -82,6 +84,7 @@
   .listtitle,.index .ihead h2{font-size:var(--fs-xl)}
 }
 #searchBtn{display:none}
+#randomizerBtn[hidden]{display:none}
 .searchback{display:none}
 
 .iconswitch{min-width:0;margin:0;padding:3px;border:1px solid var(--line-soft);border-radius:var(--surface-radius);background:var(--overlay-5)}.iconswitch label{position:relative;display:inline-grid;width:34px;height:28px;place-items:center;border-radius:var(--control-radius);color:var(--muted);cursor:pointer}.iconswitch input{position:absolute;inline-size:1px;block-size:1px;opacity:0}.iconswitch label:hover{color:var(--ink)}.iconswitch label:has(input:checked){background:var(--surface);color:var(--ink);box-shadow:0 1px 2px #0005}.iconswitch label:has(input:focus-visible){outline:2px solid var(--tungsten);outline-offset:2px}.iconswitch svg{display:block;width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}

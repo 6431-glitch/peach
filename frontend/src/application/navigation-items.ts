@@ -32,7 +32,7 @@ export const MANAGE_SECTIONS = [
   ['configuration', 'Peach 配置', 'folder-cog'],
 ] as const satisfies readonly NavigationItem<ManagementKey>[];
 
-export const MANAGE_MENU_SECTIONS: readonly ManagementKey[] = ['stats', 'taste', 'randomizer', 'cleanup', 'follow', 'activity', 'configuration'];
+export const MANAGE_MENU_SECTIONS: readonly ManagementKey[] = ['stats', 'taste', 'cleanup', 'follow', 'activity', 'configuration'];
 export const getManageMenuSections = (configurable: boolean): readonly NavigationItem<ManagementKey>[] =>
   MANAGE_SECTIONS.filter(([key]) => MANAGE_MENU_SECTIONS.includes(key) && (key !== 'configuration' || configurable));
 
