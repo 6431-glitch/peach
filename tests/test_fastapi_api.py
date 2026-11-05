@@ -3019,6 +3019,34 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             self.app.state.http_transport.client = original
             fake.close()
 
+    async def test_cover_image_refuses_the_official_now_printing_placeholder(self):
+        """DMM 缺图时 302 到同一主机族上的「NOW PRINTING」：回 404 不缓存，官方出图后下一次加载取到真图。"""
+        connection = sqlite3.connect(self.db)
+        connection.execute("INSERT INTO feed_discovery(code,cover_url,discovered_at) VALUES(?,?,'2026-10-22')",
+                           ('ABC-007', 'https://pics.dmm.co.jp/digital/video/abc00007/abc00007pl.jpg'))
+        connection.commit()
+        connection.close()
+        published = {'cover': False}
+        def upstream(request):
+            if request.url.path.endswith('abc00007pl.jpg') and not published['cover']:
+                return httpx.Response(302, request=request, headers={
+                    'location': 'https://imgsrc.dmm.com/pics/mono/movie/n/now_printing/now_printing.jpg?w=800&h=800'})
+            return httpx.Response(200, headers={'content-type': 'image/jpeg', 'content-length': '5'},
+                                  stream=httpx.ByteStream(b'cover'), request=request)
+        original = self.app.state.http_transport.client
+        fake = httpx.Client(transport=httpx.MockTransport(upstream))
+        self.app.state.http_transport.client = fake
+        try:
+            with patch('peach.web_jav_discovery._cached_movie', return_value={}):
+                pending = await self.client.get('/cover-image?code=ABC-007&t=secret')
+                self.assertEqual((pending.status_code, pending.headers['cache-control']), (404, 'no-store'))
+                published['cover'] = True
+                cover = await self.client.get('/cover-image?code=ABC-007&t=secret')
+                self.assertEqual((cover.status_code, cover.content), (200, b'cover'))
+        finally:
+            self.app.state.http_transport.client = original
+            fake.close()
+
     async def test_jav_image_serves_source_bytes_with_etag_and_drops_failures(self):
         """库外作品的样张与来源头像以图片本身下发：带 ETag 与私有缓存时效，取不到回 404 不缓存。"""
         from peach.javdb_public import PublicSourceUnavailable
@@ -4100,7 +4128,9 @@ class UnconfiguredMachineTests(unittest.IsolatedAsyncioTestCase):
                 release.set()
                 await shutdown
                 self.assertTrue(closed.is_set())
-                self.assertEqual(calls, ["/api/taste"])
+                # 只走到预热清单的第一项：关机等它释放账本，后面的不再起。
+                from peach.api import WARM_AGGREGATES
+                self.assertEqual(calls, [WARM_AGGREGATES[0][0]])
             finally:
                 release.set()
                 if shutdown is not None:
