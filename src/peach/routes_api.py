@@ -33,7 +33,7 @@ from .jobs import TaskRunConflict
 from .update_tasks import UpdateBusy
 from .platform import is_unmapped, translate_ledger_path
 from .providers import ProviderUnavailable
-from .routes_auth import require_auth
+from .routes_auth import require_auth, same_origin
 from .task_runs import task_label
 from .task_control import Cancelled as TaskCancelled
 from .taste_history import analyze_history, import_history_exports, write_manifest
@@ -41,6 +41,43 @@ from .taste_history import analyze_history, import_history_exports, write_manife
 router = APIRouter()
 
 LOGGER = logging.getLogger(__name__)
+
+
+@router.get('/api/randomizer/draw')
+def randomizer_draw(request: Request, mode: str, exclude: int | None = None, _args=Depends(require_auth)):
+    from . import randomizer
+    try:
+        contract = request.app.state.web_contract
+        result = randomizer.draw(contract.database, mode, exclude)
+        if result and mode != 'actress':
+            item = web_contract.q_item(contract, result['id'])
+            result['cover_key'] = item.get('cover_key') or ''
+        return {'result': result}
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+
+
+@router.get('/api/randomizer/format/{asset_id}')
+def randomizer_format(request: Request, asset_id: int, _args=Depends(require_auth)):
+    from . import randomizer
+    try:
+        return {'format': randomizer.get_format(request.app.state.web_contract.database, asset_id)}
+    except ValueError as error:
+        raise HTTPException(404, str(error)) from error
+
+
+@router.post('/api/randomizer/format/{asset_id}')
+def randomizer_set_format(request: Request, asset_id: int, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
+    from . import randomizer
+    same_origin(request)
+    sync = getattr(request.app.state, 'sync', None)
+    if sync is not None and sync.read_only:
+        raise HTTPException(403, 'This library is read-only.')
+    try:
+        randomizer.set_format(request.app.state.web_contract.database, asset_id, body.get('format'))
+        return {'format': body.get('format')}
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
 
 
 @router.get("/api/providers")

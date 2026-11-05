@@ -52,6 +52,7 @@ import { SettingsPanelSurface } from '../settings-panel/settings-panel';
 import { SidebarSurface } from '../sidebar/sidebar-island';
 import { StageSurface } from '../stage/stage';
 import { prefetchStats } from '../stats/stats';
+import { RandomizerPage } from '../randomizer/randomizer-page';
 import { DEFAULT_WINDOW, prefetchTaste } from '../taste/taste';
 import { CatalogMatch } from './pages/catalog';
 import { FollowMatch, PlaylistsMatch } from './pages/follow';
@@ -147,6 +148,11 @@ const cleanupRoutes = CLEANUP_TOOLS.reduce((routes, tool) => {
 
 export const MANAGED_ROUTES: ManagedRouteTable = {
   ...cleanupRoutes,
+  '/randomizer': {
+    element: <ManagedMatch path="/randomizer" />,
+    prefetch: async () => {},
+    page: (_open, actions) => <RandomizerPage openItem={actions.openItem} openEntity={actions.openEntity} />,
+  },
   '/jav': {
     element: <ManagedMatch path="/jav" />,
     prefetch: (open, signal) => withPage(javPage, prefetchJav(open.tab, signal)),

@@ -19,6 +19,9 @@ import { ApiError, apiGet, apiSend, errorMessage } from '../../api';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { Radio, RadioGroup } from '@/components/base/radio/radio';
+import { Popover } from 'react-aria-components';
+import { MENU_POPOVER_SURFACE, MENU_ITEM, MENU_ITEM_ACTIVE } from '@/components/base/dropdown/menu-styles';
+import { MenuDialog } from '../components/menu-dialog';
 import { RiArrowDownSLine } from '@remixicon/react';
 import { CatalogGridPage } from '../catalog-grid/catalog-grid-page';
 import { patchCatalogItems, replaceCatalogItem } from '../catalog-grid/catalog-grid';
@@ -633,6 +636,42 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   </section>;
 }
 
+function FormatIcon({ format }: { format: string }) {
+  return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
+    strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <use href={`#i-${format === 'film' ? 'video' : format === 'clip' ? 'film' : 'venetian-mask'}`} />
+  </svg>;
+}
+
+function VideoFormat({ assetId }: { assetId: number }) {
+  const trigger = useRef<HTMLButtonElement>(null);
+  const [open, setOpen] = useState(false);
+  const key = ['randomizer-format', assetId];
+  const format = useQuery({ queryKey: key, queryFn: ({ signal }) => apiGet<{ format: string }>(`/api/randomizer/format/${assetId}`, signal) });
+  const [error, setError] = useState('');
+  const save = useMutation({ mutationFn: (value: string) => apiSend(`/api/randomizer/format/${assetId}`, { format: value }),
+    onSuccess: () => { setError(''); void queryClient.invalidateQueries({ queryKey: key }) },
+    onError: cause => setError(errorMessage(cause)) });
+  const selected = format.data?.format || 'unknown';
+  const title = selected === 'film' ? 'DVD' : selected === 'clip' ? 'Scene' : 'Unclassified';
+  return <>
+    <button ref={trigger} type="button" aria-label={`Category: ${title}`} title={`Category: ${title}`}
+      aria-haspopup="dialog" aria-expanded={open} disabled={format.isLoading || save.isPending} onClick={() => setOpen(true)}>
+      <FormatIcon format={selected} />
+    </button>
+    <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen} placement="bottom end" offset={4}
+      className={`${MENU_POPOVER_SURFACE} min-w-48 p-2`}>
+      <MenuDialog aria-label="Choose video category" className="flex flex-col gap-1 outline-none">
+        {([['film', 'DVD'], ['clip', 'Scene']] as const).map(([value, label]) =>
+          <button key={value} type="button" className={`${MENU_ITEM} ${selected === value ? MENU_ITEM_ACTIVE : ''}`}
+            aria-pressed={selected === value} disabled={save.isPending} onClick={() => { save.mutate(value); setOpen(false) }}>
+            <span className="flex size-5 shrink-0 items-center justify-center [&_svg]:size-5"><FormatIcon format={value} /></span>{label}</button>)}
+      </MenuDialog>
+    </Popover>
+    {error || format.isError ? <span role="alert" className="text-text-error-primary">{error || 'Could not load category.'}</span> : null}
+  </>;
+}
+
 /* 标题默认折成两行，真溢出才给展开键：折叠态下 scrollHeight 比 clientHeight 高，就是有行被裁掉了。
    展开与收起换字形——往下多看一截是 chevron-down，收回去是 chevron-up。展开键排在那排键最前面，
    紧挨着它管的标题。标题文字本身也接这一下：人想看全文时手本来就落在字上。选中文字那一下不算，
@@ -673,6 +712,7 @@ function DetailTitle({ item, queue, helpers, actions, onStatus, metadataOpen, on
           {(item.medium || 'video') === 'video' && item.location !== 'online' ?
             <button type="button" aria-label="Find metadata" title="Find metadata" aria-expanded={metadataOpen}
               onClick={onToggleMetadata}><Glyph name="search" /></button> : null}
+          {(item.medium || 'video') === 'video' && item.location !== 'online' ? <VideoFormat assetId={item.id} /> : null}
         </span>
       </div>
     </div>

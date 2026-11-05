@@ -156,6 +156,10 @@ def apply(config, database, asset_id, candidate_id, revision, *, confirm_identit
         row = connection.execute("SELECT mutation_revision,code FROM asset WHERE id=? AND medium='video' AND COALESCE(disposal,'') NOT IN ('trash','vanished')", (asset_id,)).fetchone()
         if row is None or row['mutation_revision'] != revision:
             raise ValueError('The library item changed. Search again.')
+        from .randomizer import set_format_from_source
+        category = record.get('category')
+        source_format = 'film' if category in ('dvd', 'bluray') else 'clip' if category == 'clips' or candidate_id.startswith('/clip/') else None
+        set_format_from_source(connection, asset_id, source_format, 'review:adultempire')
         if fields:
             write_owned_fields(connection, [asset_id], fields, 'review:adultempire', expected_revision=revision)
         cast_conflicts = []

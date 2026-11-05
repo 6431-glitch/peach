@@ -16,7 +16,7 @@ from collections.abc import Iterable
 #: 构成个人记录的六张表。任一张有指向这一行的记录，或行上四列记过，这一行就算「带个人记录」。
 PERSONAL_RECORD_TABLES = (
     "asset_preference", "watch_queue", "playlist_item",
-    "asset_quality_goal", "activity_event", "asset_tag_preference",
+    "asset_quality_goal", "activity_event", "asset_tag_preference", "asset_format",
 )
 
 #: `asset` 行自己的个人记录列：评分、高潮次数、播放次数、最近播放时间。
@@ -32,7 +32,7 @@ ASSET_RECORD_PREDICATE = ("(rating IS NOT NULL OR COALESCE(o_count,0)>0 "
 ASSET_REFERENCE_TABLES = (
     "asset_tag", "media_binding", "activity_event", "asset_entity",
     "watch_queue", "asset_preference", "asset_tag_preference", "asset_quality_goal",
-    "playlist_item", "asset_subtitle",
+    "playlist_item", "asset_subtitle", "asset_format",
 )
 
 #: 文件已不在盘上、带着个人记录的那一档。

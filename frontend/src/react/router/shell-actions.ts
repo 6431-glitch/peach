@@ -166,6 +166,7 @@ export interface ManagedOpenProps extends Record<ConfigurationPath, { section?: 
   Record<import('../../cleanup-tools').CleanupToolPath, Record<string, never>> {
   '/jav': { tab: string; readOnly: boolean };
   '/stats': Record<string, never>;
+  '/randomizer': Record<string, never>;
   '/taste': { onboarding: boolean };
   '/review': { category: string; queue?: string; readOnly: boolean; readOnlyMessage: string; writerUrl: string };
   '/data-cleanup': Record<string, never>;

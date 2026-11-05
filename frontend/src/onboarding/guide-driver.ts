@@ -4,6 +4,7 @@ import { peachHistory } from '../history';
 import { closeDrawerAfterNav } from '../application/layout';
 import { disposeStage } from '../application/media';
 import { beginPlayerGuidePreview } from '../player/guide-preview';
+import { translate } from '../i18n';
 import type { GuideStep } from './guide-catalog';
 export interface GuidePopoverProps {
   step: GuideStep; position: number; total: number; missing: boolean;
@@ -25,7 +26,9 @@ function available(node: HTMLElement): boolean {
 /** 同一入口在窄屏会换成按钮；每次从当前 DOM 选择真实可见的候选。 */
 export function resolveGuideTarget(selector?: string): HTMLElement | undefined {
   if (!selector) return undefined;
-  const candidates = selector.split(',').flatMap(part => [...document.querySelectorAll<HTMLElement>(part.trim())]);
+  const localized = selector.replace(/(\[aria-label=")([^"]+)("\])/g, (_all, start: string, value: string, end: string) =>
+    start + translate(value).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + end);
+  const candidates = localized.split(',').flatMap(part => [...document.querySelectorAll<HTMLElement>(part.trim())]);
   const found = candidates.find(available);
   if (!found) return undefined;
   // 偏好里的 ID 有些属于开关本身；框选包含标签的整行，解释和控件保持在一起。

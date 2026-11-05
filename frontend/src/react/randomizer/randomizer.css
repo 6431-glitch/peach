@@ -1,0 +1,8 @@
+@keyframes randomizer-reveal {
+  from { opacity: 0; transform: translateY(12px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .randomizer-reveal { animation: randomizer-reveal 320ms ease-out both; }
+}

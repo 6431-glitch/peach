@@ -10,6 +10,7 @@ import { RiCheckboxCircleLine } from '@remixicon/react';
 import { Disclosure } from '../settings/section';
 import { EmptyState } from '../components/empty-state';
 import { cardClass } from '../components/card';
+import { translate } from '../../i18n';
 
 type Glyph = RemixiconComponentType;
 const ICONS: Record<string, Glyph> = {
@@ -66,7 +67,10 @@ export function GuideDirectory({ kind, query, setQuery, context, progress, loadi
   const completed = guideChapterComplete(progress, quick);
   const resume = !completed && Boolean(progress.chapters[quick.id]);
   const search = query.trim().toLowerCase();
-  const matches = GUIDE_CHAPTERS.filter(item => item.kind === kind && `${item.title} ${item.summary} ${item.steps.map(step => `${step.title} ${step.body} ${(step.details || []).flat().join(' ')}`).join(' ')}`.toLowerCase().includes(search));
+  const matches = GUIDE_CHAPTERS.filter(item => {
+    const texts = [item.title, item.summary, ...item.steps.flatMap(step => [step.title, step.body, ...(step.details || []).flat()])];
+    return item.kind === kind && texts.some(text => `${text} ${translate(text)}`.toLowerCase().includes(search));
+  });
   return <div className="flex flex-col gap-4">
     <GuideBanner completed={completed} icon={kind === 'interface' ? RiCompass3Line : RiSettings3Line} title={kind === 'interface' ? '先认识 Peach' : '按习惯调整 Peach'} description={kind === 'interface' ? '先用 4 步认识常用入口，其余功能用到时再看。' : '先了解外观与导航，其余设置按需要查看。'}>
       {completed ? <CompletedLabel /> : <span className="text-body-2-regular text-text-secondary">{quick.steps.length} 步 · 随时可以退出</span>}

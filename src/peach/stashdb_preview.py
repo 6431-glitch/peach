@@ -203,6 +203,8 @@ def _apply_scene(config, database, asset_id, candidate, revision, scene, client,
         row = connection.execute('SELECT mutation_revision,field_owners,code FROM asset WHERE id=?', (asset_id,)).fetchone()
         if not row or row['mutation_revision'] != revision:
             raise ValueError('The library item changed. Search again.')
+        from .randomizer import set_format_from_source
+        set_format_from_source(connection, asset_id, 'clip', owner)
         fields = {name: value for name, value in fields.items() if value and
                   (not automatic or not owner_of(row['field_owners'], name).startswith(('user:', 'review:')))}
         if fields:

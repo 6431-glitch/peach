@@ -49,6 +49,7 @@ MOVED_TABLES: dict[str, tuple[str, ...]] = {
     "playlist_item": ("playlist_id",),
     "activity_event": ("id",),
     "asset_tag_preference": ("profile_id", "normalized_tag"),
+    "asset_format": ("format",),
 }
 #: 寻找更好版本的目标：搬到新行后关闭。
 GOAL_TABLE, GOAL_KEYS = "asset_quality_goal", ("profile_id",)
@@ -186,6 +187,8 @@ def _move_rows(connection, table: str, keys: tuple[str, ...], old_id: int, new_i
     match = " AND ".join(f"{key}=?" for key in keys)
     for row in _rows(connection, f"SELECT {','.join(keys)} FROM {table} WHERE asset_id=?", (old_id,)):
         values = [row[key] for key in keys]
+        if table == 'asset_format' and connection.execute('SELECT 1 FROM asset_format WHERE asset_id=?', (new_id,)).fetchone():
+            continue
         if connection.execute(f"SELECT 1 FROM {table} WHERE asset_id=? AND {match}",
                               (new_id, *values)).fetchone():
             continue

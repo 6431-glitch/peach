@@ -973,6 +973,7 @@ def entity_route(request: Request, name: str,
 @router.api_route("/flagged", methods=["GET", "HEAD"])
 @router.api_route("/junk-files", methods=["GET", "HEAD"])
 @router.api_route("/stats", methods=["GET", "HEAD"])
+@router.api_route("/randomizer", methods=["GET", "HEAD"])
 @router.api_route("/immerse", methods=["GET", "HEAD"])
 @router.api_route("/wall", methods=["GET", "HEAD"])
 @router.api_route("/trash", methods=["GET", "HEAD"])
