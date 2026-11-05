@@ -25,6 +25,10 @@ Removed / Fixed / Security。
 
 ## [未发布]
 
+### 新增
+
+- **更新**：Docker 镜像同时发布到 `ghcr.io/peach-mitao/peach`，Docker Hub 拉取受限时可以改用。
+
 ## [0.55.1] - 2026-11-05
 
 ### 修复
