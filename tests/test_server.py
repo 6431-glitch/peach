@@ -149,3 +149,30 @@ class ServerTests(unittest.TestCase):
             with patch.object(server.settings_file, "load_config", return_value=config), \
                     patch.object(server, "launch", return_value=process):
                 self.assertEqual(server.supervise("127.0.0.1", 8900, threading.Event()), 17)
+
+    def test_access_password_from_the_environment_is_written_once_and_never_echoed(self):
+        from peach import access
+        with tempfile.TemporaryDirectory() as directory:
+            config = settings_file.load_config(environ={"PEACH_DATA_ROOT": str(Path(directory).resolve())})
+            path = config.directory("secrets") / "access.json"
+            with patch.dict(server.os.environ, {server.ACCESS_PASSWORD_ENV: "short"}):
+                message = server.seed_access_password(config)
+                self.assertNotIn(server.ACCESS_PASSWORD_ENV, server.os.environ)
+            self.assertIn("8–256", message)
+            self.assertFalse(path.exists())
+            with patch.dict(server.os.environ, {server.ACCESS_PASSWORD_ENV: "container-secret"}):
+                message = server.seed_access_password(config)
+                self.assertNotIn(server.ACCESS_PASSWORD_ENV, server.os.environ, "不传给服务子进程")
+            self.assertNotIn("container-secret", message)
+            policy = access.load(path)
+            self.assertEqual(policy["mode"], "password")
+            self.assertTrue(access.verify(policy, "container-secret"))
+            self.assertNotIn("container-secret", path.read_text(encoding="utf-8"))
+            with patch.dict(server.os.environ, {server.ACCESS_PASSWORD_ENV: "another-secret"}):
+                message = server.seed_access_password(config)
+            self.assertIn("忽略", message)
+            self.assertNotIn("another-secret", message)
+            self.assertEqual(access.load(path)["revision"], policy["revision"])
+            with patch.dict(server.os.environ, {}, clear=False):
+                server.os.environ.pop(server.ACCESS_PASSWORD_ENV, None)
+                self.assertEqual(server.seed_access_password(config), "")

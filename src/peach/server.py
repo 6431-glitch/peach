@@ -8,7 +8,10 @@ import subprocess
 import sys
 import threading
 
-from . import onboarding, settings_file
+from . import access, distribution, onboarding, settings_file
+
+#: 容器首次启动时直接设好的访问密码（ADR-0148）；读过就从环境里删掉，不传给子进程。
+ACCESS_PASSWORD_ENV = "PEACH_ACCESS_PASSWORD"
 
 
 def launch(*arguments: str) -> subprocess.Popen:
@@ -58,6 +61,27 @@ def initialize() -> None:
             raise RuntimeError(f"初始化失败，退出码 {code}")
     finally:
         stop_process(process)
+
+
+def seed_access_password(config) -> str:
+    """还没有访问策略时，用 `PEACH_ACCESS_PASSWORD` 写下 password 策略；返回给日志的一行，不含明文。
+
+    已有策略时忽略它：改密码走配置页，环境变量不能在每次重启时把它改回去。值不合规时只报原因、
+    照常启动，浏览器打开后仍会进入访问设置；拒绝启动会让容器反复重启。
+    """
+    password = os.environ.pop(ACCESS_PASSWORD_ENV, "")
+    if not password:
+        return ""
+    path = config.directory("secrets") / "access.json"
+    if path.exists():
+        return f"已有访问设置，忽略 {ACCESS_PASSWORD_ENV}；要改访问密码请到配置页「网络与访问」。"
+    try:
+        access.save(path, password)
+    except ValueError as error:
+        return f"{ACCESS_PASSWORD_ENV} 未采用：{error}。浏览器打开 Peach 后会进入访问设置。"
+    except OSError as error:
+        return f"{ACCESS_PASSWORD_ENV} 未能写入：{error.strerror or type(error).__name__}"
+    return f"已按 {ACCESS_PASSWORD_ENV} 设置访问密码。"
 
 
 def supervise(host: str, port: int, stopping: threading.Event) -> int:
@@ -124,8 +148,14 @@ def main(argv: list[str] | None = None) -> int:
             ensure_token()
         except OSError as error:
             print(f"一键更新令牌未能生成：{error}", file=sys.stderr, flush=True)
+    config = settings_file.load_config()
+    seeded = seed_access_password(config)
+    if seeded:
+        print(seeded, flush=True)
     print(f"Peach 服务监听：{args.host}:{args.port}。容器外部访问地址以宿主机端口映射为准。", flush=True)
-    print("首次登录：在运行 Peach 的环境中执行 peach token 查看口令，登录后设置访问密码。", flush=True)
+    if access.load(config.directory("secrets") / "access.json")["mode"] == "legacy":
+        print("首次打开：从部署机器或局域网的浏览器打开 Peach，设置访问密码或选择免登录。" if distribution.docker()
+              else "首次登录：在运行 Peach 的环境中执行 peach token 查看口令，登录后设置访问密码。", flush=True)
     if os.environ.get('PEACH_DISTRIBUTION') == 'docker':
         print("NAS / 局域网访问：Compose 的 PEACH_BIND 应为宿主机局域网 IP；127.0.0.1 只允许宿主机访问。", flush=True)
     return supervise(args.host, args.port, stopping)
