@@ -201,7 +201,11 @@ loadRouter(compositionState.shellActions).catch(error=>console.error('客户端�
 mountManageHeader();
 mountBatchDock();
 buildManageBar();
-Promise.all([loadSourceStatus(),loadSyncedSettings(),loadingState.entityShapesReady])
+/* 形状名单只在一处挡开页：目录页还不知道有没有新作那一行（本机没记过结论），目录骨架的比例要等它定。
+   其余页面不等：名单在后台任务频繁写账本时要算好几秒，资料页自己按 `waitEntityShapes` 封顶等待。 */
+const shapesGate=isFeedNewPath(decodeURIComponent(location.pathname))&&catalogState.homeHasFeed==null
+  ?loadingState.entityShapesReady:null;
+Promise.all([loadSourceStatus(),loadSyncedSettings(),shapesGate])
   .then(()=>{
     if(!effects.isActive)return;
     /* 顶部两排与筛选栏的两个聚合自带骨架、取回后自己落位，页面打开不等它们：作品列表与它们同时去取。 */
