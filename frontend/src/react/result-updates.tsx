@@ -3,7 +3,9 @@ import { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { shellNavigate } from '@peach/history';
 
-import { fetchTasks, pollInterval, TASKS_KEY, type ActivityData, type IngestNotice } from './activity/tasks';
+import {
+  fetchResultUpdates, RESULT_UPDATES_KEY, RUNNING_POLL_MS, SETTLED_POLL_MS, type ActivityData, type IngestNotice,
+} from './activity/tasks';
 import { queryClient } from './query';
 import { showToast } from './toaster';
 
@@ -77,8 +79,8 @@ export function announceIngests(seen: { epoch: string; last: number } | null,
 }
 
 export function ResultUpdates() {
-  const query = useQuery({ queryKey: TASKS_KEY, queryFn: ({ signal }) => fetchTasks(signal),
-    refetchInterval: current => pollInterval(current.state.data) });
+  const query = useQuery({ queryKey: RESULT_UPDATES_KEY, queryFn: ({ signal }) => fetchResultUpdates(signal),
+    refetchInterval: current => (current.state.data?.busy ? RUNNING_POLL_MS : SETTLED_POLL_MS) });
   const previous = useRef<Record<string, string> | undefined>(undefined);
   const announced = useRef<{ epoch: string; last: number } | null>(null);
   const [refresh] = useState(createResultRefresher);
