@@ -19,6 +19,8 @@ import os
 import sqlite3
 import threading
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 from collections import OrderedDict
 from collections.abc import Mapping
@@ -49,6 +51,25 @@ from .repository import LedgerDatabase, writing_in_background
 from .task_runs import TaskRunStore
 
 LOGGER = logging.getLogger(__name__)
+
+#: 当前读请求的账本版本快照，见 `WebContract.revision_snapshot`；不在请求里时为 None，每次现读。
+_REVISION_SNAPSHOT: ContextVar[dict | None] = ContextVar("peach_revision_snapshot", default=None)
+
+
+@contextmanager
+def revision_snapshot():
+    """这一段里各表版本只读一次（一个读请求用一份）。
+
+    一次页面请求要核对十几个聚合缓存，每个都单独开连接读一遍版本表；账本表多、触发器多，
+    光是开连接、载入表结构就要十几毫秒一次。本进程有提交时（`cache_generation` 变了）
+    快照作废重读：请求里自己写过的，后面的缓存照样认得出来。快照记着是哪个契约读的，
+    换了契约也重读。
+    """
+    token = _REVISION_SNAPSHOT.set({})
+    try:
+        yield
+    finally:
+        _REVISION_SNAPSHOT.reset(token)
 
 
 class AvatarRootIndex(NamedTuple):
@@ -341,23 +362,35 @@ class WebContract:
         0038（或根本没有库）时返回 None。
         `tables` 非空时只累计这些表的版本。
         """
-        try:
-            with self.read_connection() as connection:
-                clause = " WHERE tbl IN (" + ','.join('?' for _ in tables) + ")" if tables else ''
-                row = connection.execute("SELECT total(n) FROM ledger_revision" + clause, tables).fetchone()
-        except sqlite3.Error:
+        revisions = self._table_revisions()
+        if revisions is None:
             return None
-        return int(row[0])
+        if not tables:
+            return sum(revisions.values())
+        return sum(revisions.get(table, 0) for table in set(tables))
 
     def ledger_tables_except(self, excluded) -> tuple[str, ...]:
         """登记了版本的账本表，去掉 `excluded`：聚合读的表太多、列不全时，按「除这几张以外」声明依赖。
         读不到版本表时为空，`cached_until_changed` 随之退回整本账本的版本。"""
+        revisions = self._table_revisions()
+        if revisions is None:
+            return ()
+        return tuple(table for table in sorted(revisions) if table not in excluded)
+
+    def _table_revisions(self) -> dict[str, int] | None:
+        snapshot = _REVISION_SNAPSHOT.get()
+        if snapshot is not None and snapshot.get("contract") is self                 and snapshot.get("generation") == self.cache_generation:
+            return snapshot["revisions"]
+        generation = self.cache_generation
         try:
             with self.read_connection() as connection:
-                tables = [row[0] for row in connection.execute("SELECT tbl FROM ledger_revision ORDER BY tbl")]
+                revisions = {str(table): int(count) for table, count in connection.execute(
+                    "SELECT tbl, total(n) FROM ledger_revision GROUP BY tbl")}
         except sqlite3.Error:
-            return ()
-        return tuple(table for table in tables if table not in excluded)
+            revisions = None
+        if snapshot is not None:
+            snapshot.update(contract=self, generation=generation, revisions=revisions)
+        return revisions
 
     def cached_until_changed(self, key: str, fn, *inputs, tables=()):
         """只读账本聚合的缓存：账本版本号与 `inputs` 都没变就一直命中，不按时间过期。

@@ -76,6 +76,32 @@ class LedgerRevisionTests(unittest.TestCase):
         self.assertEqual(self.contract.cached_until_changed("taste", self.compute), 2)
         self.assertEqual(self.contract.cached_until_changed("taste", self.compute), 2)
 
+    def test_one_request_reads_the_revisions_once_until_this_process_commits(self):
+        connect = self.contract.database.connect
+        opened = []
+
+        def counted(*args, **kwargs):
+            opened.append(1)
+            return connect(*args, **kwargs)
+
+        with mock.patch.object(self.contract.database, "connect", counted), \
+                web_state.revision_snapshot():
+            whole = self.contract.ledger_revision()
+            self.assertEqual(self.contract.ledger_revision(("asset",)) + self.contract.ledger_revision(
+                tuple(table for table in self.contract.ledger_tables_except(("asset",)))), whole)
+            self.assertEqual(len(opened), 1)
+            # 请求里自己写过：提交通知让快照作废，后面的缓存认得出这次写入。
+            with self.contract.database.write_transaction() as connection:
+                connection.execute(
+                    "INSERT INTO asset(id,location,path,name,medium,size) VALUES(?,?,?,?,?,?)",
+                    (90, "local", "R:\\media\\90.mp4", "90.mp4", "video", 1))
+            self.assertEqual(self.contract.ledger_revision(("asset",)), self.contract.ledger_revision(("asset",)))
+            self.assertGreater(self.contract.ledger_revision(), whole)
+        # 请求之外每次现读：进程外的写马上看得到。
+        before = self.contract.ledger_revision()
+        insert_asset(self.db_path, 91)
+        self.assertGreater(self.contract.ledger_revision(), before)
+
     def test_task_center_heartbeats_keep_the_cache(self):
         self.contract.cached_until_changed("review", self.compute)
         run = self.contract.task_runs.start("library-processing", trigger="manual")
