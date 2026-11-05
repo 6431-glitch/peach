@@ -14,7 +14,7 @@ import { tagLabel } from '../core/tags';
 import { followFeedLive, followState, followView, followViewPath, routeFollowFeed } from './follow.js';
 import { applicationEffects } from './effects';
 import { entityJavLayout, notifyShell, pageOpens, runtimeConfigurable, selectMode, selectSurface, state, writeShell } from './../shell/index';
-import { censorOn, preferencesState, setCensored, setHighContrast } from './preferences.js';
+import { censorOn, preferencesState, setCensored, setHighContrast, setSfwShortcut, sfwShortcut } from './preferences.js';
 import { playUiSound } from '../ui-kit/sounds';
 import { THEME_OPTIONS } from './../appearance/theme';
 import { JAV_LAYOUTS, cardLayoutFor, storeHomeLayout, storeJavLayout, storeVideoLayout } from './../appearance/layout';
@@ -462,7 +462,7 @@ layoutState.settingsHost = ()=>({
   navCatalog:layoutState.NAV_CATALOG,themeOptions:THEME_OPTIONS,videoLayouts:JAV_LAYOUTS,
   followInitialRanges:FOLLOW_INITIAL_RANGE_OPTIONS,
   videoLayout:()=>cardLayout(),setVideoLayout,
-  censored:censorOn,setCensored,
+  censored:censorOn,setCensored,sfwShortcut,setSfwShortcut,
   highContrast:()=>document.documentElement.classList.contains('board-high-contrast'),setHighContrast,
   receipt:message=>receiptsState.actionReceipt(message),
   failure:receiptsState.actionFailure,

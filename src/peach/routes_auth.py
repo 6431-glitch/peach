@@ -68,6 +68,22 @@ def _policy(request: Request) -> dict:
     return policy
 
 
+def sessions(request: Request) -> access.Sessions | None:
+    path = request.app.state.settings.access_path
+    return access.Sessions(access.sessions_path(path)) if path is not None else None
+
+
+def _client(request: Request) -> dict:
+    """设备记录要的三样：浏览器简称、来源网段、是否经公网隧道进来。"""
+    key = _attempt_key(request)
+    return {"device": access.device_name(request.headers.get("user-agent", "")[:512]),
+            "network": access.network_of(key.removeprefix("cf:")), "remote": key.startswith("cf:")}
+
+
+def valid_session(request: Request, policy: dict) -> bool:
+    return access.valid_session(policy, request.cookies.get(access.COOKIE, ""), sessions(request), **_client(request))
+
+
 def _first_query_values(request: Request) -> dict[str, str]:
     """兼容 urllib.parse.parse_qs：取首值并忽略空值。"""
     result: dict[str, str] = {}
@@ -89,7 +105,7 @@ def _authorized(request: Request, token: str, args: dict[str, str]) -> bool:
     if policy["mode"] == "legacy":
         if hmac.compare_digest(request.cookies.get("tok", "").encode(), token.encode()):
             return True
-    return access.valid_session(policy, request.cookies.get(access.COOKIE, ""))
+    return valid_session(request, policy)
 
 
 class PageLoginRequired(Exception):
@@ -263,7 +279,7 @@ def require_authenticated_client(request: Request) -> None:
     policy = _policy(request)
     if policy['mode'] not in {'password', 'legacy'} or not policy.get('key'):
         raise HTTPException(401, 'unauthorized')
-    authenticated = access.valid_session(policy, request.cookies.get(access.COOKIE, ''))
+    authenticated = valid_session(request, policy)
     if policy['mode'] == 'legacy':
         authenticated = _authorized(request, policy['key'], _first_query_values(request))
     if not authenticated:
@@ -299,7 +315,7 @@ def set_auth_cookie(response: Response, request: Request, *, days: int = 30, log
     policy = _policy(request)
     response.headers["Cache-Control"] = "no-store"
     if token and policy["mode"] in {"password", "legacy"} and (login or _query_token_matches(request)):
-        value, max_age = access.issue(policy, days)
+        value, max_age = access.issue(policy, days, sessions(request), **_client(request))
         response.set_cookie(access.COOKIE, value, max_age=max_age, path="/", httponly=True,
                             samesite="lax", secure=request.url.scheme == "https")
         response.delete_cookie("tok", path="/")
@@ -363,5 +379,11 @@ async def login_submit(request: Request):
             return HTMLResponse(login_html(next_path, error=message), status_code=400)
         raise HTTPException(400, message) from None
     response = RedirectResponse(next_path, status_code=303)
-    set_auth_cookie(response, request, days=days, login=True)
+    try:
+        set_auth_cookie(response, request, days=days, login=True)
+    except OSError:
+        message = "登录设备未能记下，请检查数据目录能否写入后重试"
+        if _wants_page(request):
+            return HTMLResponse(login_html(next_path, error=message), status_code=503)
+        raise HTTPException(503, message) from None
     return response

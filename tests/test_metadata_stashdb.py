@@ -81,6 +81,22 @@ class StashDBCandidateTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             stashdb_matching.manual_date('2021/02/29')
 
+    def test_manual_actor_search_does_not_use_filename_as_title(self):
+        client = unittest.mock.Mock()
+        client.incomplete = False
+        client.performers.return_value = [{'id': 'actor', 'name': 'Example Actor', 'aliases': []}]
+        client.scenes.return_value = ([], False)
+        stashdb_preview.preview_scene(self.config, self.db, 1, client=client,
+            search_fields={'title': '', 'actor': 'Example Actor', 'studio': '', 'date': ''})
+        filters = client.scenes.call_args.args[0]
+        self.assertNotIn('title', filters)
+        self.assertEqual(filters['performers']['value'], ['actor'])
+
+    def test_empty_manual_search_does_not_fall_back_to_filename(self):
+        with self.assertRaisesRegex(ValueError, 'at least one search field'):
+            stashdb_preview.preview_scene(self.config, self.db, 1, client=unittest.mock.Mock(),
+                search_fields={'title': '', 'actor': '', 'studio': '', 'date': ''})
+
     def test_explicit_selection_replaces_manual_title(self):
         revision = self.save_candidate()
         client = unittest.mock.Mock()

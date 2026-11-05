@@ -153,6 +153,7 @@ export const SETTING_CHAPTERS: GuideChapter[] = [
     ['startup', '开机自启', '设置开机启动、仅启动托盘和桌面快捷方式。可用选项随平台变化。'],
     ['transcode', '视频播放', '播放转码方式决定兼容播放使用的处理方式；抽帧解码在媒体库与入库中单独设置。修改后自动保存。'],
     ['storage', '存储空间', '查看占用，按需要清理缓存和旧备份。迁移数据目录会移动资料与缓存；媒体文件目录单独管理。'],
+    ['ledger-backups', '账本备份', '立即备份当前账本，或从列表里的一份备份恢复。恢复会替换当前账本，替换前先另存一份；只有写入端能恢复。'],
     ['reporting', '数据上传', '版本统计与错误诊断、馆藏与口味明细是独立选择。明细上传前可查看预览，按自己的意愿开启。'],
     ['facts', '运行信息与新手教程', '运行信息用于核对环境。新手教程可以随时重开，阅读进度随本机账本在所有设备间共享。'],
     ['uninstall', '卸载 Peach', '卸载移除程序；完全卸载还移除设置、资料库、记录、凭据和缓存。执行前核对页面列出的数据目录与确认内容。'],
@@ -275,7 +276,8 @@ const FIELD_DETAILS: Record<string, readonly [string, string][]> = {
 for (const chapter of SETTING_CHAPTERS) for (const item of chapter.steps) {
   item.details = FIELD_DETAILS[item.id];
   if (item.id === 'preview' || item.id === 'transcode') item.scope = '运行 Peach 的电脑 · 修改后自动保存';
-  if (item.id === 'follow-options' || item.id === 'sources' || item.id === 'reporting' || item.id === 'storage') item.scope = '按页面中各项的保存或确认动作生效';
+  if (item.id === 'follow-options' || item.id === 'sources' || item.id === 'reporting' || item.id === 'storage'
+    || item.id === 'ledger-backups') item.scope = '按页面中各项的保存或确认动作生效';
 }
 export const GUIDE_CHAPTERS = [...INTERFACE_CHAPTERS, ...SETTING_CHAPTERS];
 

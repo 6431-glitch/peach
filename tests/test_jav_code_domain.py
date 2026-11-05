@@ -420,6 +420,20 @@ class TokyoHotShapeTests(unittest.TestCase):
                 'edition_badges': ['中字', '无码']})
         self.assertEqual(jav_fallback_title('MKD-S118.mp4', 'MKD-S118'), '')
 
+    def test_uncensored_only_labels_get_the_uncensored_badge(self):
+        for name, code in (('SMBD-120.mp4', 'SMBD-120'), ('SKYHD-050-C.mp4', 'SKYHD-050')):
+            with self.subTest(code=code):
+                self.assertIn('无码', jav_display_metadata(name, code)['edition_badges'])
+        self.assertEqual(jav_display_metadata('MCDV-024.mp4', 'MCDV-024')['edition_badges'], [])
+
+    def test_ltx_after_the_code_marks_a_cracked_edition(self):
+        self.assertEqual(jav_display_metadata('ABP-123-LTX.mp4', 'ABP-123'), {
+            'display_code': 'ABP-123', 'display_title': '', 'edition_badges': ['无码破解']})
+        self.assertEqual(jav_display_metadata('ABP-123-C-LTX.mp4', 'ABP-123')['edition_badges'],
+                         ['中字', '无码破解'])
+        # 字母段本身是 LTX 的番号不是破解标记。
+        self.assertEqual(jav_display_metadata('LTX-123.mp4', 'LTX-123')['edition_badges'], [])
+
     def test_a_bare_number_is_read_only_at_the_head_of_the_name(self):
         self.assertEqual(release_code_from_filename("n1032.mkv"), "n1032")
         self.assertEqual(release_code_from_filename("n0762.mkv"), "n0762")
@@ -470,6 +484,14 @@ class DeliveryFilenameTests(unittest.TestCase):
         self.assertEqual(release_code_from_filename("heyzo_hd_1031_full.mp4"), "HEYZO-1031")
         self.assertEqual(release_code_from_filename("heyzo_lt_1380_full-1.mp4"), "HEYZO-1380")
         self.assertEqual(release_code_from_filename("HEYZO-1380.mp4"), "HEYZO-1380")
+
+    def test_heyzo_keeps_four_digits_below_one_thousand(self):
+        """#354：HEYZO 官方编号定宽四位，前导零是编号的一部分，收成三位就查不到资料。"""
+        for name in ("HEYZO-0707.mp4", "heyzo_hd_0707_full.mp4", "HEYZO-707.mp4", "heyzo-00707.mp4"):
+            with self.subTest(name=name):
+                self.assertEqual(release_code_from_filename(name), "HEYZO-0707")
+        self.assertEqual(normalise_code_key("HEYZO-707"), "HEYZO-0707")
+        self.assertEqual(normalise_code_key("ABC-0123"), "ABC-123")
 
     def test_the_number_alone_is_not_a_heyzo_release(self):
         # 站名是这条规则的全部证据：少了它，创作者目录里按下划线分段、末尾带画质

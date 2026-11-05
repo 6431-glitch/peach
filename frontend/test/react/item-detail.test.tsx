@@ -91,9 +91,10 @@ describe('metadata search', () => {
     const trigger = host.querySelector('button[aria-label="Find metadata"]')!;
     expect(trigger.previousElementSibling?.hasAttribute('data-sync')).toBe(true);
     await click(trigger);
-    const panel = host.querySelector('section[aria-label="Find metadata"]')!;
+    const panel = document.querySelector('section[aria-label="Find metadata"]')!;
     const fields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
     expect(fields).toHaveLength(4);
+    expect(fields[0].value).toBe(item(1, { code: 'ROE-064' }).name);
     await type(fields[0], 'Example title');
     await type(fields[1], 'Example actor');
     await type(fields[2], 'Example studio');
@@ -105,6 +106,36 @@ describe('metadata search', () => {
     }]);
     await click(panel.querySelector('input[value="jav"]'));
     expect(panel.querySelectorAll('input:not([type="radio"])')).toHaveLength(1);
+  });
+
+  it('sends a cleared title without restoring the filename', async () => {
+    const fetcher = serve(() => ({ candidates: [], revision: 1, truncated: false }));
+    const { host } = await show(item(1));
+    await click(host.querySelector('button[aria-label="Find metadata"]')!);
+    const panel = document.querySelector('section[aria-label="Find metadata"]')!;
+    const fields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
+    await type(fields[0], '');
+    await type(fields[1], 'Example actor');
+    await click([...panel.querySelectorAll('button')].find(button => button.textContent === 'Search')!);
+    await settle();
+    expect(posts(fetcher)).toContainEqual(['/api/configuration/stashdb/preview', {
+      asset_id: 1, search_fields: { title: '', actor: 'Example actor', studio: '', date: '' },
+    }]);
+  });
+
+  it('shows StashDB performers for review before applying', async () => {
+    const fetcher = serve(() => ({ candidates: [{ id: 'scene-1', title: 'Scene', studio: 'Studio', date: '2021-01-01',
+      url: 'https://stashdb.org/scenes/scene-1', actors: ['Performer'] }], revision: 3, truncated: false }));
+    const { host } = await show(item(1));
+    await click(host.querySelector('button[aria-label="Find metadata"]')!);
+    const panel = document.querySelector('section[aria-label="Find metadata"]')!;
+    await click([...panel.querySelectorAll('button')].find(button => button.textContent === 'Search')!);
+    await settle();
+    expect(panel.textContent).toContain('Scene');
+    await click([...panel.querySelectorAll('button')].find(button => ['Apply match', '应用匹配'].includes(button.textContent || ''))!);
+    const review = document.querySelector('section[aria-label="Review StashDB match"]')!;
+    expect(review.textContent).toContain('Performer');
+    expect(posts(fetcher).some(([url]) => url === '/api/configuration/stashdb/apply')).toBe(false);
   });
 });
 

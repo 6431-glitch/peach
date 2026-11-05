@@ -456,7 +456,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   const [source, setSource] = useState('stashdb');
   const [javCode, setJavCode] = useState(String(item.code || ''));
   const [javResult, setJavResult] = useState<JavMatch | null>(null);
-  const [title, setTitle] = useState('');
+  const [title, setTitle] = useState(String(item.name || ''));
   const [actor, setActor] = useState('');
   const [studio, setStudio] = useState('');
   const [date, setDate] = useState('');
@@ -464,6 +464,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   const [empireUrl, setEmpireUrl] = useState('');
   const [result, setResult] = useState<MetadataResults | null>(null);
   const [empireReview, setEmpireReview] = useState<EmpireReview | null>(null);
+  const [stashReview, setStashReview] = useState<MetadataCandidate | null>(null);
   const moreSentinel = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -514,18 +515,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
       }, 'POST').then(setEmpireReview).catch(cause => setError(errorMessage(cause))).finally(() => setBusy(false));
       return;
     }
-    void confirmModal({ title: 'Apply metadata match', confirmLabel: 'Apply match',
-      body: `Apply “${candidate.title}” from StashDB? Available title, date, studio, cast, and cover will replace this video's existing values.`,
-      onConfirm: async () => {
-        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/stashdb/apply', {
-          asset_id: item.id, candidate_id: candidate.id, revision: result.revision,
-        });
-        setResult(null); onClose();
-        await queryClient.invalidateQueries({ queryKey: itemKey(item.id) });
-        await queryClient.invalidateQueries();
-        actions.toast(outcome.image_errors.length ? 'Match applied, but some artwork could not be downloaded.' : 'Metadata match applied');
-      },
-    });
+    setStashReview(candidate);
   };
   const reviewEmpireUrl = async () => {
     setBusy(true); setError('');
@@ -555,6 +545,29 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
       },
     });
   };
+  if (stashReview && result) {
+    const applyReviewed = async () => {
+      setBusy(true); setError('');
+      try {
+        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/stashdb/apply', {
+          asset_id: item.id, candidate_id: stashReview.id, revision: result.revision,
+        }, 'POST');
+        setStashReview(null); setResult(null); onClose();
+        await queryClient.invalidateQueries();
+        actions.toast(outcome.image_errors.length ? 'Match applied, but some artwork could not be downloaded.' : 'Metadata match applied');
+      } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
+    };
+    return <section className="flex w-full flex-col gap-3 p-4" aria-label="Review StashDB match">
+      <strong>Review metadata and performers</strong>
+      <p data-i18n-ignore="">{stashReview.title}{stashReview.studio ? ` · ${stashReview.studio}` : ''}{stashReview.date ? ` · ${stashReview.date}` : ''}</p>
+      <p>Available title, studio, date, cast and cover will replace this video's existing values.</p>
+      <strong>Performers</strong>
+      {stashReview.actors?.length ? stashReview.actors.map(name => <span key={name} data-i18n-ignore="">{name}</span>) : <p>No performers provided by this source.</p>}
+      {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
+      <Button type="button" variant="primary" {...busyProps(busy)} onClick={() => void applyReviewed()}>Apply metadata and performers</Button>
+      <Button type="button" variant="secondary" disabled={busy} onClick={() => setStashReview(null)}>Back to results</Button>
+    </section>;
+  }
   if (empireReview) {
     const movie = empireReview.candidate;
     const applyReviewed = async () => {
@@ -606,7 +619,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
           <Radio value="dvd">DVD</Radio><Radio value="clips">Clips</Radio><Radio value="bluray">Blu-ray</Radio><Radio value="vod">On Demand</Radio>
         </RadioGroup>
       </> : source === 'stashdb' ? <>
-        <Input label="Title" value={title} onChange={setTitle} placeholder="Leave all fields blank to use video details" />
+        <Input label="Title" value={title} onChange={setTitle} placeholder="Optional" />
         <Input label="Actor (optional)" value={actor} onChange={setActor} />
         <Input label="Producer / studio" value={studio} onChange={setStudio} />
         <Input label="Release date" value={date} onChange={setDate} placeholder="YYYY, YYYY/MM, or YYYY/MM/DD" />

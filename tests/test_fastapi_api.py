@@ -146,7 +146,8 @@ CREATE TABLE review_decision(
   reviewer TEXT NOT NULL DEFAULT 'local-default',note TEXT NOT NULL DEFAULT '',updated_at TEXT NOT NULL,
   PRIMARY KEY(category,item_key));
 CREATE TABLE download_task(
-  id INTEGER PRIMARY KEY, code TEXT, state TEXT NOT NULL, ledger_path TEXT, asset_id INTEGER);
+  id INTEGER PRIMARY KEY, code TEXT, state TEXT NOT NULL, ledger_path TEXT, asset_id INTEGER,
+  display_name TEXT NOT NULL DEFAULT '', remote_name TEXT);
 CREATE TABLE genre_decision(
   source_genre TEXT PRIMARY KEY, raw_genre TEXT NOT NULL, peach_tag TEXT, decided_at TEXT NOT NULL,
   CHECK(peach_tag IS NULL OR length(trim(peach_tag))>0));
@@ -2098,6 +2099,42 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["models"][0]["id"], "kimi-k3")
         discover.assert_called_once_with()
+
+    async def test_local_player_progress_writes_same_activity_columns(self):
+        from peach import playback_tracking, routes_media
+
+        class Probe:
+            eof = False
+
+            def __init__(self):
+                self.frames = iter([0.0, 0.0, 1.0, 2.0, 40.0, 41.0])
+
+            def snapshot(self):
+                position = next(self.frames, None)
+                if position is None:
+                    raise EOFError("player exited")
+                return playback_tracking.Snapshot(position, 100.0, False)
+
+            def close(self):
+                pass
+
+        con = sqlite3.connect(self.db)
+        before = con.execute("SELECT COALESCE(play_count,0) FROM asset WHERE id=1").fetchone()[0]
+        con.close()
+        trackers = playback_tracking.PlaybackTrackers(poll=0.001)
+        with patch.object(self.app.state, "playback_trackers", trackers):
+            track = routes_media._playback_tracker(self.app.state, 1)
+            self.assertTrue(track(Probe, lambda: True))
+            for _ in range(500):
+                if not trackers.threads:
+                    break
+                await asyncio.sleep(0.01)
+        self.assertFalse(trackers.threads)
+        con = sqlite3.connect(self.db)
+        row = con.execute("SELECT play_count,play_seconds,seek_count,leave_ratio,last_played IS NOT NULL "
+                          "FROM asset WHERE id=1").fetchone()
+        con.close()
+        self.assertEqual(row, (before + 1, 3.0, 1, 0.41, 1))
 
     async def test_post_writes_only_test_database(self):
         response = await self.client.post(
@@ -4140,6 +4177,10 @@ PUBLIC_ROUTES = {
     # STRM 的 HLS 子资源供浏览器和外部播放器共用：处理函数验证浏览器会话，
     # 或绑定资产与 Origin 的限时 HMAC；两条分支都检查媒体根目录及资源归属。
     ("GET,HEAD", "/strm-resource/{id}/{key}"),
+    # 本机 CA 的公开证书（ADR-0142）。手机扫码时还没登录、也还没信任这张证书，二维码带进程
+    # 密钥签发、十分钟有效的签名，只换得到这张公开证书；处理函数里不带签名的请求照常
+    # `require_auth`。私钥不经过这条路由。
+    ("GET", "/api/configuration/certificate/peach-local-ca.crt"),
 }
 
 
@@ -4187,6 +4228,9 @@ class RouteAuthContractTests(unittest.TestCase):
             ("POST", "/api/jav-browser"): routes_jav_browser.browser_client,
             ("POST", "/api/jav-browser/errors"): routes_jav_browser.browser_client,
             ("POST", "/api/jav-browser/postprocess"): routes_jav_browser.browser_client,
+            ("GET", "/api/jav-browser/performer"): routes_jav_browser.browser_client,
+            ("POST", "/api/jav-browser/performer"): routes_jav_browser.browser_client,
+            ("POST", "/api/jav-browser/dismiss"): routes_jav_browser.browser_client,
         }
         cls.routes = {(",".join(sorted(route.methods)), route.path):
                       {dependency.call for dependency in route.dependant.dependencies}

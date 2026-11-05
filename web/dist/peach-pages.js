@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f6e21439-d90f-4ebb-8fb4-3fb750964f4c", e._sentryDebugIdIdentifier = "sentry-dbid-f6e21439-d90f-4ebb-8fb4-3fb750964f4c");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "5381dc30-3787-4516-8575-265083ba76e8", e._sentryDebugIdIdentifier = "sentry-dbid-5381dc30-3787-4516-8575-265083ba76e8");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -58874,7 +58874,10 @@ function tg({ done: e }) {
 							summary: "运行信息",
 							children: /* @__PURE__ */ F(Wh, { children: e.facts.map((e) => /* @__PURE__ */ I(Gh, {
 								term: e.term,
-								children: [e.value, e.download_url ? /* @__PURE__ */ F(Uh, {
+								children: [e.value, e.install_tool ? /* @__PURE__ */ F("span", {
+									className: "text-text-secondary",
+									children: "可在配置页「应用与维护」里安装。"
+								}) : e.download_url ? /* @__PURE__ */ F(Uh, {
 									href: e.download_url,
 									children: e.download_label ?? e.download_url
 								}) : null]
@@ -59335,8 +59338,8 @@ var f_ = class extends Qg {
 		let { element: t, name: n, keyframes: r, pseudoElement: i, allowFlatten: a = !1, finalKeyframe: o, onComplete: s } = e;
 		this.isPseudoElement = !!i, this.allowFlatten = a, this.options = e;
 		let c = d_(e);
-		this.animation = l_(t, n, r, c, i), c.autoplay === !1 && this.animation.pause(), this.animation.onfinish = () => {
-			if (this.finishedTime = this.time, !i) {
+		this.animation = l_(t, n, r, c, i), c.autoplay === !1 && this.animation.pause(), this.animation.onfinish = this.onFinish = () => {
+			if (this.animation.onfinish = null, this.finishedTime = this.time, !i) {
 				let e = Yg(r, this.options, o, this.speed);
 				this.updateMotionValue?.(e), t_(t, n, e), this.animation.cancel();
 			}
@@ -59344,21 +59347,22 @@ var f_ = class extends Qg {
 		}, Zg(this, e, c);
 	}
 	play() {
-		this.isStopped || (this.manualStartTime = null, this.animation.play(), this.state === "finished" && this.updateFinished());
+		this.isStopped || (this.manualStartTime = null, this.animation.onfinish = this.onFinish, this.animation.play(), this.state === "finished" && this.updateFinished());
 	}
 	pause() {
 		this.animation.pause();
 	}
 	complete() {
-		this.animation.finish?.();
+		this.isStopped || (this.animation.onfinish = this.onFinish), this.animation.finish?.();
 	}
 	cancel() {
+		this.animation.onfinish = null;
 		try {
 			this.animation.cancel();
 		} catch {}
 	}
 	stop() {
-		this.isStopped || (this.isStopped = !0, this.state !== "idle" && this.finishedTime === null && (this.updateMotionValue ? this.updateMotionValue() : this.commitStyles(), this.isPseudoElement || (this.animation.onfinish = null, this.cancel())));
+		this.isStopped || (this.isStopped = !0, this.state !== "idle" && this.finishedTime === null && (this.updateMotionValue ? this.updateMotionValue() : this.commitStyles(), this.isPseudoElement || this.cancel()));
 	}
 	commitStyles() {
 		let e = this.options?.element;
@@ -59395,7 +59399,7 @@ var f_ = class extends Qg {
 		this.manualStartTime = this.animation.startTime = e;
 	}
 	attachTimeline({ timeline: e, onAttach: t, observe: n }) {
-		return this.allowFlatten && this.animation.effect?.updateTiming({ easing: "linear" }), this.animation.onfinish = null, e && i_() ? (this.animation.timeline = e, t?.(this.animation), dg) : n(this);
+		return this.allowFlatten && this.animation.effect?.updateTiming({ easing: "linear" }), this.animation.onfinish = this.onFinish = null, e && i_() ? (this.animation.timeline = e, t?.(this.animation), dg) : n(this);
 	}
 }, p_ = class {
 	constructor(e) {
@@ -61672,4 +61676,4 @@ je();
 var Yv = document.getElementById("peach-page"), Xv = Yv ? Jv[Yv.dataset.page ?? ""] : void 0;
 Yv && Xv && (0, Be.createRoot)(Yv).render(/* @__PURE__ */ F(Xv, { data: { ...Yv.dataset } }));
 
-//# debugId=f6e21439-d90f-4ebb-8fb4-3fb750964f4c
+//# debugId=5381dc30-3787-4516-8575-265083ba76e8

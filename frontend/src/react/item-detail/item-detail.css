@@ -136,6 +136,10 @@
   overflow: hidden;
 }
 .peach-react [data-item-detail] [data-detail-title][data-expanded] { display: block; -webkit-line-clamp: unset; line-clamp: unset; }
+/* 番号段同卡片标题（media-card.css）：拆成行内的几枚，放不下的整枚折到下一行。整块不折时，
+   窄屏下它会整段掉到第二行，第一行只剩来源徽标，标题被两行上限挤得一个字不剩。 */
+.peach-react [data-item-detail] [data-detail-title] [class~="ui-javidentity"] { display: inline; white-space: normal; }
+.peach-react [data-item-detail] [data-detail-title] [class~="javedition"] { margin-left: 5px; }
 .peach-react [data-item-detail] [data-detail-title][data-foldable] { cursor: pointer; }
 .peach-react [data-item-detail] [data-original-filename] {
   display: block; margin-top: 2px; color: var(--muted); font-size: var(--fs-xs);

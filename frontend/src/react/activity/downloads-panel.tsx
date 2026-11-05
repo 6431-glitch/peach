@@ -41,7 +41,7 @@ export const downloadPollInterval = (data: DownloadsSnapshot | undefined) =>
 
 const STATE_COLORS: Record<string, 'lime' | 'rose' | 'yellow' | 'blue' | 'neutral'> = {
   ingested: 'lime', failed: 'rose', cancelled: 'neutral', stalled: 'yellow',
-  remote_running: 'blue', remote_done: 'lime', landed: 'lime', submitted: 'neutral',
+  remote_running: 'blue', remote_done: 'lime', landed: 'lime', submitted: 'neutral', submit_pending: 'yellow',
 };
 
 const taskName = (task: DownloadTask) => {

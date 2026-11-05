@@ -15,10 +15,10 @@ const FAMILIES: [Icon, string[]][] = [
   [RiImage2Line, ['scraping-cover', 'jav-covers', 'code-samples', 'timeline-thumbnails', 'entity-avatar']],
   [RiUser3Line, ['performer-profile', 'performer-alias', 'creator-identity', 'studio-mark']],
   [RiFilmLine, ['media-repair', 'mp4-header-repair']],
-  [RiLinksLine, ['link-check', 'link-prune']],
+  [RiLinksLine, ['link-check', 'link-prune', 'source-check']],
   [RiDownloadCloud2Line, ['download-postprocess']],
   [RiHeart3Line, ['taste-refresh']],
-  [RiToolsLine, ['upgrade-repairs', 'diagnostic-export', 'amane-bridge', 'face-models']],
+  [RiToolsLine, ['upgrade-repairs', 'diagnostic-export', 'amane-bridge', 'face-models', 'ledger-backup', 'ledger-restore']],
 ];
 
 const ICONS = new Map(FAMILIES.flatMap(([icon, keys]) => keys.map((key) => [key, icon] as const)));

@@ -24,6 +24,7 @@ import { WantMagnets } from './want-magnets';
 import { cachedMagnetStates } from './resource-cache';
 import { SEGMENT, SEGMENTED_TRACK, SegmentedRadioGroup } from '../components/segmented';
 import { busyProps, useAction } from '../settings/use-action';
+import { composingKey } from '../components/ime';
 import {
   addWant, fetchWants, invalidateWants, PHASES, removeWants, resetWants, searchNote, wantName,
   WANTS_KEY, type Want,
@@ -165,7 +166,7 @@ export function WantList({ readOnly, toast, query = '', clearQuery }: WantListPr
     });
   };
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter' && !event.nativeEvent.isComposing) { event.preventDefault(); add() }
+    if (event.key === 'Enter' && !composingKey(event.nativeEvent)) { event.preventDefault(); add() }
   };
   const remove = (want: Want) => {
     void action.run(`remove:${want.id}`, (signal) => removeWants([want.id], signal), () => {

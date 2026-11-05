@@ -302,7 +302,7 @@ describe('扫描与采集控制', () => {
         const cancelTask = dock.getByRole('button', { name: '取消任务', exact: true });
         assert.equal(await cancelTask.innerText(), '');
         await cancelTask.click();
-        const confirm = page.getByRole('dialog', { name: '取消任务「扫描与采集」', exact: true });
+        const confirm = page.getByRole('alertdialog', { name: '取消任务「扫描与采集」', exact: true });
         await confirm.getByRole('button', { name: '取消', exact: true }).click();
         await confirm.waitFor({ state: 'hidden' });
         assert.equal(writes.length, sent);

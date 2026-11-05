@@ -65,7 +65,11 @@ export interface ActivityData {
   working_parents?: TaskRunPayload[];
   /** 父任务 id → 它直接派出的后继按状态各几条。下发的后继只是一部分，进度与「还在不在跑」看这份。 */
   followup_counts?: FollowupCounts;
+  /** 逐部到来的入库通知：云下载整理完成、推送发现登记的新影片。`epoch` 换了表示服务重启过。 */
+  ingest_notices?: { epoch: string; items: IngestNotice[] };
 }
+
+export interface IngestNotice { id: number; kind: 'download' | 'discovered'; asset_id: number; label: string; at: number }
 
 export type FollowupCounts = Record<string, Record<string, number>>;
 
@@ -91,13 +95,14 @@ export function followupTally(counts: FollowupCounts | undefined, runs: TaskRunP
 }
 
 /** 同一种任务连着派出的几轮合成一件事：自动修复每分钟派一批，一屏十几张「已完成」卡说的是同一件事。
- *  每组按最新那一轮排在前面，`runs[0]` 是最新那一轮。 */
-export function foldByKind(rows: TaskRunPayload[]): RunFold[] {
+ *  每组按最新那一轮排在前面，`runs[0]` 是最新那一轮。`split` 再按它的值分组，同一种任务值不同的分开。 */
+export function foldByKind(rows: TaskRunPayload[], split: (run: TaskRunPayload) => string = () => ''): RunFold[] {
   const folds = new Map<string, RunFold>();
   for (const run of rows) {
-    const fold = folds.get(run.task_key);
+    const key = `${run.task_key}\u0000${split(run)}`;
+    const fold = folds.get(key);
     if (fold) fold.runs.push(run);
-    else folds.set(run.task_key, { run, runs: [run] });
+    else folds.set(key, { run, runs: [run] });
   }
   return [...folds.values()];
 }
@@ -128,6 +133,12 @@ export const pollInterval = (data: ActivityData | undefined): number =>
   data?.running?.length ? RUNNING_POLL_MS : SETTLED_POLL_MS;
 
 export const fetchTasks = (signal?: AbortSignal) => apiGet<ActivityData>(TASKS_URL, signal);
+
+/** 每个页面常驻轮询的那一小份：结果版本、入库通知与有没有任务在排或在跑。完整任务列表只给任务中心。 */
+export const RESULT_UPDATES_KEY = ['result-updates'] as const;
+export type ResultUpdatesData = Pick<ActivityData, 'result_versions' | 'ingest_notices'> & { busy?: boolean };
+export const fetchResultUpdates = (signal?: AbortSignal) =>
+  apiGet<ResultUpdatesData>('/api/result-updates', signal);
 
 export const controlTask = (id: number, action: TaskControlAction, signal?: AbortSignal) =>
   apiSend(`${TASKS_URL}/${id}/control`, { action }, 'POST', signal);

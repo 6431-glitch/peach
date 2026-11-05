@@ -1589,6 +1589,7 @@ class ProcessLibraryTests(LedgerTestCase):
         offline = {performer_alias_followup.MINNANO: Offline(),
                    performer_alias_followup.AV_NEME: Offline()}
         profile_offline = {performer_profile_followup.MINNANO: Offline(),
+                           performer_profile_followup.AVBASE: Offline(),
                            performer_profile_followup.AVWIKIDB: Offline(),
                            performer_profile_followup.JAVDB: Offline()}
         with mock.patch.object(performer_alias_followup, 'open_sites', return_value=offline), \

@@ -174,6 +174,35 @@ class FollowContractTests(unittest.TestCase):
         self.assertEqual([row['source'] for row in result['results']], [selected])
         self.assertEqual(factory.call_count, 1)
 
+    def test_sources_skipped_for_a_site_cooldown_are_not_reported_as_failures(self):
+        """站点限流冷却中：同站的来源这一轮不问，也不进失败清单（ADR-0134）。"""
+        from peach.follow_stream import FollowMediaResolver
+        self._seed(ref='first')
+        self._seed(ref='second')
+        self.contract.follow_media_resolver = FollowMediaResolver(transport=None)
+        self.contract.follow_media_resolver.pause('rule34video', 60)
+        with mock.patch.object(web_follow, 'build_connector') as factory:
+            result = self._post('/api/follow/check', {})
+            # 往回一路抓到底也一样：冷却中的那条只跳过一次，不在原地空转翻页。
+            backfill = self._post('/api/follow/check', {'older': True, 'backfill_all': True})
+        self.assertEqual(factory.call_count, 0)
+        self.assertEqual((result['results'], result['deferred']), ([], 2))
+        self.assertEqual((backfill['results'], backfill['deferred']), ([], 2))
+
+    def test_a_scheduled_round_checks_only_the_sources_that_are_due(self):
+        """定时那一跳跳过刚查过、又久未更新的来源；手动检查照旧全查。"""
+        stale = self._seed(ref='stale')
+        recent = self._seed(ref='recent')
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE follow_source SET last_checked_at=? WHERE id=?",
+                               (datetime.now(timezone.utc).isoformat(), recent))
+        with mock.patch.object(web_follow, 'build_connector') as factory:
+            factory.return_value.fetch.side_effect = FollowSourceError('offline')
+            scheduled = self._post('/api/follow/check', {'automatic': True})
+            manual = self._post('/api/follow/check', {})
+        self.assertEqual([row['source'] for row in scheduled['results']], [stale])
+        self.assertEqual({row['source'] for row in manual['results']}, {stale, recent})
+
     def test_failed_numeric_source_has_a_readable_author(self):
         source = self._seed(ref='patreon/12387984', label='Pantsushi · patreon')
         with mock.patch.object(web_follow, 'build_connector') as factory:

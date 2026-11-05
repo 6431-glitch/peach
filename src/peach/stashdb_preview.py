@@ -83,12 +83,11 @@ def preview_scene(config, database, asset_id, *, client=None, search_title=None,
                 if not isinstance(value, str) or len(value) > 200 or any(ord(c) < 32 for c in value):
                     raise ValueError('Search fields must be text of up to 200 characters.')
                 values[name] = value.strip()
-            if any(values.values()):
-                evidence.update(title=values['title'], studio=values['studio'],
-                                date=stashdb_matching.manual_date(values['date']),
-                                actors=[values['actor']] if values['actor'] else [])
-            else:
-                search_fields = None
+            if not any(values.values()):
+                raise ValueError('Enter at least one search field.')
+            evidence.update(title=values['title'], studio=values['studio'],
+                            date=stashdb_matching.manual_date(values['date']),
+                            actors=[values['actor']] if values['actor'] else [])
     owned = client is None
     client = client or stashdb_client.Client(config)
     try:

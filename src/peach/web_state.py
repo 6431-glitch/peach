@@ -207,6 +207,7 @@ class WebContract:
         self.link_prune_job = self._job("PeachLinkPruneJob", "link-prune")
         self.scraping_cover_job = self._job("PeachScrapingCoverJob", "scraping-cover")
         self.amane_bridge_job = self._job("PeachAmaneBridgeJob", "amane-bridge")
+        self.source_check_job = self._job("PeachSourceCheckJob", "source-check")
         self.face_models_job = self._job("PeachFaceModelsJob", "face-models")
         self.library_processing_job = self._job(
             "PeachLibraryProcessingJob", "library-processing")
@@ -223,6 +224,9 @@ class WebContract:
         #: 订阅源的定时拉取（ADR-0042）。与追更共用 `follow_scheduler` 那一个实现，
         #: 只是各占一个 job id 与一份状态文件；由 `api` 在装配时接上。
         self.feed_scheduler = None
+        #: 定时拉取上一次派存量后继的时刻（`time.monotonic()`）；None 是本进程还没派过
+        #: （`web_feeds.STOCK_INTERVAL`）。
+        self.feed_stock_planned_at = None
         #: 云下载（`downloads.DownloadService`），由 `api` 在装配时接上；没接上时
         #: `/api/downloads` 回「云下载没有启用」。
         self.downloads = None
@@ -368,6 +372,7 @@ class WebContract:
         self.organize_job.stop()
         self.media_repair_job.stop()
         self.amane_bridge_job.stop()
+        self.source_check_job.stop()
         self.face_models_job.stop()
         if hasattr(self, 'task_resource_monitor'):
             self.task_resource_monitor.close()
