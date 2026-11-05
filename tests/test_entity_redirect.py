@@ -97,7 +97,7 @@ class EntityRedirectTests(unittest.TestCase):
     def test_entity_writes_keep_the_normalized_name_the_resolver_looks_up(self):
         """建实体、合并留别名、改用别名作规范名之后，归一列都等于对原文现算的结果，名字都解析得到。"""
         self.con.row_factory = sqlite3.Row
-        entity_id = upsert_asset_entity(self.con, kind="performer", name=" Yua​ Mikami ", asset_id=1,
+        entity_id = upsert_asset_entity(self.con, kind="performer", name=" Yua\u200b Mikami ", asset_id=1,
                                         role="performer", source="test")
         first = self.con.execute("SELECT canonical_name FROM entity WHERE id=?", (entity_id,)).fetchone()[0]
         merge(self.con, 11, entity_id, "新ありな")
