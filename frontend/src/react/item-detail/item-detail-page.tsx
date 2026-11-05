@@ -604,7 +604,12 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
     </section>;
   }
   return <section className="flex flex-col items-start gap-2 mb-4" aria-label="Find metadata">
-    <div className="flex w-full flex-col gap-3 rounded-lg border border-separator-border p-3">
+    <div className="flex w-full flex-col gap-3 rounded-lg border border-separator-border p-3" onKeyDown={event => {
+      if (event.key !== 'Enter' || event.nativeEvent.isComposing || event.nativeEvent.keyCode === 229 || event.repeat || busy || !(event.target instanceof HTMLInputElement) || event.target.type !== 'text') return;
+      event.preventDefault();
+      if (source === 'adultempire' && event.target.closest('[data-empire-url]')) void reviewEmpireUrl();
+      else void search();
+    }}>
       <RadioGroup aria-label="Metadata source" orientation="horizontal" className="flex-row flex-wrap" value={source} isDisabled={busy} onChange={value => {
         setSource(value); setResult(null); setJavResult(null); setError('');
       }}>
@@ -627,7 +632,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         : <Input label="Release code" value={javCode} onChange={setJavCode} placeholder="For example, ROE-064" />}
       <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void search()}>Search</Button>
       {source === 'adultempire' ? <>
-        <Input label="Adult Empire film URL" value={empireUrl} onChange={setEmpireUrl} placeholder="https://www.adultempire.com/..." />
+        <div data-empire-url=""><Input label="Adult Empire film URL" value={empireUrl} onChange={setEmpireUrl} placeholder="https://www.adultempire.com/..." /></div>
         <Button type="button" variant="secondary" {...busyProps(busy)} onClick={() => void reviewEmpireUrl()}>Review link</Button>
       </> : null}
       {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}

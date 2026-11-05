@@ -137,6 +137,36 @@ describe('metadata search', () => {
     expect(review.textContent).toContain('Performer');
     expect(posts(fetcher).some(([url]) => url === '/api/configuration/stashdb/apply')).toBe(false);
   });
+
+  it('runs the appropriate action on Enter in each metadata text field', async () => {
+    const fetcher = serve(url => url.includes('jav-match')
+      ? { revision: 1, candidate: { code: 'ROE-064', title: '', studio: '', date: '', actors: [], url: '' } }
+      : url.includes('preview-url')
+        ? { revision: 1, candidate: { id: '1', title: 'Film', studio: '', date: '', cover: '', performers: [] }, identity_links: [], identity_conflicts: [] }
+        : { candidates: [], revision: 1, truncated: false });
+    const { host } = await show(item(1, { code: 'ROE-064' }));
+    await click(host.querySelector('button[aria-label="Find metadata"]')!);
+    const panel = document.querySelector('section[aria-label="Find metadata"]')!;
+    const enter = async (input: HTMLInputElement, options: KeyboardEventInit = {}) => {
+      await act(async () => input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, ...options })));
+      await settle();
+    };
+    const fields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
+    for (const field of fields) await enter(field);
+    expect(posts(fetcher).filter(([url]) => url === '/api/configuration/stashdb/preview')).toHaveLength(4);
+    await enter(fields[0], { isComposing: true });
+    expect(posts(fetcher).filter(([url]) => url === '/api/configuration/stashdb/preview')).toHaveLength(4);
+    await click(panel.querySelector('input[value="jav"]'));
+    await enter(panel.querySelector('input:not([type="radio"])')!);
+    expect(posts(fetcher).some(([url]) => url === '/api/configuration/jav-match/preview')).toBe(true);
+    await click(panel.querySelector('input[value="adultempire"]'));
+    const empireFields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
+    await enter(empireFields[0]);
+    expect(posts(fetcher).some(([url]) => url === '/api/configuration/adult-empire/search')).toBe(true);
+    await type(empireFields[1], 'https://www.adultempire.com/123/example.html');
+    await enter(empireFields[1]);
+    expect(posts(fetcher).some(([url]) => url === '/api/configuration/adult-empire/preview-url')).toBe(true);
+  });
 });
 
 describe('标签身份', () => {
