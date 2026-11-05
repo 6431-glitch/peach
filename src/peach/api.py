@@ -144,7 +144,7 @@ class ResponseHeadersMiddleware:
 
 
 class FirstSetupSourceMiddleware:
-    """Docker 首次设置完成前，服务没有口令也没有访问策略，谁连得上谁就能调接口（ADR-0148）。
+    """Docker 首次设置完成前，服务没有口令也没有访问策略，谁连得上谁就能调接口（ADR-0149）。
 
     这段时间 `/api/` 与写请求只收 `local_client` 认的来源：本机或私有网络、不带代理转发头。
     页面壳与静态资源照常给，来源不满足的浏览器也能看到首次设置页上那句说明。配置完成后

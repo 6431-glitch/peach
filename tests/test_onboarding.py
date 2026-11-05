@@ -1004,7 +1004,7 @@ class SetupJsonContractTests(_SetupHttpCase):
 
 @unittest.skipUnless(HAS_HTTP_DEPS, "需要 fastapi 与 httpx")
 class DockerFirstSetupTests(_SetupHttpCase):
-    """全新 Docker 走同一张首次设置页：来源按本机或私有网络判，数据目录固定为卷（ADR-0148）。"""
+    """全新 Docker 走同一张首次设置页：来源按本机或私有网络判，数据目录固定为卷（ADR-0149）。"""
 
     QUESTIONS = "/api/setup/questions"
     SUBMIT = "/api/setup"

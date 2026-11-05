@@ -64,7 +64,7 @@ def readiness(settings: PeachSettings, *, background_ready: bool | None = None) 
 
     Docker 全新数据卷先起首次设置服务，等用户在页面上答题，这就是它此刻该在的状态：报就绪，
     另带 `setup: true`。否则镜像的 HEALTHCHECK 会在首启窗口里把容器标成 unhealthy，等它健康
-    才启动的 Watchtower 也跟着卡住（ADR-0148）。
+    才启动的 Watchtower 也跟着卡住（ADR-0149）。
     """
     if not settings.configured and distribution.docker():
         return {"ready": True, "setup": True, "checks": {"web": settings.page_path.is_file()}}

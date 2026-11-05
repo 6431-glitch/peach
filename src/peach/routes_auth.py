@@ -332,7 +332,7 @@ def login_mode(request: Request) -> str:
     有访问策略时是 `password`，框里填访问密码。没有策略（`legacy`）时，非 Docker 部署
     填自动生成的访问口令；Docker 已经配置过（全新部署走首次设置页）时改在这里设访问密码或选免登录
     （`setup`），来源须过 `local_client`：本机或私有网络、不带代理转发头。来源不满足的是
-    `denied`，只能用口令登录（ADR-0148）。
+    `denied`，只能用口令登录（ADR-0149）。
     """
     if access.load(request.app.state.settings.access_path)["mode"] != "legacy":
         return "password"

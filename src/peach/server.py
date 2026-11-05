@@ -10,7 +10,7 @@ import threading
 
 from . import access, distribution, onboarding, settings_file
 
-#: 容器首次启动时直接设好的访问密码（ADR-0148）；读过就从环境里删掉，不传给子进程。
+#: 容器首次启动时直接设好的访问密码（ADR-0149）；读过就从环境里删掉，不传给子进程。
 ACCESS_PASSWORD_ENV = "PEACH_ACCESS_PASSWORD"
 
 
@@ -55,7 +55,7 @@ def initialize() -> None:
     if config.directory("database").joinpath("ledger.db").exists():
         raise RuntimeError("已有数据库但缺少配置文件，请恢复 config.toml 后启动")
     if distribution.docker():
-        # 全新数据卷不替用户答题：服务以未配置状态起来，浏览器打开就是首次设置页（ADR-0148）。
+        # 全新数据卷不替用户答题：服务以未配置状态起来，浏览器打开就是首次设置页（ADR-0149）。
         return
     process = launch("init", "--no-input")
     try:

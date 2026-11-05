@@ -37,7 +37,7 @@ def request(name: str, path: str, *, authenticated: bool = True, body: dict | No
 
 
 def ready(name: str, *, setup: bool = False) -> None:
-    """等到服务就绪；`setup` 为真时等的是全新数据卷上的首次设置服务（ADR-0148）。"""
+    """等到服务就绪；`setup` 为真时等的是全新数据卷上的首次设置服务（ADR-0149）。"""
     deadline = time.monotonic() + 90
     while time.monotonic() < deadline:
         try:

@@ -544,7 +544,7 @@ class CertificateTrustTests(ConfigurationPageCase):
 
 
 class DockerFirstAccessTests(ConfigurationPageCase):
-    """Docker 还没有访问策略时，登录页换成访问设置；只收本机与私有网络、不带转发头的来源（ADR-0148）。"""
+    """Docker 还没有访问策略时，登录页换成访问设置；只收本机与私有网络、不带转发头的来源（ADR-0149）。"""
 
     DOCKER = {"PEACH_DISTRIBUTION": "docker", "PEACH_HEADLESS_MANAGED": "1"}
 

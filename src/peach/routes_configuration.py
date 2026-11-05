@@ -1075,7 +1075,7 @@ def save_access(request: Request, body: dict[str, Any] = Body(default_factory=di
 
 @router.post("/api/configuration/access/first")
 def first_access(request: Request, body: dict[str, Any] = Body(default_factory=dict)):
-    """Docker 访问设置：已经配置过、还没有访问策略的部署设访问密码或明确选择免登录（ADR-0148）。
+    """Docker 访问设置：已经配置过、还没有访问策略的部署设访问密码或明确选择免登录（ADR-0149）。
 
     这时没有登录可言，边界只剩来源：`login_mode` 判 `setup` 才收，即本机或私有网络、
     不带代理转发头；提交再按 `origin_allowed` 看是不是 Peach 自己的页面发的，首次设置时隧道

@@ -4178,7 +4178,7 @@ PUBLIC_ROUTES = {
     ("GET", "/api/setup/questions"),
     ("POST", "/api/setup"),
     ("POST", "/api/setup/restore"),
-    # Docker 首次访问设置的提交（ADR-0148）。这时还没有访问策略，没有密码可验；只在 Docker 且
+    # Docker 首次访问设置的提交（ADR-0149）。这时还没有访问策略，没有密码可验；只在 Docker 且
     # 没有策略时收，来源须是本机或私有网络、不带代理转发头（403），再看 Origin（403）；已有策略
     # 就 409，非 Docker 是 404。
     ("POST", "/api/configuration/access/first"),
