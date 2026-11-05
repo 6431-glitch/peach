@@ -13,6 +13,26 @@ spec.loader.exec_module(service)
 
 
 class AdultEmpireServiceTests(unittest.TestCase):
+    def test_dorcel_search_deduplicates_and_restricts_movie_links(self):
+        soup = BeautifulSoup('''<a class="movies" aria-label="Example" href="/en/movies/studio/example"></a>
+        <a class="movies" aria-label="Example" href="/en/movies/studio/example"></a>
+        <a class="movies" aria-label="Bad" href="https://evil.example/en/movies/studio/example"></a>''', 'html.parser')
+        result = service.parse_dorcel_search(soup)
+        self.assertEqual([item['title'] for item in result['candidates']], ['Example'])
+
+    def test_dorcel_detail_reads_structured_movie_metadata(self):
+        soup = BeautifulSoup('''<script type="application/ld+json">{"@type":"Movie","name":"Example",
+        "datecreated":"2024","actors":["Person"],"description":"Description"}</script>''', 'html.parser')
+        movie = service.parse_dorcel_detail(soup, '/en/movies/studio/example')
+        self.assertEqual((movie['title'], movie['date'], movie['performers'][0]['name']), ('Example', '2024', 'Person'))
+
+    def test_dorcel_routes_require_authentication_and_validate_path(self):
+        with patch.dict('os.environ', {'PEACH_EMPIRE_TOKEN': 'x' * 32}, clear=True):
+            client = TestClient(service.app)
+            self.assertEqual(client.get('/dorcelvision/search?q=sample').status_code, 401)
+            self.assertEqual(client.get('/dorcelvision/detail', params={'path': '/account'},
+                headers={'Authorization': 'Bearer ' + 'x' * 32}).status_code, 400)
+
     def test_dvd_results_and_next_page(self):
         soup = BeautifulSoup('''<div class="list-view-item"><a label="Title" href="/123/example-porn-movies.html">Example</a></div>
             <a href="?q=example&amp;page=2">Next</a>''', 'html.parser')

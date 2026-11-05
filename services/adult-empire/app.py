@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import re
+import json
 import os
 import secrets
 from pathlib import Path
@@ -20,6 +21,8 @@ SEARCH = {'dvd': '/dvd/search', 'clips': '/clips/search', 'bluray': '/blu-ray/se
 DETAIL_PATH = re.compile(r'^/(?:clip/)?\d+/[a-z0-9-]+(?:-porn-videos|-porn-movies|-streaming-scene|\.html)?\.html$', re.I)
 PERFORMER_PATH = re.compile(r'^/(?:porn-videos/|dvd/|blu-ray/|clips/)?(\d+)/[^/]+-pornstars\.html$', re.I)
 MAX_PAGE = 2 * 1024 * 1024
+DORCEL = 'https://www.dorcelvision.com'
+DORCEL_PATH = re.compile(r'^/en/movies/[a-z0-9-]+/[a-z0-9-]+/?$', re.I)
 
 
 def authorize(authorization: str = Header(default='')):
@@ -137,6 +140,83 @@ def parse_detail(soup: BeautifulSoup, path: str) -> dict:
 @app.get('/healthz')
 def health():
     return {'ok': True}
+
+
+def _dorcel_url(value: str) -> str:
+    parts = urlsplit(urljoin(DORCEL, value))
+    if (parts.scheme != 'https' or parts.hostname != 'www.dorcelvision.com'
+            or parts.port not in (None, 443) or parts.username or parts.password
+            or parts.query or parts.fragment or not DORCEL_PATH.fullmatch(parts.path)):
+        return ''
+    return DORCEL + parts.path
+
+
+def _dorcel_get(path: str, params: dict | None = None) -> BeautifulSoup:
+    try:
+        with httpx.Client(timeout=20, follow_redirects=False, headers={
+            'User-Agent': 'Mozilla/5.0', 'X-Requested-With': 'XMLHttpRequest',
+        }) as client:
+            with client.stream('GET', DORCEL + path, params=params) as response:
+                if response.status_code != 200:
+                    raise ValueError(f'DorcelVision returned HTTP {response.status_code}.')
+                data = bytearray()
+                for chunk in response.iter_bytes():
+                    data.extend(chunk)
+                    if len(data) > 5 * 1024 * 1024:
+                        raise ValueError('DorcelVision response is too large.')
+        return BeautifulSoup(bytes(data), 'html.parser')
+    except httpx.HTTPError as exc:
+        raise ValueError('DorcelVision could not be reached.') from exc
+
+
+def parse_dorcel_search(soup: BeautifulSoup) -> dict:
+    candidates, seen = [], set()
+    for anchor in soup.select('a.movies[href]'):
+        url = _dorcel_url(str(anchor.get('href', '')))
+        title = str(anchor.get('aria-label') or '').strip()
+        if url and title and url not in seen:
+            seen.add(url)
+            candidates.append({'id': urlsplit(url).path, 'title': title, 'url': url})
+    return {'candidates': candidates, 'next_page': None}
+
+
+def parse_dorcel_detail(soup: BeautifulSoup, path: str) -> dict:
+    for script in soup.select('script[type="application/ld+json"]'):
+        try:
+            data = json.loads(script.string or script.get_text())
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(data, dict) or data.get('@type') != 'Movie':
+            continue
+        title = data.get('name')
+        if not isinstance(title, str) or not title.strip():
+            break
+        actors = data.get('actors') if isinstance(data.get('actors'), list) else []
+        return {'id': path, 'title': title.strip(), 'date': str(data.get('datecreated') or ''),
+                'studio': '', 'performers': [{'name': name} for name in actors if isinstance(name, str)],
+                'cover': str(data.get('image') or ''), 'description': str(data.get('description') or ''),
+                'url': DORCEL + path}
+    raise ValueError('DorcelVision did not return movie metadata.')
+
+
+@app.get('/dorcelvision/search', dependencies=[Depends(authorize)])
+def dorcel_search(q: str = Query(min_length=2, max_length=200)):
+    if len(q.strip()) < 2 or any(ord(c) < 32 for c in q):
+        raise HTTPException(400, 'Invalid search.')
+    try:
+        return parse_dorcel_search(_dorcel_get('/en/search/contentsAjax', {'query': q.strip()}))
+    except ValueError as exc:
+        raise HTTPException(502, str(exc)) from exc
+
+
+@app.get('/dorcelvision/detail', dependencies=[Depends(authorize)])
+def dorcel_detail(path: str):
+    if not _dorcel_url(path) or urlsplit(path).path != path:
+        raise HTTPException(400, 'Invalid movie path.')
+    try:
+        return parse_dorcel_detail(_dorcel_get(path), path)
+    except ValueError as exc:
+        raise HTTPException(502, str(exc)) from exc
 
 
 @app.get('/search', dependencies=[Depends(authorize)])
