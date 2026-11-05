@@ -12,8 +12,18 @@ import httpx
 from .fsutil import atomic_write_text
 
 
-def _record(config, asset_id):
-    return config.directory('state') / 'adult-empire-review' / f'{asset_id}.json'
+PROVIDERS = {'adultempire': {'prefix': '', 'review': 'adult-empire-review', 'label': 'Adult Empire'},
+             'dorcelvision': {'prefix': '/dorcelvision', 'review': 'dorcelvision-review', 'label': 'DorcelVision'}}
+
+
+def _provider(source):
+    if not isinstance(source, str) or source not in PROVIDERS:
+        raise ValueError('Unknown metadata source.')
+    return PROVIDERS[source]
+
+
+def _record(config, asset_id, source='adultempire'):
+    return config.directory('state') / _provider(source)['review'] / f'{asset_id}.json'
 
 
 def _service(path, params):
@@ -47,18 +57,19 @@ def _service(path, params):
     return result
 
 
-def search(config, database, asset_id, query, category, page):
-    if not isinstance(query, str) or not 2 <= len(query.strip()) <= 200 or category not in ('dvd', 'clips', 'bluray', 'vod') or type(page) is not int or not 1 <= page <= 100:
+def search(config, database, asset_id, query, category, page, source='adultempire'):
+    provider = _provider(source)
+    if not isinstance(query, str) or not 2 <= len(query.strip()) <= 200 or any(ord(c) < 32 for c in query) or (source == 'adultempire' and category not in ('dvd', 'clips', 'bluray', 'vod')) or type(page) is not int or not 1 <= page <= 100 or (source == 'dorcelvision' and page != 1):
         raise ValueError('Enter a valid title and category.')
     with database.read_connection() as connection:
         row = connection.execute("SELECT mutation_revision FROM asset WHERE id=? AND medium='video' AND COALESCE(disposal,'') NOT IN ('trash','vanished')", (asset_id,)).fetchone()
         if row is None:
             raise ValueError('Choose a video from your library.')
-    response = _service('/search', {'q': query.strip(), 'category': category, 'page': page})
+    response = _service(provider['prefix'] + '/search', {'q': query.strip(), 'category': category, 'page': page} if source == 'adultempire' else {'q': query.strip()})
     candidates = response.get('candidates')
     if not isinstance(candidates, list):
         raise ValueError('Adult Empire returned invalid search results.')
-    path = _record(config, asset_id)
+    path = _record(config, asset_id, source)
     existing = []
     if page > 1:
         try:
@@ -97,15 +108,16 @@ def preview_url(config, database, asset_id, url):
     return detail(config, database, asset_id, parts.path, row['mutation_revision'])
 
 
-def detail(config, database, asset_id, candidate_id, revision):
+def detail(config, database, asset_id, candidate_id, revision, source='adultempire'):
     from .entities import normalize_entity_name
+    provider = _provider(source)
     try:
-        record = json.loads(_record(config, asset_id).read_text(encoding='utf-8'))
+        record = json.loads(_record(config, asset_id, source).read_text(encoding='utf-8'))
         if type(revision) is not int or revision != record['revision'] or not any(c['id'] == candidate_id for c in record['candidates']):
             raise ValueError
     except (OSError, KeyError, TypeError, ValueError) as exc:
         raise ValueError('This candidate is no longer available. Search again.') from exc
-    result = _service('/detail', {'path': candidate_id})
+    result = _service(provider['prefix'] + '/detail', {'path': candidate_id})
     if result.get('id') != candidate_id:
         raise ValueError('The source returned a different movie.')
     record['detail'] = result
@@ -115,6 +127,9 @@ def detail(config, database, asset_id, candidate_id, revision):
         for person in result.get('performers') or []:
             name = person.get('name')
             if not name:
+                continue
+            if source == 'dorcelvision':
+                identity_conflicts.append(name)
                 continue
             key = normalize_entity_name(name)
             rows = connection.execute("SELECT DISTINCT e.id,e.canonical_name FROM entity e LEFT JOIN entity_alias a ON a.entity_id=e.id WHERE e.kind='performer' AND (e.normalized_name=? OR a.normalized_alias=?) LIMIT 2", (key, key)).fetchall()
@@ -129,18 +144,19 @@ def detail(config, database, asset_id, candidate_id, revision):
                     continue
                 identity_links.append({'name': name, 'existing': rows[0]['canonical_name'], 'entity_id': rows[0]['id']})
     record['identity_links'] = identity_links
-    atomic_write_text(_record(config, asset_id), json.dumps(record, ensure_ascii=False))
+    atomic_write_text(_record(config, asset_id, source), json.dumps(record, ensure_ascii=False))
     return {'candidate': result, 'revision': revision, 'identity_links': identity_links, 'identity_conflicts': identity_conflicts}
 
 
-def apply(config, database, asset_id, candidate_id, revision, *, confirm_identity_links=False):
+def apply(config, database, asset_id, candidate_id, revision, *, confirm_identity_links=False, source='adultempire'):
     from . import avatar_picker, cover_artwork, images
     from .entities import upsert_asset_entity, normalize_entity_name
     from .field_owners import write_owned_fields
     from .previews import entity_image_key
     from .western_artwork import artwork_key
 
-    path = _record(config, asset_id)
+    _provider(source)
+    path = _record(config, asset_id, source)
     try:
         record = json.loads(path.read_text(encoding='utf-8'))
         movie = record['detail']
@@ -159,9 +175,10 @@ def apply(config, database, asset_id, candidate_id, revision, *, confirm_identit
         from .randomizer import set_format_from_source
         category = record.get('category')
         source_format = 'film' if category in ('dvd', 'bluray') else 'clip' if category == 'clips' or candidate_id.startswith('/clip/') else None
-        set_format_from_source(connection, asset_id, source_format, 'review:adultempire')
+        owner = 'review:' + source
+        set_format_from_source(connection, asset_id, source_format, owner)
         if fields:
-            write_owned_fields(connection, [asset_id], fields, 'review:adultempire', expected_revision=revision)
+            write_owned_fields(connection, [asset_id], fields, owner, expected_revision=revision)
         cast_conflicts = []
         for performer in cast:
             name, external_id = performer.get('name'), performer.get('id')
@@ -209,7 +226,8 @@ def apply(config, database, asset_id, candidate_id, revision, *, confirm_identit
 
     def image_bytes(url):
         parts = urlsplit(url)
-        if parts.scheme != 'https' or parts.hostname != 'imgs4cdn.adultempire.com' or parts.username or parts.password or parts.port not in (None, 443):
+        allowed_host = 'imgs4cdn.adultempire.com' if source == 'adultempire' else 'www.dorcelvision.com'
+        if parts.scheme != 'https' or parts.hostname != allowed_host or parts.username or parts.password or parts.port not in (None, 443):
             raise ValueError('Invalid Adult Empire image URL.')
         with httpx.Client(timeout=20, follow_redirects=False) as client:
             with client.stream('GET', url) as response:
@@ -230,7 +248,7 @@ def apply(config, database, asset_id, candidate_id, revision, *, confirm_identit
                 raise ValueError('Invalid image.')
             key = artwork_key(asset_id, row['code'])
             cover_artwork.install_cover(config.directory('generated') / 'covers' / f'{key}.jpg', key, payload, size,
-                evidence={'provider': 'adultempire', 'source': 'review:adultempire', 'source_url': cover_url, 'title': fields.get('catalog_title', '')})
+                evidence={'provider': source, 'source': 'review:' + source, 'source_url': cover_url, 'title': fields.get('catalog_title', '')})
         except (ValueError, OSError, httpx.HTTPError) as exc:
             errors.append(f'Cover: {exc}')
     for entity_id, performer in portraits:

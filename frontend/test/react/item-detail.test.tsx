@@ -162,10 +162,23 @@ describe('metadata search', () => {
     await click(panel.querySelector('input[value="adultempire"]'));
     const empireFields = [...panel.querySelectorAll('input:not([type="radio"])')] as HTMLInputElement[];
     await enter(empireFields[0]);
-    expect(posts(fetcher).some(([url]) => url === '/api/configuration/adult-empire/search')).toBe(true);
+    expect(posts(fetcher).some(([url, body]) => url === '/api/configuration/metadata-lookup/search' && body.source === 'adultempire')).toBe(true);
     await type(empireFields[1], 'https://www.adultempire.com/123/example.html');
     await enter(empireFields[1]);
     expect(posts(fetcher).some(([url]) => url === '/api/configuration/adult-empire/preview-url')).toBe(true);
+  });
+
+  it('offers DorcelVision immediately after Adult Empire and searches it', async () => {
+    const fetcher = serve(() => ({ candidates: [], revision: 1, truncated: false }));
+    const { host } = await show(item(1));
+    await click(host.querySelector('button[aria-label="Find metadata"]')!);
+    const panel = document.querySelector('section[aria-label="Find metadata"]')!;
+    const radios = [...panel.querySelectorAll('input[type="radio"]')] as HTMLInputElement[];
+    expect(radios.map(radio => radio.value)).toEqual(['stashdb', 'jav', 'adultempire', 'dorcelvision']);
+    await click(radios[3]);
+    await click([...panel.querySelectorAll('button')].find(button => button.textContent === 'Search')!);
+    await settle();
+    expect(posts(fetcher).some(([url, body]) => url === '/api/configuration/metadata-lookup/search' && body.source === 'dorcelvision')).toBe(true);
   });
 });
 

@@ -2,7 +2,7 @@ version: '3.8'
 # A separate stateless lookup replica on each explicitly selected node.
 # Create the external secret and distribute the exact image before deployment.
 x-lookup: &lookup
-  image: peach-adult-empire:vod-20261030
+  image: peach-meta:dorcelvision-20261105
   environment:
     PEACH_EMPIRE_TOKEN_FILE: /run/secrets/peach_adult_empire_token
   secrets:
@@ -23,7 +23,7 @@ x-lookup: &lookup
       mode: 0440
   ports:
     - target: 8080
-      published: 18089
+      published: 18090
       protocol: tcp
       mode: host
   healthcheck:

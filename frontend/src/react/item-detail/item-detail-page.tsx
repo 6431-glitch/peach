@@ -482,9 +482,9 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         }, 'POST'));
         return;
       }
-      if (source === 'adultempire') {
-        setResult(await apiSend<MetadataResults>('/api/configuration/adult-empire/search', {
-          asset_id: item.id, query: title.trim(), category, page,
+      if (source === 'adultempire' || source === 'dorcelvision') {
+        setResult(await apiSend<MetadataResults>('/api/configuration/metadata-lookup/search', {
+          asset_id: item.id, query: title.trim(), category, page, source,
         }, 'POST'));
         return;
       }
@@ -508,10 +508,10 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   }, [result?.next_page, busy, source]);
   const apply = (candidate: MetadataCandidate) => {
     if (!result) return;
-    if (source === 'adultempire') {
+    if (source === 'adultempire' || source === 'dorcelvision') {
       setBusy(true); setError('');
-      void apiSend<EmpireReview>('/api/configuration/adult-empire/detail', {
-        asset_id: item.id, candidate_id: candidate.id, revision: result.revision,
+      void apiSend<EmpireReview>('/api/configuration/metadata-lookup/detail', {
+        asset_id: item.id, candidate_id: candidate.id, revision: result.revision, source,
       }, 'POST').then(setEmpireReview).catch(cause => setError(errorMessage(cause))).finally(() => setBusy(false));
       return;
     }
@@ -573,8 +573,8 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
     const applyReviewed = async () => {
       setBusy(true); setError('');
       try {
-        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/adult-empire/apply', {
-          asset_id: item.id, candidate_id: movie.id, revision: empireReview.revision, confirm_identity_links: true,
+        const outcome = await apiSend<{ image_errors: string[] }>('/api/configuration/metadata-lookup/apply', {
+          asset_id: item.id, candidate_id: movie.id, revision: empireReview.revision, confirm_identity_links: true, source,
         }, 'POST');
         setEmpireReview(null); setResult(null); onClose();
         await queryClient.invalidateQueries();
@@ -616,6 +616,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
         <Radio value="stashdb">StashDB</Radio>
         <Radio value="jav">JAV</Radio>
         <Radio value="adultempire">Adult Empire</Radio>
+        <Radio value="dorcelvision">DorcelVision</Radio>
       </RadioGroup>
       {source === 'adultempire' ? <>
         <Input label="Title" value={title} onChange={setTitle} />
@@ -623,7 +624,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
           onChange={value => { setCategory(value); setResult(null) }}>
           <Radio value="dvd">DVD</Radio><Radio value="clips">Clips</Radio><Radio value="bluray">Blu-ray</Radio><Radio value="vod">On Demand</Radio>
         </RadioGroup>
-      </> : source === 'stashdb' ? <>
+      </> : source === 'dorcelvision' ? <Input label="Title" value={title} onChange={setTitle} /> : source === 'stashdb' ? <>
         <Input label="Title" value={title} onChange={setTitle} placeholder="Optional" />
         <Input label="Actor (optional)" value={actor} onChange={setActor} />
         <Input label="Producer / studio" value={studio} onChange={setStudio} />

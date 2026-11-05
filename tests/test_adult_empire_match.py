@@ -49,6 +49,24 @@ class AdultEmpireMatchTests(unittest.TestCase):
             row = connection.execute('SELECT catalog_title,release_date,studio FROM asset WHERE id=1').fetchone()
         self.assertEqual(tuple(row), ('Example', '2021-02-24', 'Studio'))
 
+    def test_dorcel_review_is_separate_and_preserves_unverified_cast(self):
+        candidate = {'id': '/en/movies/studio/example', 'title': 'Example'}
+        movie = {'id': candidate['id'], 'title': 'Dorcel title', 'date': '2024', 'studio': '',
+                 'performers': [{'name': 'Unverified Person'}], 'cover': ''}
+        with self.db.write_transaction() as connection:
+            upsert_asset_entity(connection, kind='performer', name='Existing Person', asset_id=1,
+                role='performer', source='review:stashdb', external_provider='stashdb', external_id='existing')
+        with patch.object(match, '_service', side_effect=[{'candidates': [candidate]}, movie]) as service:
+            result = match.search(self.config, self.db, 1, 'Example', None, 1, source='dorcelvision')
+            review = match.detail(self.config, self.db, 1, candidate['id'], result['revision'], source='dorcelvision')
+        self.assertEqual(service.call_args_list[0].args[0], '/dorcelvision/search')
+        self.assertEqual(review['identity_conflicts'], ['Unverified Person'])
+        match.apply(self.config, self.db, 1, candidate['id'], result['revision'], source='dorcelvision')
+        with self.db.read_connection() as connection:
+            self.assertEqual(connection.execute("SELECT COUNT(*) FROM asset_entity WHERE asset_id=1 AND role='performer' AND source='review:stashdb'").fetchone()[0], 1)
+        with self.assertRaisesRegex(ValueError, 'no longer available'):
+            match.detail(self.config, self.db, 1, candidate['id'], result['revision'])
+
     def test_on_demand_category_is_sent_to_lookup_service(self):
         with patch.object(match, '_service', return_value={'candidates': [self.candidate], 'next_page': None}) as lookup:
             match.search(self.config, self.db, 1, 'Example', 'vod', 1)

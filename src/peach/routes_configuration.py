@@ -322,6 +322,7 @@ def performer_source(request: Request, action: str, body: dict = Body(default_fa
 
 
 @router.post('/api/configuration/adult-empire/{action}')
+@router.post('/api/configuration/metadata-lookup/{action}')
 def adult_empire_match(request: Request, action: str, body: dict = Body(default_factory=dict), _args=Depends(require_auth)):
     local_only(request)
     same_origin(request)
@@ -331,21 +332,24 @@ def adult_empire_match(request: Request, action: str, body: dict = Body(default_
         raise HTTPException(400, 'Choose a video from your library.')
     config = settings_file.load_config()
     database = request.app.state.web_contract.database
+    source = body.get('source', 'adultempire')
     try:
         if action == 'search':
-            return match.search(config, database, asset_id, body.get('query'), body.get('category'), body.get('page', 1))
+            return match.search(config, database, asset_id, body.get('query'), body.get('category'), body.get('page', 1), source=source)
         if action == 'preview-url':
+            if source != 'adultempire':
+                raise ValueError('URL lookup is unavailable for this source.')
             return match.preview_url(config, database, asset_id, body.get('url'))
         if action in ('detail', 'apply'):
             candidate_id, revision = body.get('candidate_id'), body.get('revision')
             if not isinstance(candidate_id, str) or type(revision) is not int:
                 raise ValueError('Choose a saved candidate.')
             if action == 'detail':
-                return match.detail(config, database, asset_id, candidate_id, revision)
+                return match.detail(config, database, asset_id, candidate_id, revision, source=source)
             if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
                 raise HTTPException(403, 'This library is read-only.')
             return match.apply(config, database, asset_id, candidate_id, revision,
-                               confirm_identity_links=body.get('confirm_identity_links') is True)
+                               confirm_identity_links=body.get('confirm_identity_links') is True, source=source)
         raise HTTPException(404, 'Unknown Adult Empire action.')
     except (ValueError, OSError) as exc:
         raise HTTPException(400, str(exc)) from exc
