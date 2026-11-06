@@ -49,6 +49,7 @@ from . import folder_rules, junk, record_rehome, subtitles, wants
 from .platform import is_windows_path, is_unmapped, resolve_location, resolve_root
 from .processing_control import checkpoint
 from .fsutil import atomic_write_text
+from .discovery_rules import system_directory, system_path
 from .catalog_rules import AUDIO_EXTENSIONS, VIDEO_EXTENSIONS, is_local_extra
 
 VIDEO = VIDEO_EXTENSIONS
@@ -159,11 +160,13 @@ def video_stems(names) -> frozenset[str]:
 
 def is_sidecar(name: str, videos: frozenset[str], *, artwork_dir: bool = False,
                path: str | None = None, library_roots: tuple[str, ...] = ()) -> bool:
-    """`name` 是否为不登记的附属文件或工具隔离文件。
+    """`name` 是否为不登记的附属文件、系统元数据或工具隔离文件。
 
     `videos` 是同目录的 `video_stems`；`artwork_dir` 表示这个目录叫 `extrafanart` 之类、
     且上一层有视频。判据只看名字，不读文件内容。
     """
+    if system_path(path or name):
+        return True
     if re.fullmatch(r'peach-purge-[a-f0-9]{32}\.peach-quarantine', name, re.IGNORECASE):
         return True
     stem, suffix = os.path.splitext(name)
@@ -505,7 +508,7 @@ def _walk(top: Path, pending: list[str] | None = None, *, onerror=lambda error: 
                 is_dir = False
             if is_dir:
                 try:
-                    if not entry.is_symlink() and entry.name.casefold() != "#recycle" and not entry.name.startswith("@"):
+                    if not entry.is_symlink() and not system_directory(entry.name):
                         subdirectories.append(entry.path)
                 except OSError:
                     pass
@@ -556,7 +559,7 @@ def _walk_smb(top, pending, onerror):
                     continue
                 path = str(resource / entry.name)
                 if entry.is_dir:
-                    if not entry.name.startswith('@') and entry.name.casefold() != '#recycle':
+                    if not system_directory(entry.name):
                         children.append(path)
                 else:
                     stat = SimpleNamespace(st_size=entry.size, st_mtime=entry.mtime, st_mtime_ns=entry.mtime_ns)

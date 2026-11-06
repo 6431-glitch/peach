@@ -393,7 +393,9 @@ def _move_one(connection: sqlite3.Connection, asset_id: int,
     local_target = _media_path(new_path)
     if not local_source.exists():
         return "源文件不存在"
-    if local_target.exists():
+    case_only = old_path.casefold() == new_path.casefold()
+    if local_target.exists() and not (
+            case_only and isinstance(local_source, Path) and local_source.samefile(local_target)):
         return SKIP_TARGET_EXISTS
     try:
         _rename(old_path, new_path)
@@ -441,7 +443,8 @@ def apply_plan(connection: sqlite3.Connection, rows: Sequence[dict], *,
             old_path, new_path = str(row["current_path"]), str(row["target_path"])
             current = connection.execute('SELECT path,disposal FROM asset WHERE id=?', (int(row['asset_id']),)).fetchone()
             landed = (current is not None and current[0] == new_path
-                      and _media_path(new_path).is_file() and not _media_path(old_path).exists())
+                      and _media_path(new_path).is_file()
+                      and (old_path.casefold() == new_path.casefold() or not _media_path(old_path).exists()))
             if current is None or current[1] is not None:
                 outcome = '资产已不在馆藏，未执行整理'
             else:
@@ -475,7 +478,8 @@ def rollback_batch(connection: sqlite3.Connection, log_path: Path | str, *,
         current = connection.execute('SELECT path FROM asset WHERE id=?', (int(entry['asset_id']),)).fetchone()
         landed = (current is not None and current[0] == entry['old_path']
                   and _media_path(entry['old_path']).is_file()
-                  and not _media_path(entry['new_path']).exists())
+                  and (entry['old_path'].casefold() == entry['new_path'].casefold()
+                       or not _media_path(entry['new_path']).exists()))
         outcome = 'ok' if landed else _move_one(connection, int(entry["asset_id"]),
                                                 str(entry["new_path"]), str(entry["old_path"]))
         if outcome == "ok":

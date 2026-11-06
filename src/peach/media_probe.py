@@ -20,6 +20,7 @@ from collections.abc import Callable, Sequence
 from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 from contextlib import closing
 from contextvars import copy_context
+from fractions import Fraction
 from pathlib import PureWindowsPath
 
 from .jobs import ACTIVE_ASSET_SQL
@@ -57,6 +58,21 @@ def context_fields(width: int, height: int, duration: float) -> tuple[str | None
     return length, orientation, quality
 
 
+def display_dimensions(stream: dict) -> tuple[int, int]:
+    """将编码尺寸换算成方形像素下的显示尺寸。未知比例沿用编码尺寸。"""
+    width, height = int(stream.get('width') or 0), int(stream.get('height') or 0)
+    if width <= 0 or height <= 0:
+        return width, height
+    for field, base in (('sample_aspect_ratio', width), ('display_aspect_ratio', height)):
+        try:
+            ratio = Fraction(str(stream.get(field) or '').replace(':', '/'))
+            if ratio > 0:
+                return max(1, round(base * ratio)), height
+        except (ValueError, ZeroDivisionError):
+            pass
+    return width, height
+
+
 def probe_file(ffprobe: str, path: str, timeout: float = TIMEOUT_SECONDS) -> tuple:
     from .task_control import run as run_task_process
     from .task_resources import media_input
@@ -70,7 +86,7 @@ def probe_file(ffprobe: str, path: str, timeout: float = TIMEOUT_SECONDS) -> tup
         [
             ffprobe, "-v", "verbose" if TRAFFIC.get() is not None else "error", "-rw_timeout", "8000000",
             "-select_streams", "v:0", "-show_entries",
-            "format=duration:stream=width,height,codec_name,avg_frame_rate",
+            "format=duration:stream=width,height,sample_aspect_ratio,display_aspect_ratio,codec_name,avg_frame_rate",
             "-of", "json", path,
         ],
         capture_output=True,
@@ -93,8 +109,7 @@ def probe_file(ffprobe: str, path: str, timeout: float = TIMEOUT_SECONDS) -> tup
         pass
     return (
         duration,
-        int(stream.get("width") or 0),
-        int(stream.get("height") or 0),
+        *display_dimensions(stream),
         stream.get("codec_name"),
         fps,
         None,
