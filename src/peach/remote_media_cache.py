@@ -36,14 +36,24 @@ class RemoteMediaUnavailable(ValueError):
 
 
 def cache_for(contract):
-    return RemoteMediaCache(Path(contract.candidate_root) / "remote-media")
+    return RemoteMediaCache(Path(contract.candidate_root) / "remote-media",
+                            capacity_guard=getattr(contract, 'capacity_guard', None))
 
 
 class RemoteMediaCache:
     """身份键不含签名 URL；磁盘命中无需重新解析来源。"""
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, *, capacity_guard=None):
         self.root = Path(root)
+        self.capacity_guard = capacity_guard
+
+    def _check_capacity(self):
+        from .jobs import DiskSpaceDenied
+        if self.capacity_guard is not None:
+            try:
+                self.capacity_guard.check()
+            except DiskSpaceDenied as error:
+                raise RemoteMediaUnavailable(str(error)) from error
 
     def folder(self, key: str) -> Path:
         return self.root / hashlib.sha256(key.encode()).hexdigest()
@@ -101,6 +111,7 @@ class RemoteMediaCache:
             if hit is not None:
                 close()
                 return hit
+            self._check_capacity()
             upstream = fetch()
             if not passive_media_type(upstream.headers.get('content-type','')):
                 close()
@@ -147,6 +158,7 @@ class RemoteMediaCache:
             size = 0
             with temporary.open("wb") as handle:
                 for chunk in upstream.iter_raw():
+                    self._check_capacity()
                     handle.write(chunk)
                     size += len(chunk)
                     yield chunk
@@ -176,16 +188,18 @@ class RemoteMediaCache:
                 if path.is_file():
                     return path.read_bytes()
                 raise RemoteMediaUnavailable("媒体未取得")
+            self._check_capacity()
             try:
                 data = fetch()
                 if not data:
                     raise RemoteMediaUnavailable("媒体未取得")
-                with atomic_path(path) as temporary:
-                    temporary.write_bytes(data)
-                failed.unlink(missing_ok=True)
-                return data
             except Exception:
                 failed.write_bytes(b"")
                 if path.is_file():
                     return path.read_bytes()
                 raise
+            self._check_capacity()
+            with atomic_path(path) as temporary:
+                temporary.write_bytes(data)
+            failed.unlink(missing_ok=True)
+            return data

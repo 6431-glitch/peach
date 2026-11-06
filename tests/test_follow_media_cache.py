@@ -16,6 +16,19 @@ from peach.remote_media_cache import AVATAR_REFRESH_SECONDS, FAVICON_REFRESH_SEC
 
 
 class RemoteMediaCacheTests(unittest.IsolatedAsyncioTestCase):
+    def test_capacity_denial_after_fetch_does_not_write_or_enter_upstream_cooldown(self):
+        from peach.jobs import DiskSpaceDenied
+        from peach.remote_media_cache import RemoteMediaUnavailable
+        guard = mock.Mock()
+        guard.check.side_effect = [None, DiskSpaceDenied('capacity')]
+        self.cache.capacity_guard = guard
+        with self.assertRaises(RemoteMediaUnavailable):
+            self.cache.bytes('new-image', lambda: b'image')
+        self.assertFalse(list(self.root.rglob('*.data')))
+        self.assertFalse(list(self.root.rglob('*.failed')))
+        guard.check.side_effect = None
+        self.assertEqual(self.cache.bytes('new-image', lambda: b'image'), b'image')
+
     async def test_active_documents_are_rejected_without_forwarding_or_caching_bytes(self):
         self.payload=b'<svg><script>active()</script></svg>'
         for kind in ('image/svg+xml','text/html','application/xhtml+xml','application/xml',''):

@@ -382,6 +382,20 @@ class EntityThumbnailTests(unittest.TestCase):
 
     KEY = "performer-11"
 
+    def test_capacity_denial_keeps_existing_thumbnail_and_original_without_regeneration(self):
+        from types import SimpleNamespace
+        from peach.jobs import DiskSpaceDenied
+        destination = self.service.thumbnail(self.KEY, self.source)
+        original = self.source.read_bytes()
+        def deny():
+            raise DiskSpaceDenied('capacity')
+        self.service.capacity_guard = SimpleNamespace(check=deny)
+        self.assertEqual(self.service.thumbnail(self.KEY, self.source), destination)
+        destination.unlink()
+        self.assertIsNone(self.service.thumbnail(self.KEY, self.source))
+        self.assertFalse(destination.exists())
+        self.assertEqual(self.source.read_bytes(), original)
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         root = Path(self.tmp.name).resolve()

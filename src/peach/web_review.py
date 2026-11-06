@@ -10,6 +10,7 @@
 from __future__ import annotations
 
 import hashlib
+from copy import deepcopy
 import json
 import time
 from functools import cache, partial
@@ -20,7 +21,7 @@ from urllib.parse import quote
 from .avatar_provider import install_entity_avatar
 from .catalog_rules import current_tags, is_korean_mib_code, normalise_code_key
 from .code_creators import collect
-from .entities import resolve_entity, resolve_entity_id, upsert_asset_entity
+from .entities import memoized_resolution, resolve_entity, resolve_entity_id, upsert_asset_entity
 from .field_owners import (
     EXPECTED_REVISION_FIELD,
     owner_label,
@@ -37,6 +38,7 @@ from .metadata_auto_apply import (
     REVIEW_APPLY_LIMIT,
     _apply_metadata_candidate,
     _codes_matching,
+    _candidate_identifies_code,
     _entity_identity_key,
     _fold_genre_decisions,
     _landing_scope,
@@ -61,7 +63,7 @@ from .metadata_policy import (
     source_tier,
 )
 from .previews import logo_key
-from .review_csv import CANDIDATE_PREFIX, read_candidates
+from .review_csv import CANDIDATE_PREFIX, candidate_root_version, read_candidates
 
 
 class ReviewContract(Protocol):
@@ -72,6 +74,7 @@ class ReviewContract(Protocol):
     avatar_root: Path
 
     def cache_bust(self) -> None: ...
+    def cached_until_changed(self, key: str, fn, *inputs, tables=()): ...
     def read_connection(self): ...
     def cover_path(self, code: str) -> Path | None: ...
     def has_entity_image(self, kind: str, entity_id) -> bool: ...
@@ -83,6 +86,8 @@ class ReviewContract(Protocol):
 LIVE_CATEGORIES = ("code_creators",)
 #: 复核页的类别全集。页面的 tab 次序由 `app.js` 的 `REVIEW_LABELS` 定，与这里无关。
 REVIEW_CATEGORIES = (*CANDIDATE_PREFIX, *LIVE_CATEGORIES)
+REVIEW_TABLES = ("asset", "asset_tag", "asset_entity", "entity", "entity_alias", "entity_redirect",
+                 "review_decision", "genre_decision")
 #: 复核卡片上那张脸属于哪种实体。页面按同一张表决定 `/entity-image` 的 kind
 #: （`app.js` 的 `ENTITY_REVIEW_CATEGORIES`），两边必须逐字一致：这边判成 creator、
 #: 页面按 performer 取图，就是标志说有图而请求照样 404。不在表里的类别没有这个位置。
@@ -325,8 +330,15 @@ def _metadata_queue_rows(connection, rows: list[dict],
     每一道都在回答同一个问题：这一行还有没有人能判、值得判的东西。
     """
     genre_decisions = load_genre_decisions(connection)
+    @cache
+    def identifies(code, source, provider_id, content_id, source_url):
+        return _candidate_identifies_code(code, dict(source=source, provider_id=provider_id,
+                                                    content_id=content_id, source_url=source_url))
+    def identifies_candidate(code, candidate):
+        return identifies(code, *(str(candidate.get(key) or '') for key in
+                                  ('source', 'provider_id', 'content_id', 'source_url')))
     for row in rows:
-        row["candidates"] = _row_candidates(row, genre_decisions)
+        row["candidates"] = _row_candidates(row, genre_decisions, identifies=identifies_candidate)
     # 候选全是错配时整行消失：剔完一条不剩，就没有可判的东西了。本来就没有候选
     # 的行照旧留着，它讲的是另一件事（这个番号问过、谁都没给值）。
     rows = [row for row in rows if row["candidates"] or not _parsed_candidates(row)]
@@ -378,13 +390,9 @@ def _attach_review_decisions(rows: list[dict], category: str, decisions: dict,
         row["decision_note"] = decision.get("note", "")
 
 
-def _review_rows(contract: ReviewContract, category: str, *, queue: str | None = 'pending') -> tuple[list[dict], str | None, int]:
-    # 复核卡片只需知道 /cover 能否取图，不加载全库的裁剪和人脸 sidecar。
-    has_cover = cache(lambda code: contract.cover_path(code) is not None)
-    #: 用户对来源 genre 的决定。判「这一行还有没有词等着收录」要用它，而那一步在库
-    #: 连接关掉之后才跑，所以先取出来。
-    genre_decisions: dict[str, str | None] = {}
-    with contract.read_connection() as connection:
+def _read_review_members(contract: ReviewContract, category: str):
+    """精确筛选队列成员，不读取卡片图片、资产旁证或预览。"""
+    with contract.read_connection() as connection, memoized_resolution():
         rows, source, skipped = _queue_rows(contract, category, connection)
         decisions = {
             row["item_key"]: dict(row) for row in connection.execute(
@@ -392,10 +400,25 @@ def _review_rows(contract: ReviewContract, category: str, *, queue: str | None =
                 (category,),
             )
         }
+        genre_decisions = {}
         if category == "metadata_fields":
             rows, genre_decisions = _metadata_queue_rows(connection, rows, decisions)
         _attach_review_decisions(rows, category, decisions, genre_decisions)
-        rows = _select_review_queue(rows, queue)
+    return rows, source, skipped
+
+
+def _review_members(contract: ReviewContract, category: str):
+    return contract.cached_until_changed(
+        'review-members:' + category, lambda: _read_review_members(contract, category),
+        str(contract.candidate_root), candidate_root_version(contract.candidate_root), tables=REVIEW_TABLES)
+
+
+def _review_rows(contract: ReviewContract, category: str, *, queue: str | None = 'pending') -> tuple[list[dict], str | None, int]:
+    # 计数和卡片共用精确成员；卡片附加字段只能改自己的副本。
+    members, source, skipped = _review_members(contract, category)
+    rows = deepcopy(_select_review_queue(members, queue))
+    has_cover = cache(lambda code: contract.cover_path(code) is not None)
+    with contract.read_connection() as connection:
         if category in {"creator_tags", "western_identity"}:
             names = [str(row.get("creator") or "").strip() for row in rows]
             previews = _creator_previews(connection, names, include_unpictured=category == "western_identity")
@@ -742,6 +765,15 @@ def _review_evidence(category: str, row: dict) -> str:
             detail.append(str(row.get("warnings")))
         return "；".join(detail)
     return ""
+
+
+def q_review_counts(contract: ReviewContract):
+    """入口读数沿用完整队列的成员判据，省去卡片资料投影。"""
+    counts, sources, skipped = {}, {}, {}
+    for category in REVIEW_CATEGORIES:
+        rows, sources[category], skipped[category] = _review_members(contract, category)
+        counts[category] = len(_select_review_queue(rows, 'pending'))
+    return dict(counts=counts, sources=sources, skipped_rows=skipped)
 
 
 def q_review(contract: ReviewContract):

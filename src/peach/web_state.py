@@ -19,6 +19,8 @@ import os
 import sqlite3
 import threading
 import time
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 from collections import OrderedDict
 from collections.abc import Mapping
@@ -49,6 +51,26 @@ from .repository import LedgerDatabase, writing_in_background
 from .task_runs import TaskRunStore
 
 LOGGER = logging.getLogger(__name__)
+
+#: 当前读请求的账本版本快照，见 `WebContract.revision_snapshot`；不在请求里时为 None，每次现读。
+_REVISION_SNAPSHOT: ContextVar[dict | None] = ContextVar("peach_revision_snapshot", default=None)
+_FRESH_AGGREGATES: ContextVar[bool] = ContextVar('peach_fresh_aggregates', default=False)
+
+
+@contextmanager
+def revision_snapshot():
+    """这一段里各表版本只读一次（一个读请求用一份）。
+
+    一次页面请求要核对十几个聚合缓存，每个都单独开连接读一遍版本表；账本表多、触发器多，
+    光是开连接、载入表结构就要十几毫秒一次。本进程有提交时（`cache_generation` 变了）
+    快照作废重读：请求里自己写过的，后面的缓存照样认得出来。快照记着是哪个契约读的，
+    换了契约也重读。
+    """
+    token = _REVISION_SNAPSHOT.set({})
+    try:
+        yield
+    finally:
+        _REVISION_SNAPSHOT.reset(token)
 
 
 class AvatarRootIndex(NamedTuple):
@@ -341,42 +363,60 @@ class WebContract:
         0038（或根本没有库）时返回 None。
         `tables` 非空时只累计这些表的版本。
         """
-        try:
-            with self.read_connection() as connection:
-                clause = " WHERE tbl IN (" + ','.join('?' for _ in tables) + ")" if tables else ''
-                row = connection.execute("SELECT total(n) FROM ledger_revision" + clause, tables).fetchone()
-        except sqlite3.Error:
+        revisions = self._table_revisions()
+        if revisions is None:
             return None
-        return int(row[0])
+        if not tables:
+            return sum(revisions.values())
+        return sum(revisions.get(table, 0) for table in set(tables))
 
     def ledger_tables_except(self, excluded) -> tuple[str, ...]:
         """登记了版本的账本表，去掉 `excluded`：聚合读的表太多、列不全时，按「除这几张以外」声明依赖。
         读不到版本表时为空，`cached_until_changed` 随之退回整本账本的版本。"""
+        revisions = self._table_revisions()
+        if revisions is None:
+            return ()
+        return tuple(table for table in sorted(revisions) if table not in excluded)
+
+    def _table_revisions(self) -> dict[str, int] | None:
+        snapshot = _REVISION_SNAPSHOT.get()
+        if (snapshot is not None and snapshot.get("contract") is self
+                and snapshot.get("generation") == self.cache_generation):
+            return snapshot["revisions"]
+        generation = self.cache_generation
         try:
             with self.read_connection() as connection:
-                tables = [row[0] for row in connection.execute("SELECT tbl FROM ledger_revision ORDER BY tbl")]
+                revisions = {str(table): int(count) for table, count in connection.execute(
+                    "SELECT tbl, total(n) FROM ledger_revision GROUP BY tbl")}
         except sqlite3.Error:
-            return ()
-        return tuple(table for table in tables if table not in excluded)
+            revisions = None
+        if snapshot is not None:
+            snapshot.update(contract=self, generation=generation, revisions=revisions)
+        return revisions
 
-    def cached_until_changed(self, key: str, fn, *inputs, tables=()):
+    def cached_until_changed(self, key: str, fn, *inputs, tables=(), allow_stale=True):
         """只读账本聚合的缓存：账本版本号与 `inputs` 都没变就一直命中，不按时间过期。
 
         `inputs` 是聚合读到的账本之外的东西的版本（候选目录、头像目录、浏览历史库），
         由调用方给出：漏一样，那一样变了页面就一直是旧的。版本号在计算前读，计算期间
         有进程外的写，结果记在旧版本下，下一次请求读到新版本照样重算。库还没有版本号时
         退回 `CACHE_TTL`。
-        `tables` 声明聚合依赖的表；这类缓存经过提交通知后仍按声明的版本核验，
+        `tables` 声明聚合依赖的表，留空时累计全库版本；缓存经过提交通知后仍按版本核验，
         同键的并发请求共用一次计算。
 
         带 `tables` 的键在版本变了、手上那份之后只有本进程的后台提交时，先回那一份，另起
         后台重算（ADR-0146）：后台任务写的东西晚几秒无妨；前台写入与进程外的写之后照旧
-        当场重算。不带 `tables` 的键每次提交都被清掉，没有旧值可回。
+        当场重算。不带 `tables` 的键按全库版本同步核验，不返回过期结果。
+        `allow_stale=False` 的馆藏统计与本次读取的列表配对，后台写入后也同步重算。
         """
-        if not tables:
-            revision = self.ledger_revision()
-            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf,
-                               version=(revision, *inputs))
+        if not allow_stale:
+            token = _FRESH_AGGREGATES.set(True)
+            try:
+                return self._cached_by_tables(key, fn, inputs, tables)
+            finally:
+                _FRESH_AGGREGATES.reset(token)
+        if not tables or _FRESH_AGGREGATES.get():
+            return self._cached_by_tables(key, fn, inputs, tables)
         revision = self.ledger_revision(tables)
         if revision is not None:
             version = (tuple(tables), revision, *inputs)
@@ -432,8 +472,8 @@ class WebContract:
                     self.revision_cache_keys.discard(key)
                 else:
                     self.revision_cache_keys.add(key)
-            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf,
-                               version=(tuple(tables), revision, *inputs))
+            version = (tuple(tables), revision, *inputs) if tables else (revision, *inputs)
+            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf, version=version)
 
     def stop_background_jobs(self) -> None:
         """服务关停时丢掉后台任务状态并等线程收工。

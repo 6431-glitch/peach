@@ -48,6 +48,10 @@ class FakeCloudDrive:
         self.calls.append(("GetSystemInfo", request, header))
         return pb.CloudDriveSystemInfo(IsLogin=True, UserName="u1", SystemReady=True)
 
+    def GetSystemSettings(self, request, context):
+        self._auth('GetSystemSettings', request, context)
+        return pb.SystemSettings()
+
     def GetApiTokenInfo(self, request, context):
         self._auth("GetApiTokenInfo", request, context)
         return pb.TokenInfo(token=request.value, rootDir="/", permissions=pb.TokenPermissions(

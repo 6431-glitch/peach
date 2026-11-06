@@ -49,7 +49,7 @@ describe('普通 HTTP 的配置与播放', () => {
   before(async () => { browser = await launch() });
   after(async () => { await browser?.close() });
 
-  it('离开页面会取消尚未结束的转发响应并完成路由清理', { timeout: 10_000 }, async t => {
+  it('离开页面会取消尚未结束的转发响应并完成路由清理', { timeout: 60_000 }, async t => {
     let phase = '准备受控响应';
     t.after(() => { if (t.signal.aborted) t.diagnostic(`HTTP 取消回归超时阶段：${phase}`); });
     let notify!: () => void;
@@ -64,27 +64,38 @@ describe('普通 HTTP 的配置与播放', () => {
       response.on('close', disconnected);
       notify();
     });
+    phase = '启动受控 HTTP 服务';
     server.listen(0, '127.0.0.1');
     await once(server, 'listening');
     const address = server.address();
     assert.ok(address && typeof address !== 'string');
+    phase = '创建浏览器上下文';
     const context = await browser.newContext();
     t.after(async () => {
       await context.close();
       server.closeAllConnections();
       await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()));
     });
+    phase = '创建空白页';
     const page = await context.newPage();
     const origin = 'http://peach-forward.test';
     const forwards = new AbortController();
+    phase = '挂载请求转发';
     await forwardHttp(page, origin, `http://127.0.0.1:${address.port}`, forwards.signal);
+    phase = '打开受控页面';
     await page.goto(origin);
+    phase = '发起未结束的响应';
     await page.evaluate(() => { void fetch('/pending').catch(() => {}); });
     phase = '等待转发开始';
     await started;
-    await closeHttp({ page, close: () => context.close() }, forwards, value => { phase = value; });
-    phase = '等待服务端断连';
-    await cancelled;
+    await t.test('转发开始后十秒内取消并完成清理', { timeout: 10_000 }, async cancellation => {
+      cancellation.after(() => {
+        if (cancellation.signal.aborted) cancellation.diagnostic(`HTTP 取消回归超时阶段：${phase}`);
+      });
+      await closeHttp({ page, close: () => context.close() }, forwards, value => { phase = value; });
+      phase = '等待服务端断连';
+      await cancelled;
+    });
   });
 
   for (const viewport of VIEWPORTS) {

@@ -105,7 +105,7 @@ from .web_orphan_records import q_orphan_records, w_orphan_attach
 from .web_playlists import q_playlist, q_playlists, w_playlist
 from .web_custom_metadata import q_custom_metadata, w_custom_metadata
 from .web_resource_sync import w_purge_missing, w_resource_sync_apply, w_resource_sync_scan
-from .web_review import q_review, w_review_decision, w_review_genre
+from .web_review import REVIEW_TABLES, q_review, q_review_counts, w_review_decision, w_review_genre
 from .web_auto_landings import q_auto_landings, w_auto_landing_revert
 from .web_settings import q_settings, w_settings
 from .web_library_shortcuts import q_library_shortcuts, w_library_shortcuts
@@ -115,7 +115,7 @@ from .web_scraping import (
     q_scraping, q_scraping_amane_bridge, w_scraping_amane_check, w_scraping_amane_rebuild,
     w_scraping_check, w_scraping_check_all, w_scraping_cover, w_scraping_settings,
 )
-from .web_state import WebContract, path_version
+from .web_state import WebContract, path_version, revision_snapshot
 from .web_tasks import q_result_updates, q_tasks
 from .web_timeline_thumbnails import (
     q_media_processing, q_thumbnail_jobs, q_timeline, w_media_processing, w_thumbnail_jobs,
@@ -275,20 +275,15 @@ def _get_taste(contract, args):
 
 
 def _get_review(contract, args):
+    if str(args.get("counts") or "") in {"1", "true"}:
+        return q_review_counts(contract)
     # 账本之外，复核读三处磁盘：抓取脚本写的候选 CSV、卡片封面徽章用的封面目录、
     # 创作者头像与取景用的头像目录。
     payload = contract.cached_until_changed(
         "review", lambda: q_review(contract),
         candidate_root_version(contract.candidate_root),
         path_version(contract.cover_root), path_version(contract.avatar_root),
-        tables=("asset", "asset_entity", "entity", "entity_alias", "entity_redirect",
-                "review_decision", "genre_decision"))
-    # 数据管理页只要一个待复核条数。完整 payload 带着每条候选的全文，实测是
-    # 兆级；卡片上的一个数字不值这趟传输，但计数本身仍来自同一份缓存快照，
-    # 不另立一套口径。
-    if str(args.get("counts") or "") in {"1", "true"}:
-        return {key: payload[key] for key in ("counts", "sources", "skipped_rows")
-                if key in payload}
+        tables=REVIEW_TABLES)
     return payload
 
 
@@ -537,7 +532,8 @@ def dispatch_api_get(contract: WebContract, path, args):
         handler = GET_HANDLERS[path]
     except KeyError as exc:
         raise ContractRouteNotFound(path) from exc
-    return handler(contract, args)
+    with revision_snapshot():
+        return handler(contract, args)
 
 
 def dispatch_api_post(contract: WebContract, path, body):

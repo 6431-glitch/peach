@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "27e6addd-c099-4061-a555-550d94bc3913", e._sentryDebugIdIdentifier = "sentry-dbid-27e6addd-c099-4061-a555-550d94bc3913");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "529c2296-c2d5-4a6c-9082-2e5f4d46f8f7", e._sentryDebugIdIdentifier = "sentry-dbid-529c2296-c2d5-4a6c-9082-2e5f4d46f8f7");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -20988,18 +20988,23 @@ function m_({ id: e, label: t, value: n, onChange: r, options: i, isDisabled: a,
 		]
 	});
 }
-function h_({ prefix: e, suffix: t, ...n }) {
-	let r = () => /* @__PURE__ */ (0, z.jsx)("span", {
-		className: "shrink-0 pr-1 text-body-regular text-text-secondary",
-		children: t
+function h_({ prefix: e, suffix: t, unit: n, fieldClassName: r, ...i }) {
+	let a = () => /* @__PURE__ */ (0, z.jsx)("span", {
+		"aria-hidden": n ? !0 : void 0,
+		className: R("shrink-0 text-body-regular text-text-secondary", n ? "w-10" : "pr-1"),
+		children: n ? /* @__PURE__ */ (0, z.jsx)("span", {
+			className: "absolute inset-y-0 right-0 flex items-center border-l border-border-button-default px-2",
+			children: n
+		}) : t
 	});
 	return /* @__PURE__ */ (0, z.jsx)(pm, {
-		...n,
+		...i,
+		fieldClassName: r,
 		leadingAddon: e ? /* @__PURE__ */ (0, z.jsx)("span", {
 			className: "shrink-0 pl-1 text-body-regular text-text-secondary",
 			children: e
 		}) : void 0,
-		trailingIcon: t ? r : void 0
+		trailingIcon: n || t ? a : void 0
 	});
 }
 // src/react/settings/folder-rows.tsx
@@ -22792,4 +22797,4 @@ E();
 var mv = document.getElementById("peach-page"), hv = mv ? pv[mv.dataset.page ?? ""] : void 0;
 mv && hv && (0, M.createRoot)(mv).render(/* @__PURE__ */ (0, z.jsx)(hv, { data: { ...mv.dataset } }));
 
-//# debugId=27e6addd-c099-4061-a555-550d94bc3913
+//# debugId=529c2296-c2d5-4a6c-9082-2e5f4d46f8f7

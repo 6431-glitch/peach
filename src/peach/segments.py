@@ -89,6 +89,7 @@ class HlsSegmentService:
     ):
         self.resolver = resolver
         self.work_root = work_root
+        self.capacity_guard = None
         self.segment_seconds = segment_seconds
         self.cache_bytes = cache_bytes
         self.prefer_hardware = prefer_hardware
@@ -320,6 +321,12 @@ class HlsSegmentService:
 
     async def _run(self, command: list[str], session: str, registry: StreamSessionRegistry) -> tuple[int, bytes]:
         """跑一次 FFmpeg 并把进程登记到会话，取消时能被杀掉。返回 (退出码, stderr)。"""
+        from .jobs import DiskSpaceDenied
+        try:
+            if self.capacity_guard is not None:
+                await asyncio.to_thread(self.capacity_guard.check, force=True)
+        except DiskSpaceDenied as error:
+            raise SegmentUnavailable(str(error)) from error
         creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         try:
             process = await asyncio.create_subprocess_exec(
@@ -337,7 +344,16 @@ class HlsSegmentService:
             raise SegmentCancelled(session)
         communication = asyncio.create_task(process.communicate())
         try:
-            _, stderr = await asyncio.shield(communication)
+            while not communication.done():
+                await asyncio.wait((communication,), timeout=0.5)
+                if self.capacity_guard is not None:
+                    try:
+                        await asyncio.to_thread(self.capacity_guard.check)
+                    except DiskSpaceDenied as error:
+                        _kill_process(process)
+                        await _wait_for_tasks(communication)
+                        raise SegmentUnavailable(str(error)) from error
+            _, stderr = await communication
         except asyncio.CancelledError:
             _kill_process(process)
             await _wait_for_tasks(communication)

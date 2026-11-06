@@ -56,6 +56,41 @@ class ReleaseUpdateTests(unittest.TestCase):
         r2["assets"][0]["name"] = "Peach-3.0.0-windows-x64.zip"
         self.assertEqual(release_updates.check(transport=transport)["latest_version"], "3.0.0")
 
+    def test_mirror_without_newer_release_cannot_confirm_current_or_ahead(self):
+        for github_status, github_body in ((403, []), (200, {}), (200, []),
+                                            (200, [dict(release("0.56.0"), assets=[])])):
+            for mirror_version in ("0.50.0", "0.54.0"):
+                with self.subTest(github_status=github_status, github_body=github_body,
+                                  mirror_version=mirror_version):
+                    row = release(mirror_version)
+                    row["assets"][0]["digest"] = "sha256:" + "a" * 64
+
+                    def transport(request, *_args, github_status=github_status,
+                                  github_body=github_body, row=row):
+                        if request.url == release_updates.API_URL:
+                            return HttpResponse(github_status, {}, json.dumps(github_body).encode())
+                        return HttpResponse(200, {}, json.dumps([row]).encode())
+
+                    with patch.object(release_updates, "__version__", "0.54.0"):
+                        result = release_updates.check(transport=transport)
+                    self.assertEqual(result["state"], "error")
+                    self.assertIsNone(result["latest_version"])
+                    self.assertNotIn("asset_url", result)
+
+    def test_current_macos_mirror_without_github_cannot_confirm_no_update(self):
+        row = release("0.54.0")
+        row["assets"].append({"name": "Peach-0.54.0-macos-arm64.dmg", "state": "uploaded",
+                              "digest": "sha256:" + "a" * 64})
+
+        def transport(request, *_args):
+            return HttpResponse(403 if request.url == release_updates.API_URL else 200,
+                                {}, json.dumps([row]).encode())
+
+        with patch.object(release_updates, "__version__", "0.54.0"):
+            result = release_updates.check(transport=transport, system="darwin", machine="arm64")
+        self.assertEqual(result["state"], "error")
+        self.assertIsNone(result["latest_version"])
+
     def check(self, rows, status=200):
         transport = Mock(return_value=HttpResponse(status, {}, json.dumps(rows).encode()))
         with patch.object(release_updates, "__version__", "0.9.0"):

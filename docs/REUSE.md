@@ -1,5 +1,7 @@
 # 复用清单
 
+数据管理的复核计数与完整复核页共用按候选文件版本和账本依赖表失效的精确成员快照。计数不加载卡片旁证、图片和预览；完整卡片先深复制成员，再补展示字段，不能改写共享快照。来源番号身份判断只在同一次投影中复用，来源标识不同仍分别核验；批准仍重新读取原始候选与最新账本。
+
 ## 账本一致性与运行状态恢复
 
 资产删除与个人记录归入复用 `purge_assets()`、`record_rehome.move()` 和既有快照撤回机制，显式维护 `follow_item.asset_id`，不依赖运行连接的外键开关。稍后看沿用偏好写入的事务内资产存在性检查。关闭外键的迁移在提交前检查引用，数据、结构和版本登记一同回滚；备份恢复在暂存升级后及写回后补验外键。
@@ -39,6 +41,12 @@ Linux GPU 读取 [DRM fdinfo 标准](https://docs.kernel.org/gpu/drm-usage-stats
 采用 bbingz 的 [PR #205](https://github.com/peach-mitao/peach/pull/205)，固定来源提交 `bbf5aac8e9562211c324c2019bff35888266df84`，许可证沿用本项目 AGPL-3.0-or-later。作品筛选集合先在独立子查询中求出，创作者、标签和演员按既有关系聚合，保留去重计数与标签可见性。没有选中标签时移除无效 `tag_match`，复用既有修订缓存、同键锁与跨连接写入失效机制，不在线改写 SQLite 统计或增加索引迁移。
 
 顶部人物、厂牌的 `q_tops` 复用同一筛选方式：独立求出可用作品集合，再按实体聚合，保留代表作选择、种子抽样、续页和修订缓存。错误统计回归使用临时账本、冷缓存与新连接，按作品数量限制判定调用量，核对默认、JAV、已看及组合范围的输出等价。运行时不写 ledger，不改 SQLite 统计或索引。
+
+头像匹配的 Gfriends 本地索引复用标准库 `lru_cache`，仅保留当前文件身份的解析结果。文件身份包含修改时间、变更时间、大小与文件编号；更新或原子替换后重读，缺失与解析失败沿用既有处理。匹配端只读共享结果，后台刷新与来源优先级保持同一实现。
+
+实体页形状的全库查询按资产展开关系，以存在性判断同台人物；单实体深链沿实体索引读取。全库版本缓存与声明表范围的缓存共用按键计算锁，计算期间的提交由下一次修订核验处理。复用现有 SQLite 查询与聚合缓存，不增加索引、迁移或运行依赖。
+
+采纳 [PR #298](https://github.com/peach-mitao/peach/pull/298) 的后端查询与解析差集：SQLite 纯分类回调按账本实例复用有界结果，库根分类仍沿用当前 `sql_is_local_extra`；馆藏的总数、体积与作品数按筛选集合及媒体根缓存，排序与分页共用。统计在依赖表变动后同步重算，避免新列表配旧统计。卡片展示顺序、统计加载时机和前端布局沿用当前实现。
 
 ## 混合媒体根与模型读取
 
@@ -1001,7 +1009,7 @@ A 盘垃圾隔离使用短名称 `peach-purge-<32 位 UUID>.peach-quarantine`，
 | 浏览器历史解析 | `browserexport==0.4.4`（MIT、Python ≥3.9，约 35 KB wheel；Chrome/Firefox/Zen/Safari 的 SQLite 解析） | 消费者是 `/taste` 的本机读取与导出导入；Peach 保留 SQLite backup、Takeout、私有原始存储、域名分析和 candidate 生成，在 Windows 自己关只读连接。按必需列识别格式，以局部 Schema 补可选元数据列，时间与 Visit 转换继续复用上游。国产浏览器目录参考 HackBrowserData，不引入其运行依赖；目录与合成 SQLite 的最小验证、115 下载记录和旧搜狗限制见[浏览器历史导入](BROWSER_HISTORY.md)。跨主机同步须显式导出、传输并按来源去重合并 |
 | Rule34.xxx / Paheal 高清封面 | 固定参考 gallery-dl `86047cf67a12bdb6ff1085774f8ad9fc347e8da9`（GPL-2.0，只作协议行为证据，不引入运行时）；运行时复用现有 FFmpeg | booru 按 `sample_url`/`preview_url`/`file_url` 回退，Paheal 只取原始 `file_url` 再抽帧：FFmpeg `blackframe` 的 `lavfi.blackframe.pblack` 在开头 30 秒选第一张黑色像素低于 98% 的帧，版本化缓存键淘汰旧黑帧（不用 GPL、默认取 10% 位置的 ffmpegthumbnailer）。Peach 管 URL 白名单、同源代理、双并发抽帧、缓存与低清回退 |
 | FANBOX 正文解析 | PixivUtil2 `v20251112` / `e537e96` 的公开正文模型（BSD-2-Clause，只复用数据模型，不引入整套下载器） | Peach 的独立规范化 DTO 覆盖 image/text/file/article/video/entry、`fileMap`、`embedMap`、`urlEmbedMap` 和旧 HTML 正文，保留正文顺序、稳定去重、可播放媒体与文件页边界；许可证依据写在实现头部，传输固定 `curl_cffi` |
-| CloudDrive 传输与代理配置 | `grpcio==1.84.0` 与 `protobuf==7.36.2`（消息代码由 grpcio-tools 1.84.0 生成后提交），消费者 `downloads_clouddrive`、`clouddrive_proxy` | 复用官方 proto v1.1.2 的最小方法子集；账号路径与挂载点绑定、API／数据代理双向读写、密码隔离、修订冲突检查与流量归属归 Peach。未声明的配置字段由 protobuf 保留并回传。没有新增依赖；不采用非官方 SDK，沿用固定依赖和 ADR-0089。协议证据及验证边界见 [CloudDrive 官方 API 接入](CLOUDDRIVE_API.md) |
+| CloudDrive 传输与代理配置 | `grpcio==1.84.0` 与 `protobuf==7.36.2`（消息代码由 grpcio-tools 1.84.0 生成后提交），消费者 `downloads_clouddrive`、`clouddrive_proxy`、`storage_external_cache` | 复用官方 proto v1.1.2 的最小方法子集及 `GetSystemSettings` 缓存目录字段；账号路径与挂载点绑定、API／数据代理双向读写、密码隔离、修订冲突检查与流量归属归 Peach。缓存目录只自动读取本机服务，远程路径保留手动映射。未声明的配置字段由 protobuf 保留并回传。没有新增依赖；不采用非官方 SDK，沿用固定依赖和 ADR-0089。协议证据及验证边界见 [CloudDrive 官方 API 接入](CLOUDDRIVE_API.md) |
 | 本地 NFO 导入 | Kodi／Jellyfin NFO 协议（2026-09-06 核对 [Kodi](https://kodi.wiki/view/NFO_files/Movies)、[Jellyfin](https://jellyfin.org/docs/general/server/metadata/nfo/)），标准库 ElementTree，图片走项目固定版 Pillow；实现在 `library_nfo.py` | 只适配影片、单集与音乐视频（整剧、专辑、播放记录与远端图片引用不套用），拒绝 DTD、超大输入与越目录图片引用。同名边车优先，`movie.nfo` 与通用海报只用于单影片目录；正片和图片同属一组连号（`(1).mp4` 配 `(1).jpg`…）时同名图是图集的一张。已知内容词投影为中文标签，画质、促销、发行属性与演员编成丢弃，未收录的自定义标签保留；远端补厂牌、导演、发行商、时长与图片出处，人物主名精确一致时补 DMM id、假名、罗马字与首次头像，不替换演员真值。网络复用 R18 JSON 入口、SourceTransport、头像缓存与封面解析器。候选按资产 ID 与路径定位，批准时复核目标，时长证据不覆盖探测时长（ADR-0029） |
 | JAV 高清封面 | Javinizer-Go `dd56998328d078c9baf68ff4fde2e6fcaa2a691a`（MIT）的 DMM modern `awsimgsrc.dmm.com/dig/...` 映射与尺寸门槛；Prestige 公开 API 的查询模型参考 MDCX `58e3f930f2e864fceb8a53ceef818716e2a6413d`（GPL-3.0，只作协议证据） | 候选、Range 量尺寸、面积最大者胜出与仅更大才原子升级见 `peach-jav-cover-workflow`。批量流程不请求社区来源，历史快照里的社区站只借厂牌；既有库采集在官方落空时经 `peach.community_catalog` 查 AVBase（取商品号认得出这个番号的店铺条目，名寄せ的标题可能来自合集）、JavBus 与 JavDB，两个图源先按 dHash 求一致，取景不同时用 OpenCV ORB（相似变换内点 ≥60 算同一张）。JavDB 只参与复核，不作为安装候选；其他单一图源留空 `verified_by`，遇验证页不绕过（ADR-0107）。MDC-NG 只证明 Amazon 日本渠道存在，只留 POC 候选。不写 ledger |
 

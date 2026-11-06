@@ -190,6 +190,42 @@ class MediaCacheHeaderTests(unittest.TestCase):
 
 
 @unittest.skipUnless(HAS_DEPS, "FastAPI/httpx 尚未安装")
+class ContractJsonTests(unittest.TestCase):
+    def test_contract_reads_encode_to_the_same_bytes_as_the_framework_default(self):
+        from dataclasses import dataclass
+        from datetime import datetime, timezone
+        from fastapi.encoders import jsonable_encoder
+        from fastapi.responses import JSONResponse
+        from peach.routes_api import _json
+
+        @dataclass
+        class Point:
+            x: int
+
+        payload = {"ok": True, 3: "整数键", "path": Path("covers") / "ABC-001.jpg",
+                   "at": datetime(2026, 11, 6, 4, 0, tzinfo=timezone.utc), "set": {"甲"},
+                   "tuple": (1, 2.5, None), "point": Point(4), "nested": [{"名": "值"}]}
+        response = _json(payload)
+        self.assertEqual(response.body, JSONResponse(jsonable_encoder(payload)).body)
+        self.assertEqual(response.media_type, "application/json")
+        with self.assertRaises(ValueError):
+            _json({"nan": float("nan")})
+
+    def test_contract_reads_preserve_framework_encoding_for_non_string_keys(self):
+        from datetime import date
+        from enum import Enum
+        from fastapi.encoders import jsonable_encoder
+        from fastapi.responses import JSONResponse
+        from peach.routes_api import _json
+
+        class Key(Enum):
+            DAY = "day"
+
+        payload = {date(2026, 11, 6): {Path("covers"): {Key.DAY: "今天"}}}
+        self.assertEqual(_json(payload).body, JSONResponse(jsonable_encoder(payload)).body)
+
+
+@unittest.skipUnless(HAS_DEPS, "FastAPI/httpx 尚未安装")
 class RobotsTests(unittest.IsolatedAsyncioTestCase):
     """整站不进搜索引擎。
 
@@ -356,6 +392,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             taste_history_import_root=self.taste_import_root,
             taste_history_output_root=self.taste_output_root,
             taste_history_manifest=self.taste_manifest,
+            follow_state_root=self.root / 'state',
             entry_links_root=self.root / "state",
         )
         self.app = create_app(self.settings)
@@ -488,6 +525,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual((await self.client.get("/api/background-issues")).status_code, 401)
             response = await self.client.get("/api/background-issues?t=secret")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual([item['key'] for item in response.json()['issues']], ['network'])
         [issue] = response.json()["issues"]
         self.assertEqual((issue["key"], issue["href"], issue["since"], issue["retry"]),
                          ("network", "/settings/network#peachProxy", None, "/api/network-status/check"))
