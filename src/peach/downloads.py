@@ -1165,7 +1165,11 @@ class Landing:
 
     def ingest(self, location: str, ledger_path: str) -> bool:
         """定向登记。目录就逐个登记里面的文件；什么也没找到返回假。"""
-        from .scan import walk_root_for
+        from .discovery_rules import system_directory, system_path
+        from .push_discovery import ignored
+        from .scan import _relative_directory, _walk, walk_root_for
+        if system_path(ledger_path):
+            return False
         parent = str(PureWindowsPath(ledger_path).parent)
         try:
             local_parent = walk_root_for(location, parent, declared_roots=self.declared_roots,
@@ -1176,16 +1180,20 @@ class Landing:
         try:
             if local.is_file():
                 return self.push_discovery.ingest_now(location, ledger_path)
-            if not local.is_dir():
+            if not local.is_dir() or system_directory(local.name):
                 return False
             found = False
-            for index, item in enumerate(sorted(local.rglob("*"))):
-                if index >= MAX_LANDED_FILES:
-                    break
-                if item.is_file():
-                    relative = item.relative_to(local).parts
+            count = 0
+            for directory, entries in _walk(local):
+                for item in entries:
+                    relative = (*_relative_directory(directory, local), item.name)
                     path = str(PureWindowsPath(ledger_path).joinpath(*relative))
+                    if ignored(path):
+                        continue
+                    if count >= MAX_LANDED_FILES:
+                        return found
                     found = self.push_discovery.ingest_now(location, path) or found
+                    count += 1
             return found
         except OSError:
             return False

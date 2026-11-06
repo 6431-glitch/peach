@@ -155,7 +155,7 @@ def medium_of(name: str) -> str:
 def video_stems(names) -> frozenset[str]:
     """一个目录里视频文件的片名（casefold），`is_sidecar` 拿它判同目录有没有正片。"""
     return frozenset(os.path.splitext(name)[0].casefold() for name in names
-                     if medium_of(name) == "video" and not is_local_extra(name))
+                     if medium_of(name) == "video" and not system_path(name) and not is_local_extra(name))
 
 
 def is_sidecar(name: str, videos: frozenset[str], *, artwork_dir: bool = False,

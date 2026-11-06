@@ -589,7 +589,12 @@ class NasDirectoryTests(unittest.TestCase):
     def test_system_directories_are_skipped_and_similarly_named_files_are_kept(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
-            for name in ("#recycle", "#RECYCLE", "@eaDir", "@snapshot", "normal"):
+            for name in ("#recycle", "#RECYCLE", "@eaDir", "@snapshot", "@Recycle",
+                         "@Recently-Snapshot", ".@__thumb", ".@__qini", ".@upload_cache", ".streams",
+                         ".zfs", ".snapshot", "~snapshot", ".recycle", ".AppleDouble", ".AppleDB",
+                         ".AppleDesktop", "Network Trash Folder", ".Spotlight-V100", ".Trashes",
+                         ".fseventsd", "__MACOSX", "$Recycle.Bin", "System Volume Information",
+                         ".wfm_upload123", "normal", "@creator", ".hidden"):
                 folder = root / name
                 folder.mkdir(exist_ok=True)
                 (folder / "sample.mp4").write_bytes(b"x")
@@ -597,7 +602,30 @@ class NasDirectoryTests(unittest.TestCase):
                 (root / name).write_bytes(b"x")
             files = [Path(entry.path).relative_to(root).as_posix()
                      for _, entries in scan._walk(root) for entry in entries]
-        self.assertEqual(set(files), {"normal/sample.mp4", "@video.mp4", "#recycle.mp4"})
+        self.assertEqual(set(files), {"normal/sample.mp4", "@creator/sample.mp4", ".hidden/sample.mp4",
+                                      "@video.mp4", "#recycle.mp4"})
+
+
+class SystemMetadataTests(_ScanCase):
+    def test_full_scan_and_direct_ingest_share_metadata_file_rules(self):
+        names = ('desktop.ini', 'Thumbs.db', '.DS_Store', '._movie.mp4', '.SYNOPPSDB123',
+                 '.wfm_upload123.mp4', 'movie.mp4@SynoEAStream')
+        for name in names:
+            (self.media / name).write_bytes(b'metadata')
+        (self.media / '@creator').mkdir()
+        (self.media / '@creator' / '.hidden.mp4').write_bytes(b'media')
+        options = dict(declared_roots={'local': (r'R:\media',)},
+                       mounts={'local': (self.media,)}, windows=False)
+        for name in names:
+            result = scan.ingest_path(self.db, 'local', str(PureWindowsPath(r'R:\media', name)), **options)
+            self.assertEqual((result.found, result.sidecar, result.asset_id), (True, True, None), name)
+        self.assertEqual(self._paths(), {})
+        cover = scan.ingest_path(self.db, 'local', r'R:\media\cover.jpg', **options)
+        self.assertEqual((cover.found, cover.sidecar), (True, False))
+        result, _ = self._scan(r'R:\media', **options)
+        self.assertEqual(result.files, 4)
+        self.assertIn(r'R:\media\@creator\.hidden.mp4', self._paths())
+        self.assertTrue(all((self.media / name).is_file() for name in names))
 
 
 if __name__ == "__main__":
