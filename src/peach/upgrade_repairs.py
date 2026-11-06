@@ -290,13 +290,15 @@ class UpgradeRepairs:
         active = sum(state in ('pending', 'running') for state in states)
         failed = sum(state in ('failed', 'interrupted') for state in states)
         review = int(local.get('review_count', 0)) + len(receipt.get('deferred', []))
-        state = 'failed' if self.error else 'running' if active else 'failed' if failed else 'review' if review else (
+        paused = receipt.get('media_paused', {})
+        state = 'failed' if self.error or paused else 'running' if active else 'failed' if failed else 'review' if review else (
             'complete' if receipt.get('dispatch_complete') and local else 'pending')
         items = [{'id': REVISION, 'label': '更新已有资料', 'state': local.get('state', 'pending'),
                   'changed': local.get('changed', {}), 'review_count': review},
                  {'id': 'background', 'label': '后台更新进度', 'state': state,
                   'pending': active, 'failed': failed, 'queued': len(queued)}]
-        return {'state': state, 'items': items, 'available': self.available, 'message': self.error}
+        return {'state': state, 'items': items, 'available': self.available,
+                'message': self.error or paused.get('message', '')}
 
     def prepare(self) -> None:
         """服务恢复任务前应用本地确定性修复。"""
@@ -316,7 +318,6 @@ class UpgradeRepairs:
                 self._restore_receipt(json.loads(applied[0]))
                 self._withdraw_stale_code_evidence()
                 self._isolate_system_files()
-                self._prepare_display_dimensions()
                 return
             self._restore_receipt(None)
             sources = Path(contract.follow_sources_root)
@@ -351,6 +352,7 @@ class UpgradeRepairs:
                            'queued': dict(previous.get('queued', {})),
                            'deferred': list(previous.get('deferred', [])),
                            'code_media_ids': list(previous.get('code_media_ids', [])),
+                           'media_paused': previous.get('media_paused', {}),
                            'dispatch_complete': bool(previous.get('dispatch_complete')) and not plan['text']['asset_ids'],
                            'text_only': prior is not None,
                            'prior_revision': prior[1] if prior else None}
@@ -359,37 +361,6 @@ class UpgradeRepairs:
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
             self._withdraw_stale_code_evidence()
             self._isolate_system_files()
-            self._prepare_display_dimensions()
-
-    def _prepare_display_dimensions(self) -> None:
-        """一次显示尺寸重探；保留旧测量，媒体读取由有界队列执行。"""
-        from . import display_dimensions_repair
-        with self.contract.database.read_connection() as connection:
-            stored = connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
-                                        (REVISION,)).fetchone()
-            receipt = json.loads(stored[0]) if stored else None
-            if receipt is None or 'display_dimensions' in receipt:
-                return
-            earlier = connection.execute(
-                "SELECT result_json FROM ledger_upgrade_repair WHERE "
-                "json_extract(result_json,'$.display_dimensions.rule')=? ORDER BY applied_at DESC LIMIT 1",
-                (upgrade_rules.DISPLAY_DIMENSIONS,)).fetchone()
-            previous = json.loads(earlier[0]) if earlier else {}
-            dimensions = display_dimensions_repair.collect(connection) if not earlier else None
-        if previous:
-            receipt['display_dimensions'] = previous['display_dimensions']
-            receipt.setdefault('queued', {}).update({key: value for key, value in previous.get('queued', {}).items()
-                if f':{upgrade_rules.DISPLAY_DIMENSIONS}:' in key})
-        else:
-            backup = None
-            if dimensions:
-                backup = self.contract.db_path.with_name(f'ledger.pre-upgrade-{time.time_ns()}.db')
-                sqlite_backup(self.contract.db_path, backup)
-            receipt['display_dimensions'] = {'rule': upgrade_rules.DISPLAY_DIMENSIONS,
-                                             'dimensions': dimensions, 'backup': str(backup) if backup else None}
-        if receipt['display_dimensions']['dimensions']:
-            receipt['dispatch_complete'] = False
-        self._save_receipt(receipt)
 
     def _isolate_system_files(self) -> None:
         """旧系统元数据按路径规则隔离；回执保留原状态，媒体与关联行不动。"""
@@ -586,27 +557,24 @@ class UpgradeRepairs:
                     args.append(self.contract.avatar_root)
                 args.append(attempts)
                 planned.extend(planner.stock(*args, limit=min(16, remaining), skip=seen))
-            if not media:
+            if not media or receipt.get('media_paused'):
                 return planned[:MAX_FOLLOWUPS]
             rows = connection.execute("SELECT id,code,name,path,location,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
         from .followups import Followup
         selected = set(receipt.get('media_ids', []))
-        dimensions = receipt.get('display_dimensions', {}).get('dimensions', {})
         deferred = []
         for row in rows:
             if row['id'] in inherited:
                 continue
-            dimension_key = f'{MEDIA_TASK}:{upgrade_rules.DISPLAY_DIMENSIONS}:{row["id"]}'
-            remeasure = str(row['id']) in dimensions and dimension_key not in seen
-            if not remeasure and row['id'] not in selected and not _stale_previews(self.contract, row):
+            if row['id'] not in selected and not _stale_previews(self.contract, row):
                 continue
             rule = upgrade_rules.PROCESSING
             if row['id'] in receipt.get('text_media_ids', []):
                 rule += f':text-{upgrade_rules.PROVIDER_TEXT}'
             if row['id'] in receipt.get('code_media_ids', []):
                 rule += f':{CODE_EVIDENCE_RULE}'
-            key = dimension_key if remeasure else f'{MEDIA_TASK}:{rule}:{row["id"]}'
+            key = f'{MEDIA_TASK}:{rule}:{row["id"]}'
             if key in seen:
                 continue
             if cost_for(row['location'], row['path'], config) != 'free':
@@ -634,7 +602,7 @@ class UpgradeRepairs:
                     receipt['dispatch_complete'] = False
                 # 影片补全只有一条通道、一次一部；不等前面那批跑下去就每分钟再派一批，
                 # 整个库会在一两个小时里全堆进队列，任务中心满屏都是「已处理 0 / 64」。
-                media = self._media_backlog() < MAX_FOLLOWUPS
+                media = not receipt.get('media_paused') and self._media_backlog() < MAX_FOLLOWUPS
                 planned = self._plan(receipt, media=media)
                 if not planned and not media:
                     return
@@ -684,6 +652,13 @@ class UpgradeRepairs:
         self.prepare()
         with FileLock(str(self.receipt) + '.lock', timeout=0):
             receipt = _read(self.receipt)
+            paused = receipt.get('media_paused', {})
+            if paused:
+                from .jobs import DiskGuard
+                from .settings_file import load_config
+                config = self.config or getattr(self.contract, 'upgrade_config', None) or load_config()
+                DiskGuard(config.data_root, 1).check(force=True)
+                receipt.pop('media_paused')
             kept = {}
             for key, run_id in receipt.get('queued', {}).items():
                 run = self.contract.task_runs.get(run_id)
@@ -692,8 +667,43 @@ class UpgradeRepairs:
             receipt.update(queued=kept, dispatch_complete=False)
             self._save_receipt(receipt)
             self.error = ''
+        from . import task_control
+        from .update_tasks import _mutex, state_for
+        with _mutex(state_for(self.contract.db_path)):
+            for run_id, command_id in paused.get('commands', {}).items():
+                run = self.contract.task_runs.get(int(run_id))
+                if run is None or run.status not in ('pending', 'running'):
+                    continue
+                current = task_control.intent(self.contract.db_path, run.id, (run.parent_run_id, run.root_run_id))
+                if current.get('action') == 'pause' and current.get('id') == command_id:
+                    task_control.request(self.contract.task_runs, run.id, 'resume')
         self.tick()
         return self.snapshot()
+
+    def pause_media(self, error) -> None:
+        """磁盘触线后持久暂停整批；腾出空间或重启都不解除，显式重试才解除。"""
+        from . import task_control
+        from .update_tasks import _mutex, state_for
+        store = self.contract.task_runs
+        with FileLock(str(self.receipt) + '.lock'):
+            receipt = _read(self.receipt)
+            if receipt.get('media_paused'):
+                return
+            with self.contract.database.read_connection() as connection:
+                rows = connection.execute(
+                    "SELECT id,parent_run_id,root_run_id FROM task_run WHERE task_key=? "
+                    "AND host=? AND status IN ('pending','running')", (MEDIA_TASK, store.host)).fetchall()
+            with _mutex(state_for(self.contract.db_path)):
+                ids = [row['id'] for row in rows if task_control.requested(
+                    self.contract.db_path, row['id'], (row['parent_run_id'], row['root_run_id'])) == 'resume']
+                receipt['media_paused'] = {'message': f'{error}；影片自动补全已暂停，请检查缓存后显式重试',
+                                           'run_ids': ids, 'commands': {}}
+                self._save_receipt(receipt)
+                for run_id in ids:
+                    task_control.request(store, run_id, 'pause')
+                    receipt['media_paused']['commands'][str(run_id)] = task_control.intent(
+                        self.contract.db_path, run_id)['id']
+                self._save_receipt(receipt)
 
     def start(self) -> None:
         if self.available and not self.scheduler.running:
@@ -713,9 +723,12 @@ class UpgradeRepairs:
 
 
 def _media_run(contract, key: str, handle) -> dict:
+    # 旧队列也撤下自动整库重探；普通采集仍使用 SAR 修正后的测量。
+    if f':{upgrade_rules.DISPLAY_DIMENSIONS}:' in key:
+        return {'outcome': 'skipped', 'reason': '已停用自动显示尺寸重探，保留已有测量和预览'}
     from .settings_file import load_config
     from .library_processing import process_library
-    from .jobs import JobPaused
+    from .jobs import DiskGuard, DiskSpaceDenied, JobPaused
     asset_id = int(key.rsplit(':', 1)[1])
     config = getattr(contract, 'upgrade_config', None) or load_config()
     state_file = Path(contract.follow_state_root) / 'upgrade-repairs' / f'{asset_id}.json'
@@ -732,25 +745,25 @@ def _media_run(contract, key: str, handle) -> dict:
     def active():
         return service is None or not service.stopping.is_set()
     try:
-        display_repair = f':{upgrade_rules.DISPLAY_DIMENSIONS}:' in key
-        if display_repair:
-            from . import display_dimensions_repair
-            from .media_processing_policy import metadata_only
-            receipt = _read(Path(contract.follow_state_root) / 'upgrade-repairs' / 'receipt.json')
-            baseline = receipt.get('display_dimensions', {}).get('dimensions', {}).get(str(asset_id))
-            result = display_dimensions_repair.reprobe(contract, config, asset_id, baseline=baseline)
-            if not result['rebuild'] or metadata_only(contract.follow_state_root):
-                return {'outcome': '显示尺寸重探完成', 'name': title, 'asset_id': asset_id,
-                        'dimensions_changed': result['changed']}
-            previous.pop('completed_previews', None)
+        if service is not None:
+            paused = _read(service.receipt).get('media_paused')
+            if paused:
+                raise DiskSpaceDenied(paused['message'])
+        guard = DiskGuard(config.data_root, 1)
+        guard.check(force=True)
         result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
                              database=contract.database, asset_ids=[asset_id],
-                             stage='previews' if display_repair else 'collect',
+                             stage='collect',
                              recheck_existing=True, job_id=job_id,
                              state_file=state_file, resume_state=previous or None,
                              active=active,
                              report=lambda state: handle.progress(
                                  label=f"{title} · {state.get('stage') or '更新影片资料'}"))
+        guard.check(force=True)
+    except DiskSpaceDenied as error:
+        if service is not None:
+            service.pause_media(error)
+        raise
     except InterruptedError:
         if not active():
             raise JobPaused('服务重启后继续') from None
@@ -761,15 +774,6 @@ def _media_run(contract, key: str, handle) -> dict:
         result.get('outcome') == 'partial' and not result.get('paused_count'))
     if not finished:
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
-    if display_repair:
-        if result.get('issue_count'):
-            raise RuntimeError(result.get('error') or '显示尺寸已更新，预览重建未完成，请重试')
-        try:
-            display_dimensions_repair.rebuild_timeline(contract, config, asset_id, active=active)
-        except InterruptedError:
-            if not active():
-                raise JobPaused('服务重启后继续') from None
-            raise
     return {'outcome': '影片升级补全完成', 'name': title, 'asset_id': asset_id}
 
 
