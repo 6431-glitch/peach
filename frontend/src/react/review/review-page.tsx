@@ -17,7 +17,7 @@ import { Tab, TabPanel, Tabs } from 'react-aria-components';
 import { Button } from '@/components/base/buttons/button';
 import type { ReviewProps } from '../bundle';
 import { errorMessage } from '../../api';
-import { DOTS, paginationRange } from '../../pagination';
+import { DataTableFooter } from '../components/table-controls';
 import { EmptyState } from '../components/empty-state';
 import { Note } from '../components/note';
 import { Page } from '../components/page';
@@ -39,32 +39,6 @@ import {
 // 与配置页共用 BoardUI gray PillTab 样式；保留 tabpanel 与复核队列计数。
 const TAB_CLASS = 'flex cursor-pointer items-center justify-between gap-2';
 
-/** 页码。上一页／下一页在两端，页码居中，页数多时两侧折成「…」。 */
-function Pagination(
-  { page, pages, onPage }: { page: number; pages: number; onPage(page: number): void },
-) {
-  if (pages <= 1) return null;
-  return (
-    <nav aria-label="复核分页" data-pagination-layout="" className="inline-grid w-full min-w-0 items-center gap-2">
-      <Button variant="secondary" size="small" disabled={page <= 1}
-        onClick={() => onPage(page - 1)}>上一页</Button>
-      <ul className="flex min-w-0 flex-wrap items-center justify-center gap-1">
-        {paginationRange(page, pages).map((item, at) => (
-          <li key={item === DOTS ? `dots-${at}` : item}>
-            {item === DOTS
-              ? <span aria-hidden className="px-1 text-body-2-regular text-text-tertiary">{DOTS}</span>
-              : <Button variant={item === page ? 'secondary' : 'ghost'} size="small"
-                  aria-label={`第 ${item} 页`} aria-current={item === page ? 'page' : undefined}
-                  onClick={() => onPage(Number(item))}>{item}</Button>}
-          </li>
-        ))}
-      </ul>
-      <Button variant="secondary" size="small" disabled={page >= pages}
-        onClick={() => onPage(page + 1)}>下一页</Button>
-    </nav>
-  );
-}
-
 export function ReviewPage(props: ReviewProps) {
   const [narrow, setNarrow] = useState(() => matchMedia('(max-width:900px)').matches);
   useEffect(() => {
@@ -84,6 +58,7 @@ export function ReviewPage(props: ReviewProps) {
   const [filter, setFilter] = useState('');
   const [fieldFilter, setFieldFilter] = useState('');
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   /* 勾选、选中的来源值、勾上的作品样本、失败原因，身份都是 `item_key`：翻页、换分组
      之后手里还是同一批东西。它们不进地址栏——那是这一刻手里的一批，不是这一页的身份。 */
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set<string>());
@@ -134,8 +109,9 @@ export function ReviewPage(props: ReviewProps) {
     groupOptions.some(([key]) => key === groupBy) ? groupBy : 'candidates';
   const groups = useMemo(() => groupReviewRows(fieldQueue, activeGroupBy), [fieldQueue, activeGroupBy]);
   const activeFilter = groups.some((group) => group.key === filter) ? filter : '';
-  const win = useMemo(() => reviewWindow(filterReviewRows(fieldQueue, activeGroupBy, activeFilter), page),
-    [fieldQueue, activeGroupBy, activeFilter, page]);
+  const filteredRows = useMemo(() => filterReviewRows(fieldQueue, activeGroupBy, activeFilter),
+    [fieldQueue, activeGroupBy, activeFilter]);
+  const win = useMemo(() => reviewWindow(filteredRows, page, pageSize), [filteredRows, page, pageSize]);
   const pageKeys = win.rows.map((row) => row.item_key);
   const onPage = new Set(pageKeys);
   /* 这一页上一张都没有的组不画分组条：条子底下空着，读起来像加载坏了。 */
@@ -383,7 +359,9 @@ export function ReviewPage(props: ReviewProps) {
             </EmptyState>
           )}
 
-          <Pagination page={win.page} pages={win.pages} onPage={setPage} />
+          {filteredRows.length ? <DataTableFooter label="复核" total={filteredRows.length}
+            pagination={{ pageIndex: win.page - 1, pageSize }}
+            onChange={(next) => { setPage(next.pageIndex + 1); setPageSize(next.pageSize) }} /> : null}
           {metadata && queueView === 'pending'
             ? <AutoLandingsCard locked={locked} openItem={openItem} toast={toast} />
             : null}

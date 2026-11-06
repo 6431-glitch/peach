@@ -6,6 +6,7 @@ import { apiGet, apiSend } from '../../api';
 import { fmtSize } from '@peach/legacy/core';
 import { requestErrorMessage } from '../../core/request-error';
 import { queryClient } from '../query';
+import type { ProcessingSpeed } from '../library-processing/library-processing';
 
 export const TASKS_URL = '/api/tasks';
 /** 整页共用这一个键：三段是同一次响应的三个字段。 */
@@ -47,12 +48,14 @@ export interface TaskRunPayload {
   followup_key: string;
   followup_depth: number;
   /** 服务端给出当前控制状态与可用动作，界面不按任务种类推断。 */
-  control?: { state: TaskControlState; actions: TaskControlAction[] };
+  control?: { state: TaskControlState; actions: (TaskControlAction | 'set_speed')[]; speed_mode?: ProcessingSpeed };
   /** 只投影可归属的实测读数；缺失字段代表该快照未提供资源采样。 */
   resources?: TaskResourcesPayload;
 }
 
 export interface ActivityData {
+  finished_total?: number;
+  finished_page?: number;
   available: boolean;
   result_versions?: Record<string, string>;
   message?: string;
@@ -72,13 +75,6 @@ export interface ActivityData {
 export interface IngestNotice { id: number; kind: 'download' | 'discovered'; asset_id: number; label: string; at: number }
 
 export type FollowupCounts = Record<string, Record<string, number>>;
-
-/** 往前翻的一页：只有「最近完成」，在跑与被挡下的由轮询那一份负责。 */
-export interface FinishedPage {
-  finished: TaskRunPayload[];
-  finished_has_more: boolean;
-  followup_counts?: FollowupCounts;
-}
 
 /** 几轮派出的后继合在一起数：共几条、结束了几条、还有几条在排或在跑。 */
 export function followupTally(counts: FollowupCounts | undefined, runs: TaskRunPayload[]) {
@@ -107,32 +103,14 @@ export function foldByKind(rows: TaskRunPayload[], split: (run: TaskRunPayload) 
   return [...folds.values()];
 }
 
-/** 以 `oldest` 为游标取它之前的一页。游标是它的结束时刻加 id，与服务端的排序键一致。 */
-export const fetchEarlier = (oldest: TaskRunPayload, signal?: AbortSignal) => {
-  const query = new URLSearchParams({
-    before_finished_at: oldest.finished_at || '', before_id: String(oldest.id) });
-  return apiGet<FinishedPage>(`${TASKS_URL}?${query}`, signal);
-};
-
-/** 几批终态行并成一列：同一轮只留一条，按结束时刻从新到旧、同一时刻按 id 从大到小，
- *  和服务端翻页的排序键同一个，拼接处才不会乱序。终态落地后不再变，重复的哪一份都一样。 */
-export function mergeFinished(...batches: TaskRunPayload[][]): TaskRunPayload[] {
-  const byId = new Map<number, TaskRunPayload>();
-  for (const batch of batches) for (const row of batch) if (!byId.has(row.id)) byId.set(row.id, row);
-  return [...byId.values()].sort((a, b) => {
-    const left = a.finished_at || '', right = b.finished_at || '';
-    if (left !== right) return left < right ? 1 : -1;
-    return b.id - a.id;
-  });
-}
-
 /** 有东西在跑就两秒一次（和进度写库的节流同一个数），全是终态时十秒一次。 */
 export const RUNNING_POLL_MS = 2000;
 export const SETTLED_POLL_MS = 10000;
 export const pollInterval = (data: ActivityData | undefined): number =>
   data?.running?.length ? RUNNING_POLL_MS : SETTLED_POLL_MS;
 
-export const fetchTasks = (signal?: AbortSignal) => apiGet<ActivityData>(TASKS_URL, signal);
+export const fetchTasks = (signal?: AbortSignal, page = 1, limit = 20) =>
+  apiGet<ActivityData>(page === 1 && limit === 20 ? TASKS_URL : `${TASKS_URL}?page=${page}&limit=${limit}`, signal);
 
 /** 每个页面常驻轮询的那一小份：结果版本、入库通知与有没有任务在排或在跑。完整任务列表只给任务中心。 */
 export const RESULT_UPDATES_KEY = ['result-updates'] as const;
@@ -142,6 +120,9 @@ export const fetchResultUpdates = (signal?: AbortSignal) =>
 
 export const controlTask = (id: number, action: TaskControlAction, signal?: AbortSignal) =>
   apiSend(`${TASKS_URL}/${id}/control`, { action }, 'POST', signal);
+
+export const setTaskSpeed = (id: number, speed: ProcessingSpeed) =>
+  apiSend(`${TASKS_URL}/${id}/control`, { action: 'set_speed', speed_mode: speed }, 'POST');
 
 /** 首屏：取完数才画。中止时 `fetchQuery` 把 `AbortError` 抛回给挂载方，它据此放弃这一次。 */
 export async function prefetchTasks(signal: AbortSignal): Promise<void> {

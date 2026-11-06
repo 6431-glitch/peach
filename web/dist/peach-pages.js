@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "56a3ac81-61da-4987-ab16-4073f28b195b", e._sentryDebugIdIdentifier = "sentry-dbid-56a3ac81-61da-4987-ab16-4073f28b195b");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "27e6addd-c099-4061-a555-550d94bc3913", e._sentryDebugIdIdentifier = "sentry-dbid-27e6addd-c099-4061-a555-550d94bc3913");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -19604,38 +19604,38 @@ function Hm({ term: e, children: t }) {
 		})]
 	});
 }
-function Um({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing: i = !1, onOpenChange: a, contentClassName: o }) {
-	let s = (0, j.useId)(), c = (0, j.useRef)(null), l = (0, j.useRef)(null), u = (0, j.useRef)(!1), [d, f] = (0, j.useState)(n ?? t);
+function Um({ summary: e, defaultOpen: t = !1, isOpen: n, children: r, trailing: i = !1, row: a = !1, onOpenChange: o, contentClassName: s }) {
+	let c = (0, j.useId)(), l = (0, j.useRef)(null), u = (0, j.useRef)(null), d = (0, j.useRef)(!1), [f, p] = (0, j.useState)(n ?? t);
 	return (0, j.useLayoutEffect)(() => {
-		n !== void 0 && n !== d && c.current && l.current && (Sm(c.current, l.current, n), f(n));
-	}, [n, d]), /* @__PURE__ */ (0, z.jsxs)("details", {
+		n !== void 0 && n !== f && l.current && u.current && (Sm(l.current, u.current, n), p(n));
+	}, [n, f]), /* @__PURE__ */ (0, z.jsxs)("details", {
 		ref: (e) => {
-			c.current = e, e && (n ?? t) && !u.current && (u.current = !0, e.open = !0);
+			l.current = e, e && (n ?? t) && !d.current && (d.current = !0, e.open = !0);
 		},
 		children: [/* @__PURE__ */ (0, z.jsxs)("summary", {
-			"aria-expanded": d,
-			"aria-controls": s,
+			"aria-expanded": f,
+			"aria-controls": c,
 			onClick: (e) => {
-				e.preventDefault(), c.current && l.current && (Sm(c.current, l.current, !d), f(!d), a?.(!d));
+				e.preventDefault(), l.current && u.current && (Sm(l.current, u.current, !f), p(!f), o?.(!f));
 			},
-			className: `${i ? "w-full" : "w-fit"} flex cursor-pointer list-none items-center gap-1 rounded-sm text-body-2-medium text-text-secondary outline-none select-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring`,
+			className: R("flex w-full cursor-pointer list-none items-center gap-1 rounded-sm text-body-2-medium text-text-secondary outline-none select-none hover:text-text-primary focus-visible:ring-2 focus-visible:ring-border-focus-ring", a && "px-5 py-2.5"),
 			children: [
 				i ? null : /* @__PURE__ */ (0, z.jsx)($p, {
 					"aria-hidden": !0,
-					className: d ? "size-(--icon-inline) shrink-0 rotate-90 transition-transform" : "size-(--icon-inline) shrink-0 transition-transform"
+					className: f ? "size-(--icon-inline) shrink-0 rotate-90 transition-transform" : "size-(--icon-inline) shrink-0 transition-transform"
 				}),
 				e,
 				i ? /* @__PURE__ */ (0, z.jsx)($p, {
 					"aria-hidden": !0,
-					className: d ? "ml-auto size-(--icon-inline) shrink-0 -rotate-90 transition-transform" : "ml-auto size-(--icon-inline) shrink-0 rotate-90 transition-transform"
+					className: f ? "ml-auto size-(--icon-inline) shrink-0 -rotate-90 transition-transform" : "ml-auto size-(--icon-inline) shrink-0 rotate-90 transition-transform"
 				}) : null
 			]
 		}), /* @__PURE__ */ (0, z.jsx)("div", {
-			ref: l,
-			id: s,
-			inert: !d,
+			ref: u,
+			id: c,
+			inert: !f,
 			children: /* @__PURE__ */ (0, z.jsx)("div", {
-				className: R("flex flex-col gap-2 pt-3", o),
+				className: R("flex flex-col gap-2", a ? "px-5 pt-0.5" : "pt-3", s),
 				children: r
 			})
 		})]
@@ -22792,4 +22792,4 @@ E();
 var mv = document.getElementById("peach-page"), hv = mv ? pv[mv.dataset.page ?? ""] : void 0;
 mv && hv && (0, M.createRoot)(mv).render(/* @__PURE__ */ (0, z.jsx)(hv, { data: { ...mv.dataset } }));
 
-//# debugId=56a3ac81-61da-4987-ab16-4073f28b195b
+//# debugId=27e6addd-c099-4061-a555-550d94bc3913

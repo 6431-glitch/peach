@@ -55,7 +55,7 @@ SEARCH_HISTORY_LIMIT_MAX = 50
 SYNCED_SETTING_KEYS = frozenset({
     "sidebarOrder", "followInitialDays", "postSetupTutorialDone",
     "organizeTemplates", "feedHideGroupCompilations", "feedHideSoloCompilations",
-    "feedHideExcerpts", "searchHistoryLimit", "codePatterns", "performerNameLanguage",
+    "feedHideExcerpts", "searchHistoryLimit", "codePatterns", "performerNameLanguage", "taskSpeedMode",
 })
 #: 三个收起开关的键与各自对应的那一类，缺省值取 `feeds.DEFAULT_HIDDEN_COMPILATIONS`。
 FEED_COMPILATION_SWITCHES = (
@@ -209,6 +209,7 @@ def q_settings(contract: SettingsContract, _args=None) -> dict:
         **_feed_switches(payload),
         "searchHistoryLimit": normalise_search_history_limit(payload.get("searchHistoryLimit")),
         "performerNameLanguage": "ja" if payload.get("performerNameLanguage") == "ja" else "zh-CN",
+        "taskSpeedMode": payload.get("taskSpeedMode", "standard"),
     }
 
 
@@ -227,6 +228,9 @@ def w_settings(contract: SettingsContract, body) -> dict:
         raise ValueError("没有要写入的设置")
 
     merged = _stored(contract)
+    if "taskSpeedMode" in body:
+        from .processing_control import valid_mode
+        merged["taskSpeedMode"] = valid_mode(body["taskSpeedMode"])
     if "performerNameLanguage" in body:
         language = body["performerNameLanguage"]
         if language not in ("zh-CN", "ja"):

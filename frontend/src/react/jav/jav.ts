@@ -102,7 +102,7 @@ export function fetchDiscoveries(scope: DiscoveryScope, signal: AbortSignal, opt
 
 /** 新作分区的筛选与排序：都写在地址栏里，刷新与返回原样恢复。`seed` 只在换一批时有值。 */
 export interface ReleaseFilters {
-  page: number; performer: string; studio: string; tag: string; q: string;
+  page: number; size: number; performer: string; studio: string; tag: string; q: string;
   sort: ReleaseSort; dir: DiscoveryDirection; seed: string;
 }
 export interface ReleaseFacetPerformer extends FaceRef { name: string; count: number; source_actor_id?: string; source_avatar?: boolean }
@@ -114,19 +114,22 @@ export interface ReleaseResult {
   metadata_job?: DiscoveryMetadataJob | null; poll_after_ms?: number;
 }
 export const RELEASE_PAGE_SIZE = 24;
+export const RELEASE_PAGE_SIZES = [10, 20, 24, 50, 100] as const;
 export function releaseFilters(search: string): ReleaseFilters {
   const params = new URLSearchParams(search);
   const sort = params.get('sort');
   const seed = params.get('seed') || '';
-  return { page: Math.max(1, Math.floor(Number(params.get('page'))) || 1), performer: params.get('performer') || '',
+  const page = Number(params.get('page'));
+  const size = RELEASE_PAGE_SIZES.find(value => value === Number(params.get('size'))) || RELEASE_PAGE_SIZE;
+  return { page: Number.isFinite(page) ? Math.max(1, Math.floor(page)) : 1, size, performer: params.get('performer') || '',
     studio: params.get('studio') || '', tag: params.get('tag') || '', q: (params.get('q') || '').trim(),
     sort: sort === 'random' && seed ? 'random' : RELEASE_SORTS.find(([key]) => key === sort)?.[0] || 'release_date',
     dir: params.get('dir') === 'asc' ? 'asc' : 'desc', seed };
 }
 export const releaseKey = (filters: ReleaseFilters) =>
-  ['jav-releases', filters.page, filters.performer, filters.studio, filters.tag, filters.q, filters.sort, filters.dir, filters.seed] as const;
+  ['jav-releases', filters.page, filters.size, filters.performer, filters.studio, filters.tag, filters.q, filters.sort, filters.dir, filters.seed] as const;
 export function fetchReleases(filters: ReleaseFilters, signal: AbortSignal, jobId = '') {
-  const params = new URLSearchParams({ page: String(filters.page), size: String(RELEASE_PAGE_SIZE),
+  const params = new URLSearchParams({ page: String(filters.page), size: String(filters.size),
     sort: filters.sort, direction: filters.dir });
   for (const key of ['performer', 'studio', 'tag', 'q', 'seed'] as const) if (filters[key]) params.set(key, filters[key]);
   if (jobId) params.set('metadata_job_id', jobId);

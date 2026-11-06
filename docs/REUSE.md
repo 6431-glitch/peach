@@ -1,5 +1,11 @@
 # 复用清单
 
+## 活动任务速度与分页
+
+任务档位复用 `ProcessingControl` 的低占用、标准、全速参数以及 `TaskRunStore`、`task_control` 的任务归属、后继关系与安全停点。默认档位通过既有设置接口保存，任务创建时固定本轮选择，逐任务改速使用独立原子状态文件；清退任务时回收对应状态。HTTP、媒体探测和 FFmpeg 消费同一档位，已启动媒体步骤的线程选项在下一步骤应用。
+
+活动页复用 `ProcessingMode`、`DataTableFooter`、`Disclosure`、`CollapseRegion` 和现有 Sonner 通知栈。历史与云下载查询沿用既有排序，补充总数、页码与偏移；原游标接口继续服务既有调用方。实现没有新增外部依赖。
+
 ## 跨平台任务资源计量
 
 继续使用 psutil 7.2.2 读取进程 CPU 时间和身份。该版本的 macOS 线程列表使用序号，不能与 Python 原生线程 ID 对应；因此使用系统 `libproc` 的 `PROC_PIDTHREADID64INFO` 取得指定线程的纳秒时间，接口与单位见 [XNU 实现](https://github.com/apple-oss-distributions/xnu/blob/main/osfmk/kern/bsd_kern.c)。Linux 的可用 CPU 容量复用亲和性、控制组成员和挂载信息，按可见 cgroup v1/v2 配额归一化。
@@ -126,7 +132,7 @@ React 与应用层的 GET 入口共用 `frontend/src/core/library-scope.ts`：�
 
 ## 正式测试记录与中断恢复
 
-交付预检复用已有的提交主题、共同署名与 README 影响检查，不新增规则解释器。合入前的 PR 身份复用 [GitHub CLI 的 `gh pr view`](https://cli.github.com/manual/gh_pr_view)，使用工作树仓库上下文和原生 JSON 字段；Peach 只校验开放状态、精确提交及目标分支，不引入 GitHub SDK 或另一套凭据存储。临时 Git 工作树回归覆盖未取得 PR、旧提交、其他目标、远端查询期间内容变化及成功合并回执。
+交付预检复用已有的提交主题与共同署名检查，不新增规则解释器。合入前的 PR 身份复用 [GitHub CLI 的 `gh pr view`](https://cli.github.com/manual/gh_pr_view)，使用工作树仓库上下文和原生 JSON 字段；Peach 只校验开放状态、精确提交及目标分支，不引入 GitHub SDK 或另一套凭据存储。临时 Git 工作树回归覆盖未取得 PR、旧提交、其他目标、远端查询期间内容变化及成功合并回执。
 
 测试结果继续复用 Python ≥3.14 标准库 `unittest`、`hashlib`、`json` 和项目的内容快照、影响域映射与外部测试结果。互斥复用既有 `filelock 4.2.0`，分片退出后回收其进程树复用开发依赖 `psutil 7.2.2`；版本与许可沿用锁定依赖及第三方许可清单，不新增运行时依赖。Peach 保留输入身份、逐文件覆盖、完成报告、批次来源和 `ready`／`integrate` 验收规则；串行、并行、浏览器与 Vitest 使用同一个恢复模型。
 
@@ -691,7 +697,6 @@ SFW 开关键可在偏好设置的「内容显示」里改。主键按 `Keyboard
 - 访问密码复用 Python 3.14 的 [hashlib.scrypt](https://docs.python.org/3.14/library/hashlib.html) 与 OpenSSL，浏览器会话复用 [ItsDangerous](https://itsdangerous.palletsprojects.com/en/stable/)（Pallets、BSD-3-Clause、纯 Python、wheel 16 KB、无传递依赖），本机原子配置写入用 tempfile/os.replace 与 filelock；认证入口的访问口令、三种拒绝响应与本机配置守卫照旧复用。Starlette SessionMiddleware 统一时长、随响应续期，满足不了每台设备自选截止时间，所以直接用同源签名库，Peach 管可选密码、截止时间与撤销，不带账户体系与迁移。
 - Cloudflare Quick Tunnel 用官方 `cloudflared`（Apache-2.0），不自写隧道协议。源码环境只管 PATH／环境变量里的进程；Windows 独立包旁路固定 `2026.9.0`，资产、地址与 SHA-256 在 `scripts/cloudflared-windows.json`，`fetch_cloudflared.ps1` 与构建脚本双重校验。就绪判据是官方 `--pidfile`（首次连上边缘才写），未连上不宣称可用。源码 HTTPS origin 用项目 CA，独立包用回环 HTTP，写请求来源校验带当前进程持有的随机 URL。
 
-- README 交付检查用系统 Git 的 `diff --no-renames -z` 与 [`interpret-trailers --parse`](https://git-scm.com/docs/git-interpret-trailers)，挂在 `agent_worktree.py ready/integrate`；Peach 只定义影响文件与双语声明 policy。原生 hook 不随 clone 安装、判断不了文案语义，所以挂在共有的交付入口上（[README 维护](README_MAINTENANCE.md)）。
 - 配置访问判定用 ASGI 连接的 `client` / `server` 地址与标准库 `ipaddress`：本机连接匹配回环地址或服务端 IP，Host 只校验托盘配置的域名或绑定地址、不证明调用方在本机。配置保存用修订号校验、原子替换与 `SetupGate` 重载标记，托盘子服务以 `PEACH_TRAY_MANAGED` 声明重载能力。安装检测用 `winreg`、`shutil.which` 与安装目录，媒体工具用 `FFmpegResolver`，脱盘不判为未安装。下载入口 2026-09-06 核验：[CloudDrive](https://www.clouddrive2.com/download.html)、[WinFsp](https://winfsp.dev/rel/)、[macFUSE](https://macfuse.github.io/)、[FFmpeg](https://ffmpeg.org/download.html)、[OpenSSL](https://openssl-library.org/source/)。
 - 发行身份用各来源解析器与 Seesaa 的原始 DTO，数字前缀等价是 Peach 的领域 policy。查询回退不能承担身份确认（[`390JAC-040` 实例](SOURCING.md#依赖与工具实测)），响应按原始查询检查，MGStage 官方详情路径可佐证展示编号别名；外部适配器只取值，首条搜索命中不作 ledger 身份断言。
 - Seesaa 作品表用 HTTPX、Beautiful Soup 4.15.0（MIT）与现有 `HostLimiter`、番号规范化、字段候选和快照协议。Javinizer-Go `d9724f239d7e127afcb747fa8ce4358685912f50`（MIT）与 MetaTube `6a5e6128c725187aeaf921d48ed7d9cd9f30671b`（Apache-2.0）都没有 Seesaa 适配器（2026-09-06 核对），所以 `peach.sources.seesaa` 承担 EUC-JP、列映射、精确行身份与未知名单保护，消费者是 `scrape_codes --profile seesaa`（[站点细节](SOURCING.md#seesaa-wiki-作品证据)）。
@@ -715,7 +720,7 @@ SFW 开关键可在偏好设置的「内容显示」里改。主键按 `Keyboard
 
 定向调试复用标准库 unittest 的按名字加载与现有浏览器夹具，记录复用沿用文件清单、影响域和 FileLock，不新增测试框架或缓存服务。局部成功记录保留未受影响域的原验证时间，失败域不能从历史基线恢复；浏览器失败即停。回归覆盖过期、环境差异、未知与共享文件、失败后再次验证、路径越界及不签调试证明，详见 [测试](TESTING.md#定向调试与局部记录)。
 
-提交消息复用 Git 的 [`interpret-trailers --parse`](https://git-scm.com/docs/git-interpret-trailers)，署名与 README 声明判据由 `co_author.py`、`check_readme_impact.py` 共用；`check_commit_message.py` 接到仓库 `commit-msg` 钩子。Git 自身处理注释与多行 trailer，Peach 只检查字段形态和分段。Windows Git 2.55.0.windows.3 的临时仓库回归覆盖拒绝提交、保留暂存、人类与智能体共同署名、amend 和合并消息；不新增解析依赖。具体触发范围见 [README 维护](README_MAINTENANCE.md)。
+提交消息复用 Git 的 [`interpret-trailers --parse`](https://git-scm.com/docs/git-interpret-trailers)，`co_author.py` 校验署名，`check_commit_message.py` 接到仓库 `commit-msg` 钩子。Git 自身处理注释与多行 trailer，Peach 检查署名字段形态和分段。临时仓库回归覆盖拒绝无署名提交、保留暂存、人类与智能体共同署名、amend 和合并消息；复用现有依赖。
 
 ### 播放、采集、发布与打包
 

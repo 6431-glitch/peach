@@ -256,16 +256,19 @@ def task_run_control(request: Request, run_id: int, body: dict = Body(default_fa
     contract = request.app.state.web_contract
     try:
         run = contract.task_runs.get(run_id)
-        if run is not None and run.active and run.task_key == 'library-processing':
-            from .web_library_processing import _current, w_library_processing
+        if (run is not None and run.active and run.task_key == 'library-processing'
+                and body.get('action') != 'set_speed'):
+            from .web_library_processing import _active_run, _current, w_library_processing
             current = _current(contract)
-            if current.get('run_id') != run_id:
+            active = _active_run(contract, current)
+            if active is None or active.id != run_id:
                 raise ValueError('任务已变化，请刷新后重试')
             if not contract.task_runs.enabled or run.host != contract.task_runs.host:
                 raise PermissionError('请在执行这轮任务的写入端操作')
-            w_library_processing(contract, {'action': body.get('action'), 'job_id': current.get('job_id')})
+            w_library_processing(contract, {'action': body.get('action'), 'job_id': current.get('job_id'),
+                                             'speed_mode': body.get('speed_mode')})
         else:
-            task_control.request(contract.task_runs, run_id, body.get('action'))
+            task_control.request(contract.task_runs, run_id, body.get('action'), mode=body.get('speed_mode'))
         contract.followups.wake()
         return web_tasks.q_task(contract, run_id)
     except KeyError as exc:

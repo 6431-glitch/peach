@@ -20,6 +20,7 @@ import { GeneralSettings } from './general-settings';
 import { MaintenanceSettings } from './maintenance-settings';
 import { MediaSettings } from './media-settings';
 import { MediaProcessingSettings, PlaybackTranscodeSettings } from './media-processing-settings';
+import { TaskSpeedSettings } from './service-preferences';
 import { CodePatternSettings } from './code-pattern-settings';
 import { NetworkSettings } from './network-settings';
 import { SourceSettings } from './source-settings';
@@ -116,6 +117,7 @@ function ConfigurationGroups(
       {!data.section_errors?.media_sources && !data.section_errors?.library_count ? <MediaSettings {...group} /> : null}
       <CodePatternSettings receipt={receipt} />
       <MediaProcessingSettings receipt={receipt} />
+      <TaskSpeedSettings receipt={receipt} />
     </div> },
     { title: '来源与订阅', body: (panel) => <SourceSettings {...group} panel={panel} issues={issues(['entry_links'])} /> },
     ...(downloads || data.section_errors?.downloads ? [{

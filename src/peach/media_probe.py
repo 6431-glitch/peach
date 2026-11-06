@@ -26,7 +26,7 @@ from .jobs import ACTIVE_ASSET_SQL
 from .media_io import resolve_case_insensitive
 from .media_sources import cost_for
 from .strm import skip_background_read
-from .processing_control import CURRENT, checkpoint
+from .processing_control import current_control, checkpoint
 from .catalog_rules import is_local_extra
 from . import junk, record_rehome
 
@@ -192,7 +192,7 @@ def _measure_batches(ffprobe, rows):
     with ThreadPoolExecutor(max_workers=WORKERS, thread_name_prefix='PeachProbe') as executor:
         while start < len(rows) or futures:
             checkpoint('probe')
-            control = CURRENT.get()
+            control = current_control()
             workers = {'low': 1, 'standard': 2, 'high': WORKERS}[control.mode] if control else WORKERS
             while start < len(rows) and len(futures) < workers:
                 row = rows[start]

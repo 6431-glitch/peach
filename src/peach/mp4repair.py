@@ -147,13 +147,13 @@ def _display_order(ffprobe: Path, source: Path, decode_times: list[int]) -> list
 
     对不上就抛 `RepairUnavailable`：宁可不修，也不能写一张错的表。
 
-    `-threads 0` 不是调参，是补上 ffprobe 默认没开的解码线程：6297 上实测 300 秒内容
-    从 27 秒降到 4 秒，整片从十几分钟降到一两分钟。
+    解码线程沿用任务档位，高强度和独立调用交给 FFmpeg 自动分配。
     """
     from .task_resources import media_input
+    from .processing_control import ffmpeg_options
     media_input(source)
     command = (
-        str(ffprobe), "-v", "error", "-threads", "0",
+        str(ffprobe), "-v", "error", *(ffmpeg_options() or ['-threads', '0']),
         "-ignore_editlist", "1", "-select_streams", "v:0",
         "-show_entries", "frame=pts", "-of", "csv=p=0", input_url(source),
     )

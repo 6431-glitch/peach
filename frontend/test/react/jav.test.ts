@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest';
 import { discoveryArtwork, javLibraryPath, javPath, javTab, type Discovery } from '../../src/react/jav/jav';
-import { discoveryKey, fetchDiscoveries } from '../../src/react/jav/jav';
+import { discoveryKey, fetchDiscoveries, fetchReleases, releaseFilters, releaseKey } from '../../src/react/jav/jav';
 import { discoveryScore, recommendationScore } from '../../src/react/jav/discovery-sorts';
 import { vi } from 'vitest';
 import { advanceImageFallback } from '../../src/card-art/image-fallback';
@@ -52,6 +52,22 @@ it('发现封面优先本机缓存，远程封面经 Peach 代理并保留原地
 });
 it('JAV 分区从深链恢复，未知分区落在馆藏', () => {
   expect(javTab('discover')).toBe('discover'); expect(javTab('wants')).toBe('wants'); expect(javTab('other')).toBe('library');
+});
+it('新作页大小从地址恢复，查询参数与缓存按页大小隔离', async () => {
+  const filters = releaseFilters('?page=3&size=50&tag=剧情&sort=duration&dir=asc');
+  expect(filters).toMatchObject({ page: 3, size: 50, tag: '剧情', sort: 'duration', dir: 'asc' });
+  expect(releaseKey(filters)).not.toEqual(releaseKey({ ...filters, size: 20 }));
+  for (const size of ['0', '-1', '2.5', '101', 'Infinity', 'unknown']) {
+    expect(releaseFilters(`?size=${size}`).size).toBe(24);
+  }
+  expect(releaseFilters('?page=Infinity').page).toBe(1);
+  const fetcher = vi.fn(async (_input: string) => ({ ok: true, status: 200, json: async () => ({ items: [], total: 0 }) }));
+  vi.stubGlobal('fetch', fetcher);
+  try {
+    await fetchReleases(filters, new AbortController().signal);
+    const params = new URL(String(fetcher.mock.calls[0]?.[0]), 'https://peach.test').searchParams;
+    expect(Object.fromEntries(params)).toEqual({ page: '3', size: '50', sort: 'duration', direction: 'asc', tag: '剧情' });
+  } finally { vi.unstubAllGlobals() }
 });
 it('JAV 馆藏深链保留搜索和筛选条件，使用目录入口', () => {
   const url = new URL(javLibraryPath('?tab=library&q=ABC-123&studio=演示厂牌&loc=cloud&sort=new&jav=0'), 'https://peach.test');

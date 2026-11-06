@@ -228,6 +228,8 @@ export interface DownloadTask {
 }
 
 export interface DownloadsSnapshot {
+  total?: number;
+  page?: number;
   available: boolean;
   providers: { key: DownloadProviderKey; label: string; configured: boolean; target: string }[];
   tasks: DownloadTask[];

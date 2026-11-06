@@ -439,13 +439,17 @@ class DownloadStore:
                 (max(1, min(int(limit), 500)),)).fetchall()
         return [DownloadTask.from_row(row) for row in rows]
 
-    def page(self, limit: int, before_id: int | None = None) -> list[DownloadTask]:
+    def count(self) -> int:
+        with self.database.read_connection() as connection:
+            return connection.execute("SELECT count(*) FROM download_task").fetchone()[0]
+
+    def page(self, limit: int, before_id: int | None = None, *, offset: int = 0) -> list[DownloadTask]:
         """按提交顺序读取一页；状态更新时间不影响分页位置。"""
         where = " WHERE id<?" if before_id is not None else ""
         args = (before_id, limit) if before_id is not None else (limit,)
         with self.database.read_connection() as connection:
             rows = connection.execute(
-                f"SELECT * FROM download_task{where} ORDER BY id DESC LIMIT ?", args).fetchall()
+                f"SELECT * FROM download_task{where} ORDER BY id DESC LIMIT ? OFFSET ?", (*args, offset)).fetchall()
         return [DownloadTask.from_row(row) for row in rows]
 
     def display_assets(self, tasks: list[DownloadTask]) -> dict[int, dict]:
@@ -859,9 +863,11 @@ class DownloadService:
         self.store.save(task)
         return task
 
-    def snapshot(self, limit: int = 100, *, before_id: int | None = None) -> dict:
+    def snapshot(self, limit: int = 100, *, before_id: int | None = None, page: int = 1) -> dict:
         limit = max(1, min(int(limit), 500))
-        rows = self.store.page(limit + 1, before_id)
+        total = self.store.count()
+        page = min(page, max(1, (total + limit - 1) // limit))
+        rows = self.store.page(limit + 1, before_id, offset=(page - 1) * limit)
         tasks = rows[:limit]
         has_more = len(rows) > limit
         assets = self.store.display_assets(tasks)
@@ -878,6 +884,8 @@ class DownloadService:
             **catalog,
             "tasks": payloads,
             "has_more": has_more,
+            "total": total,
+            "page": page,
             "next_before_id": tasks[-1].id if has_more else None,
         }
 
