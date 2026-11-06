@@ -67,6 +67,21 @@ class AdultEmpireMatchTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'no longer available'):
             match.detail(self.config, self.db, 1, candidate['id'], result['revision'])
 
+    def test_dorcel_confirmed_link_preserves_stash_identity(self):
+        with self.db.write_transaction() as connection:
+            existing = upsert_asset_entity(connection, kind='performer', name='Sample Actor', asset_id=1,
+                role='performer', source='review:stashdb', external_provider='stashdb', external_id='stash-id')
+        candidate = {'id': '/en/movies/studio/example', 'title': 'Example'}
+        movie = {'id': candidate['id'], 'title': 'Example', 'performers': [{'id': '/en/pornstars-women/sample', 'name': 'Sample Actor'}]}
+        with patch.object(match, '_service', side_effect=[{'candidates': [candidate]}, movie]):
+            result = match.search(self.config, self.db, 1, 'Example', None, 1, source='dorcelvision')
+            review = match.detail(self.config, self.db, 1, candidate['id'], result['revision'], source='dorcelvision')
+        self.assertEqual(review['identity_links'][0]['entity_id'], existing)
+        match.apply(self.config, self.db, 1, candidate['id'], result['revision'], source='dorcelvision', confirm_identity_links=True)
+        with self.db.read_connection() as connection:
+            row = connection.execute("SELECT entity_id FROM entity_external_ref WHERE provider='dorcelvision'").fetchone()
+        self.assertEqual(row[0], existing)
+
     def test_on_demand_category_is_sent_to_lookup_service(self):
         with patch.object(match, '_service', return_value={'candidates': [self.candidate], 'next_page': None}) as lookup:
             match.search(self.config, self.db, 1, 'Example', 'vod', 1)

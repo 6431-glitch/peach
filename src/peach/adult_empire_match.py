@@ -128,17 +128,17 @@ def detail(config, database, asset_id, candidate_id, revision, source='adultempi
             name = person.get('name')
             if not name:
                 continue
-            if source == 'dorcelvision':
+            if source == 'dorcelvision' and not person.get('id'):
                 identity_conflicts.append(name)
                 continue
             key = normalize_entity_name(name)
             rows = connection.execute("SELECT DISTINCT e.id,e.canonical_name FROM entity e LEFT JOIN entity_alias a ON a.entity_id=e.id WHERE e.kind='performer' AND (e.normalized_name=? OR a.normalized_alias=?) LIMIT 2", (key, key)).fetchall()
-            linked = connection.execute("SELECT entity_id FROM entity_external_ref WHERE provider='adultempire' AND external_kind='performer' AND external_id=?", (str(person.get('id') or ''),)).fetchone()
+            linked = connection.execute("SELECT entity_id FROM entity_external_ref WHERE provider=? AND external_kind='performer' AND external_id=?", (source, str(person.get('id') or ''))).fetchone()
             if len(rows) > 1 or (linked and (len(rows) != 1 or linked[0] != rows[0]['id'])):
                 identity_conflicts.append(name)
                 continue
             if len(rows) == 1:
-                refs = connection.execute("SELECT external_id FROM entity_external_ref WHERE entity_id=? AND provider='adultempire' AND external_kind='performer'", (rows[0]['id'],)).fetchall()
+                refs = connection.execute("SELECT external_id FROM entity_external_ref WHERE entity_id=? AND provider=? AND external_kind='performer'", (rows[0]['id'], source)).fetchall()
                 if refs and str(person.get('id') or '') not in {str(ref[0]) for ref in refs}:
                     identity_conflicts.append(name)
                     continue
@@ -191,13 +191,13 @@ def apply(config, database, asset_id, candidate_id, revision, *, confirm_identit
                 cast_conflicts.append(f'Existing cast preserved: ambiguous performer {name}.')
                 continue
             existing = identities[0] if identities else None
-            linked = connection.execute("SELECT entity_id FROM entity_external_ref WHERE provider='adultempire' AND external_kind='performer' AND external_id=?", (str(external_id),)).fetchone()
+            linked = connection.execute("SELECT entity_id FROM entity_external_ref WHERE provider=? AND external_kind='performer' AND external_id=?", (source, str(external_id))).fetchone()
             if linked and (not existing or linked[0] != existing[0]):
                 cast_conflicts.append(f'Existing cast preserved: conflicting source identity for {name}.')
                 continue
             if existing:
-                refs = connection.execute("SELECT provider,external_id FROM entity_external_ref WHERE entity_id=? AND external_kind='performer' AND provider IN ('stashdb','adultempire')", (existing[0],)).fetchall()
-                empire_ids = {str(ref[1]) for ref in refs if ref[0] == 'adultempire'}
+                refs = connection.execute("SELECT provider,external_id FROM entity_external_ref WHERE entity_id=? AND external_kind='performer' AND provider IN ('stashdb',?)", (existing[0], source)).fetchall()
+                empire_ids = {str(ref[1]) for ref in refs if ref[0] == source}
                 confirmed = confirm_identity_links and any(link.get('entity_id') == existing[0] and link.get('name') == name for link in record.get('identity_links', []))
                 if (empire_ids and str(external_id) not in empire_ids) or (not empire_ids and any(ref[0] == 'stashdb' for ref in refs) and not confirmed):
                     cast_conflicts.append(f'Existing cast preserved: conflicting source identity for {name}.')
@@ -210,12 +210,12 @@ def apply(config, database, asset_id, candidate_id, revision, *, confirm_identit
                 name, external_id = performer.get('name'), performer.get('id')
                 if not name or not external_id:
                     continue
-                conflict = connection.execute("SELECT 1 FROM entity e JOIN entity_external_ref x ON x.entity_id=e.id WHERE e.kind='performer' AND e.normalized_name=? AND x.provider='adultempire' AND x.external_kind='performer' AND x.external_id<>? LIMIT 1", (normalize_entity_name(name), str(external_id))).fetchone()
+                conflict = connection.execute("SELECT 1 FROM entity e JOIN entity_external_ref x ON x.entity_id=e.id WHERE e.kind='performer' AND e.normalized_name=? AND x.provider=? AND x.external_kind='performer' AND x.external_id<>? LIMIT 1", (normalize_entity_name(name), source, str(external_id))).fetchone()
                 if conflict:
                     errors.append(f'Performer identity needs review: {name}')
                     continue
                 entity_id = upsert_asset_entity(connection, kind='performer', name=name, asset_id=asset_id,
-                    role='performer', source='review:adultempire', external_provider='adultempire',
+                    role='performer', source='review:' + source, external_provider=source,
                     external_id=external_id, metadata={'movie': candidate_id}, update_entity_metadata=False)
                 if entity_id:
                     portraits.append((entity_id, performer))

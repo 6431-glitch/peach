@@ -192,8 +192,16 @@ def parse_dorcel_detail(soup: BeautifulSoup, path: str) -> dict:
         if not isinstance(title, str) or not title.strip():
             break
         actors = data.get('actors') if isinstance(data.get('actors'), list) else []
+        profiles = {}
+        for anchor in soup.select('a[href]'):
+            url = urlsplit(urljoin(DORCEL, str(anchor.get('href', ''))))
+            if url.scheme == 'https' and url.hostname == 'www.dorcelvision.com' and re.fullmatch(r'/en/pornstars-(?:women|men)/[a-z0-9-]+/?', url.path, re.I):
+                label = anchor.get_text(' ', strip=True)
+                label = re.sub(r'\s+\d+\s+movies?$', '', label, flags=re.I).strip()
+                if label:
+                    profiles[label.casefold()] = url.path
         return {'id': path, 'title': title.strip(), 'date': str(data.get('datecreated') or ''),
-                'studio': '', 'performers': [{'name': name} for name in actors if isinstance(name, str)],
+                'studio': '', 'performers': [{'name': name, 'id': profiles.get(name.casefold(), '')} for name in actors if isinstance(name, str)],
                 'cover': str(data.get('image') or ''), 'description': str(data.get('description') or ''),
                 'url': DORCEL + path}
     raise ValueError('DorcelVision did not return movie metadata.')

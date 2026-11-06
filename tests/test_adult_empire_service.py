@@ -22,9 +22,11 @@ class AdultEmpireServiceTests(unittest.TestCase):
 
     def test_dorcel_detail_reads_structured_movie_metadata(self):
         soup = BeautifulSoup('''<script type="application/ld+json">{"@type":"Movie","name":"Example",
-        "datecreated":"2024","actors":["Person"],"description":"Description"}</script>''', 'html.parser')
+        "datecreated":"2024","actors":["Person"],"description":"Description"}</script>
+        <a href="/en/pornstars-women/person">Person 44 movies</a>''', 'html.parser')
         movie = service.parse_dorcel_detail(soup, '/en/movies/studio/example')
         self.assertEqual((movie['title'], movie['date'], movie['performers'][0]['name']), ('Example', '2024', 'Person'))
+        self.assertEqual(movie['performers'][0]['id'], '/en/pornstars-women/person')
 
     def test_dorcel_routes_require_authentication_and_validate_path(self):
         with patch.dict('os.environ', {'PEACH_EMPIRE_TOKEN': 'x' * 32}, clear=True):
