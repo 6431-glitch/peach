@@ -450,6 +450,7 @@ def purge_assets(connection, rows, *, missing_only: bool = False):
                 f"UPDATE playlist SET source_seed_asset_id=NULL WHERE source_seed_asset_id IN ({marks})",
                 purged,
             )
+            connection.execute(f"UPDATE follow_item SET asset_id=NULL WHERE asset_id IN ({marks})", purged)
             for table in ASSET_REFERENCE_TABLES:
                 connection.execute(f"DELETE FROM {table} WHERE asset_id IN ({marks})", purged)
             connection.execute(f"DELETE FROM asset WHERE id IN ({marks})", purged)
