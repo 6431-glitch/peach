@@ -66,6 +66,35 @@ def _active_run(contract, state):
     return runs[0] if runs else None
 
 
+def _speed_fields(previous, mode):
+    """切换档位时同步公开速度和估算范围。"""
+    fields = dict(speed_mode=mode, eta_initial=True)
+    if previous.get('speed_mode') != mode:
+        ratio = mode_ratio(mode, previous.get('speed_mode') or 'standard')
+        for key in ('eta_seconds_min', 'eta_seconds_max'):
+            if isinstance(previous.get(key), (int, float)):
+                fields[key] = max(0, int(previous[key] * ratio))
+    return fields
+
+
+def _project_speed(contract, state, run, control):
+    """读取本轮档位及旧状态，空闲时展示下一轮待选值。"""
+    previous_mode = state.get('speed_mode')
+    if run is not None:
+        from .task_control import speed_mode
+        mode = speed_mode(contract.db_path, run.id, (run.parent_run_id, run.root_run_id),
+                          default=previous_mode or control.mode)
+    elif state.get('status') in ACTIVE:
+        mode = control.mode
+    else:
+        from .web_settings import task_speed_mode
+        from .repository import LedgerDatabase
+        mode = control.next_mode or task_speed_mode(LedgerDatabase(contract.db_path))
+    if state.get('status') in ACTIVE and previous_mode and previous_mode != mode:
+        state.update(_speed_fields(state, mode))
+    state['speed_mode'] = mode
+
+
 def q_library_processing(contract, _args):
     if _args.get('estimate') == '1':
         config = settings_file.active()
@@ -94,23 +123,7 @@ def q_library_processing(contract, _args):
     state = decorate(state)
     control = control_for(settings_file.active())
     control.refresh(force=True)
-    previous_mode = state.get('speed_mode')
-    if run is not None:
-        from .task_control import speed_mode
-        state['speed_mode'] = speed_mode(contract.db_path, run.id, (run.parent_run_id, run.root_run_id),
-                                        default=previous_mode or control.mode)
-    elif state.get('status') in ACTIVE:
-        state['speed_mode'] = control.mode
-    else:
-        from .web_settings import task_speed_mode
-        from .repository import LedgerDatabase
-        state['speed_mode'] = control.next_mode or task_speed_mode(LedgerDatabase(contract.db_path))
-    if state.get('status') in ACTIVE and previous_mode and previous_mode != state['speed_mode']:
-        ratio = mode_ratio(state['speed_mode'], previous_mode)
-        for key in ('eta_seconds_min', 'eta_seconds_max'):
-            if isinstance(state.get(key), (int, float)):
-                state[key] = max(0, int(state[key] * ratio))
-        state['eta_initial'] = True
+    _project_speed(contract, state, run, control)
     state['skip_requested'] = (state.get('status') == 'running' and state.get('current_asset_id') is not None
                                and control.skip_asset_id == state.get('current_asset_id'))
     from .media_processing_policy import metadata_only
@@ -189,13 +202,7 @@ def _set_processing_speed(contract, control, previous, body):
         return q_library_processing(contract, {})
     control.request('set_speed', mode=mode)
     if previous.get('status') in ACTIVE:
-        ratio = mode_ratio(mode, previous.get('speed_mode') or 'standard')
-        fields = dict(speed_mode=mode, eta_initial=True)
-        if previous.get('speed_mode') != mode:
-            for key in ('eta_seconds_min', 'eta_seconds_max'):
-                if isinstance(previous.get(key), (int, float)):
-                    fields[key] = max(0, int(previous[key] * ratio))
-        contract.library_processing_job.update(previous['job_id'], **fields)
+        contract.library_processing_job.update(previous['job_id'], **_speed_fields(previous, mode))
     return q_library_processing(contract, {})
 
 
@@ -404,6 +411,22 @@ def retry_after_network_recovery(contract, sync=None):
         return None
 
 
+def _initial_speed(contract, control, previous, body, *, resume):
+    """恢复沿用任务及旧记录的档位，新任务消费显式选择、待选值或默认值。"""
+    from .web_settings import task_speed_mode
+    from .repository import LedgerDatabase
+    control.refresh(force=True)
+    if resume:
+        run = _active_run(contract, previous)
+        if run is not None:
+            from .task_control import speed_mode
+            return speed_mode(contract.db_path, run.id, (run.parent_run_id, run.root_run_id),
+                              default=previous.get('speed_mode') or (body or {}).get('speed_mode') or control.mode)
+        return valid_mode(control.mode)
+    return valid_mode((body or {}).get('speed_mode') or control.next_mode
+                      or task_speed_mode(LedgerDatabase(contract.db_path)))
+
+
 def w_library_processing(contract, body, *, resume=False):
     config = settings_file.active()
     if (body or {}).get('action'):
@@ -420,20 +443,9 @@ def w_library_processing(contract, body, *, resume=False):
         remember(contract.db_path, asset_ids)
     if retry_ids is not None and not retry_ids:
         return public_state(previous)
-    from .web_settings import task_speed_mode
-    from .repository import LedgerDatabase
     control = control_for(config)
-    control.refresh(force=True)
-    run = _active_run(contract, previous) if resume else None
-    if run is not None:
-        from .task_control import speed_mode
-        mode = speed_mode(contract.db_path, run.id, (run.parent_run_id, run.root_run_id),
-                          default=previous.get('speed_mode') or (body or {}).get('speed_mode') or control.mode)
-    else:
-        mode = valid_mode(control.mode if resume else
-                          (body or {}).get('speed_mode') or control.next_mode
-                          or task_speed_mode(LedgerDatabase(contract.db_path)))
-    control_for(config).request('set_speed', mode=mode)
+    mode = _initial_speed(contract, control, previous, body, resume=resume)
+    control.request('set_speed', mode=mode)
     def work(job_id):
         try:
             result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,

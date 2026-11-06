@@ -722,7 +722,7 @@ class ProcessingControlTests(unittest.TestCase):
                                            database=runs.database, candidate_root=self.root / 'candidates',
                                            cover_root=self.root / 'covers', cache_bust=lambda: None)
                 observed = []
-                def process(*_args, **kwargs):
+                def process(*_args, observed=observed, **kwargs):
                     observed.append((kwargs['speed_mode'], task_control.CURRENT.get().mode,
                                      kwargs['resume_state']['completed_metadata']))
                     return {'status': 'complete'}

@@ -114,6 +114,16 @@ def current_control():
     return CURRENT.get() or TASK_CONTROL.get()
 
 
+def execution_mode(database, requested=None, *, control):
+    """执行中的任务沿用本轮档位，独立调用选择显式档位或设置默认值。"""
+    if control is not None:
+        return control.mode
+    if requested is not None:
+        return valid_mode(requested)
+    from .web_settings import task_speed_mode
+    return task_speed_mode(database)
+
+
 def low_mode():
     control = current_control()
     return control is not None and control.mode == 'low'
@@ -359,12 +369,9 @@ def user_cancelled(db_path, job_id):
 
 def initial_estimate(config, db_path, stage, asset_ids=None, mode=None):
     """仅使用账本统计，不在启动 HTTP 请求里遍历媒体目录。"""
-    if mode is None and current_control() is not None:
-        mode = current_control().mode
     if mode is None:
         from .repository import LedgerDatabase
-        from .web_settings import task_speed_mode
-        mode = task_speed_mode(LedgerDatabase(db_path))
+        mode = execution_mode(LedgerDatabase(db_path), control=current_control())
     query = "SELECT COUNT(*), COALESCE(SUM(size),0) FROM asset WHERE medium='video' AND disposal IS NULL"
     parameters = []
     if asset_ids is not None:
