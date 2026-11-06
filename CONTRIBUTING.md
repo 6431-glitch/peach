@@ -21,7 +21,7 @@ gh issue create --repo peach-mitao/peach --title "<标题>" --type Bug --body-fi
 
 Write issues with the templates in [`.github/ISSUE_TEMPLATE/`](.github/ISSUE_TEMPLATE/): `bug_report.md` for bugs, `feature_request.md` for features. Keep the template headings in order and fill in each one; drop optional sections you have nothing for, and put extra material such as a root-cause analysis after the template sections. The web form under New issue is the easiest path. When an AI tool or the command line submits the issue, copy the template file, remove the leading `---` block and the `<!-- -->` comments, fill it in, and submit it with the command above; use `--type Feature` for features, and leave out `--type` if you lack permission to set it: issues that follow a template get their type automatically. Write for maintainers and other users in plain technical language; the terms and delivery format in `AGENTS.md` and the skills are for code changes, not issues. New external issues without template sections are closed automatically regardless of their submission method or existing type, and reopen once the sections are filled in.
 
-Issue 的看板变更每小时集中同步，新条目先通过模板检查再加入看板。已有条目因待补模板关闭时，关闭后的 2 小时内保持原位置；到期仍未补齐并重开，在后续同步时移到「已取消」。PR、主线提交与发布事件仍可触发同步，同样遵守这段缓冲。
+模板检查只在新建或修改正文时执行，并在执行时读取当前正文和开闭状态。Issue 的看板变更每小时集中同步，新条目先通过模板检查再加入看板。已有条目因待补模板关闭时，关闭后的 2 小时内保持原位置；到期仍未补齐并重开，在后续同步时移到「已取消」。PR、主线提交与发布事件仍可触发同步，同样遵守这段缓冲。
 
 公开截图、录屏和附件使用不含露骨画面的演示资料，并遮盖隐私信息；不要上传影片、封面原图或数据库。公开内容与素材许可要求见[文档规范](docs/WRITING.md#公开与私有记录)。
 
