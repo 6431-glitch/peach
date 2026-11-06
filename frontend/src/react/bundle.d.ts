@@ -77,10 +77,26 @@ export interface StorageState {
   free_bytes: number | null;
   total_bytes: number | null;
   system_drive: boolean;
-  usage: { measured_at: number; total_bytes: number; total_files: number; categories: StorageCategory[] } | null;
+  budget?: { policy: StoragePolicy | null; error: string; recommendation_state?: string; last_check: {
+    checked_at: number; paused: boolean; reasons: string[]; freed_bytes: number;
+    cache_bytes: number | null; data_bytes: number | null; external_cache_bytes: number | null;
+  } | null };
+  usage: { measured_at: number; total_bytes: number; total_files: number; categories: StorageCategory[];
+    allocated_bytes?: number | null; managed_cache_bytes?: number | null; external_cache_bytes?: number | null;
+    capacity_error?: string } | null;
   job: { state: 'idle' | 'measuring' | 'cleaning'; category?: string; categories?: string[]; message: string; error?: boolean;
     files?: number; bytes?: number; expected_files?: number | null };
   relocation: { available: boolean; message: string; steps?: { text: string; command: string }[]; last: StorageRelocation | null };
+}
+
+export interface StoragePolicy {
+  enabled: boolean;
+  minimum_free_gib: number;
+  data_max_gib: number;
+  cache_max_gib: number;
+  auto_clean: boolean;
+  external_cache_path: string;
+  external_cache_max_gib: number;
 }
 
 export interface PeachProxyState { mode: string; proxy_saved: boolean; needs_selection: boolean }

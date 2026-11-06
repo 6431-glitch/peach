@@ -60,6 +60,23 @@ def _media_process(commands, profile, fail=None, duration=None):
 
 
 class TranscodeServiceTests(unittest.TestCase):
+    def test_capacity_denial_does_not_start_or_retry_an_encoder(self):
+        from types import SimpleNamespace
+        from peach.jobs import DiskSpaceDenied
+        from peach.transcodes import TranscodeCapacityDenied
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            source = root / 'movie.mkv'
+            source.write_bytes(b'original')
+            service = TranscodeService(_Resolver(root / 'ffmpeg.exe'), root / 'cache')
+            service.capacity_guard = SimpleNamespace(check=lambda **kwargs: (_ for _ in ()).throw(DiskSpaceDenied('capacity')))
+            with patch('peach.transcodes.subprocess.Popen') as process:
+                with self.assertRaises(TranscodeCapacityDenied):
+                    service.browser_path(1, source)
+            process.assert_not_called()
+            self.assertFalse(list((root / 'cache').glob('*.mp4')))
+            self.assertEqual(source.read_bytes(), b'original')
+
     def test_diagnostic_profile_reads_cached_evidence_without_touching_media(self):
         from peach.transcodes import _MediaProfile
         service = TranscodeService(_Resolver(None), Path('cache'))

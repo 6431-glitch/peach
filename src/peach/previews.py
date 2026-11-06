@@ -500,6 +500,7 @@ class DerivedImageService:
         self.root = root.resolve()
         self.edge = edge
         self.quality = quality
+        self.capacity_guard = None
 
     def path_for(self, key: str) -> Path:
         from .upgrade_rules import PREVIEWS
@@ -514,6 +515,12 @@ class DerivedImageService:
         destination = self.path_for(key)
         if artifact_rules.current(destination, source=source):
             return destination
+        if self.capacity_guard is not None:
+            from .jobs import DiskSpaceDenied
+            try:
+                self.capacity_guard.check()
+            except DiskSpaceDenied:
+                return None
         self.root.mkdir(parents=True, exist_ok=True)
         try:
             with _generate_lock(destination):

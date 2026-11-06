@@ -2176,6 +2176,8 @@ def w_follow_play(contract, body) -> dict:
     contract.cache_bust()
     with contract.database.write_transaction() as connection:
         status = _store(contract, connection).record_playback(item_id)
+    from .capacity_history import record_playback
+    record_playback(contract)
     return {"ok": True, "item": item_id, "status": status}
 
 
