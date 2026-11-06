@@ -592,7 +592,7 @@ class NasDirectoryTests(unittest.TestCase):
             for name in ("#recycle", "#RECYCLE", "@eaDir", "@snapshot", "@Recycle",
                          "@Recently-Snapshot", ".@__thumb", ".@__qini", ".@upload_cache", ".streams",
                          ".zfs", ".snapshot", ".snapshots", "~snapshot", ".recycle", ".Trash", ".Trash-1000",
-                         ".TemporaryItems", ".AppleDouble", ".AppleDB",
+                         ".TemporaryItems", ".AppleDouble", ".AppleDB", ".@#local",
                          ".AppleDesktop", "Network Trash Folder", ".Spotlight-V100", ".Trashes",
                          ".fseventsd", "__MACOSX", "$Recycle.Bin", "System Volume Information",
                          ".wfm_upload123", "normal", "@creator", ".hidden"):
