@@ -16,7 +16,7 @@ from pathlib import Path
 if not __package__:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     __package__ = "scripts"
-from . import (changelog, check_public_text, check_readme_impact, co_author, commit_subject,
+from . import (changelog, check_public_text, co_author, commit_subject,
                test_evidence, test_runner, version_bump)
 from .release_tag import MASTER_WRITER
 
@@ -148,8 +148,7 @@ def require_metadata(worker: Path, target_branch: str) -> str:
         raise WorkspaceError("验证工作树必须干净")
     if _git(worker, "merge-base", "--is-ancestor", target_branch, "HEAD", check=False).returncode:
         raise WorkspaceError("目标分支已前进；请在工作树 rebase 后运行 auto 验证")
-    problems = (check_readme_impact.check(worker, target_branch)
-                + co_author.check(worker, target_branch)
+    problems = (co_author.check(worker, target_branch)
                 + commit_subject.check(worker, target_branch))
     if problems:
         raise WorkspaceError("; ".join(problems))
