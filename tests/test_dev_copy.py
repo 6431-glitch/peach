@@ -11,11 +11,11 @@ from peach import dev_copy
 
 
 class DevCopyTests(unittest.TestCase):
-    def test_setup_copy_sources_can_be_saved_with_digest_protection(self):
+    def test_python_copy_sources_can_be_saved_with_digest_protection(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp).resolve()
             (root / 'src/peach').mkdir(parents=True)
-            for name in ('routes_pages.py', 'onboarding.py', 'media_sources.py'):
+            for name in ('routes_pages.py', 'onboarding.py', 'media_sources.py', 'release_updates.py'):
                 with self.subTest(name=name):
                     path = root / 'src/peach' / name
                     path.write_text("LABEL = '设置说明'", encoding='utf-8')

@@ -46,7 +46,8 @@ from .scan import scan_location
 from .fsutil import atomic_write_text
 from . import artifact_rules, upgrade_rules
 from .ffmpeg import FFmpegResolver
-from .jobs import DiskGuard, JobDeferred, JobPolicyError
+from .jobs import JobDeferred, JobPolicyError
+from .storage_budget import CapacityGuard
 from .media_probe import probe_unmeasured
 from .media_sources import cost_for
 from .media_processing_policy import metadata_only
@@ -3026,7 +3027,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
         flush_candidates = lambda force=False: None
 
         try:
-            guard = DiskGuard(config.data_root, 1)
+            guard = CapacityGuard(config)
             guard.check(force=True)
             locations = config.locations if location == 'configured' else {location: config.locations[location]}
             sources = _scan_sources(config, db_path, locations=locations, asset_ids=scope_ids,
