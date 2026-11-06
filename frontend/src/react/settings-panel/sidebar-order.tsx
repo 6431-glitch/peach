@@ -6,7 +6,7 @@ import { useRef, useState, type DragEvent, type KeyboardEvent } from 'react';
 
 import { dismissMenu, presentMenu } from '@peach/legacy/ui';
 
-import { moveSidebarKey, useCommitSidebarOrder } from '../sidebar/sidebar-order';
+import { moveSidebarKey, useCommitNavigationOrder } from '../sidebar/sidebar-order';
 import { Icon } from './icon';
 import type { SettingsPanelHost } from './settings-panel-api';
 
@@ -15,7 +15,7 @@ const HOME = '__home__';
 const optionKey = (key: string) => key === '' ? HOME : key;
 
 export function SidebarOrder({ host }: { host: SettingsPanelHost }) {
-  const commit = useCommitSidebarOrder(host.store);
+  const commit = useCommitNavigationOrder(host.store);
   const order = host.store.value.sidebarOrder;
   const byKey = new Map(host.navCatalog.map((item) => [item[0], item]));
   const visible = order.map((key) => byKey.get(key)).filter((item) => item !== undefined);
