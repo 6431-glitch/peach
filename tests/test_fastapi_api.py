@@ -2885,21 +2885,27 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             calls.append(str(request.url))
             if request.url.path.endswith('redirect.mp4'):
                 return httpx.Response(302, headers={'location': 'https://private.example/video.mp4'}, request=request)
-            body = b'#EXTM3U\n#EXT-X-TARGETDURATION:4\n#EXTINF:4,\npart.ts\n#EXT-X-ENDLIST\n' if request.url.path.endswith('.m3u8') else b'media'
-            kind = 'application/vnd.apple.mpegurl' if request.url.path.endswith('.m3u8') else 'video/mp2t'
+            body = (b'#EXTM3U\n#EXT-X-TARGETDURATION:4\n'
+                    b'#EXT-X-KEY:METHOD=AES-128,URI="https://ygp.blxr5es.com/hls/key.key"\n'
+                    b'#EXTINF:4,\nhttps://ygp.blxr5es.com/hls/part.ts\n#EXT-X-ENDLIST\n'
+                    if request.url.path.endswith('.m3u8') else b'media')
+            kind = ('application/vnd.apple.mpegurl' if request.url.path.endswith('.m3u8') else
+                    'application/octet-stream' if request.url.path.endswith('.key') else 'video/mp2t')
             return httpx.Response(200, headers={'content-type': kind, 'content-length': str(len(body))},
                                   stream=httpx.ByteStream(body), request=request)
         original = self.app.state.http_transport.client
         fake = httpx.Client(transport=httpx.MockTransport(upstream))
         self.app.state.http_transport.client = fake
         try:
-            with patch('peach.follow_stream.resolves_publicly', return_value=False):
+            with patch('peach.http.host_addresses', return_value=('198.18.0.73',)):
                 ref = previews.register('EXM-010', 'https://jdforrepam.com/api/preview/root.m3u8', playlist=True)
                 playlist = await self.client.get(f'/jav-preview/EXM-010/{ref}?t=secret')
                 self.assertEqual(playlist.status_code, 200)
                 segment = next(line for line in playlist.text.splitlines() if line.startswith('/jav-preview/'))
                 self.assertEqual((await self.client.get(segment + '?t=secret')).content, b'media')
-                self.assertEqual(len(calls), 2)
+                key = next(line for line in playlist.text.splitlines() if line.startswith('#EXT-X-KEY:')).split('"')[1]
+                self.assertEqual((await self.client.get(key + '?t=secret')).content, b'media')
+                self.assertEqual(len(calls), 3)
                 for index, url in enumerate(('https://private.example/video.mp4',
                                              'https://www.prestige-av.com/api/media/redirect.mp4')):
                     code = f'EXM-{20 + index:03d}'
@@ -2907,7 +2913,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
                     failed = await self.client.get(f'/jav-preview/{code}/{ref}?t=secret')
                     self.assertEqual(failed.status_code, 404)
                     self.assertEqual(failed.headers['cache-control'], 'no-store')
-                self.assertEqual(len(calls), 3)
+                self.assertEqual(len(calls), 4)
                 self.assertTrue(all('private.example' not in url for url in calls))
         finally:
             self.app.state.http_transport.client = original
