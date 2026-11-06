@@ -40,7 +40,7 @@ from . import junk
 from . import sample_followup
 from .metadata_policy import SOURCE_SPECS, preferred_tag_source
 from .platform import translate_ledger_path as _local_ledger_path
-from .review_csv import read_rows, write_rows
+from .review_csv import read_rows_shared, write_rows
 from .scan import scan_location
 from .fsutil import atomic_write_text
 from . import artifact_rules, upgrade_rules
@@ -3059,7 +3059,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                        completed_at=time.time(), error=issue_summary(state['issue_count'], state['paused_count']))
                 return state
             output = candidate_root / 'library-metadata-field-candidates.csv'
-            groups = {row['item_key']: row for row in read_rows(output, missing_ok=True)}
+            groups = {row['item_key']: row for row in read_rows_shared(output, missing_ok=True)}
             scoped_groups = lambda: _candidate_scope(groups, scope_ids)
             listing = _DirectoryIndex()
             local_evidence = _LocalEvidenceCache(config, db_path, cover_root, listing, state, path)
