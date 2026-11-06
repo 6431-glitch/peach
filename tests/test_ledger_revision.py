@@ -429,6 +429,7 @@ class DeclaredTablesTests(unittest.TestCase):
         self._get("/api/stats")
         self._get("/api/folders")
         self._get("/api/ads", limit="10")
+        self._get("/api/duplicates", limit="10")
         with closing(sqlite3.connect(self.db_path)) as connection:
             source_id, item_id = (str(connection.execute(f"SELECT min(id) FROM {table}").fetchone()[0])
                                   for table in ("follow_source", "follow_item"))
@@ -453,7 +454,8 @@ class DeclaredTablesTests(unittest.TestCase):
             "FOLLOW_GROUP_TABLES": web_follow.FOLLOW_GROUP_TABLES,
             "TASTE_TABLES": web_stats.TASTE_TABLES,
             "PROFILE_TABLES": taste_preferences.PROFILE_TABLES,
-            "JUNK_SCORE_TABLES": web_batch.JUNK_SCORE_TABLES}
+            "JUNK_SCORE_TABLES": web_batch.JUNK_SCORE_TABLES,
+            "DUPLICATE_TABLES": web_batch.DUPLICATE_TABLES}
         names = {tuple(tables): name for name, tables in declarations.items()}
         leaks: dict[str, set[str]] = {}
         for label, declared, reads in self.reads.frames:
