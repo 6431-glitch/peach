@@ -400,7 +400,7 @@ class WebContract:
         由调用方给出：漏一样，那一样变了页面就一直是旧的。版本号在计算前读，计算期间
         有进程外的写，结果记在旧版本下，下一次请求读到新版本照样重算。库还没有版本号时
         退回 `CACHE_TTL`。
-        `tables` 声明聚合依赖的表；这类缓存经过提交通知后仍按声明的版本核验，
+        `tables` 声明聚合依赖的表，留空时累计全库版本；缓存经过提交通知后仍按版本核验，
         同键的并发请求共用一次计算。
 
         带 `tables` 的键在版本变了、手上那份之后只有本进程的后台提交时，先回那一份，另起
@@ -408,9 +408,7 @@ class WebContract:
         当场重算。不带 `tables` 的键每次提交都被清掉，没有旧值可回。
         """
         if not tables:
-            revision = self.ledger_revision()
-            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf,
-                               version=(revision, *inputs))
+            return self._cached_by_tables(key, fn, inputs, tables)
         revision = self.ledger_revision(tables)
         if revision is not None:
             version = (tuple(tables), revision, *inputs)
@@ -462,12 +460,12 @@ class WebContract:
         with lock:
             revision = self.ledger_revision(tables)
             with self.cache_lock:
-                if revision is None:
+                if revision is None or not tables:
                     self.revision_cache_keys.discard(key)
                 else:
                     self.revision_cache_keys.add(key)
-            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf,
-                               version=(tuple(tables), revision, *inputs))
+            version = (tuple(tables), revision, *inputs) if tables else (revision, *inputs)
+            return self.cached(key, fn, ttl=CACHE_TTL if revision is None else math.inf, version=version)
 
     def stop_background_jobs(self) -> None:
         """服务关停时丢掉后台任务状态并等线程收工。
