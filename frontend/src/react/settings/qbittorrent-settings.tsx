@@ -52,20 +52,20 @@ export function QbittorrentSettings() {
     <Disclosure summary={<span className="font-semibold">qBittorrent {saved ? '· Configured' : '· Not configured'}</span>}>
       <div className="flex flex-col gap-3 py-3">
         <p className="text-text-secondary">Send selected magnets to the qBittorrent default download folder.</p>
-        <div className="grid grid-cols-[minmax(7rem,1fr)_minmax(0,3fr)_minmax(5rem,1fr)] gap-2">
+        <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'minmax(76px, 1fr) minmax(0, 3fr) minmax(62px, 1fr)', alignItems: 'end' }}>
           <Select aria-label="Protocol" selectedKey={scheme} onSelectionChange={key => { if (key) change(() => setScheme(String(key))) }}>
             <SelectItem id="http">HTTP</SelectItem><SelectItem id="https">HTTPS</SelectItem>
           </Select>
           <Input aria-label="Host" placeholder="Host" value={host} onChange={value => change(() => setHost(value))} />
           <Input aria-label="Port" placeholder={scheme === 'https' ? '443' : '80'} value={port} onChange={value => change(() => setPort(value))} inputMode="numeric" />
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'end' }}>
           <Input label="Username" value={username} onChange={value => change(() => setUsername(value))} autoComplete="off" />
           <Input label="Password" type="password" value={password} onChange={value => change(() => setPassword(value))} autoComplete="new-password" placeholder={saved ? 'Saved; leave blank to keep' : ''} />
         </div>
         {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
         {message ? <p role="status">{message}</p> : null}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Button variant="secondary" disabled={busy} onClick={() => void run(true)}>Test connection {status === 'ok' ? '✓' : status === 'error' ? '✕' : ''}</Button>
           <Button disabled={busy} onClick={() => void run(false)}>Save</Button>
         </div>
