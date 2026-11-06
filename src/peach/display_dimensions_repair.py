@@ -17,6 +17,7 @@ def collect(connection) -> dict:
 
 def reprobe(contract, config, asset_id: int, *, baseline=None) -> dict:
     from .library_processing import _ffprobe_path
+    from .jobs import DiskGuard
     with contract.database.read_connection() as connection:
         row = connection.execute("SELECT * FROM asset WHERE id=? AND medium='video' AND disposal IS NULL",
                                  (asset_id,)).fetchone()
@@ -27,7 +28,10 @@ def reprobe(contract, config, asset_id: int, *, baseline=None) -> dict:
     ffprobe = _ffprobe_path(config)
     if not ffprobe:
         raise ValueError('显示尺寸重探未取得 ffprobe')
+    guard = DiskGuard(config.data_root, 1)
+    guard.check(force=True)
     measured = media_probe.measure(ffprobe, asset_id, row['path'])
+    guard.check(force=True)
     if measured[0] <= 0 or measured[1] <= 0 or measured[2] <= 0:
         raise ValueError('显示尺寸未取得，保留原有测量')
     with contract.database.write_transaction() as connection:

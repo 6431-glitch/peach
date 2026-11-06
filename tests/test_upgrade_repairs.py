@@ -99,6 +99,21 @@ class UpgradeRepairTests(unittest.TestCase):
             self.assertEqual(tuple(connection.execute('SELECT duration,width,height,ctx_orient FROM asset').fetchone()),
                              (60, 720, 1280, '竖屏'))
 
+    def test_display_reprobe_checks_system_disk_before_reading_and_before_replacing_measurements(self):
+        from peach import media_probe
+        from peach.jobs import DiskSpaceDenied
+        self.display_sample()
+        for free_space, reads in (([0], 0), ([100, 0], 1)):
+            with self.subTest(free_space=free_space), \
+                    patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                    patch('peach.jobs.DiskGuard.free_gb', side_effect=free_space), \
+                    patch.object(media_probe, 'probe_file', return_value=(60, 2276, 1280, 'h264', 25, None)) as probe, \
+                    self.assertRaises(DiskSpaceDenied):
+                upgrade_repairs._media_run(self.contract, 'upgrade-library:display-dimensions-1:1', Mock())
+            self.assertEqual(probe.call_count, reads)
+            with self.database.read_connection() as connection:
+                self.assertEqual(tuple(connection.execute('SELECT width,height FROM asset').fetchone()), (720, 1280))
+
     def test_unchanged_display_geometry_does_not_rebuild_previews(self):
         from peach import media_probe
         self.display_sample(width=1920, height=1080)
