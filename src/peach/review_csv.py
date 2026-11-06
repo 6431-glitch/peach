@@ -87,15 +87,15 @@ def write_rows(
 
     # 这份文件已有人按缓存读（`_parsed_rows`）时，写下的内容顺手记成它的解析结果：
     # 处理任务每处理一部片就整份重写一次七十多 MB 的候选表，下一个读的人不必再整份重解析。
-    remember = str(target) in _PARSED
+    remember = atomic and str(target) in _PARSED
     if remember:
         rows = [_as_read_back(row, fields, fill_missing) for row in rows]
 
     if not atomic:
         with target.open("w", encoding=ENCODING, newline="") as handle:
             dump(handle)
-        if remember:
-            _remember(target, target.stat(), rows)
+        with _PARSED_LOCK:
+            _PARSED.pop(str(target), None)
         return
 
     with atomic_path(target) as temporary:

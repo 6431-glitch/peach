@@ -379,7 +379,8 @@ class WebContract:
 
     def _table_revisions(self) -> dict[str, int] | None:
         snapshot = _REVISION_SNAPSHOT.get()
-        if snapshot is not None and snapshot.get("contract") is self                 and snapshot.get("generation") == self.cache_generation:
+        if (snapshot is not None and snapshot.get("contract") is self
+                and snapshot.get("generation") == self.cache_generation):
             return snapshot["revisions"]
         generation = self.cache_generation
         try:

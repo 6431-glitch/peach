@@ -358,9 +358,13 @@ def _json(payload) -> Response:
     """
     if isinstance(payload, Response):
         return payload
-    return Response(json.dumps(payload, ensure_ascii=False, allow_nan=False,
-                               separators=(",", ":"), default=jsonable_encoder).encode("utf-8"),
-                    media_type="application/json")
+    try:
+        content = json.dumps(payload, ensure_ascii=False, allow_nan=False,
+                             separators=(",", ":"), default=jsonable_encoder).encode("utf-8")
+    except TypeError:
+        # JSON 原生键之外的日期、路径等，沿用框架转换键和值的规则。
+        return JSONResponse(jsonable_encoder(payload))
+    return Response(content, media_type="application/json")
 
 
 @router.get("/api/{route:path}")

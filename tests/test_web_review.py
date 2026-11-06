@@ -398,6 +398,27 @@ class ReviewQueueTests(unittest.TestCase):
         shared[0]["field"] = "改过"
         self.assertEqual(rm_candidates.read_rows_shared(batch)[0]["field"], "title")
 
+    def test_non_atomic_rewrite_does_not_cache_rows_under_another_writers_file_stamp(self):
+        from contextlib import contextmanager
+
+        batch = self.candidates / "studio-logo-candidate-20260923.csv"
+        batch.write_text("studio,saved\nFALENO,initial.jpg\n", encoding="utf-8")
+        rm_candidates.read_candidates("studio_logos", self.candidates)
+        real_open = Path.open
+
+        @contextmanager
+        def intervening_write(path, *args, **kwargs):
+            with real_open(path, *args, **kwargs) as handle:
+                yield handle
+            if path == batch and args and args[0] == "w":
+                with real_open(path, "w", encoding="utf-8", newline="") as handle:
+                    handle.write("studio,saved\nFALENO,external.jpg\n")
+
+        with mock.patch.object(Path, "open", intervening_write):
+            rm_candidates.write_rows(batch, ["studio", "saved"],
+                                     [{"studio": "FALENO", "saved": "first.jpg"}])
+        self.assertEqual(rm_candidates.read_rows_shared(batch)[0]["saved"], "external.jpg")
+
     def test_older_batches_keep_their_undecided_rows_in_the_queue(self):
         """跑了新批次不该让上一批未复核的行消失。
 

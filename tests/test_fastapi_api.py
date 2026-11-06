@@ -211,6 +211,19 @@ class ContractJsonTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             _json({"nan": float("nan")})
 
+    def test_contract_reads_preserve_framework_encoding_for_non_string_keys(self):
+        from datetime import date
+        from enum import Enum
+        from fastapi.encoders import jsonable_encoder
+        from fastapi.responses import JSONResponse
+        from peach.routes_api import _json
+
+        class Key(Enum):
+            DAY = "day"
+
+        payload = {date(2026, 11, 6): {Path("covers"): {Key.DAY: "今天"}}}
+        self.assertEqual(_json(payload).body, JSONResponse(jsonable_encoder(payload)).body)
+
 
 @unittest.skipUnless(HAS_DEPS, "FastAPI/httpx 尚未安装")
 class RobotsTests(unittest.IsolatedAsyncioTestCase):
