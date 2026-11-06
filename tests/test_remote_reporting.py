@@ -5,6 +5,7 @@ import runpy
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -322,21 +323,35 @@ class RemoteReportingTests(unittest.TestCase):
 
     def test_frequency_shared_file_serializes_independent_processes(self):
         from peach import diagnostic_frequency as frequency
+        from filelock import FileLock
         root = Path(__file__).resolve().parents[1]
         reporting.save({"usage": True, "errors": True})
-        program = ('from peach import diagnostic_frequency as f; '
+        program = ('import sys; from peach import diagnostic_frequency as f; '
                    'from peach.settings_file import active; '
                    'from peach.remote_reporting import consent; '
-                   'f.record(active(), consent()["revision"], {"release":"test", "tags":{"stage":"cli"}}, '
+                   'config=active(); revision=consent()["revision"]; '
+                   'print("ready", flush=True); sys.stdin.readline(); '
+                   'f.record(config, revision, {"release":"test", "tags":{"stage":"cli"}}, '
                    'lambda e: True, lambda c: True)')
         env = {**os.environ, 'PYTHONPATH': str(root / 'src'), 'PEACH_SENTRY_DSN': ''}
         processes = [subprocess.Popen([sys.executable, '-X', 'utf8', '-c', program], env=env,
-                                     stdout=subprocess.PIPE, stderr=subprocess.PIPE) for _ in range(2)]
-        for process in processes:
-            try:
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                     stderr=subprocess.PIPE) for _ in range(2)]
+        try:
+            for process in processes:
+                self.assertEqual(process.stdout.readline().strip(), b'ready')
+            with FileLock(str(frequency._path(self.config)) + '.lock'):
+                for process in processes:
+                    process.stdin.write(b'go\n')
+                    process.stdin.flush()
+                time.sleep(.25)
+                for process in processes:
+                    self.assertIsNone(process.poll(), '锁被短暂占用时诊断记录进程不能退出')
+            for process in processes:
                 stdout, stderr = process.communicate(timeout=30)
                 self.assertEqual(process.returncode, 0, (stdout, stderr))
-            finally:
+        finally:
+            for process in processes:
                 if process.poll() is None:
                     process.kill()
                     process.communicate()
