@@ -6,10 +6,9 @@
 普通的筛选列表，留给排查用。
 
 「最近完成」按结束时刻从新到旧排，一页数的是顶层那几轮，后继随父任务一起下发；
-`finished_has_more` 说它后面还有没有更早的。往前翻
-带上当前最旧那一行的 `before_finished_at` 与 `before_id`，只回 `finished` 与
-`finished_has_more` 这一页：在跑那段和被挡下那段由轮询那一份负责，翻页时再下发一遍
-只会让两份快照互相打架。
+活动页通过 `page` 与 `limit` 读取当前页和总数，轮询刷新同一页。
+原游标调用通过 `before_finished_at` 与 `before_id` 读取更早的终态任务，
+响应仅包含该页及后继计数。
 """
 from __future__ import annotations
 
@@ -67,7 +66,12 @@ def _tasks(contract, args):
         rows = contract.task_runs.query(status=status, task_key=task_key, limit=limit)
         return {"ok": True, "filtered": True, "available": True,
                 "runs": [payload(row) for row in rows]}
-    finished, has_more = contract.task_runs.finished_page(before=before, limit=limit)
+    page = int((args or {}).get('page') or 1)
+    if page < 1 or (before is not None and page != 1):
+        raise ValueError('任务页码无效')
+    total = contract.task_runs.finished_count()
+    page = min(page, max(1, (total + limit - 1) // limit))
+    finished, has_more = contract.task_runs.finished_page(before=before, limit=limit, offset=(page - 1) * limit)
     if before is not None:
         return {"ok": True, "filtered": False, "available": True,
                 "finished": [payload(row) for row in finished],
@@ -95,6 +99,8 @@ def _tasks(contract, args):
                     if row.status == "cancelled" and "blocked_by" in row.result_summary],
         "finished": [payload(row) for row in finished],
         "finished_has_more": has_more,
+        "finished_total": total,
+        "finished_page": page,
         "working_parents": [payload(row) for row in working],
         "followup_counts": _parent_counts(contract, (*running, *finished, *working)),
         "statuses": {"active": list(ACTIVE_STATUSES), "finished": list(TERMINAL_STATUSES)},

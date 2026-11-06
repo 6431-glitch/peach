@@ -574,6 +574,15 @@ class BackgroundJob:
         if run is None:
             return
         self._run_ids[job_id] = run.id
+        if state.get('speed_mode') is not None:
+            from .job_recovery import current_run
+            from .task_control import request, speed_mode
+            stored_mode = speed_mode(self.runs.database.db_path, run.id,
+                                     (run.parent_run_id, run.root_run_id), default=None)
+            if current_run.get() != run.id or stored_mode is None:
+                request(self.runs, run.id, 'set_speed', mode=state['speed_mode'])
+                stored_mode = state['speed_mode']
+            self.update(job_id, speed_mode=stored_mode)
         self.update(job_id, run_id=run.id)
 
     def _close_run(self, job_id: str, status: str, *, error: str = "",

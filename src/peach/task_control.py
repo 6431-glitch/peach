@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import signal
 import subprocess
@@ -61,6 +62,38 @@ def requested(db, run_id, ancestors=()):
     return intent(db, run_id, ancestors).get('action', 'resume')
 
 
+def speed_mode(db, run_id, ancestors=(), *, default='standard'):
+    commands = [_read(_root(db) / f'{identity}.speed.json')
+                for identity in dict.fromkeys((run_id, *ancestors)) if identity is not None]
+    command = max(commands, key=lambda value: value.get('at', 0), default={})
+    return command.get('speed_mode', default)
+
+
+def initialize_speed(store, run_id, parent=None):
+    from .web_settings import task_speed_mode
+    from .update_tasks import _mutex
+    db = store.database.db_path
+    with _mutex(state_for(db)):
+        path = _root(db) / f'{run_id}.speed.json'
+        mode = (speed_mode(db, parent.id, (parent.parent_run_id, parent.root_run_id))
+                if parent is not None else task_speed_mode(store.database))
+        atomic_write_text(path, json.dumps({'speed_mode': mode, 'at': time.time_ns()}))
+
+
+def prune_speeds(store):
+    from .update_tasks import _mutex
+    db = store.database.db_path
+    with _mutex(state_for(db)):
+        with store.database.read_connection() as connection:
+            retained = {str(row[0]) for row in connection.execute('SELECT id FROM task_run')}
+        for path in _root(db).glob('*.speed.json'):
+            if path.name.removesuffix('.speed.json') not in retained:
+                try:
+                    path.unlink(missing_ok=True)
+                except OSError:
+                    logging.getLogger(__name__).warning('任务速度文件清退失败：%s', path, exc_info=True)
+
+
 def projection(store, run):
     if not store.enabled or run.host != store.host:
         return None
@@ -83,18 +116,22 @@ def projection(store, run):
         actions = ['resume', 'cancel']
     else:
         state, actions = 'running', ['pause', 'cancel']
-    return {'state': state, 'actions': actions}
+    return {'state': state, 'actions': [*actions, *(['set_speed'] if action != 'cancel' else [])],
+            'speed_mode': speed_mode(store.database.db_path, run.id, (run.parent_run_id, run.root_run_id))}
 
 
-def request(store, run_id, action):
+def request(store, run_id, action, *, mode=None):
     from .update_tasks import _mutex
     with _mutex(state_for(store.database.db_path)):
-        return _request(store, run_id, action)
+        return _request(store, run_id, action, mode=mode)
 
 
-def _request(store, run_id, action):
-    if action not in ('pause', 'resume', 'cancel'):
-        raise ValueError('请选择暂停、继续或取消')
+def _request(store, run_id, action, *, mode=None):
+    if action not in ('pause', 'resume', 'cancel', 'set_speed'):
+        raise ValueError('请选择暂停、继续、取消或调整速度')
+    if action == 'set_speed':
+        from .processing_control import valid_mode
+        mode = valid_mode(mode)
     run = store.get(run_id)
     if run is None:
         raise KeyError('任务未取得，请刷新后重试')
@@ -109,6 +146,12 @@ def _request(store, run_id, action):
             raise ValueError('任务正在取消，不能再暂停或继续')
         return run
     if current == action:
+        return run
+    if action == 'set_speed':
+        command = json.dumps({'speed_mode': mode, 'at': time.time_ns()})
+        for child in (run, *store.active_descendants(run.id)):
+            if child.host == store.host:
+                atomic_write_text(_root(db) / f'{child.id}.speed.json', command)
         return run
     # 父任务的控制覆盖已经派出的后继；尚未派出的工作在父任务结算前经过停点。
     with store.database.read_connection() as connection:
@@ -166,11 +209,32 @@ class Control:
         self.owners = {}
         self._paused_seconds = 0.0
         self._paused_at = None
+        self.next_work = {}
+        self._speed_mode = None
         run = store.get(run_id)
         self.ancestors = (run.parent_run_id, run.root_run_id)
         self._observed = None
         from .task_resources import Usage
         self.usage = Usage(self.db, run_id)
+
+    @property
+    def mode(self):
+        return speed_mode(self.db, self.run_id, self.ancestors)
+
+    def pace(self, kind):
+        from .processing_control import IO_INTERVALS
+        while True:
+            self.checkpoint()
+            mode = self.mode
+            with self.lock:
+                if mode != self._speed_mode:
+                    self.next_work.clear()
+                    self._speed_mode = mode
+                remaining = self.next_work.get(kind, 0) - time.monotonic()
+                if remaining <= 0:
+                    self.next_work[kind] = time.monotonic() + IO_INTERVALS[mode].get(kind, 0)
+                    return
+            self.stopping.wait(min(.1, remaining))
 
     @property
     def paused_seconds(self):
@@ -274,10 +338,13 @@ def shutdown(db, run_id):
         control.stopping.set()
 
 
-def checkpoint():
+def checkpoint(kind='work'):
     control = CURRENT.get()
     if control is not None:
-        control.checkpoint()
+        if kind is None:
+            control.checkpoint()
+        else:
+            control.pace(kind)
 
 
 def controlled(function):

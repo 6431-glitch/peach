@@ -6,7 +6,7 @@ import { JavPage } from '../../src/react/jav/jav-page';
 import { JavHeader } from '../../src/react/jav/jav-header';
 import { discoveryKey, prefetchJav } from '../../src/react/jav/jav';
 import { WANTS_KEY } from '../../src/react/wants/wants';
-import { actionOrder, buttonNamed, click, mount, settle, type } from './render';
+import { actionOrder, buttonNamed, choose, click, mount, settle, type } from './render';
 
 notifyManager.setScheduler(notify => notify());
 afterEach(() => queryClient.clear());
@@ -131,6 +131,56 @@ it('新作分区的女优、厂牌、标签只列接口给的订阅新作筛选�
   await click(host.querySelector('[data-jav-card] h3'));
   expect(navigate).toHaveBeenLastCalledWith('/works/ABC-001');
   history.replaceState(null, '', before);
+});
+
+it('新作分页按地址每页数量取数，切换数量回到首屏并保留筛选', async () => {
+  const before = location.pathname + location.search;
+  history.replaceState(null, '', '/jav?tab=releases&page=2&size=10&tag=剧情');
+  const items = Array.from({ length: 55 }, (_, index) => ({ id: index + 1, code: `ABC-${index + 1}`,
+    title: '示例作品', performers: '', studio: '', has_cover: false, release_date: '2026-11-10', wanted: false }));
+  const fetcher = vi.fn(async (url: string) => {
+    const params = new URL(url, location.origin).searchParams;
+    const page = Number(params.get('page')), size = Number(params.get('size'));
+    return { ok: true, status: 200, json: async () => ({ items: items.slice((page - 1) * size, page * size),
+      total: items.length, candidate_total: items.length, page, size,
+      facets: { performers: [], studios: [], tags: [] } }) };
+  });
+  vi.stubGlobal('fetch', fetcher);
+  try {
+    const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="releases" readOnly navigate={vi.fn()} receipt={vi.fn()} /></QueryClientProvider>);
+    host.querySelector<HTMLElement>('section[aria-label="订阅新作"]')!.scrollIntoView = vi.fn();
+    await settle();
+    expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(10);
+    expect(host.querySelector('[data-table-pagination]')?.textContent).toContain('11–20 / 55 部作品');
+    await choose(host.querySelector('button[aria-label="每页显示数量"]'), '每页 50 部');
+    await settle();
+    expect(host.querySelectorAll('[data-jav-card]')).toHaveLength(50);
+    const asked = new URL(String(fetcher.mock.calls.at(-1)?.[0]), location.origin).searchParams;
+    expect([asked.get('page'), asked.get('size'), asked.get('tag')]).toEqual(['1', '50', '剧情']);
+    expect(new URLSearchParams(location.search).get('size')).toBe('50');
+    expect(new URLSearchParams(location.search).has('page')).toBe(false);
+  } finally { history.replaceState(null, '', before) }
+});
+
+it('空新作列表保留每页数量控件，越界页自动返回首页', async () => {
+  const before = location.pathname + location.search;
+  history.replaceState(null, '', '/jav?tab=releases&page=99');
+  const fetcher = vi.fn(async (_url: string) => ({ ok: true, status: 200, json: async () => ({
+    items: [], total: 0, candidate_total: 0, page: 1, size: 24, facets: { performers: [], studios: [], tags: [] },
+  }) }));
+  vi.stubGlobal('fetch', fetcher);
+  try {
+    const host = await mount(<QueryClientProvider client={queryClient}><JavPage tab="releases" readOnly navigate={vi.fn()} receipt={vi.fn()} /></QueryClientProvider>);
+    host.querySelector<HTMLElement>('section[aria-label="订阅新作"]')!.scrollIntoView = vi.fn();
+    await settle();
+    expect(host.textContent).toContain('暂无未入库的新作');
+    expect(host.querySelector('[data-table-pagination]')?.textContent).toContain('0–0 / 0 部作品');
+    expect(new URLSearchParams(location.search).has('page')).toBe(false);
+    await choose(host.querySelector('button[aria-label="每页显示数量"]'), '每页 20 部');
+    await settle();
+    const asked = new URL(String(fetcher.mock.calls.at(-1)?.[0]), location.origin).searchParams;
+    expect([asked.get('page'), asked.get('size')]).toEqual(['1', '20']);
+  } finally { history.replaceState(null, '', before) }
 });
 
 it('新作分区切到列表：作品、艺人、厂牌各占一列，表头点时长按时长排序', async () => {

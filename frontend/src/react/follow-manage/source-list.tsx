@@ -137,9 +137,6 @@ export interface SourceListProps {
   onAdd(): void;
 }
 
-/** 页码。上一页／下一页在两端，页码居中，页数多时两侧折成「…」。 */
-export { Pagination } from '../components/table-pagination';
-
 /** 一条来源在创作者卡里的那一行：勾选、站标与名字、状态、上次检查、动作。 */
 function SourceRow(
   { source, selected, onToggle, handlers }:

@@ -462,6 +462,19 @@ class TasksEndpointTests(unittest.TestCase):
             seen += [row["id"] for row in page["finished"]]
         self.assertEqual(seen, [slow.id, late, *reversed(early)])
 
+    def test_recent_page_numbers_support_totals_and_clamp_to_the_last_page(self):
+        ids = [self._settled(f"2026-09-11T10:0{minute}:00.000Z") for minute in range(5)]
+        page = web_tasks.q_tasks(self.contract, {"limit": "2", "page": "2"})
+        self.assertEqual([row['id'] for row in page['finished']], [ids[2], ids[1]])
+        self.assertEqual(page['finished_total'], 5)
+        self.assertEqual(page['finished_page'], 2)
+        last = web_tasks.q_tasks(self.contract, {"limit": "2", "page": "99"})
+        self.assertEqual([row['id'] for row in last['finished']], [ids[0]])
+        self.assertEqual(last['finished_page'], 3)
+        for value in ('0', '-1', 'invalid'):
+            with self.assertRaises(ValueError):
+                web_tasks.q_tasks(self.contract, {'page': value})
+
     def test_a_page_counts_top_level_runs_and_brings_their_followups_along(self):
         """一轮派出二十条后继时，按行数翻页会让后继把派出它们的那一轮挤出第一页。"""
         parent = self.store.start("feed-check", trigger="manual")
@@ -617,11 +630,25 @@ class ConflictStatusTests(unittest.TestCase):
         self.contract.task_runs.finish(parent.id, 'succeeded')
         with unittest.mock.patch.object(self.contract.followups, 'wake') as wake:
             paused = task_run_control(self.request, child, {'action': 'pause'}, {})
-            self.assertEqual(paused['run']['control'], {'state': 'paused', 'actions': ['resume', 'cancel']})
+            self.assertEqual(paused['run']['control'], {'state': 'paused',
+                             'actions': ['resume', 'cancel', 'set_speed'], 'speed_mode': 'standard'})
             continued = task_run_control(self.request, child, {'action': 'resume'}, {})
             self.assertEqual(continued['run']['id'], child)
             self.assertEqual(continued['run']['control']['state'], 'running')
             self.assertEqual(wake.call_count, 2)
+
+    def test_task_speed_endpoint_changes_only_the_selected_run(self):
+        from peach.web_settings import q_settings
+        run = self.contract.task_runs.start('scan', trigger='manual')
+        other = self.contract.task_runs.start('probe', trigger='manual')
+        with unittest.mock.patch.object(self.contract.followups, 'wake'):
+            response = task_run_control(self.request, run.id,
+                                        {'action': 'set_speed', 'speed_mode': 'low'}, {})
+        self.assertEqual(response['run']['control']['speed_mode'], 'low')
+        self.assertEqual(task_run_detail(self.request, other.id, {})['run']['control']['speed_mode'], 'standard')
+        self.assertEqual(q_settings(self.contract)['taskSpeedMode'], 'standard')
+        invalid = task_run_control(self.request, run.id, {'action': 'set_speed', 'speed_mode': 'fast'}, {})
+        self.assertEqual(invalid.status_code, 409)
 
     def test_control_endpoint_rejects_unknown_finished_foreign_and_read_only_runs(self):
         run = self.contract.task_runs.start('control-test', trigger='manual')

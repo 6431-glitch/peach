@@ -99,6 +99,91 @@ class TaskControlTests(unittest.TestCase):
     def child_command(path, count):
         return [sys.executable, '-u', '-c', HEARTBEAT_CHILD, str(path), str(count)]
 
+    def test_new_tasks_snapshot_the_default_and_runtime_speed_stays_local(self):
+        from peach.web_settings import task_speed_mode, w_settings
+        w_settings(self.store.database, {'taskSpeedMode': 'low'})
+        first = self.store.start('scan', trigger='manual')
+        w_settings(self.store.database, {'taskSpeedMode': 'high'})
+        second = self.store.start('probe', trigger='manual')
+        self.assertEqual(self.state(first.id)['speed_mode'], 'low')
+        self.assertEqual(self.state(second.id)['speed_mode'], 'high')
+        task_control.request(self.store, first.id, 'set_speed', mode='standard')
+        self.assertEqual(self.state(first.id)['speed_mode'], 'standard')
+        self.assertEqual(self.state(second.id)['speed_mode'], 'high')
+        self.assertEqual(task_speed_mode(self.store.database), 'high')
+        with self.assertRaises(ValueError):
+            task_control.request(self.store, first.id, 'set_speed', mode='fast')
+        self.assertEqual(self.state(first.id)['speed_mode'], 'standard')
+
+    def test_parent_speed_reaches_existing_and_future_followups_and_preserves_pause(self):
+        parent = self.store.start('parent', trigger='manual')
+        child_id = self.store.enqueue_followups(parent.id, [('leaf:1', 'leaf', '')])['queued'][0]
+        task_control.request(self.store, parent.id, 'pause')
+        task_control.request(self.store, parent.id, 'set_speed', mode='low')
+        self.assertEqual(self.state(child_id)['state'], 'paused')
+        self.assertEqual(self.state(child_id)['speed_mode'], 'low')
+        task_control.request(self.store, child_id, 'set_speed', mode='high')
+        self.assertEqual(self.state(parent.id)['speed_mode'], 'low')
+        child = self.store.get(child_id)
+        self.store.finish(child_id, 'succeeded')
+        continued = self.store.continue_followup(child)
+        self.assertEqual(self.state(continued)['speed_mode'], 'high')
+        task_control.request(self.store, parent.id, 'set_speed', mode='standard')
+        self.assertEqual(self.state(continued)['speed_mode'], 'standard')
+        later = self.store.enqueue_followups(parent.id, [('leaf:2', 'leaf', '')])['queued'][0]
+        self.assertEqual(self.state(later)['speed_mode'], 'standard')
+        reopened = task_control.Control(TaskRunStore(self.db), later)
+        self.assertEqual(reopened.mode, 'standard')
+
+    def test_generic_tasks_share_io_intervals_and_ffmpeg_thread_options(self):
+        from peach.processing_control import checkpoint, ffmpeg_options, low_mode
+        run = self.store.start('probe', trigger='manual')
+        with task_control.bind(self.store, run.id) as control:
+            for mode, interval, threads in (('low', 1.5, ['-threads', '1']),
+                                             ('standard', .25, ['-threads', '2']),
+                                             ('high', 0, [])):
+                task_control.request(self.store, run.id, 'set_speed', mode=mode)
+                with patch.object(control, 'checkpoint'), patch('peach.task_control.time.monotonic', return_value=100):
+                    checkpoint('network')
+                    self.assertEqual(control.next_work['network'], 100 + interval)
+                self.assertEqual(ffmpeg_options(), threads)
+                self.assertEqual(low_mode(), mode == 'low')
+
+    def test_speed_initialization_failure_rolls_back_the_task_and_its_mutex(self):
+        with patch('peach.task_control.atomic_write_text', side_effect=PermissionError('speed file denied')):
+            with self.assertRaises(PermissionError):
+                self.store.start('probe', trigger='manual', mutex_key='probe')
+        self.assertEqual(self.store.query(), [])
+        parent = self.store.start('probe', trigger='manual', mutex_key='probe')
+        with patch('peach.task_control.atomic_write_text', side_effect=OSError('disk full')):
+            with self.assertRaises(OSError):
+                self.store.enqueue_followups(parent.id, [('leaf:1', 'leaf', '')])
+        self.assertEqual(self.store.children(parent.id), [])
+        child = self.store.get(self.store.enqueue_followups(parent.id, [('leaf:1', 'leaf', '')])['queued'][0])
+        self.store.finish(child.id, 'succeeded')
+        with patch('peach.task_control.atomic_write_text', side_effect=OSError('disk full')):
+            with self.assertRaises(OSError):
+                self.store.continue_followup(child)
+        self.assertEqual([row.id for row in self.store.children(parent.id)], [child.id])
+
+    def test_prune_removes_expired_speed_files_and_preserves_active_and_recent_runs(self):
+        old = self.store.start('probe', trigger='manual')
+        self.store.finish(old.id, 'succeeded')
+        recent = self.store.start('probe', trigger='manual')
+        self.store.finish(recent.id, 'succeeded')
+        active = self.store.start('probe', trigger='manual')
+        root = update_tasks.state_for(self.db).parent / 'task-controls'
+        orphan = root / '999999.speed.json'
+        orphan.write_text('{"speed_mode":"high"}', encoding='utf-8')
+        self.assertEqual(self.store.prune('probe', keep=1), 1)
+        self.assertFalse((root / f'{old.id}.speed.json').exists())
+        self.assertFalse(orphan.exists())
+        self.assertTrue((root / f'{recent.id}.speed.json').exists())
+        self.assertTrue((root / f'{active.id}.speed.json').exists())
+        (root / f'{active.id}.speed.json').unlink()
+        self.assertEqual(self.state(active.id)['speed_mode'], 'standard')
+        self.assertIsNone(task_control.speed_mode(self.db, active.id, default=None))
+
     def test_pause_and_resume_keep_the_same_job_and_run_without_progress_while_paused(self):
         finish = self.event()
         progress = []
@@ -147,7 +232,7 @@ class TaskControlTests(unittest.TestCase):
         run_id = original['run_id']
         task_control.request(self.store, run_id, 'cancel')
         self.assertEqual(self.store.get(run_id).status, 'running')
-        self.assertEqual(self.state(run_id), {'state': 'cancelling', 'actions': []})
+        self.assertEqual(self.state(run_id), {'state': 'cancelling', 'actions': [], 'speed_mode': 'standard'})
         with self.assertRaises(ValueError):
             task_control.request(self.store, run_id, 'resume')
         reach_checkpoint.set()

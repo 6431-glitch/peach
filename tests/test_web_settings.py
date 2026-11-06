@@ -98,7 +98,7 @@ class SettingsRoundTripTests(unittest.TestCase):
                           "organizeTemplates": {}, "codePatterns": [],
                           "feedHideGroupCompilations": True,
                           "feedHideSoloCompilations": False, "feedHideExcerpts": True,
-                          "searchHistoryLimit": None, "performerNameLanguage": "zh-CN"})
+                          "searchHistoryLimit": None, "performerNameLanguage": "zh-CN", "taskSpeedMode": "standard"})
 
     def test_code_patterns_are_checked_when_saved(self):
         """写错的规则在保存那一刻报出来；存下的规则去掉空行，读回来是同一份。"""
@@ -110,6 +110,17 @@ class SettingsRoundTripTests(unittest.TestCase):
             with self.assertRaises(ValueError, msg=repr(broken)[:40]):
                 w_settings(self.contract, {"codePatterns": broken})
         self.assertEqual(self._stored_json()["codePatterns"], saved)
+
+    def test_default_task_speed_accepts_each_mode_and_rejects_unknown_values(self):
+        for mode in ('low', 'standard', 'high'):
+            with self.subTest(mode=mode):
+                saved = w_settings(self.contract, {'taskSpeedMode': mode})
+                self.assertEqual(saved['taskSpeedMode'], mode)
+                self.assertEqual(web_settings.task_speed_mode(self.contract), mode)
+        for value in (None, '', 'fast', 1, ['low']):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                w_settings(self.contract, {'taskSpeedMode': value})
+        self.assertEqual(q_settings(self.contract)['taskSpeedMode'], 'high')
 
     def test_name_language_is_shared_and_preserves_other_profile_settings(self):
         self.assertEqual(q_settings(self.contract)['performerNameLanguage'], 'zh-CN')
@@ -175,7 +186,7 @@ class SettingsRoundTripTests(unittest.TestCase):
                           "organizeTemplates": {}, "codePatterns": [],
                           "feedHideGroupCompilations": True,
                           "feedHideSoloCompilations": False, "feedHideExcerpts": True,
-                          "searchHistoryLimit": None, "performerNameLanguage": "zh-CN"})
+                          "searchHistoryLimit": None, "performerNameLanguage": "zh-CN", "taskSpeedMode": "standard"})
         self.assertEqual(q_settings(self.contract)["sidebarOrder"], order)
         self.assertEqual(self._stored_json()["sidebarOrder"], order)
 

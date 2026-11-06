@@ -94,7 +94,23 @@ def q_library_processing(contract, _args):
     state = decorate(state)
     control = control_for(settings_file.active())
     control.refresh(force=True)
-    state['speed_mode'] = control.mode
+    previous_mode = state.get('speed_mode')
+    if run is not None:
+        from .task_control import speed_mode
+        state['speed_mode'] = speed_mode(contract.db_path, run.id, (run.parent_run_id, run.root_run_id),
+                                        default=previous_mode or control.mode)
+    elif state.get('status') in ACTIVE:
+        state['speed_mode'] = control.mode
+    else:
+        from .web_settings import task_speed_mode
+        from .repository import LedgerDatabase
+        state['speed_mode'] = control.next_mode or task_speed_mode(LedgerDatabase(contract.db_path))
+    if state.get('status') in ACTIVE and previous_mode and previous_mode != state['speed_mode']:
+        ratio = mode_ratio(state['speed_mode'], previous_mode)
+        for key in ('eta_seconds_min', 'eta_seconds_max'):
+            if isinstance(state.get(key), (int, float)):
+                state[key] = max(0, int(state[key] * ratio))
+        state['eta_initial'] = True
     state['skip_requested'] = (state.get('status') == 'running' and state.get('current_asset_id') is not None
                                and control.skip_asset_id == state.get('current_asset_id'))
     from .media_processing_policy import metadata_only
@@ -164,6 +180,13 @@ def _cancel_processing(contract, config, control, previous, job_id):
 
 def _set_processing_speed(contract, control, previous, body):
     mode = valid_mode(body.get('speed_mode'))
+    run = _active_run(contract, previous) if previous.get('status') in ACTIVE else None
+    if run is not None:
+        from .task_control import request
+        request(contract.task_runs, run.id, 'set_speed', mode=mode)
+    elif previous.get('status') not in ACTIVE:
+        control.select_next_mode(mode)
+        return q_library_processing(contract, {})
     control.request('set_speed', mode=mode)
     if previous.get('status') in ACTIVE:
         ratio = mode_ratio(mode, previous.get('speed_mode') or 'standard')
@@ -397,8 +420,19 @@ def w_library_processing(contract, body, *, resume=False):
         remember(contract.db_path, asset_ids)
     if retry_ids is not None and not retry_ids:
         return public_state(previous)
-    mode = valid_mode(control_for(config).mode if resume else
-                      (body or {}).get('speed_mode') or control_for(config).mode)
+    from .web_settings import task_speed_mode
+    from .repository import LedgerDatabase
+    control = control_for(config)
+    control.refresh(force=True)
+    run = _active_run(contract, previous) if resume else None
+    if run is not None:
+        from .task_control import speed_mode
+        mode = speed_mode(contract.db_path, run.id, (run.parent_run_id, run.root_run_id),
+                          default=previous.get('speed_mode') or (body or {}).get('speed_mode') or control.mode)
+    else:
+        mode = valid_mode(control.mode if resume else
+                          (body or {}).get('speed_mode') or control.next_mode
+                          or task_speed_mode(LedgerDatabase(contract.db_path)))
     control_for(config).request('set_speed', mode=mode)
     def work(job_id):
         try:
@@ -424,9 +458,12 @@ def w_library_processing(contract, body, *, resume=False):
     if incremental:
         from .library_new_assets import pending
         estimate_ids = pending(contract.db_path)
-    return public_state(contract.library_processing_job.start(
+    result = contract.library_processing_job.start(
         work, restart=True, initial={'stage': labels[stage], 'requested_stage': stage,
                                     **initial_estimate(config, contract.db_path, stage, estimate_ids, mode)},
         recovery={'stage': stage, 'speed_mode': mode, 'incremental': incremental,
                   **({'asset_ids': asset_ids or retry_ids}
-                                    if asset_ids is not None or retry_ids is not None else {})}))
+                                    if asset_ids is not None or retry_ids is not None else {})})
+    if not resume:
+        control.select_next_mode(None)
+    return public_state(result)

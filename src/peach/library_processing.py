@@ -2920,6 +2920,13 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
     path.parent.mkdir(parents=True, exist_ok=True)
     retrying = retry_ids is not None
     scope_ids, initial_ids = _initial_processing_scope(db_path, selected_ids, retry_ids, incremental, resume_state)
+    from .task_control import CURRENT as TASK_CONTROL
+    task = TASK_CONTROL.get()
+    if task is not None:
+        speed_mode = task.mode
+    elif speed_mode is None:
+        from .web_settings import task_speed_mode
+        speed_mode = task_speed_mode(judgement_database)
     control = task_control(config, state_file)
     identity = job_id or uuid.uuid4().hex
     from .processing_inventory import recent_rows

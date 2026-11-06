@@ -1,11 +1,10 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "08049a4d-1354-4ab2-aae6-7fd0d8120a10", e._sentryDebugIdIdentifier = "sentry-dbid-08049a4d-1354-4ab2-aae6-7fd0d8120a10");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "922ba8a2-b0cd-40c4-9ae3-00ae3961368b", e._sentryDebugIdIdentifier = "sentry-dbid-922ba8a2-b0cd-40c4-9ae3-00ae3961368b");
 	} catch {}
 })();
-import { createPaginatedRowModel as e } from "./peach-app.createPaginatedRowModel-ClHnhG_T.js";
-import { createSortedRowModel as t, useTableSelection as n } from "./peach-app.use-table-selection-BSdXI_Nc.js";
+import { createPaginatedRowModel as e, createSortedRowModel as t, useTableSelection as n } from "./peach-app.use-table-selection-CnuGRvGn.js";
 import { $76d00c5a4edb230a$export$76ccd210b9029917 as r, $76d00c5a4edb230a$export$816b5d811295e6bc as i, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as a, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as o, $76d00c5a4edb230a$export$f850895b287ef28e as s, Button as c, Checkbox as l, ChevronSortDown as u, DataTableFooter as d, DataTableFrame as f, DataTableSort as p, SelectionDock as m, Table as h, TableColumnControls as g, TableColumnResizer as _, TableSelectionHeader as v, __toESM as y, cardClass as b, columnVisibilityFeature as x, createColumnHelper as S, flexRender as C, require_jsx_runtime as w, require_react as T, rowPaginationFeature as E, rowSelectionFeature as D, rowSortingFeature as O, tableFeatures as k, useTable as A, useTablePreferences as j } from "./peach-app.js";
 // src/react/components/data-table.tsx
 var M = /* @__PURE__ */ y(T(), 1), N = w(), P = k({
@@ -213,4 +212,4 @@ function F({ label: e, items: t, columns: y, rowId: x, rowLabel: w, selected: T,
 }
 export { F as DataTable };
 
-//# debugId=08049a4d-1354-4ab2-aae6-7fd0d8120a10
+//# debugId=922ba8a2-b0cd-40c4-9ae3-00ae3961368b
