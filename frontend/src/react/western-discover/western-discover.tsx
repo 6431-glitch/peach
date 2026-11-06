@@ -51,8 +51,8 @@ function DorcelSections() {
 }
 
 function ReleaseCards({ items, source }: { items: Item[]; source: string }) {
-  return <div className="flex gap-4 overflow-x-auto pb-3">
-    {items.map(item => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="flex w-60 shrink-0 flex-col gap-2 overflow-hidden rounded-xl border border-separator-border p-3">
+  return <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+    {items.map(item => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-xl border border-separator-border p-3">
       {item.image ? <img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer" className={source === 'stashdb' ? 'aspect-video w-full rounded-lg object-contain' : 'aspect-[2/3] w-full rounded-lg object-contain'} /> : null}
       <strong data-i18n-ignore="">{item.title}</strong>
       <span className="text-text-secondary" data-i18n-ignore="">{[item.studio, item.date, item.actors?.join(', ')].filter(Boolean).join(' · ')}</span>
