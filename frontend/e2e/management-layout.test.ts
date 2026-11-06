@@ -82,6 +82,7 @@ describe('管理页面容器与骨架', () => {
         assert.equal(new URL(page.url()).pathname, '/data-cleanup');
         await page.reload({ waitUntil: 'load' });
         await settle(page);
+        await menu.locator('[data-manage="configuration"]').waitFor({ state: 'visible' });
         assert.deepEqual(await keys(), expected);
         assert.deepEqual(opened.problems, []);
       } finally { await opened.close(); }
