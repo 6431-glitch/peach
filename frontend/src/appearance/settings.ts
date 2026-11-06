@@ -7,6 +7,7 @@ import { api } from '@peach/legacy/core';
 import { normalizeJavPreferences } from '../jav-artwork';
 import { boundedPreference } from '../number-setting';
 import { createSettingsStore, type SettingsStore } from '../settings-store';
+import { MANAGE_MENU_SECTIONS, normalizeManageOrder } from '../application/navigation-items';
 import { DEFAULT_SIDEBAR_ORDER, normalizeSidebarOrder } from '../sidebar';
 import { SORT_ALIASES, SORT_KEYS } from '../sort-preferences';
 import { DEFAULT_ACCENT, DEFAULT_HOME_GLOW, normalizeAccent, normalizeHomeGlow, type HomeGlow } from './home-glow';
@@ -56,6 +57,7 @@ export interface AppSettings {
   feedHideExcerpts: boolean;
   followInitialDays: number;
   sidebarOrder: string[];
+  manageOrder: string[];
   homeGlow: HomeGlow;
   accent: string;
 }
@@ -64,7 +66,7 @@ export const DEFAULT_SETTINGS = {
   batchSize: 60, defaultSort: 'seed', sortDefaultsVersion: 3, hoverDelaySeconds: 5, seekSeconds: 10,
   searchHistoryLimit: 10, relatedLimit: 20, feedLimit: 12, javLayout: 'big', homeLayout: 'small', javImage: 'cover',
   followLayout: 'default', peopleLayout: 'big', photoSize: 'small', ambientMode: true, miniplayer: true,
-  theaterMode: false, theme: 'system', groupCollapse: true, sidebarOrder: [...DEFAULT_SIDEBAR_ORDER],
+  theaterMode: false, theme: 'system', groupCollapse: true, sidebarOrder: [...DEFAULT_SIDEBAR_ORDER], manageOrder: [...MANAGE_MENU_SECTIONS],
   homeGlow: DEFAULT_HOME_GLOW, accent: DEFAULT_ACCENT, performerNameLanguage: 'zh-CN',
 } as const;
 
@@ -112,6 +114,7 @@ export function normalizeAppSettings(raw: unknown): { settings: AppSettings; mig
   settings.homeGlow = normalizeHomeGlow(settings.homeGlow);
   settings.accent = normalizeAccent(settings.accent);
   settings.sidebarOrder = normalizeSidebarOrder(settings.sidebarOrder);
+  settings.manageOrder = normalizeManageOrder(settings.manageOrder);
   return { settings: settings as AppSettings, migrated };
 }
 
@@ -145,6 +148,7 @@ export interface SyncedSettings {
   feedHideExcerpts?: unknown;
   searchHistoryLimit?: unknown;
   sidebarOrder?: unknown;
+  manageOrder?: unknown;
 }
 
 /* 数据库那一份落进本地缓存。启动时壳取一次、设置面板每次打开再取一次，都交到这里；开着的面板与
@@ -176,6 +180,10 @@ export function applySyncedSettings(
     }
   } else if (remote && remote.searchHistoryLimit === null
     && settings.searchHistoryLimit !== DEFAULT_SETTINGS.searchHistoryLimit) postSearchHistoryLimit(target);
+  if (Array.isArray(remote?.manageOrder)) {
+    const manageOrder = normalizeManageOrder(remote.manageOrder);
+    if (manageOrder.join(',') !== settings.manageOrder.join(',')) { settings.manageOrder = manageOrder; target.save() }
+  }
   const order = Array.isArray(remote && remote.sidebarOrder) ? remote!.sidebarOrder as string[] : null;
   if (!order || !order.length || order.join(',') === settings.sidebarOrder.join(',')) return;
   settings.sidebarOrder = order;

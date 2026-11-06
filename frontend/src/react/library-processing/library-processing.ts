@@ -24,6 +24,8 @@ export interface LibraryProcessingIssue {
 
 /** 一趟扫描与采集的快照。字段以 `q_library_processing`（`src/peach/web_library_processing.py`）为准。 */
 export interface LibraryProcessingData {
+  library_id?: string | null;
+  library_name?: string;
   metadata_only?: boolean;
   /** `idle` | `running` | `pausing` | `paused` | `stopping` | `cancelled` | `complete` | `failed`。 */
   status: string;
@@ -112,6 +114,7 @@ export const fetchProcessingEstimate = (command: LibraryProcessingCommand, signa
   const params = new URLSearchParams({ estimate: '1', stage: command.stage || 'all' });
   if (command.asset_ids) params.set('asset_ids', JSON.stringify(command.asset_ids));
   if (command.scope) params.set('scope', command.scope);
+  if (command.library_id) params.set('library_id', command.library_id);
   if (command.incremental) params.set('incremental', '1');
   if (inventory) params.set('inventory', inventory);
   return apiGet<{ traffic: ProcessingTraffic }>(`${LIBRARY_PROCESSING_URL}?${params}`, signal);
@@ -120,6 +123,7 @@ export const fetchProcessingEstimate = (command: LibraryProcessingCommand, signa
 /** 一次写操作的请求体：指定处理阶段与影片，或者按任务号重试失败项。 */
 export type ProcessingSpeed = 'low' | 'standard' | 'high';
 export interface LibraryProcessingCommand {
+  library_id?: string;
   incremental?: boolean;
   scope?: 'new';
   stage?: 'scan' | 'collect' | 'previews' | 'metadata';

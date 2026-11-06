@@ -2908,6 +2908,32 @@ class LibraryWatchdogTests(unittest.TestCase):
         return provider
 
     @windows_ledger_roots
+    def test_library_selection_limits_scan_collection_and_completion(self):
+        from dataclasses import replace
+        from peach.media_libraries import libraries
+        first, second = self.root / 'first', self.root / 'second'
+        first.mkdir()
+        second.mkdir()
+        (first / 'ABW-204.mp4').write_bytes(b'video')
+        (second / 'ABW-205.mp4').write_bytes(b'video')
+        config = replace(self._config(first), locations={'local': (str(first), str(second))})
+        library_id = libraries(config)[0]['id']
+        db = fresh_ledger(self.root)
+        provider = self._provider()
+        scanned = process_library(config, db, self.root / 'generated', self.root / 'covers',
+                                  stage='scan', library_id=library_id, provider_factory=lambda: provider)
+        with closing(sqlite3.connect(db)) as connection:
+            self.assertEqual([row[0] for row in connection.execute('SELECT name FROM asset')], ['ABW-204.mp4'])
+        self.assertEqual(scanned['library_id'], library_id)
+        self.assertEqual(len(scanned['asset_ids']), 1)
+        collected = process_library(config, db, self.root / 'generated', self.root / 'covers',
+                                    stage='collect', library_id=library_id, provider_factory=lambda: provider)
+        self.assertEqual(collected['total'], 1)
+        self.assertEqual(collected['library_id'], library_id)
+        with self.assertRaisesRegex(ValueError, '媒体库'):
+            process_library(config, db, self.root / 'generated', self.root / 'covers', library_id='missing')
+
+    @windows_ledger_roots
     def test_empty_incremental_sync_completes_without_metadata_queries(self):
         media = self.root/'media'
         media.mkdir()
@@ -3380,6 +3406,13 @@ class LibraryWatchdogTests(unittest.TestCase):
             self.assertEqual(run.call_args.kwargs['stage'], 'all')
             w_library_processing(contract, {'incremental':True})
             self.assertTrue(run.call_args.kwargs['incremental'])
+            from peach.media_libraries import libraries
+            library_id = libraries(config)[0]['id']
+            initial = w_library_processing(contract, {'library_id': library_id, 'incremental': True})
+            self.assertEqual(run.call_args.kwargs['library_id'], library_id)
+            self.assertEqual(initial['library_id'], library_id)
+            with self.assertRaisesRegex(ValueError, '媒体库'):
+                w_library_processing(contract, {'library_id': 'missing'})
             with self.assertRaisesRegex(ValueError, '开关值'):
                 w_library_processing(contract, {'incremental':'true'})
             with self.assertRaisesRegex(ValueError, '只支持扫描或同步'):
