@@ -102,7 +102,7 @@ export function StorageSettings({ initial, receipt }: { initial: StorageState; r
   const reported = useRef(running);
 
   useEffect(() => {
-    if (initial.usage || initial.job.state !== 'idle') return;
+    if (initial.usage || initial.job.state !== 'idle' || document.body.classList.contains('peach-guiding')) return;
     void action.run('measure', signal => apiSend<StorageState>(`${STORAGE_URL}/measure`, {}, 'POST', signal), setStorage);
   }, []);
 

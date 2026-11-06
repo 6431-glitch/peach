@@ -732,11 +732,13 @@ describe('设计决定：作品卡、管理页与复核', () => {
         await page.reload();
         await page.locator('#grid').waitFor();
         assert.equal(await opener.isVisible(), false, '完成快速导览后刷新又显示了教程按钮');
+        assert.deepEqual(writes, [], '只读教程触发了业务写入');
         await page.goto(new URL('/settings/maintenance', page.url()).href);
         await page.getByRole('region', { name: '新手教程', exact: true }).getByRole('button', { name: '重新打开', exact: true }).click();
         await dialog.waitFor();
         assert.equal(await opener.evaluate(node => (node as HTMLElement).hidden), false, '设置重新打开后没有恢复右上角入口');
-        assert.deepEqual(writes, [], '只读教程触发了业务写入');
+        assert.ok(writes.every(write => write === 'POST /api/configuration/storage/measure'),
+          `正常进入维护页只允许自动统计占用：${JSON.stringify(writes)}`);
         assert.deepEqual(opened.problems, []);
       } finally { await opened.close() }
     });

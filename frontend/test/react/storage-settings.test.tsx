@@ -42,6 +42,34 @@ function confirmWith(answer: boolean) {
 const box = (host: HTMLElement, key: string) =>
   host.querySelector<HTMLInputElement>(`[data-category="${key}"] input[type="checkbox"]`)!;
 
+it('首次打开维护页自动统计，已有结果时复用统计', async () => {
+  const fetcher = fetchMock(200, measured);
+  vi.stubGlobal('fetch', fetcher);
+  await mount(<StorageSettings initial={{ ...measured, usage: null }} receipt={vi.fn()} />);
+  await settle();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  expect(fetcher.mock.calls[0]?.[0]).toBe('/api/configuration/storage/measure');
+  await mount(<StorageSettings initial={measured} receipt={vi.fn()} />);
+  await settle();
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
+it('只读教程经过维护页不启动占用统计，正常访问仍可统计', async () => {
+  const fetcher = fetchMock(200, measured);
+  vi.stubGlobal('fetch', fetcher);
+  document.body.classList.add('peach-guiding');
+  try {
+    await mount(<StorageSettings initial={{ ...measured, usage: null }} receipt={vi.fn()} />);
+    await settle();
+    expect(fetcher).not.toHaveBeenCalled();
+  } finally {
+    document.body.classList.remove('peach-guiding');
+  }
+  await mount(<StorageSettings initial={{ ...measured, usage: null }} receipt={vi.fn()} />);
+  await settle();
+  expect(fetcher.mock.calls[0]?.[0]).toBe('/api/configuration/storage/measure');
+});
+
 it('不能清理的勾选框禁用并写明原因，勾几类一起清，全部清理只发可清理的那几类', async () => {
   const seen = confirmWith(true);
   const fetcher = fetchMock(200, { ...measured, job: { state: 'cleaning', category: 'playback', message: '' } });
