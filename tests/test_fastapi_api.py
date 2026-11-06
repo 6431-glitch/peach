@@ -190,6 +190,29 @@ class MediaCacheHeaderTests(unittest.TestCase):
 
 
 @unittest.skipUnless(HAS_DEPS, "FastAPI/httpx 尚未安装")
+class ContractJsonTests(unittest.TestCase):
+    def test_contract_reads_encode_to_the_same_bytes_as_the_framework_default(self):
+        from dataclasses import dataclass
+        from datetime import datetime, timezone
+        from fastapi.encoders import jsonable_encoder
+        from fastapi.responses import JSONResponse
+        from peach.routes_api import _json
+
+        @dataclass
+        class Point:
+            x: int
+
+        payload = {"ok": True, 3: "整数键", "path": Path("covers") / "ABC-001.jpg",
+                   "at": datetime(2026, 11, 6, 4, 0, tzinfo=timezone.utc), "set": {"甲"},
+                   "tuple": (1, 2.5, None), "point": Point(4), "nested": [{"名": "值"}]}
+        response = _json(payload)
+        self.assertEqual(response.body, JSONResponse(jsonable_encoder(payload)).body)
+        self.assertEqual(response.media_type, "application/json")
+        with self.assertRaises(ValueError):
+            _json({"nan": float("nan")})
+
+
+@unittest.skipUnless(HAS_DEPS, "FastAPI/httpx 尚未安装")
 class RobotsTests(unittest.IsolatedAsyncioTestCase):
     """整站不进搜索引擎。
 
