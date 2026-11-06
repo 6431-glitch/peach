@@ -61,7 +61,71 @@ class ProjectBoardTests(unittest.TestCase):
 
     def issue(self, **changes):
         return {"__typename": "Issue", "state": "OPEN", "labels": {"nodes": []},
+                "body": "## 问题描述\n闪退\n## 运行环境\nWindows 11", "authorAssociation": "NONE",
+                "author": {"__typename": "User"},
                 "repository": {"nameWithOwner": "peach-mitao/peach"}, **changes}
+
+    def test_待补模板关闭两小时内不移动随后补齐保持原位置(self):
+        issue = self.issue(state="CLOSED", stateReason="NOT_PLANNED", closedAt="2026-11-06T02:00:00Z",
+                           labels={"nodes": [{"name": "status:needs-template"}]})
+        current = {"Status": "待评估"}
+        for hour, minute, expected in ((2, 0, "待评估"), (3, 59, "待评估"), (4, 0, "已取消")):
+            with self.subTest(hour=hour, minute=minute):
+                with mock.patch.object(self.script, "datetime") as clock:
+                    clock.now.return_value = datetime(2026, 11, 6, hour, minute, tzinfo=timezone.utc)
+                    clock.fromisoformat.side_effect = datetime.fromisoformat
+                    self.assertEqual(self.script.decision(issue, current, [], None)["Status"], expected)
+        reopened = {**issue, "state": "OPEN", "closedAt": None, "labels": {"nodes": []}}
+        self.assertEqual(self.script.decision(reopened, current, [], None)["Status"], "待评估")
+
+    def test_普通关闭不等待补模板缓冲(self):
+        issue = self.issue(state="CLOSED", stateReason="NOT_PLANNED", closedAt="2026-11-06T02:00:00Z")
+        self.assertEqual(self.script.decision(issue, {"Status": "待评估"}, [], None)["Status"], "已取消")
+
+    def test_看板新条目先按模板校验并保留维护者豁免(self):
+        invalid = self.issue(id="invalid", number=444, body="nas中docker无法自动更新", issueType={"name": "Feature"})
+        valid = self.issue(id="valid", number=445)
+        maintained = self.issue(id="maintained", number=446, body="维护任务", authorAssociation="MEMBER")
+        config = {"repository": "peach-mitao/peach", "project_id": "public", "issues_only": True}
+        candidates = {}
+        with mock.patch.object(self.script, "incoming_issues", return_value=[invalid, valid, maintained]), \
+                mock.patch.object(self.script, "graphql", side_effect=lambda query, **kw: {
+                    "addProjectV2ItemById": {"item": {"id": "item-" + kw["content"]}}}) as api:
+            self.script.include_incoming(config, candidates, [], None, True)
+        self.assertEqual(set(candidates), {"valid", "maintained"})
+        self.assertEqual([call.kwargs["content"] for call in api.call_args_list], ["valid", "maintained"])
+
+    def test_整体同步在缓冲期不写状态到期只移动一次(self):
+        issue = self.issue(id="issue", number=444, title="更新失败", state="CLOSED", stateReason="NOT_PLANNED",
+                           closedAt="2026-11-06T02:00:00Z", labels={"nodes": [{"name": "status:needs-template"}]})
+        current = {"Status": "待评估", "交付进度": "未关联实现"}
+        item = {"id": "item", "content": issue, "isArchived": False}
+        fields = {name: {"id": name} for name in ("发布版本", "发布说明", "实现关联")}
+        fields["Status"] = {"id": "Status", "options": [{"id": name, "name": name} for name in ("待评估", "已取消")]}
+        fields["交付进度"] = {"id": "交付进度", "options": [{"id": "未关联实现", "name": "未关联实现"}]}
+        config = {"repository": "peach-mitao/peach", "project_id": "public"}
+        def update(query, **variables):
+            current[variables["field"]] = variables["value"]["singleSelectOptionId"]
+        with mock.patch.object(self.script, "read_project", return_value=(fields, [item])), \
+                mock.patch.object(self.script, "values", side_effect=lambda item: dict(current)), \
+                mock.patch.object(self.script, "pull_requests", return_value=[]), \
+                mock.patch.object(self.script, "incoming_issues", return_value=[]), \
+                mock.patch.object(self.script, "published_releases", return_value=[]), \
+                mock.patch.object(self.script, "graphql", side_effect=update) as api, \
+                mock.patch.object(self.script, "datetime") as clock:
+            clock.now.return_value = datetime(2026, 11, 6, 3, 0, tzinfo=timezone.utc)
+            clock.fromisoformat.side_effect = datetime.fromisoformat
+            self.assertEqual(self.script.reconcile(config, apply=True), [])
+            issue.update(state="OPEN", labels={"nodes": []}, closedAt=None)
+            clock.now.return_value = datetime(2026, 11, 6, 5, 0, tzinfo=timezone.utc)
+            self.assertEqual(self.script.reconcile(config, apply=True), [])
+            api.assert_not_called()
+            issue.update(state="CLOSED", closedAt="2026-11-06T02:00:00Z",
+                         labels={"nodes": [{"name": "status:needs-template"}]})
+            changes = self.script.reconcile(config, apply=True)
+            self.assertEqual([(change["field"], change["value"]) for change in changes], [("Status", "已取消")])
+            self.assertEqual(self.script.reconcile(config, apply=True), [])
+            api.assert_called_once()
 
     def test_merge_and_publication_keep_open_issue_waiting_for_acceptance(self):
         release = {"tag_name": "v1.2.0", "html_url": "https://example.test/release"}
