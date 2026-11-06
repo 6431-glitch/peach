@@ -1,12 +1,14 @@
 import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 import { moveSidebarKey } from './sidebar-order';
+import './navigation-reorder.css';
 
 interface Picked {
   key: string;
   origin: number;
   slot: number | null;
   offset: number;
+  bounds: { left: number; top: number; width: number };
 }
 interface Gesture {
   key: string;
@@ -113,13 +115,14 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
       column.current!.style.minHeight = `${column.current!.offsetHeight}px`;
       document.body.style.cursor = 'grabbing';
       const offset = axis === 'x' ? active.node.offsetLeft : active.node.offsetTop;
+      const { left, top, width } = active.node.getBoundingClientRect();
       const origin = active.keys.indexOf(active.key);
-      flushSync(() => setPicked({ key: active.key, offset, origin, slot: origin }));
+      flushSync(() => setPicked({ key: active.key, offset, origin, slot: origin, bounds: { left, top, width } }));
     }
     event.preventDefault();
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
     active.node.style.setProperty('--sidebar-drag-x', `${reduced ? 0 : dx + (axis === 'y' ? 18 : 0)}px`);
-    active.node.style.setProperty('--sidebar-drag-y', `${reduced ? 0 : dy}px`);
+    active.node.style.setProperty('--sidebar-drag-y', `${reduced ? 0 : dy + (axis === 'x' ? 18 : 0)}px`);
     const box = column.current!.getBoundingClientRect();
     const inside = event.clientX >= box.left && event.clientX <= box.right
       && event.clientY >= box.top && event.clientY <= box.bottom;

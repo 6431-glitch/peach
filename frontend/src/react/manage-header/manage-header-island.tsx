@@ -89,13 +89,19 @@ function ManageBar({ host: at, pressed: key, menu }: Pick<ManageHeaderProps, 'me
 
   return (
     <nav data-manage-bar="" aria-label="管理">
-      <PillTabList ref={row} data-manage-menu="" data-pill-nav="" onClickCapture={reorder.clickCapture}>
+      <PillTabList ref={row} data-manage-menu="" data-pill-nav="" data-reordering={reorder.picked ? '' : undefined}
+        onClickCapture={reorder.clickCapture}>
         {items.map(([entry, label, glyph]) => {
           const on = entry === key;
+          const nudge = reorder.nudge(entry);
           return (
             <button key={entry} type="button" data-manage={entry} aria-label={label}
               data-dragging={reorder.picked?.key === entry ? '' : undefined}
-              style={{ '--manage-picked-left': `${reorder.picked?.offset || 0}px` } as CSSProperties}
+              style={{ '--manage-picked-left': `${reorder.picked?.bounds.left || 0}px`,
+                '--manage-picked-top': `${reorder.picked?.bounds.top || 0}px`,
+                '--manage-picked-width': `${reorder.picked?.bounds.width || 0}px`,
+                '--sidebar-nudge': `${nudge.distance}px`, '--sidebar-delay': `${nudge.delay}ms` } as CSSProperties}
+              aria-keyshortcuts="Alt+ArrowLeft Alt+ArrowRight"
               {...reorder.bindings(entry)} aria-pressed={on} aria-current={on ? 'page' : undefined}
               data-pill-selected={on ? '' : undefined} data-pill-variant="gray"
               onClick={() => at.openManage(entry)}>
@@ -104,7 +110,7 @@ function ManageBar({ host: at, pressed: key, menu }: Pick<ManageHeaderProps, 'me
           );
         })}
         {reorder.hint ? <span data-manage-drop-line="" aria-hidden="true"
-          style={{ '--manage-line-left': `${reorder.linePosition}px` } as CSSProperties} /> : null}
+          style={{ '--manage-line-left': `${reorder.linePosition}px` } as CSSProperties}><span /></span> : null}
       </PillTabList>
       <span data-manage-order-status="" role="status" aria-live="polite">{reorder.announcement}</span>
     </nav>
