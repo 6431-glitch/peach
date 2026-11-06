@@ -7,7 +7,7 @@ import re
 _DIRECTORIES = frozenset({
     '@eadir', '@tmp', '@sharebin', '#recycle', '#snapshot', '@snapshot',
     '@recycle', '@recently-snapshot', '.@__thumb', '.@__qini', '.@upload_cache', '.streams',
-    '.zfs', '.snapshot', '.snapshots', '~snapshot', '.recycle', '.trash',
+    '.zfs', '.snapshot', '.snapshots', '~snapshot', '.recycle', '.trash', '.@#local',
     '.appledouble', '.appledesktop', '.appledb', 'network trash folder',
     '.spotlight-v100', '.trashes', '.temporaryitems', '.fseventsd', '__macosx',
     '$recycle.bin', 'system volume information',
