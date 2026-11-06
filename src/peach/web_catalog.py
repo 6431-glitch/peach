@@ -1118,6 +1118,8 @@ def q_item(contract: WebContract, aid):
         [kind for kind, values in d["entities"].items() if values],
         dict(_download_source_names(contract)).get(d["id"], ()),
     )
+    if d.get("location") != "online":
+        d["file_path"] = d.get("path") or ""
     d.pop("snapshot_path", None); d.pop("path", None)
     attach_multipart_groups(contract, [d])
     attach_edition_groups(contract, [d])

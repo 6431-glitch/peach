@@ -452,6 +452,15 @@ type EmpireReview = { candidate: { id: string; title: string; studio: string; da
   performers: { id: string; name: string; image: string; url: string }[] };
   identity_links: { name: string; existing: string }[]; identity_conflicts: string[]; revision: number };
 
+function filenameReleaseDate(filename: string): string {
+  const match = filename.match(/(?:^|[^\d])((?:19|20)\d{2})\.([01]\d)\.([0-3]\d)(?!\d)/);
+  if (!match) return '';
+  const [, year, month, day] = match;
+  const parsed = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  return parsed.getUTCFullYear() === Number(year) && parsed.getUTCMonth() + 1 === Number(month)
+    && parsed.getUTCDate() === Number(day) ? `${year}/${month}/${day}` : '';
+}
+
 function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions: ItemDetailActions; onClose(): void }) {
   const [source, setSource] = useState('stashdb');
   const [javCode, setJavCode] = useState(String(item.code || ''));
@@ -459,7 +468,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
   const [title, setTitle] = useState(String(item.name || '').replace(/\.(?:mp4|m4v|mkv|avi|mov|wmv|webm|mpg|mpeg|ts|m2ts)$/i, ''));
   const [actor, setActor] = useState('');
   const [studio, setStudio] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(() => filenameReleaseDate(String(item.name || '')));
   const [category, setCategory] = useState('dvd');
   const [empireUrl, setEmpireUrl] = useState('');
   const [result, setResult] = useState<MetadataResults | null>(null);
@@ -709,8 +718,8 @@ function DetailTitle({ item, queue, helpers, actions, onStatus, metadataOpen, on
           data-foldable={foldable ? '' : undefined}
           onClick={() => { if (foldable && !String(getSelection() || '')) toggle() }}
           dangerouslySetInnerHTML={{ __html: html }} />
-        {item.location !== 'online' && item.name && item.name !== displayName ?
-          <span data-original-filename="" data-i18n-ignore="">{item.name}</span> : null}
+        {item.location !== 'online' && (item.file_path || item.name) ?
+          <span data-original-filename="" data-i18n-ignore="">{item.file_path || item.name}</span> : null}
         <span data-title-tools="">
           <button type="button" data-title-fold="" hidden={!foldable} aria-expanded={expanded}
             aria-label={expanded ? '收起标题' : '展开标题'} title={expanded ? '收起标题' : '展开完整标题'} onClick={toggle}>

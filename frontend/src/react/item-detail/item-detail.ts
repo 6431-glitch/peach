@@ -39,6 +39,7 @@ export interface DetailItem extends Omit<CardFields, 'tags'> {
   [field: string]: unknown;
   error?: string;
   title?: string;
+  file_path?: string;
   width?: number | null;
   height?: number | null;
   release_date?: string | null;
