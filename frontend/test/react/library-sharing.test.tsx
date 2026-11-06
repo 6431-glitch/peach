@@ -83,6 +83,7 @@ describe('馆藏与口味分享的明确同意', () => {
     await click(buttonNamed('刷新发送状态', host));
     await settle();
     expect(host.querySelector('[role="alert"]')?.textContent).toContain('馆藏上传状态未取得');
-    expect(host.textContent).toContain('参与状态：结果未取得');
+    expect(host.querySelector('[aria-label="参与状态"]')?.textContent).toBe('结果未取得');
+    expect(host.querySelector('[aria-label="参与状态"]')?.getAttribute('data-status-tone')).toBe('warning');
   });
 });

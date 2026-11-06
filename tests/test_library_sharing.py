@@ -792,6 +792,11 @@ class LibrarySharingTests(unittest.TestCase):
             state = self.attempt_state()
             self.assertEqual(state['status'], result['status'])
             self.assertTrue(state['attempted'])
+            if result['status'] == 'accepted':
+                self.assertEqual(sharing.snapshot(self.config)['last_sent_at'], state['last_sent_at'])
+                self.assertTrue(state['last_sent_at'])
+            else:
+                self.assertNotIn('last_sent_at', state)
             if 'reason' in result:
                 self.assertEqual(state['reason'], result['reason'])
             self.assertNotIn('private', json.dumps(state))

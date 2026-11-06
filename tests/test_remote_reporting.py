@@ -17,6 +17,17 @@ DSN = "https://public@o123.ingest.us.sentry.io/456"
 
 
 class RemoteReportingTests(unittest.TestCase):
+    def test_last_sent_date_survives_queued_and_failed_delivery(self):
+        from peach import reporting_delivery
+        reporting.save({'usage': True, 'errors': True}, self.config)
+        permit = reporting._permit('usage', self.config, reporting.consent(self.config))
+        reporting_delivery.record(permit, 'first', {'status': 'queued'})
+        reporting_delivery.record(permit, 'first', {'status': 'accepted'})
+        sent = reporting_delivery.snapshot(self.config)['usage']['last_sent_at']
+        reporting_delivery.record(permit, 'next', {'status': 'queued'})
+        reporting_delivery.record(permit, 'next', {'status': 'failed', 'reason': 'queue_full'})
+        self.assertEqual(reporting_delivery.snapshot(self.config)['usage']['last_sent_at'], sent)
+
     def setUp(self):
         folder = tempfile.TemporaryDirectory()
         self.addCleanup(folder.cleanup)

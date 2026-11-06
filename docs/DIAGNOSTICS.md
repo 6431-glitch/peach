@@ -86,7 +86,7 @@ SQLite 错误复用本机与远程的结构化错误码；能够确定时附缺�
 
 错误事件表示某台机器在某个版本里第一次遇到这个诊断键，发生次数在计数日志里。每日额度、关闭上传、断网和筛选会造成观测缺失；未收到事件不能解释为没有故障。版本统计表示运行实例的每日联系，常驻进程跨 UTC 日也会尝试；运行不等于当天有人操作，不含安装标识，不能当作独立用户数、日活或故障率分母。错误事件附带的是服务主机环境，不能据此推断访问页面的客户端系统或浏览器。研究快照是普通事件，与错误事件共用组织的事件额度；版本统计与计数日志按日志字节计量，会话汇总不计费（[ADR-0132](adr/0132-diagnostics-counts-via-logs-and-sessions.md)）。
 
-运行中开启诊断后启动既有后台检查，无需重启；关闭后排队信封按同意代际拒收。缺少可用传输器时，本机回执明确为 `failed`，不长期保留 `queued`。设置页可展开查看字段和规则，并显示最近一次传输回执；HTTP 2xx 只表示接收端响应，不证明事件已留存。默认诊断不包含研究实例标识、馆藏、容量或播放活动。
+运行中开启诊断后启动既有后台检查，无需重启；关闭后排队信封按同意代际拒收。缺少可用传输器时，本机回执明确为 `failed`，不长期保留 `queued`。设置页可展开查看字段和规则，常驻信息仅显示最近发送日期；排队或失败不覆盖此前日期。参与状态使用标签。HTTP 2xx 只表示接收端响应，不证明事件已留存，该区别保留在技术回执中。默认诊断不包含研究实例标识、馆藏、容量或播放活动。
 
 `purpose` 区分 `version-statistics`、`technical-diagnostics` 与独立研究通道的 `population-research`。故障视图使用 `level:error purpose:technical-diagnostics`，生产故障可再加 `environment:production`。版本统计在日志中查询 `purpose:version-statistics`，各版本占比也显示在接收端的 Releases 页；故障次数在日志中查询正文 `Peach diagnostic count`，按 `diagnostic_key`、`occurrence_day` 或 `sentry.release` 分组对 `occurrence_count` 求和；它是数值属性，查询与仪表盘里写作 `sum(tags[occurrence_count,number])`。没有用途标签的历史事件须单独审阅，不按缺失字段推断来源；ADR-0132 之前的版本仍以 info 事件 `Peach started` 发送版本统计，应排除在故障视图与告警条件之外。
 

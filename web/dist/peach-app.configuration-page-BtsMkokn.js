@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "35efc610-3e2d-4ed6-bb1d-4de0257c7ec0", e._sentryDebugIdIdentifier = "sentry-dbid-35efc610-3e2d-4ed6-bb1d-4de0257c7ec0");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "de9b11fc-0b02-4871-9be3-7e6d24e5ef83", e._sentryDebugIdIdentifier = "sentry-dbid-de9b11fc-0b02-4871-9be3-7e6d24e5ef83");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -819,18 +819,24 @@ function Vr({ initial: e, receipt: t }) {
 	let [n, r] = (0, Z.useState)(e), [i, a] = (0, Z.useState)(null), [o, s] = (0, Z.useState)(!1), [c, l] = (0, Z.useState)(!1), u = (0, Z.useMemo)(() => i ? JSON.stringify(i.data, null, 2) : "", [i]), d = Y(), f = n.participation, p = {
 		"not-attempted": "尚未发送",
 		queued: "等待发送",
-		accepted: "接收端已响应，留存未核实",
+		accepted: "已发送",
 		failed: "发送失败",
 		unknown: "结果未取得",
 		blocked: "已拦截"
-	}, m = (e) => void d.run("save", (t) => G("/api/configuration/library-sharing", {
+	}, m = {
+		queued: "progress",
+		accepted: "success",
+		failed: "error",
+		unknown: "warning",
+		blocked: "warning"
+	}, h = (e) => void d.run("save", (t) => G("/api/configuration/library-sharing", {
 		enabled: e,
 		schema: n.schema,
 		consent: c,
 		preview_token: i?.token
 	}, "POST", t), (e) => {
 		r(e), a(null), l(!1), s(!1), t("已保存馆藏与口味上传选项");
-	}), h = () => {
+	}), g = () => {
 		let e = URL.createObjectURL(new Blob([u], { type: "application/json" })), t = document.createElement("a");
 		t.href = e, t.download = "peach-library-taste-preview.json", document.body.append(t);
 		try {
@@ -846,7 +852,7 @@ function Vr({ initial: e, receipt: t }) {
 			children: /* @__PURE__ */ (0, Q.jsx)(U, {
 				"aria-label": "上传馆藏与口味明细",
 				isSelected: n.enabled,
-				onChange: (e) => e ? s(!0) : m(!1),
+				onChange: (e) => e ? s(!0) : h(!1),
 				...K(d.busy === "save")
 			})
 		}) }),
@@ -877,21 +883,16 @@ function Vr({ initial: e, receipt: t }) {
 				}), /* @__PURE__ */ (0, Q.jsx)(N, { children: n.notice })]
 			})
 		}),
-		f ? /* @__PURE__ */ (0, Q.jsx)(V, {
+		f ? /* @__PURE__ */ (0, Q.jsxs)(V, {
 			divided: !0,
-			children: /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
-				"参与状态：",
-				f.pending_state ? `待发送${f.pending_state === "disabled" ? "关闭" : "开启"}状态` : p[f.status] || "结果未取得",
-				f.last_seen ? ` · 上次尝试 ${new Date(f.last_seen).toLocaleString()}` : ""
-			] })
-		}) : null,
-		n.enabled && [
-			"accepted",
-			"queued",
-			"blocked"
-		].includes(n.last_attempt?.status || "") ? /* @__PURE__ */ (0, Q.jsx)(V, {
-			divided: !0,
-			children: /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["馆藏周报：", p[n.last_attempt.status]] })
+			children: [/* @__PURE__ */ (0, Q.jsx)(ut, { children: /* @__PURE__ */ (0, Q.jsx)(j, {
+				term: "参与状态",
+				children: /* @__PURE__ */ (0, Q.jsx)(H, {
+					"aria-label": "参与状态",
+					tone: f.pending_state ? "progress" : m[f.status] || "neutral",
+					children: f.pending_state ? `待发送${f.pending_state === "disabled" ? "关闭" : "开启"}状态` : p[f.status] || "结果未取得"
+				})
+			}) }), n.last_sent_at ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["上次发送：", new Date(n.last_sent_at).toLocaleDateString()] }) : null]
 		}) : null,
 		n.enabled && n.last_attempt?.status === "failed" ? /* @__PURE__ */ (0, Q.jsxs)(V, {
 			divided: !0,
@@ -946,7 +947,7 @@ function Vr({ initial: e, receipt: t }) {
 				u.length > 24e3 ? /* @__PURE__ */ (0, Q.jsx)(N, { children: "显示前 24,000 个字符，下载可查看完整内容。" }) : null,
 				/* @__PURE__ */ (0, Q.jsx)(E, {
 					variant: "secondary",
-					onClick: h,
+					onClick: g,
 					children: "下载完整预览"
 				}),
 				n.enabled ? null : /* @__PURE__ */ (0, Q.jsx)(D, {
@@ -991,7 +992,7 @@ function Vr({ initial: e, receipt: t }) {
 			!n.enabled && i ? /* @__PURE__ */ (0, Q.jsx)(E, {
 				variant: "primary",
 				disabled: !c,
-				onClick: () => m(!0),
+				onClick: () => h(!0),
 				...K(d.busy === "save"),
 				children: "同意并开启上传"
 			}) : null
@@ -1047,17 +1048,10 @@ function Ur({ initial: e, receipt: t }) {
 				]
 			}), ["usage", "errors"].map((e) => {
 				let t = n.delivery?.[e];
-				return t ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
+				return t?.last_sent_at ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
 					e === "usage" ? "版本统计" : "错误诊断",
-					"：",
-					{
-						queued: "等待发送",
-						accepted: "接收端已响应，留存未核实",
-						failed: "发送失败",
-						unknown: "结果未取得",
-						blocked: "已拦截"
-					}[t.status] || "结果未取得",
-					t.at ? ` · ${new Date(t.at).toLocaleString()}` : ""
+					"上次发送：",
+					new Date(t.last_sent_at).toLocaleDateString()
 				] }, e) : null;
 			})]
 		}),
@@ -6284,4 +6278,4 @@ function Zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Js as ConfigurationPage };
 
-//# debugId=35efc610-3e2d-4ed6-bb1d-4de0257c7ec0
+//# debugId=de9b11fc-0b02-4871-9be3-7e6d24e5ef83

@@ -118,6 +118,7 @@ def snapshot(config):
     return {"enabled": bool(consent(config)), 'consent_state': consent_state(config), "available": bool(target()),
             "schema": SCHEMA, "fields": FIELDS, "notice": NOTICE,
             'participation': participation_snapshot(config),
+            'last_sent_at': attempt.get('last_sent_at'),
             "last_attempt": attempt if attempt.get("schema") == SCHEMA and attempt.get("period") == _period() else {}}
 
 
@@ -250,6 +251,8 @@ class Service:
                 status = "failed"
             value = {key: value for key, value in state.items() if key not in {"reason", "status_code"}}
             value["status"] = status
+            if status == 'accepted':
+                value['last_sent_at'] = datetime.now(timezone.utc).isoformat()
             if type(result.get("status_code")) is int and 100 <= result["status_code"] <= 599:
                 value["status_code"] = result["status_code"]
             if result.get("reason") in {"network", "http_status", "rate_limit", "queue_full", "consent", "disabled", "unknown"}:
@@ -268,6 +271,8 @@ class Service:
                 return
         identity = {"schema": SCHEMA, "period": period, "revision": current["revision"], "attempt_id": uuid.uuid4().hex}
         value = {**identity, "attempted": False}
+        if previous.get('last_sent_at'):
+            value['last_sent_at'] = previous['last_sent_at']
         stage = "collection"
         try:
             payload, data = collect(self.contract)

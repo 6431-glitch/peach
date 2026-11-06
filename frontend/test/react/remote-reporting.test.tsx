@@ -10,12 +10,13 @@ const initial: RemoteReportingState = {
 };
 
 describe('版本统计与错误诊断', () => {
-  it('显示字段规则和实际回执，不把接收响应解释为已留存', async () => {
+  it('显示上次发送日期，排队中的新请求保留此前发送日期', async () => {
+    const sent = '2026-11-06T09:40:48Z';
     const host = await mount(<RemoteReportingSettings initial={{ ...initial, delivery: {
-      usage: { status: 'accepted' }, errors: { status: 'unknown' },
+      usage: { status: 'queued', last_sent_at: sent }, errors: { status: 'unknown' },
     } }} receipt={vi.fn()} />);
-    expect(host.textContent).toContain('接收端已响应，留存未核实');
-    expect(host.textContent).toContain('错误诊断：结果未取得');
+    expect(host.textContent).toContain(`版本统计上次发送：${new Date(sent).toLocaleDateString()}`);
+    expect(host.textContent).not.toContain('错误诊断上次发送');
     const rules = host.querySelector('summary');
     await click(rules);
     expect(host.querySelector('details')?.open).toBe(true);

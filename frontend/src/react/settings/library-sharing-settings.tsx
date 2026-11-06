@@ -7,12 +7,13 @@ import { Switch } from '@/components/base/switch/switch';
 
 import { apiGet, apiSend } from '../../api';
 import { CodeBlock } from '../components/code-block';
-import { StatusLabel } from '../components/status-label';
-import { Disclosure, ErrorText, Footer, Help, Rows, Stack } from './section';
+import { StatusLabel, type StatusTone } from '../components/status-label';
+import { Disclosure, ErrorText, Fact, FactList, Footer, Help, Rows, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
 export interface LibrarySharingState {
   enabled: boolean; available: boolean; schema: number; fields: string[]; notice: string;
+  last_sent_at?: string | null;
   last_attempt?: { period?: string; status?: string; reason?: string; attempted?: boolean };
   consent_state?: 'enabled' | 'disabled' | 'needs-consent' | 'not-selected';
   participation?: { status: string; pending_state?: 'enabled' | 'disabled' | null;
@@ -31,8 +32,11 @@ export function LibrarySharingSettings({ initial, receipt }: {
   const action = useAction();
   const participation = value.participation;
   const deliveryNames: Record<string, string> = {
-    'not-attempted': '尚未发送', queued: '等待发送', accepted: '接收端已响应，留存未核实',
+    'not-attempted': '尚未发送', queued: '等待发送', accepted: '已发送',
     failed: '发送失败', unknown: '结果未取得', blocked: '已拦截',
+  };
+  const participationTones: Record<string, StatusTone> = {
+    queued: 'progress', accepted: 'success', failed: 'error', unknown: 'warning', blocked: 'warning',
   };
   const save = (enabled: boolean) => void action.run('save', (signal) =>
     apiSend<LibrarySharingState>('/api/configuration/library-sharing', {
@@ -65,13 +69,13 @@ export function LibrarySharingSettings({ initial, receipt }: {
       <Help>{value.notice}</Help>
     </Disclosure></Stack>
     {participation ? <Stack divided>
-      <Help>参与状态：{participation.pending_state
+      <FactList><Fact term="参与状态"><StatusLabel aria-label="参与状态"
+        tone={participation.pending_state ? 'progress' : participationTones[participation.status] || 'neutral'}>
+        {participation.pending_state
         ? `待发送${participation.pending_state === 'disabled' ? '关闭' : '开启'}状态`
-        : deliveryNames[participation.status] || '结果未取得'}
-        {participation.last_seen ? ` · 上次尝试 ${new Date(participation.last_seen).toLocaleString()}` : ''}</Help>
+        : deliveryNames[participation.status] || '结果未取得'}</StatusLabel></Fact></FactList>
+      {value.last_sent_at ? <Help>上次发送：{new Date(value.last_sent_at).toLocaleDateString()}</Help> : null}
     </Stack> : null}
-    {value.enabled && ['accepted', 'queued', 'blocked'].includes(value.last_attempt?.status || '')
-      ? <Stack divided><Help>馆藏周报：{deliveryNames[value.last_attempt!.status!]}</Help></Stack> : null}
     {value.enabled && value.last_attempt?.status === 'failed'
       ? <Stack divided><span className="self-start"><StatusLabel tone={value.last_attempt.attempted ? 'error' : 'warning'}>{value.last_attempt.attempted ? '上传失败' : '待重新准备'}</StatusLabel></span><ErrorText>{value.last_attempt.attempted
         ? '馆藏与口味上传失败，本周不再发送。' : '馆藏与口味上传未完成，将自动重新准备。'}</ErrorText></Stack> : null}

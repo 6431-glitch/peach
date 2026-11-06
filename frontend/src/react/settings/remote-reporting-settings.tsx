@@ -11,7 +11,7 @@ import { busyProps, useAction } from './use-action';
 export interface RemoteReportingState {
   usage: boolean; errors: boolean; available: boolean;
   fields: { usage: string; errors: string }; notice: string;
-  delivery?: Partial<Record<'usage' | 'errors', { status: string; at?: string; reason?: string }>>;
+  delivery?: Partial<Record<'usage' | 'errors', { status: string; at?: string; last_sent_at?: string; reason?: string }>>;
 }
 
 export function ReportingChoices({ value, onChange, busy = false }: {
@@ -48,13 +48,9 @@ export function RemoteReportingSettings({ initial, receipt }: {
       </Disclosure>
       {(['usage', 'errors'] as const).map(kind => {
         const delivery = value.delivery?.[kind];
-        if (!delivery) return null;
-        const names: Record<string, string> = {
-          queued: '等待发送', accepted: '接收端已响应，留存未核实',
-          failed: '发送失败', unknown: '结果未取得', blocked: '已拦截',
-        };
-        return <Help key={kind}>{kind === 'usage' ? '版本统计' : '错误诊断'}：{names[delivery.status] || '结果未取得'}
-          {delivery.at ? ` · ${new Date(delivery.at).toLocaleString()}` : ''}</Help>;
+        if (!delivery?.last_sent_at) return null;
+        return <Help key={kind}>{kind === 'usage' ? '版本统计' : '错误诊断'}上次发送：
+          {new Date(delivery.last_sent_at).toLocaleDateString()}</Help>;
       })}
     </Stack>
     {action.error ? <Stack divided><ErrorText>{action.error}</ErrorText></Stack> : null}
