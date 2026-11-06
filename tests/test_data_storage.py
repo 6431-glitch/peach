@@ -675,6 +675,8 @@ class CapacityProtectionTests(unittest.TestCase):
     def test_cloud_cache_discovery_requires_local_service_permission_and_readable_directory(self):
         from peach import storage_external_cache
         from peach import downloads_clouddrive_pb2 as pb
+        from peach.downloads import DownloadSettings
+        DownloadSettings(self.config.directory('state')).save({'clouddrive_address': 'http://127.0.0.1:19798'}, {})
         client = Mock(address='http://127.0.0.1:19798')
         client.__enter__ = Mock(return_value=client)
         client.__exit__ = Mock(return_value=False)
@@ -696,6 +698,12 @@ class CapacityProtectionTests(unittest.TestCase):
             client.call.return_value = pb.SystemSettings(fileBufferDiskCacheLocation=str(self.root / 'missing'))
             with self.assertRaisesRegex(ValueError, '可读取'):
                 storage_external_cache.read(self.config)
+
+    def test_unconfigured_cloud_cache_discovery_does_not_contact_a_service(self):
+        from peach import storage_external_cache
+        with patch.object(storage_external_cache, 'client_for') as connect:
+            self.assertEqual(storage_external_cache.read(self.config), {'configured': False})
+            connect.assert_not_called()
 
     def test_manual_cache_cleanup_records_allocated_bytes_and_excludes_logs(self):
         from peach.capacity_history import project

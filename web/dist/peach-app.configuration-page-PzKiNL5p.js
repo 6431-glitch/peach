@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "56770f27-4109-49a7-819c-810fdbb9e4c3", e._sentryDebugIdIdentifier = "sentry-dbid-56770f27-4109-49a7-819c-810fdbb9e4c3");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "00b5844c-9c01-4e20-864c-b55a8a8aaca9", e._sentryDebugIdIdentifier = "sentry-dbid-00b5844c-9c01-4e20-864c-b55a8a8aaca9");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2101,10 +2101,12 @@ function xa({ initial: e, after: t, receipt: n }) {
 		if (!r?.enabled || e.policy?.external_cache_path) return;
 		let t = new AbortController();
 		return s("正在读取 CloudDrive 缓存目录…"), W("/api/configuration/storage/external-cache", t.signal).then((e) => {
-			t.signal.aborted || (i((t) => t && !t.external_cache_path ? {
-				...t,
-				external_cache_path: e.path
-			} : t), s("已自动读取，保存配置后生效"));
+			if (t.signal.aborted) return;
+			let n = e.path;
+			n ? (i((e) => e && !e.external_cache_path ? {
+				...e,
+				external_cache_path: n
+			} : e), s("已自动读取，保存配置后生效")) : s("CloudDrive 未配置，可手动填写缓存目录");
 		}).catch((e) => {
 			t.signal.aborted || s(`${q(e)}；可手动填写。`);
 		}), () => t.abort();
@@ -6293,4 +6295,4 @@ function Zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Js as ConfigurationPage };
 
-//# debugId=56770f27-4109-49a7-819c-810fdbb9e4c3
+//# debugId=00b5844c-9c01-4e20-864c-b55a8a8aaca9

@@ -27,9 +27,14 @@ export function StorageBudgetSettings({ initial, after, receipt }: {
     if (!policy?.enabled || initial.policy?.external_cache_path) return;
     const controller = new AbortController();
     setCacheRead('正在读取 CloudDrive 缓存目录…');
-    void apiGet<{ path: string }>('/api/configuration/storage/external-cache', controller.signal).then(result => {
+    void apiGet<{ path?: string; configured?: boolean }>('/api/configuration/storage/external-cache', controller.signal).then(result => {
       if (controller.signal.aborted) return;
-      setPolicy(current => current && !current.external_cache_path ? { ...current, external_cache_path: result.path } : current);
+      const path = result.path;
+      if (!path) {
+        setCacheRead('CloudDrive 未配置，可手动填写缓存目录');
+        return;
+      }
+      setPolicy(current => current && !current.external_cache_path ? { ...current, external_cache_path: path } : current);
       setCacheRead('已自动读取，保存配置后生效');
     }).catch(cause => {
       if (!controller.signal.aborted) setCacheRead(`${errorMessage(cause)}；可手动填写。`);

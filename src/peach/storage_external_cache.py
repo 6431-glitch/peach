@@ -8,10 +8,13 @@ from urllib.parse import urlsplit
 from google.protobuf.empty_pb2 import Empty
 
 from .clouddrive_proxy import client_for
+from .downloads import DownloadSettings
 from .storage_budget import validate
 
 
 def read(config):
+    if not DownloadSettings(config.directory('state')).load().clouddrive_address:
+        return {'configured': False}
     with client_for(config) as client:
         host = urlsplit(client.address).hostname
         try:
