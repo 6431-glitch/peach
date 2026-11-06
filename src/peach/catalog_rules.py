@@ -73,6 +73,13 @@ def is_local_extra(name: str | None, path: str | None = None, *,
     return local_extra_type(name, path, library_roots=library_roots) is not None
 
 
+@lru_cache(maxsize=65536)
+def sql_is_local_extra(name: str | None, path: str | None, library_roots: tuple[str, ...]) -> bool:
+    """SQL 里按行调用的那一份：目录、统计与形状名单每次重算都对每条资产判一遍，几条查询累计
+    几十万次。判定只看这三样，结果按它们记住。"""
+    return is_local_extra(name, path, library_roots=library_roots)
+
+
 LENGTH_TAGS = {"短片-2分内", "中片-10分内", "长片-30分内", "超长片-30分上"}
 TECH_TAGS = {
     "1080P", "720P", "4K", "2K", "2160P", "480P", "低画质", "高帧率",
@@ -583,6 +590,7 @@ def western_release_identity(value: str | None) -> str:
     return ""
 
 
+@lru_cache(maxsize=65536)
 def normalise_code_key(code: str | None) -> str:
     """Normalize a release code into the stable cover-cache key.
 

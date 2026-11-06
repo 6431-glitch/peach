@@ -18,7 +18,7 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from peach import feed_followup, feeds, web_feeds, web_settings, web_state  # noqa: E402
+from peach import feed_followup, feeds, web_entity, web_feeds, web_settings, web_state  # noqa: E402
 from peach import web_jav_browser_performer as performer  # noqa: E402
 from peach.http import HttpResponse  # noqa: E402
 from peach.web_contract import WebContract  # noqa: E402
@@ -344,6 +344,14 @@ class FeedWebTest(FeedWebFixture):
                           {"action": "ignore", "ids": [item["id"] for item in items]})
         self.assertFalse(has_feed())
 
+    def test_new_discoveries_only_recompute_the_feed_part_of_the_shapes(self):
+        """采集每几秒写一次订阅表：形状名单只重算新作那一份，同台、资料表与版式那部分照旧命中缓存。"""
+        self.assertFalse(dispatch_api_get(self.contract, "/api/entity/shapes", {})["home"]["feed"])
+        with patch.object(web_entity, "_entity_shape_parts", side_effect=AssertionError("其余部分被重算了")):
+            self._add()
+            self._check()
+            self.assertTrue(dispatch_api_get(self.contract, "/api/entity/shapes", {})["home"]["feed"])
+
     def test_home_shape_applies_library_and_compilation_filters(self):
         self._compilation("波多野結衣、篠田ゆう")
         with self.contract.database.write_transaction() as connection:
@@ -473,6 +481,23 @@ class FeedWebTest(FeedWebFixture):
                 items = {item["code"]: (item["cover_state"], item["cover_reason"])
                          for item in dispatch_api_get(self.contract, path, {})["items"]}
                 self.assertEqual({code: items[code] for code in expected}, expected, path)
+
+    def test_unreleased_works_wait_off_the_list_while_the_official_cover_is_a_placeholder(self):
+        """未发售、官方只回「准备中」占位图的先不列，后台照旧重取；已发售的旧作与没取过图的照常列出。"""
+        from peach.jav_cover_fetch import NotFound, OFFICIAL_PLACEHOLDER_ONLY
+        future = (datetime.now() + timedelta(days=30)).date().isoformat()
+        rows = {"VRKM-971": future, "HIGM-183": "2024-03-09", "VRKM-972": future}
+        with self.contract.database.write_transaction() as connection:
+            for code, released in rows.items():
+                connection.execute("INSERT INTO feed_discovery(code,source_id,title,link,release_date,discovered_at)"
+                                   " VALUES(?,NULL,'',NULL,?,?)", (code, released, feeds.stamp()))
+        for code in ("VRKM-971", "HIGM-183"):
+            feed_followup.record_cover_attempt(self.contract, code, ok=False, error=NotFound(OFFICIAL_PLACEHOLDER_ONLY))
+        with patch("peach.jav_discovery_metadata.DiscoveryMetadata.ensure", return_value=None):
+            for path in ("/api/feeds/discoveries", "/api/jav/releases"):
+                codes = {item["code"] for item in dispatch_api_get(self.contract, path, {})["items"]}
+                self.assertEqual(codes & set(rows), {"HIGM-183", "VRKM-972"}, path)
+        self.assertIn("VRKM-971", self._cover_backlog())
 
     def test_a_failing_source_reports_on_its_own_row_and_stays_scheduled(self):
         self._add()

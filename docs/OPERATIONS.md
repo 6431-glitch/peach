@@ -300,7 +300,7 @@ Windows 测试包默认使用 `%LOCALAPPDATA%\Peach\peach-data`。首次设置�
 | 任务 | 保存与恢复的单位 |
 | --- | --- |
 | 扫描文件 | 来源根、待遍历目录和目录内的已提交文件批次；保留文件数、字节数与字幕配对资料 |
-| 读取配套资料、采集元数据与预览 | 已读取的本地证据、已落盘候选与已登记预览；保留完成影片和问题记录 |
+| 读取配套资料、采集元数据与预览 | 已读取的本地证据、已写入的候选与已登记预览；保留完成影片和问题记录 |
 | 拉取关注更新、历史回抓 | 固定来源集合、成功来源与已提交页码；从头回抓任务沿用本次保存的页码 |
 | 新作订阅、想要资料、发现卡资料 | 已完成来源或番号、已保存资料与封面；发现卡同时保留已消耗请求与流量预算 |
 | 后继任务、下载后处理 | 原有持久队列与同一条任务记录；批量资料与样张保存原始番号集合和成功项目 |
@@ -703,10 +703,11 @@ PikPak 官方核验通道使用「推送发现」中该媒体根对应的唯一 
 ### 首次设置的内部流程
 
 - 首次设置的「Peach 代理」支持跟随环境、直连和自定义 HTTP／SOCKS 代理。自定义地址与端口沿用配置页校验，凭据存于所选数据目录的本机 secrets；读题接口只返回连接方式和是否已保存地址。Docker 中填写回环代理地址时提示改用容器可访问的宿主机地址。配置页「网络与访问」可随时修改。
-- `GET /api/setup/questions` 的 `peach_proxy` 包含 `mode`、`proxy_saved`、`needs_selection`；`docker` 表示部署是否为 Docker。`POST /api/setup` 的 `peach_proxy` 接收 `{mode, proxy}`，`mode` 为 `environment`、`direct` 或 `proxy`，缺省为 `environment`。校验错误放在 `errors.peach_proxy`。代理先于 `config.toml` 和首扫请求落盘，保证托盘切换后使用所选连接方式。
+- `GET /api/setup/questions` 的 `peach_proxy` 包含 `mode`、`proxy_saved`、`needs_selection`；`docker` 表示部署是否为 Docker。`POST /api/setup` 的 `peach_proxy` 接收 `{mode, proxy}`，`mode` 为 `environment`、`direct` 或 `proxy`，缺省为 `environment`。校验错误放在 `errors.peach_proxy`。代理设置先于 `config.toml` 和首扫请求写入磁盘，保证托盘切换后使用所选连接方式。
 - 托盘启动时读一次设置文件，由 `tray.needs_setup()` 判断：**没有 `config.toml` 且没有数据库**才算需要首次设置。不用 `PeachConfig.configured` 判断：托盘的单实例锁一启动就会在 Peach 数据目录下建出 `state/`，一次失败的启动就可能让下一次误判成已配置；反过来，没有 `config.toml` 的老部署数据库还在，不能被拖进首次设置。
 - 需要设置时，托盘不构建正常的服务规格（全新机器上 `build_service_specs()` 会因为缺 TLS 材料抛 `FileNotFoundError`），而是启动 `peach serve --setup --host 127.0.0.1 --port <设置里的端口，默认 8900> --no-mdns --no-ledger-sync`，再把浏览器打开到 `http://127.0.0.1:<端口>/`。这条引导服务没有 TLS，口令强制为空，安全边界就是回环绑定地址。
 - 首页是首次设置表单：`GET /` 回一张薄壳（`routes_pages.setup_shell()`），表单由页面包 `/dist/peach-pages.js` 画出，题目与提交都走下面两条 JSON 接口。完成态的入口带 `/?onboarding=1`；选了导入浏览器历史则先去 `/taste?onboarding=1`。安装教程通过专用状态接口读取各项的实际状态。
+- Docker 全新数据卷不跑 `peach init`：`peach.server` 以 `serve --setup` 监听容器端口，设置文件出现后换成正常服务（ADR-0149）。守卫改按 `web_local_access.local_client` 收本机与私有网络、不带代理转发头的来源，403 正文带 `docker: true`；完成前 `/api/` 与写请求按同一判定拦下。读题不出 `data_root`、`host`、`port`、`mdns_name`，提交里带了也不认；`media_dir` 默认 `/media`，另给 `data_root`（固定的数据目录）与 `access_preset`（已按 `PEACH_ACCESS_PASSWORD` 写下访问密码）。完成后 `url` 与 `redirect` 都是当前地址下的 `/?onboarding=1`，`POST /api/setup/restore` 回 404。首次设置服务的 `/healthz?ready=1` 回 200 与 `setup: true`。
 - 两条接口共用守卫（`routes_pages._setup_guard`）：已配置 404，非回环来源 403，独立包地址栏主机名不是回环写法 403；提交另查 Origin（403）与设置文件已存在（409）。两条都在 `/api/` 下，错误一律回 JSON。
   - `GET /api/setup/questions` 给出画表单要的数据：`questions` 按 `onboarding.questions()` 的顺序列出每题的 `key`、`label`、`help`（说明行列表）、`default`、`required`、`advanced`（是否折进「高级设置」）、`input`（`text`、`number`、`choice`、`folders`）、`prefix`、`suffix`，`host` 另带按页面顺序排好的 `options`，`mdns_name` 另带 `visible_when: {"host": "2"}`；另有 `media_sources`、`media_source_default`、`media_root`（非 Windows 的对应路径格，Windows 为 `null`）、`cloud`（提示、帮助链接与缺失的挂载软件 `dependencies`）、`windows`、`standalone`，以及三个开关的初始值 `access_enabled`（host 默认是局域网就开）、`scan_now`、`history_guide`。
   - `POST /api/setup` 收同名字段：`media_dir` 是 `{path, location, root}` 行列表（`location` 缺省为 `local`），`access_enabled`、`scan_now`、`history_guide` 是布尔，选了「只有这台电脑」可不传 `mdns_name`。400 回 `{"error", "errors"}`：`errors` 按题目 key，访问密码在 `access_password`，`media_dir` 与提交的行一一对应、没错的行是空串；整表不成立（超过 100 行）时只有一句，长度与行数不等。`apply` 失败回 400，错误在 `data_root`。200 回 `url`、`scan_requested`、`history_guide`、`standalone`、`redirect`（独立包为入口地址，其余为 `null`，跳转时长由前端定）与运行信息 `facts`（同 `/api/configuration` 的 `facts`）。

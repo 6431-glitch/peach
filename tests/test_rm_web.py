@@ -10,7 +10,7 @@ from datetime import datetime
 from pathlib import Path
 from unittest import mock
 
-from peach import catalog_rules, jav_poster_crop, web_batch, web_catalog, web_entity, web_playlists, web_stats
+from peach import catalog_rules, jav_poster_crop, web_batch, web_catalog, web_entity, web_playlists, web_search, web_stats
 from peach import web_contract as rm_web
 from peach.previews import entity_image_key, logo_key
 from peach.web_catalog import q_editions, q_items, q_parts
@@ -174,6 +174,17 @@ class WebDataTests(unittest.TestCase):
         self.assertIn("ABC-001", bundle["words"])
         self.assertTrue(all(len(word) > 1 for word in bundle["words"]))
 
+    def test_search_recommendations_reuse_one_pool_across_page_opens(self):
+        """每开一页都预取推荐：池子复用，不在每次预取时重算；换的只是池里的顺序。
+        后台任务每几秒提交一次，提交通知也不清掉这一池。"""
+        first = rm_web.dispatch_api_get(self.contract, "/api/search/recommendations", {})
+        self.contract.cache_bust()
+        with mock.patch.object(web_search, "q_items", side_effect=AssertionError("推荐池被重算了")):
+            again = rm_web.dispatch_api_get(self.contract, "/api/search/recommendations", {})
+        self.assertEqual({row["id"] for row in again["items"]["items"]},
+                         {row["id"] for row in first["items"]["items"]})
+        self.assertEqual(sorted(again["words"]), sorted(first["words"]))
+
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.db_path = str(fresh_ledger(self.tmp.name))
@@ -293,12 +304,12 @@ class WebDataTests(unittest.TestCase):
 
         calls = 0
 
-        def counted_extra(name, path, **kwargs):
+        def counted_extra(name, path, roots):
             nonlocal calls
             calls += 1
-            return catalog_rules.is_local_extra(name, path, **kwargs)
+            return catalog_rules.is_local_extra(name, path, library_roots=roots)
 
-        with mock.patch("peach.repository.is_local_extra", counted_extra):
+        with mock.patch("peach.repository.sql_is_local_extra", counted_extra):
             actual = rm_web.q_facets(self.contract, filters=filters)
         # 工作量断言不依赖机器执行速度。
         self.assertLess(calls, asset_count * 40, f"asset predicate calls: {calls}")
@@ -4067,14 +4078,14 @@ class TopsRotationTests(unittest.TestCase):
             with self.subTest(**scope):
                 calls = 0
 
-                def counted_extra(name, path, **kwargs):
+                def counted_extra(name, path, roots):
                     nonlocal calls
                     calls += 1
-                    return catalog_rules.is_local_extra(name, path, **kwargs)
+                    return catalog_rules.is_local_extra(name, path, library_roots=roots)
 
                 # 新契约使用冷缓存和新连接，确保执行的是修改统计后的查询。
                 contract = rm_web.WebContract(Path(self.db_path), **roots)
-                with mock.patch('peach.repository.is_local_extra', counted_extra):
+                with mock.patch('peach.repository.sql_is_local_extra', counted_extra):
                     actual = rm_web.q_tops(contract, 8, seed='111', **scope)
                 self.assertTrue(wanted['performers'])
                 self.assertGreater(calls, 0)
