@@ -602,7 +602,7 @@ async def setup_submit_json(request: Request):
             raise HTTPException(status_code=409, detail="settings file already exists")
         try:
             applied = onboarding.apply(resolved, answers, windows=windows, access_password=password,
-                                       peach_proxy_values=proxy_values)
+                                       peach_proxy_values=proxy_values, require_tls=windows and not standalone)
             settings_file.remember_data_root(settings_file.active(), applied.config)
         except (OSError, RuntimeError) as exc:
             errors = {"data_root": str(exc)}
