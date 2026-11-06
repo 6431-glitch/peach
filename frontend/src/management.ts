@@ -6,7 +6,7 @@ import { PLAIN_STAT_STRIP, plainStatClass } from './react/components/stat-card';
 
 /* 「扫描与采集」「媒体修复」两张卡的正文。卡片本体由 React 画，骨架与遗留层的取数占位
    画的是同一段话：写两份的话，骨架上的那句会比真卡短一截，接管时整张卡跳一次。 */
-export const SCAN_CARD_TEXT = '发现新文件，补全新增及未完成影片的资料和预览。需要检查全部影片时，使用全库维护。';
+export const SCAN_CARD_TEXT = '发现新文件，补全新增及未完成影片的资料和预览。先选择媒体库，再选择同步范围。';
 export const REPAIR_CARD_TEXT = '部分视频文件可能播放卡顿、打不开，修复缺时间戳表和缺索引的问题。';
 
 const bar = '<span class="skeleton skeleton-text" aria-hidden="true"></span>';

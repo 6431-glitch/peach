@@ -4,6 +4,7 @@ import hashlib
 import logging
 
 from . import settings_file
+from .library_processing_scope import scoped_config, scoped_assets
 from .library_processing import (ALL_STAGES, COLLECT_STAGE, SCAN_STAGE, STAGES,
                                 METADATA_STAGE, PREVIEWS_STAGE, _asset_selection,
                                 decorate, issues_path, process_library, snapshot)
@@ -17,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 #: `asset_ids`、`completed_metadata` 等大字段，页面一个都不读；照发的话每页每 10 秒轮询一次
 #: 就是两兆多，还把媒体路径交给了浏览器。续跑与重试读的是 `_current()`，不经过这里。
 PUBLIC_FIELDS = frozenset({
-    'run_id', 'metadata_only', 'status', 'outcome', 'speed_mode', 'eta_seconds_min', 'eta_seconds_max', 'eta_kind',
+    'library_id', 'library_name', 'libraries', 'run_id', 'metadata_only', 'status', 'outcome', 'speed_mode', 'eta_seconds_min', 'eta_seconds_max', 'eta_kind',
     'eta_scope', 'eta_initial', 'job_id', 'stage', 'requested_stage', 'steps', 'checked', 'total',
     'scanned', 'scanned_bytes', 'identified', 'candidates', 'auto_applied', 'covers', 'previews',
     'performer_aliases', 'performer_avatars', 'performer_profile_conflicts',
@@ -105,10 +106,13 @@ def q_library_processing(contract, _args):
             body['scope'] = _args['scope']
         if 'asset_ids' in _args:
             body['asset_ids'] = json.loads(_args['asset_ids'])
+        if 'library_id' in _args:
+            body['library_id'] = _args['library_id']
+        config = scoped_config(config, body.get('library_id'))
         _, asset_ids, stage = _processing_request(contract, config, {}, body)
         from .processing_inventory import preview
         return {'traffic': preview(config, contract.db_path, stage, asset_ids, _args.get('inventory'),
-                                   incremental=body.get('incremental', False))}
+                                   incremental=body.get('incremental', False), library_id=body.get('library_id'))}
     state = _current(contract)
     run = _active_run(contract, state) if state.get('status') in ACTIVE else None
     if run is not None:
@@ -137,6 +141,8 @@ def q_library_processing(contract, _args):
     state['retryable_asset_ids'] = _remaining_retry_ids(contract, state)
     from .library_new_assets import pending
     state['new_asset_count'] = len(pending(contract.db_path))
+    from .media_libraries import libraries
+    state['libraries'] = [{'id': row['id'], 'name': row['name']} for row in libraries(settings_file.active())]
     if state.get('status') not in ACTIVE and recovery.get('status') == 'blocked':
         state.update(status='failed', outcome='interrupted', error=f"任务未能自动恢复：{recovery.get('error') or '请重新发起任务'}")
     # 上一趟任务的状态文件里没有这个字段，而它那份完整清单还在磁盘上：按 job_id
@@ -252,6 +258,7 @@ def _control_action(contract, config, body):
         try:
             return w_library_processing(contract, {
                 'stage': previous.get('requested_stage') or ALL_STAGES,
+                **({'library_id': previous['library_id']} if previous.get('library_id') else {}),
                 **({'incremental': True} if previous.get('incremental') else
                    {'asset_ids': previous['asset_ids']} if previous.get('asset_ids') else {}),
                 'speed_mode': control.mode}, resume=True)
@@ -436,7 +443,21 @@ def w_library_processing(contract, body, *, resume=False):
         return public_state(previous)
     if (body or {}).get('retry') is not None:
         previous['retryable_asset_ids'] = _remaining_retry_ids(contract, previous)
+    library_id = (body or {}).get('library_id')
+    if resume or (body or {}).get('retry') is not None:
+        previous_library = previous.get('library_id')
+        if library_id is not None and library_id != previous_library:
+            raise ValueError('重试或恢复必须沿用原任务的媒体库')
+        library_id = previous_library
+    config = scoped_config(config, library_id)
     retry_ids, asset_ids, stage = _processing_request(contract, config, previous, body)
+    if library_id and asset_ids is not None:
+        selected = scoped_assets(config, contract.db_path, library_id, asset_ids)
+        if (body or {}).get('scope') != 'new' and set(selected) != set(asset_ids):
+            raise ValueError('所选影片不属于当前媒体库')
+        if not selected:
+            raise ValueError('所选媒体库暂无待处理影片')
+        asset_ids = selected
     incremental = (body or {}).get('incremental', False)
     if (body or {}).get('scope') == 'new':
         from .library_new_assets import remember
@@ -449,7 +470,7 @@ def w_library_processing(contract, body, *, resume=False):
     def work(job_id):
         try:
             result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
-                job_id=job_id, retry_ids=retry_ids, stage=stage, asset_ids=asset_ids, incremental=incremental,
+                job_id=job_id, retry_ids=retry_ids, stage=stage, asset_ids=asset_ids, incremental=incremental, library_id=library_id,
                 # 自动落库与页面写的是同一个 `LedgerDatabase`：进程内写锁在实例上，
                 # 另建一个就是在同一个进程里开第二条写入路径。
                 database=contract.database,
@@ -470,10 +491,13 @@ def w_library_processing(contract, body, *, resume=False):
     if incremental:
         from .library_new_assets import pending
         estimate_ids = pending(contract.db_path)
+    estimate_ids = scoped_assets(config, contract.db_path, library_id, estimate_ids)
+    library_name = config.library_catalog[library_id]['name'] if library_id else ''
     result = contract.library_processing_job.start(
         work, restart=True, initial={'stage': labels[stage], 'requested_stage': stage,
+                                    'library_id': library_id, 'library_name': library_name,
                                     **initial_estimate(config, contract.db_path, stage, estimate_ids, mode)},
-        recovery={'stage': stage, 'speed_mode': mode, 'incremental': incremental,
+        recovery={'stage': stage, 'speed_mode': mode, 'incremental': incremental, 'library_id': library_id,
                   **({'asset_ids': asset_ids or retry_ids}
                                     if asset_ids is not None or retry_ids is not None else {})})
     if not resume:

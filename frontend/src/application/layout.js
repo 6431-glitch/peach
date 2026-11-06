@@ -217,7 +217,7 @@ export function mountManageHeader(){
     }
     if(event.target.closest?.('[data-empty-trash]'))emptyTrash();
   });
-  loadManageHeader({root,openManage,openDataCleanup:()=>navigationState.navigatePath('/data-cleanup'),emptyTrash})
+  loadManageHeader({root,store:preferencesState.settingsStore,openManage,openDataCleanup:()=>navigationState.navigatePath('/data-cleanup'),emptyTrash})
     .then(()=>paintManageHeader()).catch(()=>{});
 }
 
@@ -449,7 +449,7 @@ applicationEffects.handler($('#filterBtn'), 'onclick', ()=>openDrawer(!$('#drawe
 layoutState.SIDEBAR_ITEMS = SIDEBAR_ITEMS;
 layoutState.MANAGE_SECTIONS = MANAGE_SECTIONS;
 layoutState.MANAGE_MENU_SECTIONS = MANAGE_MENU_SECTIONS;
-layoutState.manageMenuSections = ()=>getManageMenuSections(runtimeConfigurable===true);
+layoutState.manageMenuSections = ()=>getManageMenuSections(runtimeConfigurable===true,preferencesState.appSettings.manageOrder);
 layoutState.OPTIONAL_SIDEBAR_ITEMS = OPTIONAL_SIDEBAR_ITEMS;
 layoutState.NAV_CATALOG = NAV_CATALOG;
 layoutState.DIRECT_MANAGE_NAV = DIRECT_MANAGE_NAV;

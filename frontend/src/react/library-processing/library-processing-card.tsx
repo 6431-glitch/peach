@@ -12,6 +12,7 @@ import { useMutation } from '@tanstack/react-query';
 
 import { Button } from '@/components/base/buttons/button';
 import { LinkButton } from '@/components/base/buttons/link-button';
+import { Select, SelectItem } from '@/components/base/select/select';
 import { Chip } from '@/components/base/badges/chip';
 
 import { apiSend, errorMessage } from '../../api';
@@ -172,6 +173,7 @@ function Outcome(
 
 export function LibraryProcessingCard(props: LibraryProcessingProps) {
   const { toast, onComplete } = props;
+  const [libraryId, setLibraryId] = useState('');
   const { job, settled, forget } = useLibraryProcessingJob(props);
   const start = useMutation({
     mutationFn: (command: LibraryProcessingCommand) =>
@@ -214,7 +216,7 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
             ? <LinkButton href="/review" size="small" trailingIcon={RiArrowRightLine}>复核资料</LinkButton>
             : null}
           {/* 日常同步保留独立入口，原任务的定向重试只处理该任务的失败项。 */}
-          <ProcessingActions scan busy={start.isPending} occupied={processingActive(state)} metadataOnly={state?.metadata_only}
+          <ProcessingActions scan libraryId={libraryId} libraryName={state.libraries?.find(library => library.id === libraryId)?.name} busy={start.isPending} occupied={processingActive(state)} metadataOnly={state?.metadata_only}
             speedMode={state.speed_mode} pendingCount={state.new_asset_count} onRun={run} onOccupied={() => toast(busyText(state))} />
         </>
       }>
@@ -223,7 +225,7 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
             <div className="flex flex-wrap items-center gap-2">
               <FieldsetTitle>扫描与采集</FieldsetTitle>
               {state.new_asset_count ? <Chip variant="caption" color="blue">
-                <span className="tabular-nums">{state.new_asset_count.toLocaleString()} 部待补全</span>
+                <span className="tabular-nums">{libraryId ? '所有媒体库 · ' : ''}{state.new_asset_count.toLocaleString()} 部待补全</span>
               </Chip> : null}
             </div>
             {hidden && (processingActive(state) || state.status === 'failed' || job.isError)
@@ -232,6 +234,17 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
                 </Button> : null}
           </div>
           <p className="text-body-2-regular text-text-secondary">{SCAN_CARD_TEXT}</p>
+          <div className="w-full max-w-80">
+            <p id="processingLibraryLabel" className="mb-1 text-body-2-medium text-text-secondary">媒体库</p>
+            <Select aria-labelledby="processingLibraryLabel" selectedKey={libraryId || 'all'} isDisabled={start.isPending || !state.libraries}
+              onSelectionChange={key => { if (key !== null) setLibraryId(key === 'all' ? '' : String(key)) }}>
+              <SelectItem id="all">所有媒体库</SelectItem>
+              {(state.libraries || []).map(library => <SelectItem id={library.id} key={library.id}>{library.name}</SelectItem>)}
+            </Select>
+          </div>
+          {processingActive(state) && state.library_name ? <p className="text-body-2-regular text-text-secondary">
+            当前任务媒体库：{state.library_name}
+          </p> : null}
           {state.status === 'paused' && !state.total
             ? <span className="self-start"><StatusLabel>已暂停</StatusLabel></span>
             : processingActive(state)

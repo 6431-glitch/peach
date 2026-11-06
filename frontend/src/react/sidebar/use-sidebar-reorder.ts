@@ -6,7 +6,7 @@ interface Picked {
   key: string;
   origin: number;
   slot: number | null;
-  top: number;
+  offset: number;
 }
 interface Gesture {
   key: string;
@@ -22,7 +22,7 @@ interface Gesture {
 
 /** 导航只在松手时保存顺序；指针移动只更新浮起项和插入位置。 */
 export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, order: readonly string[],
-  commit: (next: string[]) => void, settled: () => void) {
+  commit: (next: string[]) => void, settled: () => void, axis: 'x' | 'y' = 'y', attribute: 'nav' | 'manage' = 'nav') {
   const [picked, setPicked] = useState<Picked | null>(null);
   const [announcement, announce] = useState('');
   const gesture = useRef<Gesture | null>(null);
@@ -30,7 +30,7 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
   const ignoreClick = useRef(false);
   const latest = useRef({ order, commit, settled, picked });
   latest.current = { order, commit, settled, picked };
-  const rows = () => [...column.current!.querySelectorAll<HTMLButtonElement>(':scope > button[data-nav]')];
+  const rows = () => [...column.current!.querySelectorAll<HTMLButtonElement>(`:scope > button[data-${attribute}]`)];
   const capture = () => { before.current = new Map(rows().map(node => [node, node.getBoundingClientRect()])) };
 
   useLayoutEffect(() => {
@@ -39,7 +39,7 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
     if (!snapshot || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const css = getComputedStyle(column.current!);
     for (const node of rows()) {
-      if (node.dataset.nav === picked?.key) continue;
+      if (node.dataset[attribute] === picked?.key) continue;
       const old = snapshot.get(node);
       if (!old) continue;
       const now = node.getBoundingClientRect(), dx = old.left - now.left, dy = old.top - now.top;
@@ -98,7 +98,7 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
     ignoreClick.current = false;
     const node = event.currentTarget;
     gesture.current = { key, node, pointer: event.pointerId, x: event.clientX, y: event.clientY,
-      keys: rows().map(row => row.dataset.nav!), started: false,
+      keys: rows().map(row => row.dataset[attribute]!), started: false,
       minHeight: column.current!.style.minHeight, cursor: document.body.style.cursor };
     node.setPointerCapture(event.pointerId);
   };
@@ -112,12 +112,13 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
       capture();
       column.current!.style.minHeight = `${column.current!.offsetHeight}px`;
       document.body.style.cursor = 'grabbing';
-      const top = active.node.offsetTop, origin = active.keys.indexOf(active.key);
-      flushSync(() => setPicked({ key: active.key, top, origin, slot: origin }));
+      const offset = axis === 'x' ? active.node.offsetLeft : active.node.offsetTop;
+      const origin = active.keys.indexOf(active.key);
+      flushSync(() => setPicked({ key: active.key, offset, origin, slot: origin }));
     }
     event.preventDefault();
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    active.node.style.setProperty('--sidebar-drag-x', `${reduced ? 0 : dx + 18}px`);
+    active.node.style.setProperty('--sidebar-drag-x', `${reduced ? 0 : dx + (axis === 'y' ? 18 : 0)}px`);
     active.node.style.setProperty('--sidebar-drag-y', `${reduced ? 0 : dy}px`);
     const box = column.current!.getBoundingClientRect();
     const inside = event.clientX >= box.left && event.clientX <= box.right
@@ -125,16 +126,21 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
     let slot: number | null = null;
     if (inside) {
       const remaining = rows().filter(row => row !== active.node);
-      const at = remaining.findIndex(row => event.clientY - box.top < row.offsetTop + row.offsetHeight / 2);
+      const at = remaining.findIndex(row => axis === 'x'
+        ? event.clientX - box.left + column.current!.scrollLeft < row.offsetLeft + row.offsetWidth / 2
+        : event.clientY - box.top < row.offsetTop + row.offsetHeight / 2);
       slot = at < 0 ? remaining.length : at;
     }
     if (slot !== latest.current.picked?.slot) flushSync(() => setPicked(mark => mark && { ...mark, slot }));
   };
   const keyboard = (event: KeyboardEvent<HTMLButtonElement>, key: string) => {
-    if (!event.altKey || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+    const previousKey = axis === 'x' ? 'ArrowLeft' : 'ArrowUp';
+    const nextKey = axis === 'x' ? 'ArrowRight' : 'ArrowDown';
+    if (!event.altKey || (event.key !== previousKey && event.key !== nextKey)) return;
     event.preventDefault();
-    const visible = rows().map(row => row.dataset.nav!);
-    const at = visible.indexOf(key), down = event.key === 'ArrowDown';
+    event.stopPropagation();
+    const visible = rows().map(row => row.dataset[attribute]!);
+    const at = visible.indexOf(key), down = event.key === nextKey;
     const target = visible[at + (down ? 1 : -1)];
     if (target === undefined) return;
     const next = moveSidebarKey(order, key, target, down);
@@ -145,15 +151,17 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
     settled();
   };
 
-  const remaining = picked ? rows().filter(row => row.dataset.nav !== picked.key) : [];
+  const remaining = picked ? rows().filter(row => row.dataset[attribute] !== picked.key) : [];
   const hint = !!picked && picked.slot !== null && picked.slot !== picked.origin;
-  const lineTop = hint ? (picked.slot === remaining.length
-    ? remaining.at(-1)!.offsetTop + remaining.at(-1)!.offsetHeight + 1.5
-    : remaining[picked.slot!]!.offsetTop - 1.5) : 0;
+  const position = (node: HTMLElement) => axis === 'x' ? node.offsetLeft : node.offsetTop;
+  const size = (node: HTMLElement) => axis === 'x' ? node.offsetWidth : node.offsetHeight;
+  const linePosition = hint ? (picked.slot === remaining.length
+    ? position(remaining.at(-1)!) + size(remaining.at(-1)!) + 1.5
+    : position(remaining[picked.slot!]!) - 1.5) : 0;
   return {
-    picked, announcement, lineTop, hint,
+    picked, announcement, linePosition, hint,
     nudge(key: string) {
-      const at = remaining.findIndex(row => row.dataset.nav === key);
+      const at = remaining.findIndex(row => row.dataset[attribute] === key);
       if (!hint || at < 0) return { distance: 0, delay: 0 };
       const above = at < picked!.slot!, n = above ? picked!.slot! - at - 1 : at - picked!.slot!;
       return { distance: (above ? -1 : 1) * 10 * 0.7 ** n, delay: 24 * n };
