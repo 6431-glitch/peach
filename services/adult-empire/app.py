@@ -5,6 +5,8 @@ import re
 import json
 import os
 import secrets
+import threading
+import time
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
@@ -23,6 +25,9 @@ PERFORMER_PATH = re.compile(r'^/(?:porn-videos/|dvd/|blu-ray/|clips/)?(\d+)/[^/]
 MAX_PAGE = 2 * 1024 * 1024
 DORCEL = 'https://www.dorcelvision.com'
 DORCEL_PATH = re.compile(r'^/en/movies/[a-z0-9-]+/[a-z0-9-]+/?$', re.I)
+_DORCEL_DISCOVER_LOCK = threading.Lock()
+_dorcel_discover_cache = None
+_dorcel_discover_until = 0.0
 
 
 def authorize(authorization: str = Header(default='')):
@@ -180,6 +185,60 @@ def parse_dorcel_search(soup: BeautifulSoup) -> dict:
             seen.add(url)
             candidates.append({'id': urlsplit(url).path, 'title': title, 'url': url})
     return {'candidates': candidates, 'next_page': None}
+
+
+def parse_dorcel_discover(soup: BeautifulSoup) -> dict:
+    candidates, seen = [], set()
+    for anchor in soup.select('a.movies[href]'):
+        url = _dorcel_url(str(anchor.get('href', '')))
+        title = str(anchor.get('aria-label') or '').strip()
+        if '<' in title:
+            title = BeautifulSoup(title, 'html.parser').get_text(' ', strip=True)
+            if not title:
+                title = urlsplit(url).path.rstrip('/').rsplit('/', 1)[-1].replace('-', ' ').title()
+        if not url or not title or url in seen:
+            continue
+        seen.add(url)
+        image = anchor.select_one('img[data-src], img[src]')
+        image_url = urljoin(DORCEL, str(image.get('data-src') or image.get('src') or '')) if image else ''
+        image_parts = urlsplit(image_url)
+        if image_parts.scheme != 'https' or image_parts.hostname != 'www.dorcelvision.com':
+            image_url = ''
+        studio = urlsplit(url).path.strip('/').split('/')[2].replace('-', ' ').title()
+        candidates.append({'id': urlsplit(url).path, 'title': title, 'url': url, 'image': image_url, 'studio': studio})
+    return {'candidates': candidates}
+
+
+def parse_dorcel_home(soup: BeautifulSoup) -> dict:
+    sections = []
+    seen = set()
+    for block in soup.select('.margined-block'):
+        heading = block.select_one('.slider-heading h1, .slider-heading h2, .slider-heading h3')
+        title = heading.get_text(' ', strip=True) if heading else ''
+        if not title or title.casefold() in seen:
+            continue
+        candidates = parse_dorcel_discover(block)['candidates']
+        if candidates:
+            seen.add(title.casefold())
+            sections.append({'title': title, 'candidates': candidates[:24]})
+    return {'sections': sections}
+
+
+@app.get('/dorcelvision/discover', dependencies=[Depends(authorize)])
+def dorcel_discover():
+    global _dorcel_discover_cache, _dorcel_discover_until
+    try:
+        with _DORCEL_DISCOVER_LOCK:
+            if _dorcel_discover_cache is not None and time.monotonic() < _dorcel_discover_until:
+                return _dorcel_discover_cache
+            result = parse_dorcel_home(_dorcel_get('/en/'))
+            if not result['sections']:
+                raise ValueError('DorcelVision returned no releases.')
+            _dorcel_discover_cache = result
+            _dorcel_discover_until = time.monotonic() + 86400
+            return result
+    except ValueError as exc:
+        raise HTTPException(502, str(exc)) from exc
 
 
 def parse_dorcel_detail(soup: BeautifulSoup, path: str) -> dict:

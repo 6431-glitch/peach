@@ -13,6 +13,26 @@ spec.loader.exec_module(service)
 
 
 class AdultEmpireServiceTests(unittest.TestCase):
+    def test_dorcel_home_sections_are_deduplicated(self):
+        html = '''<div class="margined-block"><div class="slider-heading"><h2>New</h2></div>
+        <a class="movies" aria-label="Example" href="/en/movies/studio/example"><img data-src="/image.jpg"></a></div>
+        <div class="margined-block"><div class="slider-heading"><h2>New</h2></div>
+        <a class="movies" aria-label="Example" href="/en/movies/studio/example"></a></div>'''
+        result = service.parse_dorcel_home(BeautifulSoup(html, 'html.parser'))
+        self.assertEqual([section['title'] for section in result['sections']], ['New'])
+        self.assertEqual(result['sections'][0]['candidates'][0]['image'], 'https://www.dorcelvision.com/image.jpg')
+
+    def test_dorcel_discovery_cache_expires_after_one_day(self):
+        soup = BeautifulSoup('''<div class="margined-block"><div class="slider-heading"><h2>New</h2></div>
+        <a class="movies" aria-label="Example" href="/en/movies/studio/example"></a></div>''', 'html.parser')
+        with patch.object(service, '_dorcel_discover_cache', None), patch.object(service, '_dorcel_discover_until', 0), \
+             patch.object(service, '_dorcel_get', return_value=soup) as get, \
+             patch.object(service.time, 'monotonic', side_effect=[0, 86399, 86401, 86401]):
+            service.dorcel_discover()
+            service.dorcel_discover()
+            service.dorcel_discover()
+            self.assertEqual(get.call_count, 2)
+
     def test_dorcel_search_deduplicates_and_restricts_movie_links(self):
         soup = BeautifulSoup('''<a class="movies" aria-label="Example" href="/en/movies/studio/example"></a>
         <a class="movies" aria-label="Example" href="/en/movies/studio/example"></a>

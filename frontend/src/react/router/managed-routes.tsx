@@ -55,6 +55,7 @@ import { SidebarSurface } from '../sidebar/sidebar-island';
 import { StageSurface } from '../stage/stage';
 import { prefetchStats } from '../stats/stats';
 import { RandomizerPage } from '../randomizer/randomizer-page';
+import { WesternDiscover } from '../western-discover/western-discover';
 import { DEFAULT_WINDOW, prefetchTaste } from '../taste/taste';
 import { CatalogMatch } from './pages/catalog';
 import { FollowMatch, PlaylistsMatch } from './pages/follow';
@@ -150,6 +151,11 @@ const cleanupRoutes = CLEANUP_TOOLS.reduce((routes, tool) => {
 
 export const MANAGED_ROUTES: ManagedRouteTable = {
   ...cleanupRoutes,
+  '/discover': {
+    element: <ManagedMatch path="/discover" />,
+    prefetch: async () => {},
+    page: () => <WesternDiscover />,
+  },
   '/randomizer': {
     element: <ManagedMatch path="/randomizer" />,
     prefetch: async () => {},

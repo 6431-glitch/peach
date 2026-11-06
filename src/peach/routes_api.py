@@ -17,6 +17,7 @@ import logging
 import os
 import re
 import uuid
+import httpx
 from pathlib import Path
 from typing import Any
 from urllib.parse import unquote
@@ -41,6 +42,89 @@ from .taste_history import analyze_history, import_history_exports, write_manife
 router = APIRouter()
 
 LOGGER = logging.getLogger(__name__)
+
+
+@router.get('/api/qbittorrent/settings')
+def qbittorrent_settings(request: Request, _args=Depends(require_auth)):
+    from . import qbittorrent_client
+    return qbittorrent_client.public(request.app.state.downloads.credentials)
+
+
+@router.post('/api/qbittorrent/settings')
+def qbittorrent_configure(request: Request, body: dict = Body(...), _args=Depends(require_auth)):
+    same_origin(request)
+    from . import qbittorrent_client
+    try:
+        return qbittorrent_client.configure(request.app.state.downloads.credentials, body)
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+    except httpx.HTTPError as error:
+        raise HTTPException(502, 'Could not connect to qBittorrent.') from error
+
+
+@router.post('/api/qbittorrent/check')
+def qbittorrent_check(request: Request, body: dict = Body(...), _args=Depends(require_auth)):
+    same_origin(request)
+    from . import qbittorrent_client
+    try:
+        return qbittorrent_client.check(request.app.state.downloads.credentials, body)
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+    except httpx.HTTPError as error:
+        raise HTTPException(502, 'Could not connect to qBittorrent.') from error
+
+
+@router.post('/api/qbittorrent/submit')
+def qbittorrent_submit(request: Request, body: dict = Body(...), _args=Depends(require_auth)):
+    same_origin(request)
+    if bool(getattr(getattr(request.app.state, 'sync', None), 'read_only', False)):
+        raise HTTPException(403, 'This library is read-only.')
+    from . import qbittorrent_client
+    try:
+        return qbittorrent_client.submit(request.app.state.downloads.credentials, body.get('magnet', ''))
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+    except httpx.HTTPError as error:
+        raise HTTPException(502, 'Could not connect to qBittorrent.') from error
+
+
+@router.get('/api/western-discover')
+def western_discover(request: Request, source: str = 'stashdb', page: int = 1,
+                     section: str = 'releases', _args=Depends(require_auth)):
+    sorts = {'releases': 'DATE', 'recent': 'CREATED_AT', 'trending': 'TRENDING'}
+    if source not in ('stashdb', 'dorcelvision') or section not in sorts or not 1 <= page <= 100:
+        raise HTTPException(400, 'Invalid discovery source or page.')
+    try:
+        if source == 'dorcelvision':
+            from .adult_empire_match import _service
+            if page != 1:
+                return {'items': [], 'has_more': False}
+            result = _service('/dorcelvision/discover', {})
+            return {'sections': [{'title': entry.get('title', ''), 'items': entry.get('candidates', [])}
+                                 for entry in result.get('sections', [])], 'has_more': False}
+        from . import settings_file
+        from .stashdb_client import Client
+        client = Client(settings_file.load_config())
+        try:
+            query = ('query PeachDiscover($input:SceneQueryInput!){queryScenes(input:$input)'
+                     '{count scenes{id title release_date deleted studio{name} images{url} '
+                     'performers{performer{name}}}}}')
+            result = client.query(query, {'input': {'page': page, 'per_page': 24, 'sort': sorts[section], 'direction': 'DESC'}})['queryScenes']
+        finally:
+            client.close()
+        items = []
+        for scene in result['scenes']:
+            if scene.get('deleted'):
+                continue
+            identity = str(scene['id'])
+            items.append({'id': identity, 'title': scene.get('title') or '', 'date': scene.get('release_date') or '',
+                          'studio': (scene.get('studio') or {}).get('name') or '',
+                          'actors': [(p.get('performer') or {}).get('name', '') for p in scene.get('performers') or []],
+                          'image': ((scene.get('images') or [{}])[0]).get('url') or '',
+                          'url': 'https://stashdb.org/scenes/' + identity})
+        return {'items': items, 'has_more': page * 24 < result.get('count', 0)}
+    except (ValueError, KeyError, TypeError) as error:
+        raise HTTPException(502, str(error)) from error
 
 
 @router.get('/api/randomizer/draw')

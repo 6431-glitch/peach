@@ -33,6 +33,7 @@ import {
 } from './section';
 import { busyProps, useAction } from './use-action';
 import { JavBrowserSettings } from './jav-browser-settings';
+import { QbittorrentSettings } from './qbittorrent-settings';
 import { CLOUD_LOCATIONS } from '../../core/media-sources';
 
 export const DOWNLOADS_URL = '/api/configuration/downloads';
@@ -75,6 +76,7 @@ export function DownloadSettings({ initial, receipt }: {
   const pikpakAccount = hasPikPak && (state.pikpak.logged_in || Boolean(username.trim()));
   return (
     <>
+      <QbittorrentSettings />
       {hasCloud ? <DownloadForm state={state} settle={setState} receipt={receipt} pikpakAccount={pikpakAccount} /> : null}
       {hasPikPak ? <PikPakAccount state={state} settle={setState} receipt={receipt} username={username} setUsername={setUsername} /> : null}
       <JavBrowserSettings receipt={receipt} refreshKey={JSON.stringify([

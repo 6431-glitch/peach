@@ -96,7 +96,10 @@ function Sidebar({ host: at, props: view, epoch }: { host: SidebarHost; props: S
 
 function Navigation({ host: at, epoch, version }: { host: SidebarHost; epoch: number; version: number }) {
   const commit = useCommitSidebarOrder(at.store);
-  const order = at.store.value.sidebarOrder;
+  const savedOrder = at.store.value.sidebarOrder.filter(key => key !== 'discover');
+  const homeIndex = savedOrder.indexOf('');
+  const order = [...savedOrder];
+  order.splice(homeIndex < 0 ? 0 : homeIndex + 1, 0, 'discover');
   const byKey = new Map(at.navCatalog.map((item) => [item[0], item]));
   const items = order.map((key) => byKey.get(key)).filter((item) => item !== undefined);
   const pressed = items.map(([key]) => at.navOn(key));

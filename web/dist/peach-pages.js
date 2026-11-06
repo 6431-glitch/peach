@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "989e86e5-fc0c-421c-9790-40d95743de87", e._sentryDebugIdIdentifier = "sentry-dbid-989e86e5-fc0c-421c-9790-40d95743de87");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "bf5462ba-ccf3-4d64-b928-f8bd11fc09ed", e._sentryDebugIdIdentifier = "sentry-dbid-bf5462ba-ccf3-4d64-b928-f8bd11fc09ed");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -15,6 +15,9 @@ var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescr
 	value: n,
 	enumerable: !0
 }) : o, n)), l = {
+	等下一轮订阅检查分批取图: "Waiting for the next subscription check to fetch artwork.",
+	优先处理: "Fetch now",
+	立即重试: "Retry now",
 	连接检查: "Connection checks",
 	"检查各来源页面与 DMM 高清图片服务器，最多四个来源同时进行；正在冷却的来源不再请求。可连接只说明检查地址可达，不代表登录有效。": "Check source pages and the DMM high-resolution image server, with up to four sources checked at once. Sources in cooldown are skipped. A successful connection means the address is reachable; it does not verify login.",
 	连接检查进度: "Connection check progress",
@@ -121,7 +124,6 @@ var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescr
 	更改位置: "Change location",
 	重新统计: "Measure again",
 	统计占用: "Measure storage",
-	立即重试: "Retry now",
 	未命名媒体库: "Untitled library",
 	"{0} 图标": "{0} icon",
 	"{0} 名称": "{0} name",
@@ -61706,4 +61708,4 @@ je();
 var Yv = document.getElementById("peach-page"), Xv = Yv ? Jv[Yv.dataset.page ?? ""] : void 0;
 Yv && Xv && (0, Be.createRoot)(Yv).render(/* @__PURE__ */ F(Xv, { data: { ...Yv.dataset } }));
 
-//# debugId=989e86e5-fc0c-421c-9790-40d95743de87
+//# debugId=bf5462ba-ccf3-4d64-b928-f8bd11fc09ed

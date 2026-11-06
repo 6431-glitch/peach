@@ -1,5 +1,5 @@
 /** 应用导航的完整词表；默认可见顺序由 sidebar 的持久偏好决定。 */
-export type SidebarKey = '' | 'performers' | 'studios' | 'tags' | 'jav' | 'flagged' | 'playlists'
+export type SidebarKey = '' | 'discover' | 'performers' | 'studios' | 'tags' | 'jav' | 'flagged' | 'playlists'
   | 'follow' | 'immerse' | 'manage' | 'stats' | 'taste' | 'randomizer' | 'review' | 'data-cleanup' | 'trash'
   | 'follow-manage' | 'quality' | 'activity';
 export type ManagementKey = 'stats' | 'taste' | 'randomizer' | 'review' | 'cleanup' | 'trash' | 'follow'
@@ -8,6 +8,7 @@ export type NavigationItem<Key extends string = string> = readonly [key: Key, la
 
 export const SIDEBAR_ITEMS = [
   ['', '首页', 'home'],
+  ['discover', 'Discover', 'compass'],
   ['performers', '艺人', 'user-round'],
   ['studios', '厂牌', 'clapperboard'],
   ['tags', '标签', 'tags'],

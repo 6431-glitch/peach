@@ -90,6 +90,7 @@ function SubmitForm({ header, snapshot, prefill, close, receipt, provider: prefe
   const [target, setTarget] = useState(first?.target || '');
   const [work, setWork] = useState<DownloadPrefill | null>(prefill.code ? prefill : null);
   const [failure, setFailure] = useState('');
+  const qbit = useQuery({ queryKey: ['qbittorrent-settings'], queryFn: ({ signal }) => apiGet<{ password_set: boolean }>('/api/qbittorrent/settings', signal) });
   const usable = snapshot.available && configured.some(row => row.key === provider);
   const action = useAction();
   const input = useRef<HTMLInputElement>(null);
@@ -158,6 +159,11 @@ function SubmitForm({ header, snapshot, prefill, close, receipt, provider: prefe
       </div>
       <div className="flex justify-between gap-4 p-3">
         <Button variant="secondary" onClick={close}>取消</Button>
+        {qbit.data?.password_set ? <Button type="button" variant="secondary" disabled={!magnet.trim() || !snapshot.available || Boolean(action.busy)} onClick={() => {
+          void action.run('qbit', signal => apiSend<{ ok: boolean }>('/api/qbittorrent/submit', { magnet }, 'POST', signal), () => {
+            receipt('Sent to qBittorrent. Track its progress in qBittorrent.'); close();
+          });
+        }}>Send to qBittorrent</Button> : null}
         <Button type="submit" disabled={!magnet.trim() || !usable} {...busyProps(action.busy === 'submit')}>提交下载</Button>
       </div>
     </form>

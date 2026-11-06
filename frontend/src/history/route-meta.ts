@@ -33,6 +33,7 @@ const ROUTE_ENTRIES = {
   '/jav': { nav: 'jav', title: 'JAV', refresh: 'reopen' },
   '/stats': { section: 'stats', title: '统计' },
   '/randomizer': { section: 'randomizer', title: 'Randomizer', refresh: 'reopen' },
+  '/discover': { nav: 'discover', title: 'Discover', refresh: 'reopen' },
   '/taste': { section: 'taste', title: '口味', refresh: 'reopen' },
   '/review': { section: 'review', title: '人工复核', refresh: 'reopen' },
   '/data-cleanup': { section: 'cleanup', title: '数据管理' },
