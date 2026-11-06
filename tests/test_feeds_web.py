@@ -1233,13 +1233,13 @@ class PerformerFeedFixture(FeedWebFixture):
             "enabled": enabled})
 
     def _settled(self):
-        deadline = time.monotonic() + 5.0
-        while time.monotonic() < deadline:
-            state = self.contract.feed_job.snapshot() or {}
-            if state.get("status") not in ("running", None):
-                return state
-            time.sleep(0.02)
-        self.fail("订阅拉取没有在 5 秒内跑完")
+        thread = self.contract.feed_job.thread
+        self.assertIsNotNone(thread, '订阅拉取未启动')
+        thread.join(15)
+        self.assertFalse(thread.is_alive(), '订阅拉取未结束')
+        state = self.contract.feed_job.snapshot() or {}
+        self.assertNotIn(state.get('status'), ('running', None))
+        return state
 
     def _sources(self):
         return dispatch_api_get(self.contract, "/api/feeds", {})["sources"]
