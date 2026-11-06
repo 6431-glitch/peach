@@ -23,6 +23,19 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "migrations"
 
 
 class TaskRunStoreTests(unittest.TestCase):
+    def test_pruning_a_finished_run_preserves_download_state_and_clears_its_old_link(self):
+        run = self.store.start('download-postprocess', trigger='manual')
+        self.store.finish(run.id, 'succeeded')
+        with self.database.write_transaction(notify=False) as connection:
+            connection.execute("INSERT INTO download_task(provider,source_uri,target,state,updated_at,"
+                               "postprocess_state,postprocess_run_id,postprocess_detail) "
+                               "VALUES('115','sample','/Movies','ingested','now','complete',?,'整理完成')", (run.id,))
+        self.assertEqual(self.store.prune('download-postprocess', keep=0), 1)
+        with self.database.read_connection() as connection:
+            row = connection.execute('SELECT state,postprocess_state,postprocess_run_id,postprocess_detail '
+                                     'FROM download_task').fetchone()
+            self.assertEqual(tuple(row), ('ingested', 'complete', None, '整理完成'))
+
     def test_process_identity_preserves_owners_when_creation_time_is_unknown(self):
         started = stamp(datetime.now(timezone.utc))
         with mock.patch('peach.jobs.process_creation_time', return_value=None):

@@ -689,21 +689,27 @@ class TaskRunStore:
                 recovered.append(run.id)
         return recovered
 
-    def prune(self, task_key: str, keep: int = DEFAULT_KEEP) -> int:
+    def prune(self, task_key: str, keep: int = DEFAULT_KEEP, *, keep_errors: bool = False) -> int:
         """每个 task_key 只留最近 `keep` 条终态记录，返回删掉多少条。
 
         活跃任务保留，指向已清退历史的父任务和根任务关联由删除触发器置空。
+        后继使用 `keep_errors` 保留仍可重试的失败项；下载状态保留并清空已清退运行的链接。
         阈值用 `LIMIT 1 OFFSET keep` 取「第 keep+1 新的那条 id」。
         """
         if not self.enabled or keep < 0:
             return 0
-        marks = ",".join(f"'{name}'" for name in TERMINAL_STATUSES)
+        states = ('succeeded', 'cancelled') if keep_errors else TERMINAL_STATUSES
+        marks = ",".join(f"'{name}'" for name in states)
         removed = 0
         with self.database.write_transaction(notify=False) as connection:
             threshold = connection.execute(
                 f"SELECT id FROM task_run WHERE task_key=? AND status IN ({marks}) "
                 "ORDER BY id DESC LIMIT 1 OFFSET ?", (task_key, keep)).fetchone()
             if threshold is not None:
+                connection.execute(
+                    "UPDATE download_task SET postprocess_run_id=NULL WHERE postprocess_run_id IN ("
+                    f"SELECT id FROM task_run WHERE task_key=? AND status IN ({marks}) AND id<=?)",
+                    (task_key, threshold["id"]))
                 cursor = connection.execute(
                     f"DELETE FROM task_run WHERE task_key=? AND status IN ({marks}) "
                     "AND id<=?", (task_key, threshold["id"]))
