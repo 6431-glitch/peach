@@ -148,6 +148,20 @@ class UpgradeRepairTests(unittest.TestCase):
                 with patch('peach.jobs.DiskGuard.free_gb', return_value=100), patch.object(self.service, 'tick'):
                     self.service.retry()
 
+    def test_explicit_retry_preserves_a_later_manual_parent_pause(self):
+        from peach import task_control
+        from peach.jobs import DiskSpaceDenied
+        ids = self.disk_batch()
+        self.service.pause_media(DiskSpaceDenied('空间不足'))
+        parent_id = self.store.get(ids[0]).parent_run_id
+        task_control.request(self.store, parent_id, 'pause')
+        manual = task_control.intent(self.db, ids[0], (parent_id,))
+        with patch('peach.jobs.DiskGuard.free_gb', return_value=100), patch.object(self.service, 'tick'):
+            self.service.retry()
+        self.assertEqual(task_control.intent(self.db, ids[0], (parent_id,)), manual)
+        self.assertEqual(manual['action'], 'pause')
+        self.assertIsNone(self.store.claim_followup([upgrade_repairs.MEDIA_TASK]))
+
     def test_old_system_metadata_is_isolated_once_without_deleting_files_or_records(self):
         from peach import system_file_repair
         file = self.root / '@eaDir/video.mp4@SynoEAStream'

@@ -668,17 +668,22 @@ class UpgradeRepairs:
             self._save_receipt(receipt)
             self.error = ''
         from . import task_control
-        for run_id in paused.get('run_ids', []):
-            run = self.contract.task_runs.get(run_id)
-            if run is not None and run.status in ('pending', 'running') and task_control.requested(
-                    self.contract.db_path, run.id, (run.parent_run_id, run.root_run_id)) == 'pause':
-                task_control.request(self.contract.task_runs, run.id, 'resume')
+        from .update_tasks import _mutex, state_for
+        with _mutex(state_for(self.contract.db_path)):
+            for run_id, command_id in paused.get('commands', {}).items():
+                run = self.contract.task_runs.get(int(run_id))
+                if run is None or run.status not in ('pending', 'running'):
+                    continue
+                current = task_control.intent(self.contract.db_path, run.id, (run.parent_run_id, run.root_run_id))
+                if current.get('action') == 'pause' and current.get('id') == command_id:
+                    task_control.request(self.contract.task_runs, run.id, 'resume')
         self.tick()
         return self.snapshot()
 
     def pause_media(self, error) -> None:
         """磁盘触线后持久暂停整批；腾出空间或重启都不解除，显式重试才解除。"""
         from . import task_control
+        from .update_tasks import _mutex, state_for
         store = self.contract.task_runs
         with FileLock(str(self.receipt) + '.lock'):
             receipt = _read(self.receipt)
@@ -688,13 +693,17 @@ class UpgradeRepairs:
                 rows = connection.execute(
                     "SELECT id,parent_run_id,root_run_id FROM task_run WHERE task_key=? "
                     "AND host=? AND status IN ('pending','running')", (MEDIA_TASK, store.host)).fetchall()
-            ids = [row['id'] for row in rows if task_control.requested(
-                self.contract.db_path, row['id'], (row['parent_run_id'], row['root_run_id'])) == 'resume']
-            receipt['media_paused'] = {'message': f'{error}；影片自动补全已暂停，请检查缓存后显式重试',
-                                       'run_ids': ids}
-            self._save_receipt(receipt)
-        for run_id in ids:
-            task_control.request(store, run_id, 'pause')
+            with _mutex(state_for(self.contract.db_path)):
+                ids = [row['id'] for row in rows if task_control.requested(
+                    self.contract.db_path, row['id'], (row['parent_run_id'], row['root_run_id'])) == 'resume']
+                receipt['media_paused'] = {'message': f'{error}；影片自动补全已暂停，请检查缓存后显式重试',
+                                           'run_ids': ids, 'commands': {}}
+                self._save_receipt(receipt)
+                for run_id in ids:
+                    task_control.request(store, run_id, 'pause')
+                    receipt['media_paused']['commands'][str(run_id)] = task_control.intent(
+                        self.contract.db_path, run_id)['id']
+                self._save_receipt(receipt)
 
     def start(self) -> None:
         if self.available and not self.scheduler.running:
