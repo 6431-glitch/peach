@@ -146,7 +146,9 @@ it('空目录自动读取 CloudDrive，填入表单后由保存写入设置', as
   vi.stubGlobal('fetch', fetcher);
   const host = await mount(<StorageSettings initial={storage} receipt={vi.fn()} />);
   await settle();
-  expect(host.querySelector<HTMLInputElement>('input[aria-label="外部缓存目录"]')?.value).toBe('/detected-cache');
+  const directory = [...host.querySelectorAll('input')].find(input =>
+    [...(input.labels ?? [])].some(label => label.textContent === '外部缓存目录'));
+  expect(directory?.value).toBe('/detected-cache');
   expect(fetcher).toHaveBeenCalledTimes(1);
   await submit(host.querySelector('#storageBudgetSettings'));
   await settle();

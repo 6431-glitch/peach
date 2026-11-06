@@ -62,19 +62,21 @@ export function StorageBudgetSettings({ initial, after, receipt }: {
         <Switch aria-label="自动清理缓存" isSelected={policy.auto_clean} isDisabled={Boolean(action.busy)}
           onChange={value => update('auto_clean', value)} />
       </SettingsRow>
-      <SettingsRow label="外部缓存目录" description={cacheRead || '自动读取本机 CloudDrive，也可手动填写；不自动清理'}>
-        <Input aria-label="外部缓存目录" value={policy.external_cache_path} size="small"
-          className="w-40 shrink-0 sm:w-52" placeholder="未设置"
+      </> : null}
+    </Rows>
+    {policy.enabled ? <Stack divided>
+        <Input label="外部缓存目录" hint={cacheRead || '自动读取本机 CloudDrive，也可手动填写；不自动清理'}
+          value={policy.external_cache_path} size="small" className="w-full" placeholder="未设置"
           onChange={value => update('external_cache_path', value)} isDisabled={Boolean(action.busy)} />
-      </SettingsRow>
-      {policy.external_cache_path ? <SettingsRow label="外部缓存上限"
+    </Stack> : null}
+    {policy.enabled && policy.external_cache_path ? <Rows>
+      <SettingsRow label="外部缓存上限"
         description="达到上限暂停补修，留空只检查磁盘余量">
         <ConfigurationInput aria-label="外部缓存上限（GiB）" unit="GiB" size="small" className="w-32 shrink-0" placeholder="不限"
           inputMode="numeric" pattern="[0-9]*" value={policy.external_cache_max_gib ? String(policy.external_cache_max_gib) : ''}
           onChange={value => update('external_cache_max_gib', Number(value))} isDisabled={Boolean(action.busy)} />
-      </SettingsRow> : null}
-      </> : null}
-    </Rows>
+      </SettingsRow>
+    </Rows> : null}
     <Stack divided>
       {policy.enabled ? <Help>推荐值待取得使用数据后给出。上限留空表示不限，在途任务可能超出。</Help> : null}
       {policy.enabled && check?.paused ? <ErrorText>{check.reasons.join('；')}。调整或清理后，在任务中心重试补修。</ErrorText> : null}

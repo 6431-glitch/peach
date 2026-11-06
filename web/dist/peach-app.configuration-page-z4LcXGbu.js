@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "73db2ef4-4347-4de9-9940-c3d56934a8b7", e._sentryDebugIdIdentifier = "sentry-dbid-73db2ef4-4347-4de9-9940-c3d56934a8b7");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "8e1273b8-a6bd-4531-94b6-c9cb2ab74562", e._sentryDebugIdIdentifier = "sentry-dbid-8e1273b8-a6bd-4531-94b6-c9cb2ab74562");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2128,63 +2128,60 @@ function xa({ initial: e, after: t, receipt: n }) {
 					isDisabled: !!a.busy,
 					onChange: (e) => c("enabled", e)
 				})
-			}), r.enabled ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
-				ba.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(B, {
-					label: t,
-					description: n,
-					children: /* @__PURE__ */ (0, Q.jsx)(ya, {
-						"aria-label": `${t}（GiB）`,
-						unit: "GiB",
-						inputMode: "numeric",
-						pattern: "[0-9]*",
-						size: "small",
-						className: "w-32 shrink-0",
-						placeholder: e === "minimum_free_gib" ? "自动" : "不限",
-						value: r[e] ? String(r[e]) : "",
-						onChange: (t) => c(e, Number(t)),
-						isDisabled: !!a.busy
-					})
-				}, e)),
-				/* @__PURE__ */ (0, Q.jsx)(B, {
-					label: "自动清理缓存",
-					description: "先清理可重建缩略图，仍超限则暂停",
-					children: /* @__PURE__ */ (0, Q.jsx)(U, {
-						"aria-label": "自动清理缓存",
-						isSelected: r.auto_clean,
-						isDisabled: !!a.busy,
-						onChange: (e) => c("auto_clean", e)
-					})
-				}),
-				/* @__PURE__ */ (0, Q.jsx)(B, {
+			}), r.enabled ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [ba.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(B, {
+				label: t,
+				description: n,
+				children: /* @__PURE__ */ (0, Q.jsx)(ya, {
+					"aria-label": `${t}（GiB）`,
+					unit: "GiB",
+					inputMode: "numeric",
+					pattern: "[0-9]*",
+					size: "small",
+					className: "w-32 shrink-0",
+					placeholder: e === "minimum_free_gib" ? "自动" : "不限",
+					value: r[e] ? String(r[e]) : "",
+					onChange: (t) => c(e, Number(t)),
+					isDisabled: !!a.busy
+				})
+			}, e)), /* @__PURE__ */ (0, Q.jsx)(B, {
+				label: "自动清理缓存",
+				description: "先清理可重建缩略图，仍超限则暂停",
+				children: /* @__PURE__ */ (0, Q.jsx)(U, {
+					"aria-label": "自动清理缓存",
+					isSelected: r.auto_clean,
+					isDisabled: !!a.busy,
+					onChange: (e) => c("auto_clean", e)
+				})
+			})] }) : null] }),
+			r.enabled ? /* @__PURE__ */ (0, Q.jsx)(V, {
+				divided: !0,
+				children: /* @__PURE__ */ (0, Q.jsx)(P, {
 					label: "外部缓存目录",
-					description: o || "自动读取本机 CloudDrive，也可手动填写；不自动清理",
-					children: /* @__PURE__ */ (0, Q.jsx)(P, {
-						"aria-label": "外部缓存目录",
-						value: r.external_cache_path,
-						size: "small",
-						className: "w-40 shrink-0 sm:w-52",
-						placeholder: "未设置",
-						onChange: (e) => c("external_cache_path", e),
-						isDisabled: !!a.busy
-					})
-				}),
-				r.external_cache_path ? /* @__PURE__ */ (0, Q.jsx)(B, {
-					label: "外部缓存上限",
-					description: "达到上限暂停补修，留空只检查磁盘余量",
-					children: /* @__PURE__ */ (0, Q.jsx)(ya, {
-						"aria-label": "外部缓存上限（GiB）",
-						unit: "GiB",
-						size: "small",
-						className: "w-32 shrink-0",
-						placeholder: "不限",
-						inputMode: "numeric",
-						pattern: "[0-9]*",
-						value: r.external_cache_max_gib ? String(r.external_cache_max_gib) : "",
-						onChange: (e) => c("external_cache_max_gib", Number(e)),
-						isDisabled: !!a.busy
-					})
-				}) : null
-			] }) : null] }),
+					hint: o || "自动读取本机 CloudDrive，也可手动填写；不自动清理",
+					value: r.external_cache_path,
+					size: "small",
+					className: "w-full",
+					placeholder: "未设置",
+					onChange: (e) => c("external_cache_path", e),
+					isDisabled: !!a.busy
+				})
+			}) : null,
+			r.enabled && r.external_cache_path ? /* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
+				label: "外部缓存上限",
+				description: "达到上限暂停补修，留空只检查磁盘余量",
+				children: /* @__PURE__ */ (0, Q.jsx)(ya, {
+					"aria-label": "外部缓存上限（GiB）",
+					unit: "GiB",
+					size: "small",
+					className: "w-32 shrink-0",
+					placeholder: "不限",
+					inputMode: "numeric",
+					pattern: "[0-9]*",
+					value: r.external_cache_max_gib ? String(r.external_cache_max_gib) : "",
+					onChange: (e) => c("external_cache_max_gib", Number(e)),
+					isDisabled: !!a.busy
+				})
+			}) }) : null,
 			/* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
@@ -6293,4 +6290,4 @@ function Zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Js as ConfigurationPage };
 
-//# debugId=73db2ef4-4347-4de9-9940-c3d56934a8b7
+//# debugId=8e1273b8-a6bd-4531-94b6-c9cb2ab74562
