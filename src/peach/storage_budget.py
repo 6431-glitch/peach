@@ -398,6 +398,30 @@ class CapacityGuard:
         self._reserved_data = None
         self._denied = None
 
+    def _projected_reasons(self, policy, usage, disks, required_bytes, destination):
+        projected = dict(usage)
+        checked = list(disks)
+        if required_bytes:
+            target = _existing(destination or self.config.data_root)
+            disk = shutil.disk_usage(target)
+            checked.append((f'{target} 预计写入后', disk.free - required_bytes, disk.total))
+            if projected['data_bytes'] is not None:
+                self._reserved_data = max(self._reserved_data or 0, projected['data_bytes'] + required_bytes)
+                projected['data_bytes'] = self._reserved_data
+        return _exceeded(policy, projected, checked)
+
+    def _cleanup_target(self, policy, usage, required_bytes, destination):
+        generated = _existing(self.config.directory('generated'))
+        disk = shutil.disk_usage(generated)
+        needed = max(0, reserve_bytes(policy, disk.total) - disk.free)
+        if required_bytes and _existing(destination or self.config.data_root).stat().st_dev == generated.stat().st_dev:
+            needed = max(needed, reserve_bytes(policy, disk.total) - disk.free + required_bytes)
+        for key, limit in (('cache_bytes', policy.cache_max_gib), ('data_bytes', policy.data_max_gib)):
+            if limit and usage[key] is not None:
+                extra = required_bytes if key == 'data_bytes' else 0
+                needed = max(needed, usage[key] + extra - limit * GIB + 1)
+        return needed
+
     def check(self, force=False, *, required_bytes=0, destination=None):
         from .update_tasks import check_pause, current_db
         check_pause(current_db.get())
@@ -424,31 +448,9 @@ class CapacityGuard:
                 if not _exceeded(policy, usage, disks):
                     usage = _measure(self.config, policy, interval_secs=self.interval_secs)
 
-                def reasons_for(usage, disks):
-                    projected = dict(usage)
-                    checked = list(disks)
-                    if required_bytes:
-                        target = _existing(destination or self.config.data_root)
-                        disk = shutil.disk_usage(target)
-                        checked.append((f'{target} 预计写入后', disk.free - required_bytes, disk.total))
-                        if projected['data_bytes'] is not None:
-                            self._reserved_data = max(self._reserved_data or 0,
-                                                      projected['data_bytes'] + required_bytes)
-                            projected['data_bytes'] = self._reserved_data
-                    return _exceeded(policy, projected, checked)
-
-                reasons = reasons_for(usage, disks)
+                reasons = self._projected_reasons(policy, usage, disks, required_bytes, destination)
                 freed = 0
-                generated_disk = shutil.disk_usage(_existing(self.config.directory('generated')))
-                needed = max(0, reserve_bytes(policy, generated_disk.total) - generated_disk.free)
-                if required_bytes and _existing(destination or self.config.data_root).stat().st_dev == \
-                        _existing(self.config.directory('generated')).stat().st_dev:
-                    needed = max(needed, reserve_bytes(policy, generated_disk.total)
-                                 - generated_disk.free + required_bytes)
-                for key, limit in (('cache_bytes', policy.cache_max_gib), ('data_bytes', policy.data_max_gib)):
-                    if limit and usage[key] is not None:
-                        extra = required_bytes if key == 'data_bytes' else 0
-                        needed = max(needed, usage[key] + extra - limit * GIB + 1)
+                needed = self._cleanup_target(policy, usage, required_bytes, destination)
                 if reasons and policy.auto_clean and needed > 0:
                     self.config.directory('state').mkdir(parents=True, exist_ok=True)
                     with FileLock(str(self.config.directory('state') / 'storage-auto-clean.lock')):
@@ -463,7 +465,7 @@ class CapacityGuard:
                     elif refreshed['data_bytes'] is None:
                         self._reserved_data = None
                     usage = refreshed
-                    reasons = reasons_for(usage, disks)
+                    reasons = self._projected_reasons(policy, usage, disks, required_bytes, destination)
                     if freed:
                         record_history(self.config, data_bytes=None, cache_bytes=None, cleaned_bytes=freed)
                 status = {**usage, 'checked_at': time.time(), 'reasons': reasons,

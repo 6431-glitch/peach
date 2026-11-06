@@ -26,9 +26,9 @@ export function ConfigurationInput({ prefix, suffix, unit, fieldClassName, ...pr
   prefix?: string; suffix?: string; unit?: string;
 }) {
   const Suffix = () => <span aria-hidden={unit ? true : undefined} className={cx('shrink-0 text-body-regular text-text-secondary',
-    unit ? 'flex h-full items-center border-l border-border-button-default px-2' : 'pr-1')}>{unit || suffix}</span>;
+    unit ? 'w-10' : 'pr-1')}>{unit ? <span className="absolute inset-y-0 right-0 flex items-center border-l border-border-button-default px-2">{unit}</span> : suffix}</span>;
   return <Input {...props}
-    fieldClassName={cx(unit && 'border border-border-button-default py-0 pr-0 [&>div]:h-full', fieldClassName)}
+    fieldClassName={fieldClassName}
     leadingAddon={prefix ? <span className="shrink-0 pl-1 text-body-regular text-text-secondary">{prefix}</span> : undefined}
     trailingIcon={unit || suffix ? Suffix : undefined} />;
 }

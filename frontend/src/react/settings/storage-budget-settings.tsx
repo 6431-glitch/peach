@@ -82,6 +82,6 @@ export function StorageBudgetSettings({ initial, after, receipt }: {
       {policy.enabled && check?.paused ? <ErrorText>{check.reasons.join('；')}。调整或清理后，在任务中心重试补修。</ErrorText> : null}
       {action.error ? <ErrorText>{action.error}</ErrorText> : null}
     </Stack>
-    <Footer><Button type="submit" {...busyProps(action.busy === 'save', '保存配置')}>保存配置</Button></Footer>
+    <Footer><Button type="submit" {...busyProps(action.busy === 'save')}>保存配置</Button></Footer>
   </Section>;
 }

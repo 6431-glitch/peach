@@ -210,6 +210,24 @@ def project(config) -> dict:
     return result
 
 
+def _valid_window(row, days, state) -> bool:
+    if (not isinstance(row, dict) or set(row) != {'days', 'observed_days', 'activity_observed_days',
+            'active_days', 'data', 'cache', 'cleaned_bytes'} or type(row['days']) is not int or row['days'] != days
+            or not _integer(row['observed_days'], days) or not _integer(row['activity_observed_days'], days)
+            or (row['active_days'] is not None and not _integer(row['active_days'], row['activity_observed_days']))
+            or ((row['active_days'] is None) != (row['activity_observed_days'] == 0))
+            or (row['cleaned_bytes'] is not None and not _integer(row['cleaned_bytes']))):
+        return False
+    if any(not _valid_metric(row[key]) or row[key]['observed_days'] > row['observed_days'] for key in METRICS):
+        return False
+    if row['observed_days'] > sum(row[key]['observed_days'] for key in METRICS):
+        return False
+    if row['observed_days'] > 0 and row['cleaned_bytes'] is None:
+        return False
+    return state == 'available' or not (row['observed_days'] or row['activity_observed_days']
+                                       or row['cleaned_bytes'] is not None)
+
+
 def valid_projection(value) -> bool:
     if (not isinstance(value, dict) or set(value) != {'state', 'activity_basis', 'windows'}
             or not isinstance(value['state'], str) or value['state'] not in {'available', 'unavailable', 'failed'}
@@ -218,21 +236,7 @@ def valid_projection(value) -> bool:
         return False
     for days in (7, 30):
         row = value['windows'][f'{days}d']
-        if (not isinstance(row, dict) or set(row) != {'days', 'observed_days', 'activity_observed_days',
-                'active_days', 'data', 'cache', 'cleaned_bytes'} or type(row['days']) is not int or row['days'] != days
-                or not _integer(row['observed_days'], days) or not _integer(row['activity_observed_days'], days)
-                or (row['active_days'] is not None and not _integer(row['active_days'], row['activity_observed_days']))
-                or ((row['active_days'] is None) != (row['activity_observed_days'] == 0))
-                or (row['cleaned_bytes'] is not None and not _integer(row['cleaned_bytes']))):
-            return False
-        if any(not _valid_metric(row[key]) or row[key]['observed_days'] > row['observed_days'] for key in METRICS):
-            return False
-        if row['observed_days'] > sum(row[key]['observed_days'] for key in METRICS):
-            return False
-        if row['observed_days'] > 0 and row['cleaned_bytes'] is None:
-            return False
-        if value['state'] != 'available' and (row['observed_days'] or row['activity_observed_days']
-                                             or row['cleaned_bytes'] is not None):
+        if not _valid_window(row, days, value['state']):
             return False
     short, long = (value['windows'][key] for key in ('7d', '30d'))
     for key in ('observed_days', 'activity_observed_days', 'active_days', 'cleaned_bytes'):

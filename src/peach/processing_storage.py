@@ -31,8 +31,8 @@ class ProcessingStorage:
         self.document = typical_size(self.sources, '*.json', 32 * 1024)
         self.nfo = typical_size(self.sources, '*.nfo', 32 * 1024)
 
-    def snapshot(self, plan, rows, *, finished=False):
-        """只按待执行工作计新增产物，已完成和命中缓存的部分不重复累加。"""
+    def _pending_outputs(self, plan):
+        """按待执行的资料与画面任务估算各类新增文件。"""
         covers, documents = set(), 0
         for token, profile in plan.profiles.items():
             if token not in plan.units:
@@ -58,6 +58,11 @@ class ProcessingStorage:
         source_bytes = documents * self.document + len(local_documents) * self.nfo
         # 采集流水线逐个生成九宫格，临时目录保留当前影片的九张 480px 帧。
         temporary = 9 * 128 * 1024 if previews else 0
+        return generated, source_bytes, temporary
+
+    def snapshot(self, plan, rows, *, finished=False):
+        """只按待执行工作计新增产物，已完成和命中缓存的部分不重复累加。"""
+        generated, source_bytes, temporary = self._pending_outputs(plan)
         if finished:
             generated = source_bytes = temporary = 0
         volumes = {}

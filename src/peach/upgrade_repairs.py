@@ -630,21 +630,11 @@ class UpgradeRepairs:
         from . import (avatar_followup, creator_identity_followup, performer_alias_followup,
                        performer_profile_followup, seed_followup, studio_followup)
         from .library_processing import _people_allowed
-        from .media_sources import cost_for
         from .settings_file import load_config, DATA_ROOT_ENV
         config = load_config(environ={DATA_ROOT_ENV: str(self.config.data_root)}) if self.config is not None else load_config()
         seen = set(receipt.get('queued', {}))
-        inherited = set()
-        inherited_display = set()
-        for key, run_id in receipt.get('queued', {}).items():
-            if key.startswith(MEDIA_TASK + ':'):
-                run = self.contract.task_runs.get(run_id)
-                if run is not None and run.status in ('pending', 'running', 'cancelled'):
-                    asset_id = int(key.rsplit(':', 1)[1])
-                    if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
-                        inherited_display.add((asset_id, key.rsplit(':', 2)[1]))
-                    else:
-                        inherited.add(asset_id)
+        inherited, inherited_display = self._inherited_media(receipt)
+
         attempts = Attempts(attempts_root(self.contract.candidate_root))
         with self.contract.database.read_connection() as connection:
             maximum = connection.execute('SELECT coalesce(max(id),0) FROM entity').fetchone()[0]
@@ -667,6 +657,25 @@ class UpgradeRepairs:
                 return planned[:MAX_FOLLOWUPS]
             rows = connection.execute("SELECT id,code,name,path,location,size,mtime,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
+        return self._plan_media(receipt, config, rows, planned, seen, inherited, inherited_display, media_limit)
+
+    def _inherited_media(self, receipt):
+        """保留旧队列中仍在执行或取消的影片及文件世代，避免重复派发。"""
+        inherited, inherited_display = set(), set()
+        for key, run_id in receipt.get('queued', {}).items():
+            if key.startswith(MEDIA_TASK + ':'):
+                run = self.contract.task_runs.get(run_id)
+                if run is not None and run.status in ('pending', 'running', 'cancelled'):
+                    asset_id = int(key.rsplit(':', 1)[1])
+                    if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
+                        inherited_display.add((asset_id, key.rsplit(':', 2)[1]))
+                    else:
+                        inherited.add(asset_id)
+        return inherited, inherited_display
+
+    def _plan_media(self, receipt, config, rows, planned, seen, inherited, inherited_display, media_limit):
+        """在余下配额中先补显示尺寸，再安排旧规则产物更新。"""
+        from .media_sources import cost_for
         from .followups import Followup
         selected = set(receipt.get('media_ids', []))
         from .display_dimensions_repair import RECEIPT_KEY, generation, task_key
