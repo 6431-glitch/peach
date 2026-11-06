@@ -5,7 +5,7 @@ import os
 import tempfile
 import threading
 import unittest
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -137,6 +137,189 @@ class CapacityHistoryTests(unittest.TestCase):
                 self.assertLogs('peach.capacity_history', level='WARNING') as logs:
             self.assertTrue(web_activity.w_play(contract, {'id': 1})['ok'])
         self.assertNotIn('private path', ' '.join(logs.output))
+
+
+class ResearchParticipationTests(unittest.TestCase):
+    def setUp(self):
+        from peach import research_participation
+        self.participation = research_participation
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.config = PeachConfig(self.root, self.root / 'config.toml')
+        self.now = datetime(2026, 11, 7, 12, tzinfo=timezone.utc)
+        self.enterContext(mock.patch.object(research_participation, '_now', side_effect=lambda: self.now))
+        clock = self.enterContext(mock.patch.object(sharing, 'datetime', wraps=datetime))
+        clock.now.side_effect = lambda *_args, **_kwargs: self.now
+        self.enterContext(mock.patch('peach.remote_reporting._disabled', False))
+        self.enterContext(mock.patch.dict(os.environ, {'PEACH_SENTRY_DSN': '', 'PEACH_LIBRARY_SENTRY_DSN': DSN}))
+        self.service = sharing.Service(self.config, SimpleNamespace())
+        self.addCleanup(self.service.stop)
+        self.sent = []
+
+    def client(self, _target, *, envelope_gate, delivery_callback):
+        def capture(envelope):
+            if not envelope_gate(envelope):
+                delivery_callback({'status': 'blocked', 'reason': 'consent'})
+                return
+            self.assertEqual([item.type for item in envelope.items], ['log'])
+            self.sent.append(json.loads(envelope.items[0].payload.get_bytes()))
+            delivery_callback({'status': 'accepted', 'status_code': 200})
+        return SimpleNamespace(transport=SimpleNamespace(capture_envelope=capture),
+                               capture_event=mock.Mock(side_effect=AssertionError('状态不得占用错误事件')),
+                               flush=lambda **_kwargs: None, close=lambda **_kwargs: None)
+
+    def envelope(self, record):
+        from sentry_sdk.envelope import Envelope, Item, PayloadRef
+        result = Envelope(headers={'sent_at': 'now', 'private': 'must-not-send'})
+        result.add_item(Item(type='log', payload=PayloadRef(json={'version': 2,
+            'items': [self.participation._log(record)]})))
+        return result
+
+    def test_old_scope_and_explicit_disable_without_new_scope_do_not_send_or_initialize_clients(self):
+        path = sharing._path(self.config)
+        path.parent.mkdir(parents=True)
+        for value in ({'schema': 4, 'enabled': True, 'revision': 'a' * 32},
+                      {'schema': 5, 'enabled': True, 'revision': 'a' * 32}, {'schema': 4, 'enabled': False}):
+            path.write_text(json.dumps(value))
+            with mock.patch('peach.remote_reporting._new_client') as client:
+                self.service.participation.attempt()
+                sharing.save_choice(self.config, False)
+                self.service.participation.attempt()
+            client.assert_not_called()
+
+    def test_enable_and_daily_contact_only_emit_one_log_and_reenable_rotates_research_identity(self):
+        with mock.patch('peach.remote_reporting._new_client', side_effect=self.client) as client:
+            sharing.save_choice(self.config, True)
+            client.assert_not_called()
+            first = sharing.consent(self.config)['research_instance']
+            self.service.participation.attempt()
+            self.service.participation.attempt()
+            self.assertEqual(len(self.sent), 1)
+            self.now += timedelta(days=1)
+            self.service.participation.attempt()
+            self.assertEqual(len(self.sent), 2)
+            sharing.save_choice(self.config, False)
+            self.assertEqual(sharing.snapshot(self.config)['participation']['pending_state'], 'disabled')
+            self.service.participation.attempt()
+            self.service.participation.attempt()
+            self.assertEqual(len(self.sent), 3)
+            self.now += timedelta(days=1)
+            self.service.participation.attempt()
+            self.assertEqual(len(self.sent), 3)
+            sharing.save_choice(self.config, True)
+            second = sharing.consent(self.config)['research_instance']
+            self.assertNotEqual(first, second)
+            self.service.participation.attempt()
+        attrs = [{key: value['value'] for key, value in item['items'][0]['attributes'].items()} for item in self.sent]
+        self.assertEqual([row['kind'] for row in attrs], ['enabled', 'heartbeat', 'disabled', 'enabled'])
+        self.assertTrue(all(row['purpose'] == 'population-research-participation' for row in attrs))
+        self.assertEqual(attrs[2]['research_instance'], first)
+        self.assertEqual(attrs[3]['research_instance'], second)
+        self.assertEqual(sharing.snapshot(self.config)['participation']['status'], 'accepted')
+        for private in ('library', 'capacity', 'preferences', 'authorization', 'revision', str(self.root), 'server_name'):
+            self.assertNotIn(private, json.dumps(self.sent))
+
+    def test_unknown_network_attempt_is_not_success_or_disable_and_is_not_retried_that_day(self):
+        sharing.save_choice(self.config, True)
+        def uncertain(_target, *, envelope_gate, delivery_callback):
+            def capture(envelope):
+                self.assertTrue(envelope_gate(envelope))
+            return SimpleNamespace(transport=SimpleNamespace(capture_envelope=capture),
+                                   flush=lambda **_kwargs: None, close=lambda **_kwargs: None)
+        with mock.patch('peach.remote_reporting._new_client', side_effect=uncertain) as client:
+            self.service.participation.attempt()
+            self.service.participation.attempt()
+        self.assertEqual(client.call_count, 1)
+        result = sharing.snapshot(self.config)
+        self.assertEqual(result['consent_state'], 'enabled')
+        self.assertEqual(result['participation']['status'], 'unknown')
+        self.assertTrue(result['participation']['attempted'])
+        self.assertEqual(result['participation']['state'], 'enabled')
+
+    def test_transport_missing_is_failure_and_requeue_preserves_log_message_identifier(self):
+        sharing.save_choice(self.config, True)
+        client = SimpleNamespace(transport=None, close=lambda **_kwargs: None)
+        with mock.patch('peach.remote_reporting._new_client', return_value=client):
+            self.service.participation.attempt()
+        first = self.participation._load(self.config)
+        self.assertEqual((first['status'], first['attempted']), ('failed', False))
+        with mock.patch('peach.remote_reporting._new_client', side_effect=self.client):
+            self.service.participation.attempt()
+        second = self.participation._load(self.config)
+        self.assertEqual(first['event_id'], second['event_id'])
+        self.assertNotEqual(first['dispatch_id'], second['dispatch_id'])
+        self.assertEqual(second['status'], 'accepted')
+
+    def test_closed_old_or_stopped_generation_cannot_send_and_stale_callback_cannot_change_new_receipt(self):
+        sharing.save_choice(self.config, True)
+        first = self.service.participation._prepare()
+        queued = self.envelope(first)
+        sharing.save_choice(self.config, False)
+        self.assertFalse(self.service.participation._gate(first, queued))
+        closing = self.service.participation._prepare()
+        closed = self.envelope(closing)
+        sharing.save_choice(self.config, True)
+        self.assertFalse(self.service.participation._gate(closing, closed))
+        current = self.service.participation._prepare()
+        before = self.participation._path(self.config).read_bytes()
+        self.service.participation._delivery(first, {'status': 'accepted'})
+        self.assertEqual(self.participation._path(self.config).read_bytes(), before)
+        self.service._stop.set()
+        self.assertFalse(self.service.participation._gate(current, self.envelope(current)))
+
+    def test_only_exact_log_fields_pass_and_attachments_or_error_events_are_rejected(self):
+        from copy import deepcopy
+        from sentry_sdk.envelope import Envelope
+        sharing.save_choice(self.config, True)
+        record = self.service.participation._prepare()
+        event = Envelope()
+        event.add_event({'message': 'must-not-send'})
+        self.assertFalse(self.service.participation._gate(record, event))
+        bad = self.envelope(record)
+        raw = deepcopy(bad.items[0].payload.json)
+        raw['items'][0]['attributes']['path'] = {'type': 'string', 'value': 'R:/private'}
+        from sentry_sdk.envelope import PayloadRef
+        bad.items[0].payload = PayloadRef(json=raw)
+        self.assertFalse(self.service.participation._gate(record, bad))
+        good = self.envelope(record)
+        self.assertTrue(self.service.participation._gate(record, good))
+        self.assertNotIn('private', good.headers)
+        self.assertFalse(self.service.participation._gate(record, good))
+
+    def test_stale_dispatch_does_not_consume_a_requeued_daily_contact(self):
+        sharing.save_choice(self.config, True)
+        first = self.service.participation._prepare()
+        second = self.service.participation._prepare()
+        self.assertEqual(first['event_id'], second['event_id'])
+        self.assertFalse(self.service.participation._gate(first, self.envelope(first)))
+        self.service.participation._delivery(first, {'status': 'accepted'})
+        self.assertTrue(self.service.participation._gate(second, self.envelope(second)))
+
+    def test_real_sdk_wire_uses_log_category_with_no_error_event_or_attachment(self):
+        from sentry_sdk.transport import HttpTransport
+        sharing.save_choice(self.config, True)
+        wire = []
+        with mock.patch.object(HttpTransport, '_send_envelope', side_effect=lambda envelope: wire.append(envelope)):
+            self.service.participation.attempt()
+        self.assertEqual(len(wire), 1)
+        self.assertEqual([item.type for item in wire[0].items], ['log'])
+        self.assertEqual(wire[0].items[0].data_category, 'log_item')
+        attrs = json.loads(wire[0].items[0].payload.get_bytes())['items'][0]['attributes']
+        self.assertEqual(attrs['purpose']['value'], 'population-research-participation')
+        self.assertEqual(attrs['research_instance']['value'], sharing.consent(self.config)['research_instance'])
+        for private in ('library', 'preferences', 'capacity', 'server_name', 'contexts', str(self.root), 'revision'):
+            self.assertNotIn(private, wire[0].serialize().decode())
+        self.assertEqual(self.participation.snapshot(self.config)['status'], 'unknown')
+
+    def test_corrupt_state_is_a_visible_local_failure_and_is_not_forwarded_to_diagnostics(self):
+        path = self.participation._path(self.config)
+        path.parent.mkdir(parents=True)
+        path.write_text('{')
+        with mock.patch('peach.remote_reporting.capture') as diagnostics:
+            state = sharing.snapshot(self.config)['participation']
+        self.assertEqual(state, {'status': 'failed', 'reason': 'state', 'attempted': None})
+        diagnostics.assert_not_called()
 
 
 class LibrarySharingTests(unittest.TestCase):
@@ -342,6 +525,9 @@ class LibrarySharingTests(unittest.TestCase):
             invalid = deepcopy(payload)
             invalid['capacity']['windows']['7d']['data'][key] = value
             cases.append(invalid)
+        invalid = deepcopy(payload)
+        invalid['capacity']['state'] = []
+        cases.append(invalid)
         for invalid in cases:
             self.assertFalse(sharing.valid_payload(invalid))
 
@@ -395,6 +581,7 @@ class LibrarySharingTests(unittest.TestCase):
         self.assertEqual(event['environment'], sharing.remote_reporting.event_metadata('research')['environment'])
         self.assertEqual(event['tags']['runtime'], sharing.remote_reporting.event_metadata('research')['tags']['runtime'])
         self.assertEqual(event['tags']['purpose'], 'population-research')
+        self.assertEqual(event['tags']['research_instance'], sharing.consent(self.config)['research_instance'])
         attachment = json.loads(gzip.decompress(envelope.items[1].payload.get_bytes()))
         self.assertEqual(attachment['schema'], sharing.SCHEMA)
         self.assertEqual(envelope.items[1].headers['filename'], sharing.FILENAME)

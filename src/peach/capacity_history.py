@@ -212,7 +212,8 @@ def project(config) -> dict:
 
 def valid_projection(value) -> bool:
     if (not isinstance(value, dict) or set(value) != {'state', 'activity_basis', 'windows'}
-            or value['state'] not in {'available', 'unavailable', 'failed'} or value['activity_basis'] != 'playback'
+            or not isinstance(value['state'], str) or value['state'] not in {'available', 'unavailable', 'failed'}
+            or value['activity_basis'] != 'playback'
             or not isinstance(value['windows'], dict) or set(value['windows']) != {'7d', '30d'}):
         return False
     for days in (7, 30):
