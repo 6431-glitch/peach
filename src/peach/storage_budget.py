@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
+from functools import lru_cache
 import json
 import logging
 import os
@@ -124,20 +125,29 @@ def record_history(config, *, data_bytes, cache_bytes, cleaned_bytes=0):
         logging.getLogger(__name__).warning('容量历史未取得（%s）', type(error).__name__)
 
 
+@lru_cache(maxsize=1)
+def _compressed_file_size():
+    import ctypes
+    from ctypes import wintypes
+    function = ctypes.WinDLL('kernel32', use_last_error=True).GetCompressedFileSizeW
+    function.argtypes = (wintypes.LPCWSTR, ctypes.POINTER(wintypes.DWORD))
+    function.restype = wintypes.DWORD
+    return function
+
+
 def allocated_bytes(path: Path, info: os.stat_result) -> int:
     """稀疏缓存按实际占盘计量，不把文件逻辑长度当作分配量。"""
     if os.name != 'nt':
         return info.st_blocks * 512
     import ctypes
     from ctypes import wintypes
-    function = ctypes.WinDLL('kernel32', use_last_error=True).GetCompressedFileSizeW
-    function.argtypes = (wintypes.LPCWSTR, ctypes.POINTER(wintypes.DWORD))
-    function.restype = wintypes.DWORD
+    function = _compressed_file_size()
     high = wintypes.DWORD()
     ctypes.set_last_error(0)
     low = function(str(path), ctypes.byref(high))
-    if low == 0xFFFFFFFF and ctypes.get_last_error():
-        raise ctypes.WinError(ctypes.get_last_error())
+    error = ctypes.get_last_error()
+    if low == 0xFFFFFFFF and error:
+        raise ctypes.WinError(error)
     return (high.value << 32) | low
 
 
@@ -186,31 +196,62 @@ def data_roots(config):
     return _roots((config.data_root, *(config.directory(name) for name in DIRECTORY_KEYS)))
 
 
-def cache_usage(config, policy=None):
+def cache_usage(config, policy=None, *, managed=True, check=lambda: None):
     policy = policy or load_policy(config)
-    result = {'managed_cache_bytes': sum(allocated_bytes(path, info) for root in cache_roots(config)
-                                        for path, info in _files(root)), 'external_cache_bytes': None}
+    key = ('cache', str(config.directory('generated').resolve()), policy.external_cache_path, managed)
+    cached = _SCANS.get(key)
+    if cached and time.monotonic() - cached[0] < SCAN_SECONDS:
+        return dict(cached[1])
+    result = {'managed_cache_bytes': None, 'external_cache_bytes': None}
+    if managed:
+        result['managed_cache_bytes'] = _allocated(cache_roots(config), check)
     if policy.external_cache_path:
         root = Path(policy.external_cache_path)
         if not root.is_dir():
             raise OSError('外部缓存目录不可访问')
-        result['external_cache_bytes'] = sum(allocated_bytes(path, info) for path, info in _files(root))
-    return result
+        result['external_cache_bytes'] = _allocated((root,), check)
+    _SCANS[key] = (time.monotonic(), result)
+    return dict(result)
 
 
-def _measure(config, policy):
+def data_usage(config, *, check=lambda: None):
+    return _allocated(data_roots(config), check)
+
+
+def _allocated(roots, check):
+    total = 0
+    for root in roots:
+        for path, info in _files(root):
+            check()
+            total += allocated_bytes(path, info)
+    return total
+
+
+def _measure(config, policy, *, interval_secs=2):
     key = (str(config.data_root.resolve()), str(config.directory('generated').resolve()), policy)
     now = time.monotonic()
     cached = _SCANS.get(key)
     if cached and now - cached[0] < SCAN_SECONDS:
         return dict(cached[1])
-    cache = cache_usage(config, policy)
+    next_check = 0.0
+    def check_free():
+        nonlocal next_check
+        now = time.monotonic()
+        if now < next_check:
+            return
+        next_check = now + interval_secs
+        reasons = _exceeded(policy, {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None},
+                            _disks(config, policy))
+        if reasons:
+            raise DiskSpaceDenied('扫描期间磁盘余量触线，已暂停当前写入，请清理或重试：' + '；'.join(reasons))
+    cache = cache_usage(config, policy, managed=bool(policy.cache_max_gib), check=check_free)
     result = {'cache_bytes': cache['managed_cache_bytes'], 'data_bytes': None,
-              'external_cache_bytes': cache['external_cache_bytes'], 'measured_at': time.time()}
-    if policy.data_max_gib or _history_due(config):
-        result['data_bytes'] = sum(allocated_bytes(path, info) for root in data_roots(config) for path, info in _files(root))
+              'external_cache_bytes': cache['external_cache_bytes']}
+    if policy.data_max_gib:
+        result['data_bytes'] = data_usage(config, check=check_free)
+    result['measured_at'] = time.time()
     record_history(config, data_bytes=result['data_bytes'], cache_bytes=result['cache_bytes'])
-    _SCANS[key] = (now, result)
+    _SCANS[key] = (time.monotonic(), result)
     return dict(result)
 
 
@@ -305,7 +346,10 @@ class CapacityGuard:
                 if required_bytes and not self._reservation_started:
                     _SCANS.clear()
                     self._reservation_started = True
-                usage = _measure(self.config, policy)
+                usage = {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None,
+                         'measured_at': time.time()}
+                if not _exceeded(policy, usage, disks):
+                    usage = _measure(self.config, policy, interval_secs=self.interval_secs)
 
                 def reasons_for(usage, disks):
                     projected = dict(usage)
@@ -338,7 +382,9 @@ class CapacityGuard:
                         freed = _clean_thumbnails(self.config, needed + 1024 ** 2)
                     _SCANS.clear()
                     disks = _disks(self.config, policy)
-                    refreshed = _measure(self.config, policy)
+                    free_only = {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None}
+                    refreshed = (usage if _exceeded(policy, free_only, disks) else
+                                 _measure(self.config, policy, interval_secs=self.interval_secs))
                     if self._reserved_data is not None and usage['data_bytes'] is not None and refreshed['data_bytes'] is not None:
                         self._reserved_data -= max(0, usage['data_bytes'] - refreshed['data_bytes'])
                     elif refreshed['data_bytes'] is None:

@@ -79,7 +79,7 @@ export interface StorageState {
   system_drive: boolean;
   budget?: { policy: StoragePolicy | null; error: string; recommendation_state?: string; last_check: {
     checked_at: number; paused: boolean; reasons: string[]; freed_bytes: number;
-    cache_bytes: number; data_bytes: number | null; external_cache_bytes: number | null;
+    cache_bytes: number | null; data_bytes: number | null; external_cache_bytes: number | null;
   } | null };
   usage: { measured_at: number; total_bytes: number; total_files: number; categories: StorageCategory[];
     allocated_bytes?: number | null; managed_cache_bytes?: number | null; external_cache_bytes?: number | null;

@@ -4,6 +4,7 @@ from __future__ import annotations
 import gzip
 import io
 import json
+import logging
 import threading
 import time
 import uuid
@@ -316,6 +317,7 @@ class Service:
                 except Exception:
                     # 参与状态失败与研究快照分别保留回执，不转交错误诊断通道。
                     pass
+                self.sample_capacity()
                 try:
                     self.attempt()
                 except Exception:
@@ -325,6 +327,33 @@ class Service:
                 self._wake.clear()
         self._thread = threading.Thread(target=run, name="PeachLibrarySharing", daemon=True)
         self._thread.start()
+
+    def sample_capacity(self):
+        """研究日采样在分享后台运行，不让请求中的容量检查展开数据目录。"""
+        from . import storage_budget
+        current = consent(self.config)
+        if not current or self._stop.is_set() or not storage_budget._history_due(self.config):
+            return
+        next_check = 0.0
+        def active():
+            nonlocal next_check
+            if self._stop.is_set():
+                raise InterruptedError('研究容量采样已停止')
+            now = time.monotonic()
+            if now >= next_check:
+                next_check = now + 2
+                if consent(self.config).get('revision') != current['revision']:
+                    raise InterruptedError('研究容量采样的同意已变化')
+        try:
+            data_bytes = storage_budget.data_usage(self.config, check=active)
+            cache = storage_budget.cache_usage(self.config, check=active)
+            if self._stop.is_set() or consent(self.config).get('revision') != current['revision']:
+                return
+            storage_budget.record_history(self.config, data_bytes=data_bytes, cache_bytes=cache['managed_cache_bytes'])
+        except InterruptedError:
+            return
+        except (OSError, ValueError) as error:
+            logging.getLogger(__name__).warning('研究容量采样未取得（%s）', type(error).__name__)
 
     def stop(self):
         self._stop.set()

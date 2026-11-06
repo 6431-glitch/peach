@@ -510,6 +510,73 @@ class LibrarySharingTests(unittest.TestCase):
         self.assertTrue(sharing.valid_payload(payload))
         self.assertTrue(sharing.useful_payload(payload))
 
+    def test_background_daily_capacity_sampling_requires_current_consent_and_stops_after_complete_sample(self):
+        from peach import storage_budget
+        with mock.patch.object(storage_budget, 'data_usage') as data, mock.patch.object(storage_budget, 'cache_usage') as cache:
+            self.service.sample_capacity()
+        data.assert_not_called()
+        cache.assert_not_called()
+        sharing.save_choice(self.config, True)
+        history = capacity_history._path(self.config)
+        with mock.patch.object(storage_budget, 'data_usage', return_value=100) as data, \
+                mock.patch.object(storage_budget, 'cache_usage', return_value={'managed_cache_bytes': 30}) as cache, \
+                mock.patch('peach.remote_reporting._new_client') as network:
+            self.service.sample_capacity()
+            self.service.sample_capacity()
+        self.assertEqual(data.call_count, 1)
+        self.assertEqual(cache.call_count, 1)
+        network.assert_not_called()
+        self.assertTrue(history.exists())
+        self.assertFalse(capacity_history.sample_due(self.config))
+        value = capacity_history.project(self.config)['windows']['7d']
+        self.assertEqual((value['data']['current_bytes'], value['cache']['current_bytes']), (100, 30))
+
+    def test_background_sample_reuses_physical_allocation_roots_without_reading_media_contents(self):
+        from peach import storage_budget
+        sharing.save_choice(self.config, True)
+        media = self.root / 'generated/transcodes/sample.mp4'
+        media.parent.mkdir(parents=True)
+        media.write_bytes(b'not opened during capacity scan')
+        with mock.patch.object(storage_budget, 'allocated_bytes', return_value=16), \
+                mock.patch.object(storage_budget, 'data_roots', return_value=[media.parent]) as data_roots, \
+                mock.patch.object(storage_budget, 'cache_roots', return_value=[media.parent]) as cache_roots, \
+                mock.patch.object(Path, 'read_bytes', side_effect=AssertionError('不得读取媒体正文')):
+            self.service.sample_capacity()
+        data_roots.assert_called_once_with(self.config)
+        cache_roots.assert_called_once_with(self.config)
+        row = capacity_history.project(self.config)['windows']['7d']
+        self.assertEqual((row['data']['current_bytes'], row['cache']['current_bytes']), (16, 16))
+
+    def test_background_sample_does_not_run_for_old_scope_or_overwrite_history_after_revocation(self):
+        from peach import storage_budget
+        sharing.save_choice(self.config, True)
+        current = json.loads(sharing._path(self.config).read_text())
+        sharing._path(self.config).write_text(json.dumps({**current, 'schema': 4}))
+        with mock.patch.object(storage_budget, 'data_usage') as data:
+            self.service.sample_capacity()
+        data.assert_not_called()
+        sharing.save_choice(self.config, True)
+        def scan(_config, *, check):
+            sharing.save_choice(self.config, False)
+            check()
+            return 100
+        with mock.patch.object(storage_budget, 'data_usage', side_effect=scan), \
+                mock.patch.object(storage_budget, 'cache_usage') as cache:
+            self.service.sample_capacity()
+        cache.assert_not_called()
+        self.assertFalse(capacity_history._path(self.config).exists())
+
+    def test_bad_research_history_does_not_scan_or_trigger_diagnostic_telemetry(self):
+        from peach import storage_budget
+        sharing.save_choice(self.config, True)
+        capacity_history._path(self.config).write_text('{')
+        with mock.patch.object(storage_budget, 'data_usage') as data, \
+                mock.patch('peach.remote_reporting.capture') as reporting, \
+                self.assertLogs('peach.storage_budget', level='WARNING'):
+            self.service.sample_capacity()
+        data.assert_not_called()
+        reporting.assert_not_called()
+
     def test_capacity_payload_rejects_private_fields_and_invalid_numeric_relationships(self):
         from copy import deepcopy
         capacity_history.record_sample(self.config, 100, 50)

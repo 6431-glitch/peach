@@ -548,7 +548,7 @@ class CapacityProtectionTests(unittest.TestCase):
     def test_new_data_directory_checks_existing_parent_and_saves_status(self):
         result = self.budget.CapacityGuard(self.config).check(force=True)
         self.assertFalse(result['paused'])
-        self.assertEqual(result['cache_bytes'], 0)
+        self.assertIsNone(result['cache_bytes'])
         self.assertFalse(self.config.directory('generated').exists())
         self.assertEqual(self.budget.snapshot(self.config)['last_check'], result)
 
@@ -666,6 +666,124 @@ class CapacityProtectionTests(unittest.TestCase):
         for target in (self.root, self.root.parent, managed):
             with self.subTest(target=target), self.assertRaisesRegex(ValueError, '独立'):
                 self.policy(external_cache_path=str(target))
+
+    def test_default_request_guard_does_not_walk_data_or_cache_for_research_sampling(self):
+        with patch.object(self.budget, 'data_roots', side_effect=AssertionError('未设置数据上限')), \
+                patch.object(self.budget, 'cache_roots', side_effect=AssertionError('未设置缓存上限')), \
+                patch.object(self.budget, '_files', side_effect=AssertionError('前台不能全树扫描')), \
+                patch.object(self.budget, '_history_due', side_effect=AssertionError('日采样不属于请求')):
+            result = self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertIsNone(result['data_bytes'])
+        self.assertIsNone(result['cache_bytes'])
+        self.assertIsNone(result['external_cache_bytes'])
+
+    def test_only_enabled_limits_select_the_corresponding_roots(self):
+        with patch.object(self.budget, 'data_roots', return_value=[]) as data_roots, \
+                patch.object(self.budget, 'cache_roots', side_effect=AssertionError('缓存上限未设置')):
+            result = self.budget._measure(self.config, self.budget.StoragePolicy(data_max_gib=100))
+        data_roots.assert_called_once_with(self.config)
+        self.assertEqual(result['data_bytes'], 0)
+        self.assertIsNone(result['cache_bytes'])
+        with patch.object(self.budget, 'cache_roots', return_value=[]) as cache_roots, \
+                patch.object(self.budget, 'data_roots', side_effect=AssertionError('数据上限未设置')):
+            result = self.budget._measure(self.config, self.budget.StoragePolicy(cache_max_gib=100))
+        cache_roots.assert_called_once_with(self.config)
+        self.assertEqual(result['cache_bytes'], 0)
+        self.assertIsNone(result['data_bytes'])
+
+    def test_measurement_ttl_starts_when_a_slow_scan_finishes(self):
+        file = write(self.root / 'sample', 7)
+        clock = [0.0]
+        def scan(_root):
+            clock[0] += 100
+            yield file, file.stat()
+        with patch.object(self.budget.time, 'monotonic', side_effect=lambda: clock[0]), \
+                patch.object(self.budget, '_files', side_effect=scan) as files, \
+                patch.object(self.budget, 'allocated_bytes', return_value=7):
+            policy = self.budget.StoragePolicy(data_max_gib=100)
+            self.assertEqual(self.budget._measure(self.config, policy)['data_bytes'], 7)
+            clock[0] = 110
+            self.assertEqual(self.budget._measure(self.config, policy)['data_bytes'], 7)
+        self.assertEqual(files.call_count, 1)
+
+    def test_cache_scan_ttl_starts_at_completion_and_respects_managed_selection(self):
+        file = write(self.root / 'sample', 9)
+        clock = [0.0]
+        def scan(_root):
+            clock[0] += 100
+            yield file, file.stat()
+        with patch.object(self.budget.time, 'monotonic', side_effect=lambda: clock[0]), \
+                patch.object(self.budget, 'cache_roots', return_value=[self.root]), \
+                patch.object(self.budget, '_files', side_effect=scan) as files, \
+                patch.object(self.budget, 'allocated_bytes', return_value=9):
+            self.assertEqual(self.budget.cache_usage(self.config)['managed_cache_bytes'], 9)
+            clock[0] = 110
+            self.assertEqual(self.budget.cache_usage(self.config)['managed_cache_bytes'], 9)
+            self.assertIsNone(self.budget.cache_usage(self.config, managed=False)['managed_cache_bytes'])
+        self.assertEqual(files.call_count, 1)
+
+    def test_long_scan_free_space_check_interrupts_before_reading_more_allocations(self):
+        from peach.jobs import DiskSpaceDenied
+        first, second = write(self.root / 'one', 1), write(self.root / 'two', 1)
+        clock = [0.0]
+        high = [('system', 100 * self.budget.GIB, 200 * self.budget.GIB)]
+        low = [('system', 1, 200 * self.budget.GIB)]
+        def scan(_root):
+            yield first, first.stat()
+            clock[0] = 3
+            yield second, second.stat()
+        self.policy(data_max_gib=100)
+        with patch.object(self.budget.time, 'monotonic', side_effect=lambda: clock[0]), \
+                patch.object(self.budget, '_files', side_effect=scan), \
+                patch.object(self.budget, 'allocated_bytes', return_value=1) as allocated, \
+                patch.object(self.budget, '_disks', side_effect=[high, high, low]), \
+                patch.object(self.budget, '_clean_thumbnails') as cleanup, \
+                self.assertRaisesRegex(DiskSpaceDenied, '扫描期间磁盘余量触线'):
+            self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertEqual(allocated.call_count, 1)
+        cleanup.assert_not_called()
+
+    def test_low_space_at_start_cleans_before_a_required_data_scan(self):
+        self.policy(data_max_gib=100, minimum_free_gib=1)
+        cleared = [False]
+        high = [('system', 100 * self.budget.GIB, 200 * self.budget.GIB)]
+        low = [('system', 1, 200 * self.budget.GIB)]
+        events = []
+        def cleanup(*_args):
+            cleared[0] = True
+            events.append('clean')
+            return 16
+        def measure(_config, *, check):
+            events.append('scan')
+            return 0
+        with patch.object(self.budget, '_disks', side_effect=lambda *_args: high if cleared[0] else low), \
+                patch.object(self.budget.shutil, 'disk_usage', return_value=SimpleNamespace(free=1, total=200 * self.budget.GIB)), \
+                patch.object(self.budget, '_clean_thumbnails', side_effect=cleanup), \
+                patch.object(self.budget, 'data_usage', side_effect=measure):
+            result = self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertEqual(events, ['clean', 'scan'])
+        self.assertFalse(result['paused'])
+        self.assertEqual(result['freed_bytes'], 16)
+
+    @unittest.skipUnless(os.name == 'nt', 'Windows 分配量接口')
+    def test_windows_allocation_reuses_the_binding_and_resets_each_calls_last_error(self):
+        import ctypes
+        entered = []
+        def allocation(_path, high):
+            entered.append(ctypes.get_last_error())
+            high._obj.value = 0
+            ctypes.set_last_error(5)
+            return 32 if len(entered) <= 2 else 0xFFFFFFFF
+        function = Mock(side_effect=allocation)
+        self.budget._compressed_file_size.cache_clear()
+        self.addCleanup(self.budget._compressed_file_size.cache_clear)
+        with patch.object(ctypes, 'WinDLL', return_value=SimpleNamespace(GetCompressedFileSizeW=function)) as load:
+            self.assertEqual(self.budget.allocated_bytes(self.root, SimpleNamespace()), 32)
+            self.assertEqual(self.budget.allocated_bytes(self.root, SimpleNamespace()), 32)
+            with self.assertRaises(OSError):
+                self.budget.allocated_bytes(self.root, SimpleNamespace())
+        self.assertEqual(load.call_count, 1)
+        self.assertEqual(entered, [0, 0, 0])
 
 
 if __name__ == "__main__":
