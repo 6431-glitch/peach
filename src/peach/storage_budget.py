@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import shutil
 import stat
+import tempfile
 import threading
 import time
 
@@ -54,9 +55,10 @@ def validate(raw: object, *, check_path=True) -> StoragePolicy:
         raise ValueError('外部缓存目录必须是路径')
     if raw_path:
         path = Path(raw_path)
-        if not path.is_absolute() or (check_path and values['enabled'] and not path.is_dir()):
+        if check_path and values['enabled'] and (not path.is_absolute() or not path.is_dir()):
             raise ValueError('外部缓存目录必须是本机可读取的绝对目录')
-        values['external_cache_path'] = str(path.resolve())
+        if check_path and path.is_absolute():
+            values['external_cache_path'] = str(path.absolute())
     return StoragePolicy(**values)
 
 
@@ -73,7 +75,7 @@ def load_policy(config) -> StoragePolicy:
 def save_policy(config, raw) -> StoragePolicy:
     policy = validate(raw)
     if policy.external_cache_path:
-        external = Path(policy.external_cache_path)
+        external = Path(policy.external_cache_path).resolve()
         from .settings_file import DIRECTORY_KEYS
         for managed in (config.data_root, *(config.directory(name) for name in DIRECTORY_KEYS)):
             managed = managed.resolve()
@@ -94,7 +96,8 @@ def invalidate_measurements():
 
 def snapshot(config, *, usage=None) -> dict:
     try:
-        policy = asdict(load_policy(config))
+        loaded = load_policy(config)
+        policy = asdict(loaded)
     except ValueError as error:
         return {'policy': None, 'last_check': None, 'error': str(error)}
     try:
@@ -103,6 +106,11 @@ def snapshot(config, *, usage=None) -> dict:
         status = None
     except (OSError, ValueError) as error:
         return {'policy': policy, 'last_check': None, 'error': f'容量检查记录未取得：{error}'}
+    try:
+        if status is not None and status.get('layout') != layout(config, loaded):
+            status = None
+    except OSError as error:
+        return {'policy': policy, 'last_check': None, 'error': f'容量目录未取得：{error}'}
     from .capacity_history import project
     history = project(config)
     return {'policy': policy, 'last_check': status, 'recommendation_state': 'population_model_not_available',
@@ -169,7 +177,7 @@ def _files(root: Path):
                         if entry.is_dir(follow_symlinks=False):
                             stack.append(Path(entry.path))
                         else:
-                            info = entry.stat(follow_symlinks=False)
+                            info = file_stat(entry)
                             if stat.S_ISREG(info.st_mode):
                                 yield Path(entry.path), info
                     except FileNotFoundError:
@@ -198,9 +206,44 @@ def data_roots(config):
     return _roots((config.data_root, *(config.directory(name) for name in DIRECTORY_KEYS)))
 
 
+def layout(config, policy=None):
+    """统计绑定当前配置与挂载身份，迁移或重挂载后不复用旧读数。"""
+    from .settings_file import DIRECTORY_KEYS
+    paths = {'data': config.data_root, **{name: config.directory(name) for name in DIRECTORY_KEYS},
+             'temporary': Path(tempfile.gettempdir())}
+    if policy is not None and policy.external_cache_path:
+        paths['external'] = Path(policy.external_cache_path)
+    result = {'version': 1, 'paths': {}}
+    for name, raw in paths.items():
+        path = Path(raw).resolve()
+        existing = _existing(path)
+        info = existing.stat()
+        result['paths'][name] = [str(path), str(existing), info.st_dev, info.st_ino]
+    return result
+
+
+def count_file(info, seen):
+    """同一硬链接文件只计一次；文件系统未提供身份时不伪造分配量。"""
+    if info.st_nlink <= 1:
+        return True
+    if not info.st_ino:
+        raise OSError('文件系统未提供硬链接身份，分配量未取得')
+    key = info.st_dev, info.st_ino
+    if key in seen:
+        return False
+    seen.add(key)
+    return True
+
+
+def file_stat(entry):
+    """Windows DirEntry 的设备、文件号与链接数均为空，按路径读取完整身份。"""
+    return os.stat(entry.path, follow_symlinks=False) if os.name == 'nt' else entry.stat(follow_symlinks=False)
+
+
 def cache_usage(config, policy=None, *, managed=True, external=True, check=lambda: None):
     policy = policy or load_policy(config)
-    key = ('cache', str(config.directory('generated').resolve()), policy.external_cache_path, managed, external)
+    binding = layout(config, policy)
+    key = ('cache', json.dumps(binding, sort_keys=True), managed, external)
     cached = _SCANS.get(key)
     if cached and time.monotonic() - cached[0] < SCAN_SECONDS:
         return dict(cached[1])
@@ -209,28 +252,40 @@ def cache_usage(config, policy=None, *, managed=True, external=True, check=lambd
         result['managed_cache_bytes'] = _allocated(cache_roots(config), check)
     if external and policy.external_cache_path:
         root = Path(policy.external_cache_path)
+        if not root.is_absolute():
+            raise OSError('外部缓存路径不适用于当前系统，请更新路径')
+        root = root.resolve()
         if not root.is_dir():
             raise OSError('外部缓存目录不可访问')
         result['external_cache_bytes'] = _allocated((root,), check)
+    if layout(config, policy) != binding:
+        raise OSError('缓存目录在统计期间发生变化，请重新统计')
     _SCANS[key] = (time.monotonic(), result)
     return dict(result)
 
 
 def data_usage(config, *, check=lambda: None):
-    return _allocated(data_roots(config), check)
+    binding = layout(config)
+    amount = _allocated(data_roots(config), check)
+    if layout(config) != binding:
+        raise OSError('数据目录在统计期间发生变化，请重新统计')
+    return amount
 
 
 def _allocated(roots, check):
     total = 0
+    seen = set()
     for root in roots:
         for path, info in _files(root):
             check()
-            total += allocated_bytes(path, info)
+            if count_file(info, seen):
+                total += allocated_bytes(path, info)
     return total
 
 
 def _measure(config, policy, *, interval_secs=2):
-    key = (str(config.data_root.resolve()), str(config.directory('generated').resolve()), policy)
+    binding = layout(config, policy)
+    key = (json.dumps(binding, sort_keys=True), policy)
     now = time.monotonic()
     cached = _SCANS.get(key)
     if cached and now - cached[0] < SCAN_SECONDS:
@@ -252,6 +307,8 @@ def _measure(config, policy, *, interval_secs=2):
               'external_cache_bytes': cache['external_cache_bytes']}
     if policy.data_max_gib:
         result['data_bytes'] = data_usage(config, check=check_free)
+    if layout(config, policy) != binding:
+        raise OSError('容量目录在统计期间发生变化，请重新统计')
     result['measured_at'] = time.time()
     record_history(config, data_bytes=result['data_bytes'], cache_bytes=result['cache_bytes'])
     _SCANS[key] = (time.monotonic(), result)
@@ -277,9 +334,14 @@ def _exceeded(policy, usage, disks):
 
 
 def _disks(config, policy):
-    paths = [system_volume(), config.data_root, config.directory('generated')]
+    from .settings_file import DIRECTORY_KEYS
+    paths = [system_volume(), config.data_root, *(config.directory(name) for name in DIRECTORY_KEYS),
+             Path(tempfile.gettempdir())]
     if policy.external_cache_path:
-        paths.append(Path(policy.external_cache_path))
+        external = Path(policy.external_cache_path)
+        if not external.is_absolute() or not external.is_dir():
+            raise OSError('外部缓存目录不可访问，迁移后请更新容量设置中的路径')
+        paths.append(external)
     devices, result = set(), []
     for path in dict.fromkeys(paths):
         target = _existing(path)
@@ -315,7 +377,8 @@ def _clean_thumbnails(config, needed):
         if not lock.acquire(blocking=False):
             continue
         try:
-            amount = allocated_bytes(path, info)
+            current = path.stat(follow_symlinks=False)
+            amount = allocated_bytes(path, current) if current.st_nlink == 1 else 0
             path.unlink()
             freed += amount
             Path(str(path) + '.rule').unlink(missing_ok=True)
@@ -404,6 +467,7 @@ class CapacityGuard:
                     if freed:
                         record_history(self.config, data_bytes=None, cache_bytes=None, cleaned_bytes=freed)
                 status = {**usage, 'checked_at': time.time(), 'reasons': reasons,
+                          'layout': layout(self.config, policy),
                           'freed_bytes': freed, 'paused': bool(reasons), 'required_bytes': required_bytes,
                           'volumes': [{'path':path,'free_bytes':free,'reserve_bytes':reserve_bytes(policy,total)}
                                       for path, free, total in disks]}

@@ -295,6 +295,7 @@ class DataStorageTests(unittest.TestCase):
         self.assertFalse(request.exists())
 
     def test_request_needs_a_measurement_and_room_on_the_target_disk(self):
+        from peach.storage_budget import layout
         config = self.config()
         target = self.base / "new" / "peach-data"
         with patch.object(data_storage, "availability", return_value=(True, "")), \
@@ -303,7 +304,8 @@ class DataStorageTests(unittest.TestCase):
                 data_storage.request(config, str(target))
             (self.data / "state").mkdir(exist_ok=True)
             (self.data / "state" / data_storage.USAGE_NAME).write_text(json.dumps(
-                {"root": str(self.data), "total_bytes": 1 << 50}), encoding="utf-8")
+                {"root": str(self.data), "total_bytes": 1 << 50,
+                 "layout": layout(config)}), encoding="utf-8")
             with patch.object(data_storage, "_same_volume", return_value=False), \
                     self.assertRaisesRegex(ValueError, "剩余"):
                 data_storage.request(config, str(target))
@@ -510,6 +512,150 @@ class DataStorageTests(unittest.TestCase):
 
 
 class CapacityProtectionTests(unittest.TestCase):
+    def test_all_configured_write_directories_and_temporary_volume_are_checked(self):
+        from peach.jobs import DiskSpaceDenied
+        config = replace(self.config, directories={'database': str(self.root / 'db-volume'),
+                         'sources': str(self.root / 'source-volume')})
+        def existing(path):
+            name = str(path)
+            device = 2 if 'db-volume' in name else 3 if 'source-volume' in name else 4 if 'temp-volume' in name else 1
+            return SimpleNamespace(device=device, stat=lambda: SimpleNamespace(st_dev=device))
+        def space(target):
+            return SimpleNamespace(free=1 if target.device == 3 else 100 * self.budget.GIB,
+                                   total=200 * self.budget.GIB)
+        with patch.object(self.budget, '_existing', side_effect=existing), \
+                patch.object(self.budget.shutil, 'disk_usage', side_effect=space), \
+                patch.object(self.budget.tempfile, 'gettempdir', return_value=str(self.root / 'temp-volume')):
+            disks = self.real_disks(config, self.budget.StoragePolicy())
+        self.assertEqual(len(disks), 4)
+        self.assertTrue(any('source-volume' in path and free == 1 for path, free, _ in disks))
+        self.assertTrue(any('temp-volume' in path for path, _, _ in disks))
+        with patch.object(self.budget, '_disks', return_value=disks), self.assertRaises(DiskSpaceDenied):
+            self.budget.CapacityGuard(config).check(force=True)
+
+    def test_hardlinks_count_once_in_allocated_data_and_cache_but_retain_directory_entries(self):
+        cached = write(self.root / 'generated/transcodes/1-key.mp4', 2048)
+        alias = cached.with_name('2-key.mp4')
+        os.link(cached, alias)
+        with patch.object(self.budget, 'allocated_bytes', return_value=64):
+            self.assertEqual(self.budget.data_usage(self.config), 64)
+            self.assertEqual(self.budget.cache_usage(self.config)['managed_cache_bytes'], 64)
+            measured = data_storage.measure(self.config)
+        self.assertEqual(measured['allocated_bytes'], 64)
+        self.assertEqual(measured['categories']['playback']['files'], 2)
+        self.assertEqual(measured['categories']['playback']['bytes'], 4096)
+
+    def test_cleaning_a_hardlink_with_a_retained_alias_does_not_claim_freed_allocation(self):
+        cached = write(self.root / 'generated/transcodes/1-key.mp4', 2048)
+        kept = self.root / 'retained.mp4'
+        os.link(cached, kept)
+        with patch.object(self.budget, 'allocated_bytes', return_value=64):
+            data_storage.clean(self.config, 'playback')
+        self.assertTrue(kept.is_file())
+        from peach.capacity_history import project
+        self.assertIsNone(project(self.config)['windows']['7d']['cleaned_bytes'])
+
+    def test_relocated_directories_invalidate_cached_measurements_within_the_scan_interval(self):
+        write(self.root / 'first-cache/transcodes/1-key.mp4', 7)
+        write(self.root / 'second-cache/transcodes/1-key.mp4', 19)
+        first = replace(self.config, directories={'generated': str(self.root / 'first-cache')})
+        second = replace(self.config, directories={'generated': str(self.root / 'second-cache')})
+        policy = self.budget.StoragePolicy(cache_max_gib=100)
+        with patch.object(self.budget, 'allocated_bytes', side_effect=lambda _path, info: info.st_size):
+            self.assertEqual(self.budget._measure(first, policy)['cache_bytes'], 7)
+            self.assertEqual(self.budget._measure(second, policy)['cache_bytes'], 19)
+
+    def test_copied_usage_and_pause_receipts_are_not_reused_after_manual_migration(self):
+        measured = data_storage.measure(self.config)
+        (self.root / 'state' / data_storage.USAGE_NAME).write_text(json.dumps(measured), encoding='utf-8')
+        self.assertIsNotNone(data_storage.read_usage(self.config))
+        self.budget.CapacityGuard(self.config).check(force=True)
+        changed = replace(self.config, directories={'database': str(self.root / 'moved-database')})
+        self.assertIsNone(data_storage.read_usage(changed))
+        self.assertIsNone(self.budget.snapshot(changed)['last_check'])
+        moved = self.root / 'moved-data'
+        moved.mkdir()
+        shutil.copytree(self.root / 'state', moved / 'state')
+        copied = replace(self.config, data_root=moved)
+        self.assertIsNone(data_storage.read_usage(copied))
+        self.assertIsNone(self.budget.snapshot(copied)['last_check'])
+
+    def test_changed_mount_identity_invalidates_measurement_with_the_same_directory_name(self):
+        policy = self.budget.StoragePolicy(cache_max_gib=100)
+        with patch.object(self.budget, 'layout', return_value={'mount': 1}), \
+                patch.object(self.budget, 'cache_roots', return_value=[]) as roots:
+            self.budget._measure(self.config, policy)
+            roots.assert_called_once()
+        with patch.object(self.budget, 'layout', return_value={'mount': 2}), \
+                patch.object(self.budget, 'cache_roots', return_value=[]) as roots:
+            self.budget._measure(self.config, policy)
+            roots.assert_called_once()
+
+    def test_directory_alias_retargeting_keeps_configuration_and_invalidates_old_usage(self):
+        first, second = self.root / 'first', self.root / 'second'
+        write(first / 'transcodes/1-key.mp4', 7)
+        write(second / 'transcodes/1-key.mp4', 19)
+        alias = self.root / 'cache-alias'
+        try:
+            alias.symlink_to(first, target_is_directory=True)
+        except OSError as error:
+            if getattr(error, 'winerror', None) == 1314:
+                self.skipTest('当前 Windows 账号不能创建目录符号链接')
+            raise
+        config = replace(self.config, directories={'generated': str(alias)})
+        with patch.object(self.budget, 'allocated_bytes', side_effect=lambda _path, info: info.st_size):
+            measured = data_storage.measure(config)
+            (self.root / 'state' / data_storage.USAGE_NAME).write_text(json.dumps(measured), encoding='utf-8')
+            self.assertEqual(measured['categories']['playback']['bytes'], 7)
+            alias.unlink()
+            alias.symlink_to(second, target_is_directory=True)
+            self.assertIsNone(data_storage.read_usage(config))
+            self.assertEqual(self.budget.cache_usage(config)['managed_cache_bytes'], 19)
+        self.assertEqual(config.directory('generated'), alias)
+
+    def test_layout_change_during_a_scan_is_not_published_as_a_successful_measurement(self):
+        policy = self.budget.StoragePolicy(cache_max_gib=100)
+        with patch.object(self.budget, 'cache_usage', return_value={
+                'managed_cache_bytes': 1, 'external_cache_bytes': None}), \
+                patch.object(self.budget, 'layout', side_effect=[{'mount': 1}, {'mount': 2}]), \
+                self.assertRaisesRegex(OSError, '统计期间发生变化'):
+            self.budget._measure(self.config, policy)
+
+    def test_manual_cleanup_preserves_linked_directories_inside_cache(self):
+        retained = write(self.root / 'retained/source.mp4', 19)
+        cache = self.root / 'generated/stream-segments/1'
+        write(cache / 'segment.ts', 7)
+        alias = cache / 'moved-directory'
+        try:
+            alias.symlink_to(retained.parent, target_is_directory=True)
+        except OSError as error:
+            if getattr(error, 'winerror', None) == 1314:
+                self.skipTest('当前 Windows 账号不能创建目录符号链接')
+            raise
+        data_storage.clean(self.config, 'playback')
+        self.assertTrue(retained.is_file())
+        self.assertTrue(alias.is_symlink())
+        self.assertFalse((cache / 'segment.ts').exists())
+
+    def test_missing_external_directory_pauses_instead_of_checking_its_parent_volume(self):
+        from peach.jobs import DiskSpaceDenied
+        external = self.root.parent / (self.root.name + '-external')
+        external.mkdir()
+        self.addCleanup(lambda: external.rmdir() if external.exists() else None)
+        self.policy(external_cache_path=str(external))
+        external.rmdir()
+        with patch.object(self.budget, '_disks', side_effect=lambda config, policy: self.real_disks(config, policy)), \
+                self.assertRaisesRegex(DiskSpaceDenied, '迁移后请更新'):
+            self.budget.CapacityGuard(self.config).check(force=True)
+
+    def test_foreign_platform_cache_path_remains_editable_and_can_be_disabled_after_migration(self):
+        path = 'Z:\\old-cache' if os.name != 'nt' else '/old-cache'
+        raw = {'external_cache_path': path, 'external_cache_max_gib': 10}
+        (self.root / 'state' / self.budget.POLICY_NAME).write_text(json.dumps(raw), encoding='utf-8')
+        self.assertEqual(self.budget.snapshot(self.config)['policy']['external_cache_path'], path)
+        self.budget.save_policy(self.config, {**raw, 'enabled': False})
+        self.assertFalse(self.budget.load_policy(self.config).enabled)
+
     def test_disabled_protection_preserves_limits_and_skips_disk_scans_and_cleaning(self):
         self.policy(enabled=False, minimum_free_gib=8, data_max_gib=80, cache_max_gib=20)
         with patch.object(self.budget, '_disks', side_effect=AssertionError('保护已关闭')), \
@@ -575,6 +721,7 @@ class CapacityProtectionTests(unittest.TestCase):
     def setUp(self):
         from peach import storage_budget
         self.budget = storage_budget
+        self.real_disks = storage_budget._disks
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name).resolve()
