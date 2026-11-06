@@ -60,6 +60,7 @@ SUGGESTED_FOLDER = "云下载"
 
 _METHODS = {
     "GetSystemInfo": (empty_pb2.Empty, pb.CloudDriveSystemInfo),
+    "GetSystemSettings": (empty_pb2.Empty, pb.SystemSettings),
     "GetApiTokenInfo": (pb.StringValue, pb.TokenInfo),
     "GetAllCloudApis": (empty_pb2.Empty, pb.CloudAPIList),
     "GetCloudAPIConfig": (pb.GetCloudAPIConfigRequest, pb.CloudAPIConfig),

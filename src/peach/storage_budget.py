@@ -28,6 +28,7 @@ _SCANS: dict[tuple, tuple[float, dict]] = {}
 
 @dataclass(frozen=True)
 class StoragePolicy:
+    enabled: bool = True
     minimum_free_gib: int = 0
     data_max_gib: int = 0
     cache_max_gib: int = 0
@@ -45,14 +46,15 @@ def validate(raw: object, *, check_path=True) -> StoragePolicy:
         minimum = 0
         if type(value) is not int or not minimum <= value <= 1_048_576:
             raise ValueError(f'{key} 必须是 {minimum} 到 1048576 之间的整数 GiB')
-    if type(values['auto_clean']) is not bool:
-        raise ValueError('自动清理必须是开关值')
+    for key in ('enabled', 'auto_clean'):
+        if type(values[key]) is not bool:
+            raise ValueError(f'{key} 必须是开关值')
     raw_path = values['external_cache_path']
     if not isinstance(raw_path, str):
         raise ValueError('外部缓存目录必须是路径')
     if raw_path:
         path = Path(raw_path)
-        if not path.is_absolute() or (check_path and not path.is_dir()):
+        if not path.is_absolute() or (check_path and values['enabled'] and not path.is_dir()):
             raise ValueError('外部缓存目录必须是本机可读取的绝对目录')
         values['external_cache_path'] = str(path.resolve())
     return StoragePolicy(**values)
@@ -196,16 +198,16 @@ def data_roots(config):
     return _roots((config.data_root, *(config.directory(name) for name in DIRECTORY_KEYS)))
 
 
-def cache_usage(config, policy=None, *, managed=True, check=lambda: None):
+def cache_usage(config, policy=None, *, managed=True, external=True, check=lambda: None):
     policy = policy or load_policy(config)
-    key = ('cache', str(config.directory('generated').resolve()), policy.external_cache_path, managed)
+    key = ('cache', str(config.directory('generated').resolve()), policy.external_cache_path, managed, external)
     cached = _SCANS.get(key)
     if cached and time.monotonic() - cached[0] < SCAN_SECONDS:
         return dict(cached[1])
     result = {'managed_cache_bytes': None, 'external_cache_bytes': None}
     if managed:
         result['managed_cache_bytes'] = _allocated(cache_roots(config), check)
-    if policy.external_cache_path:
+    if external and policy.external_cache_path:
         root = Path(policy.external_cache_path)
         if not root.is_dir():
             raise OSError('外部缓存目录不可访问')
@@ -244,7 +246,8 @@ def _measure(config, policy, *, interval_secs=2):
                             _disks(config, policy))
         if reasons:
             raise DiskSpaceDenied('扫描期间磁盘余量触线，已暂停当前写入，请清理或重试：' + '；'.join(reasons))
-    cache = cache_usage(config, policy, managed=bool(policy.cache_max_gib), check=check_free)
+    cache = cache_usage(config, policy, managed=bool(policy.cache_max_gib),
+                        external=bool(policy.external_cache_max_gib), check=check_free)
     result = {'cache_bytes': cache['managed_cache_bytes'], 'data_bytes': None,
               'external_cache_bytes': cache['external_cache_bytes']}
     if policy.data_max_gib:
@@ -256,6 +259,8 @@ def _measure(config, policy, *, interval_secs=2):
 
 
 def reserve_bytes(policy, total):
+    if not policy.enabled:
+        return 0
     return policy.minimum_free_gib * GIB if policy.minimum_free_gib else max(GIB, min(40 * GIB, total // 20))
 
 
@@ -342,6 +347,11 @@ class CapacityGuard:
         try:
             with _LOCK:
                 policy = load_policy(self.config)
+                if not policy.enabled:
+                    self._denied = None
+                    return {'enabled': False, 'paused': False, 'reasons': [], 'freed_bytes': 0,
+                            'data_bytes': None, 'cache_bytes': None, 'external_cache_bytes': None,
+                            'checked_at': time.time()}
                 disks = _disks(self.config, policy)
                 if required_bytes and not self._reservation_started:
                     _SCANS.clear()

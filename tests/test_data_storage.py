@@ -443,6 +443,12 @@ class DataStorageTests(unittest.TestCase):
             self.assertEqual(saved.status_code, 200)
             self.assertEqual(saved.json()['budget']['policy']['data_max_gib'], 64)
             self.assertEqual(client.get('/api/configuration/storage').json()['budget']['policy']['data_max_gib'], 64)
+            with patch('peach.storage_external_cache.read', return_value={'path': str(self.base / 'cache')}) as read:
+                detected = client.get('/api/configuration/storage/external-cache')
+                self.assertEqual(detected.json(), {'path': str(self.base / 'cache')})
+                read.assert_called_once_with(config)
+            with patch('peach.storage_external_cache.read', side_effect=ValueError('需要查看系统设置权限')):
+                self.assertEqual(client.get('/api/configuration/storage/external-cache').status_code, 400)
             self.assertEqual(client.post('/api/configuration/storage/policy', json={'cache_max_gib': True}).status_code, 400)
             self.assertEqual(client.post('/api/configuration/storage/policy', json={'data_max_gib': 32},
                                          headers={'origin':'https://other.invalid'}).status_code, 403)
@@ -504,6 +510,47 @@ class DataStorageTests(unittest.TestCase):
 
 
 class CapacityProtectionTests(unittest.TestCase):
+    def test_disabled_protection_preserves_limits_and_skips_disk_scans_and_cleaning(self):
+        self.policy(enabled=False, minimum_free_gib=8, data_max_gib=80, cache_max_gib=20)
+        with patch.object(self.budget, '_disks', side_effect=AssertionError('保护已关闭')), \
+                patch.object(self.budget, '_measure', side_effect=AssertionError('保护已关闭')), \
+                patch.object(self.budget, '_clean_thumbnails', side_effect=AssertionError('保护已关闭')):
+            result = self.budget.CapacityGuard(self.config).check(force=True, required_bytes=999999)
+        self.assertFalse(result['paused'])
+        policy = self.budget.load_policy(self.config)
+        self.assertEqual((policy.data_max_gib, policy.cache_max_gib), (80, 20))
+        self.assertEqual(self.budget.reserve_bytes(policy, 100 * self.budget.GIB), 0)
+        offline = str(self.root.parent / 'offline-cache')
+        self.policy(enabled=False, external_cache_path=offline)
+        self.assertEqual(self.budget.load_policy(self.config).external_cache_path, offline)
+        with self.assertRaisesRegex(ValueError, '可读取'):
+            self.policy(enabled=True, external_cache_path=offline)
+
+    def test_cloud_cache_discovery_requires_local_service_permission_and_readable_directory(self):
+        from peach import storage_external_cache
+        from peach import downloads_clouddrive_pb2 as pb
+        client = Mock(address='http://127.0.0.1:19798')
+        client.__enter__ = Mock(return_value=client)
+        client.__exit__ = Mock(return_value=False)
+        client.token_info.return_value = pb.TokenInfo(permissions=pb.TokenPermissions(allow_get_system_settings=True))
+        client.call.return_value = pb.SystemSettings(fileBufferDiskCacheLocation=str(self.root))
+        with patch.object(storage_external_cache, 'client_for', return_value=client):
+            self.assertEqual(storage_external_cache.read(self.config), {'path': str(self.root)})
+            client.address = 'http://192.0.2.1:19798'
+            with self.assertRaisesRegex(ValueError, '远程'):
+                storage_external_cache.read(self.config)
+            client.address = 'http://localhost:19798'
+            client.token_info.return_value.permissions.allow_get_system_settings = False
+            with self.assertRaisesRegex(ValueError, '权限'):
+                storage_external_cache.read(self.config)
+            client.token_info.return_value.permissions.allow_get_system_settings = True
+            client.call.return_value = pb.SystemSettings()
+            with self.assertRaisesRegex(ValueError, '未返回'):
+                storage_external_cache.read(self.config)
+            client.call.return_value = pb.SystemSettings(fileBufferDiskCacheLocation=str(self.root / 'missing'))
+            with self.assertRaisesRegex(ValueError, '可读取'):
+                storage_external_cache.read(self.config)
+
     def test_manual_cache_cleanup_records_allocated_bytes_and_excludes_logs(self):
         from peach.capacity_history import project
         write(self.root / 'generated/transcodes/1-key.mp4', 1024)
@@ -554,7 +601,7 @@ class CapacityProtectionTests(unittest.TestCase):
 
     def test_invalid_policy_and_unreadable_capacity_pause_instead_of_reporting_zero(self):
         from peach.jobs import DiskSpaceDenied
-        for payload in ({'cache_max_gib': True}, {'minimum_free_gib': -1}, {'data_max_gib': -1}, {'unknown': 5}):
+        for payload in ({'enabled': 0}, {'cache_max_gib': True}, {'minimum_free_gib': -1}, {'data_max_gib': -1}, {'unknown': 5}):
             with self.subTest(payload=payload), self.assertRaises(ValueError):
                 self.budget.save_policy(self.config, payload)
         (self.root / 'state' / self.budget.POLICY_NAME).write_text('{broken', encoding='utf-8')
@@ -676,6 +723,11 @@ class CapacityProtectionTests(unittest.TestCase):
         self.assertIsNone(result['data_bytes'])
         self.assertIsNone(result['cache_bytes'])
         self.assertIsNone(result['external_cache_bytes'])
+
+    def test_external_directory_without_a_limit_does_not_trigger_foreground_scan(self):
+        policy = self.budget.StoragePolicy(external_cache_path=str(self.root))
+        with patch.object(self.budget, '_files', side_effect=AssertionError('外部缓存未设置上限')):
+            self.assertIsNone(self.budget._measure(self.config, policy)['external_cache_bytes'])
 
     def test_only_enabled_limits_select_the_corresponding_roots(self):
         with patch.object(self.budget, 'data_roots', return_value=[]) as data_roots, \

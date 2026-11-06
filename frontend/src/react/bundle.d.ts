@@ -90,6 +90,7 @@ export interface StorageState {
 }
 
 export interface StoragePolicy {
+  enabled: boolean;
   minimum_free_gib: number;
   data_max_gib: number;
   cache_max_gib: number;

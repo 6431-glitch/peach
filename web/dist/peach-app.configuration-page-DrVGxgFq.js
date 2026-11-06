@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "26992ce0-ef7b-4535-9ca9-a41df1cdf55d", e._sentryDebugIdIdentifier = "sentry-dbid-26992ce0-ef7b-4535-9ca9-a41df1cdf55d");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "73db2ef4-4347-4de9-9940-c3d56934a8b7", e._sentryDebugIdIdentifier = "sentry-dbid-73db2ef4-4347-4de9-9940-c3d56934a8b7");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2093,20 +2093,42 @@ var ba = [
 	]
 ];
 function xa({ initial: e, after: t, receipt: n }) {
-	let [r, i] = (0, Z.useState)(e.policy), a = Y(e.error), o = (e, t) => i((n) => n && {
+	let [r, i] = (0, Z.useState)(e.policy), a = Y(e.error), [o, s] = (0, Z.useState)("");
+	(0, Z.useEffect)(() => {
+		if (!r?.enabled || e.policy?.external_cache_path) return;
+		let t = new AbortController();
+		return s("正在读取 CloudDrive 缓存目录…"), W("/api/configuration/storage/external-cache", t.signal).then((e) => {
+			t.signal.aborted || (i((t) => t && !t.external_cache_path ? {
+				...t,
+				external_cache_path: e.path
+			} : t), s("已自动读取，保存配置后生效"));
+		}).catch((e) => {
+			t.signal.aborted || s(`${q(e)}；可手动填写。`);
+		}), () => t.abort();
+	}, [r?.enabled, e.policy?.external_cache_path]);
+	let c = (e, t) => i((n) => n && {
 		...n,
 		[e]: t
-	}), s = e.last_check;
+	}), l = e.last_check;
 	return r ? /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "storageBudgetSettings",
 		title: "容量保护",
 		onSubmit: (e) => {
 			e.preventDefault(), a.run("save", (e) => G("/api/configuration/storage/policy", r, "POST", e), (e) => {
-				t(e), n("已保存容量保护设置");
+				s(""), t(e), n("已保存容量保护设置");
 			});
 		},
 		children: [
-			/* @__PURE__ */ (0, Q.jsxs)(I, { children: [
+			/* @__PURE__ */ (0, Q.jsxs)(I, { children: [/* @__PURE__ */ (0, Q.jsx)(B, {
+				label: "启用容量保护",
+				description: "超限时先清理可重建缓存，仍超限则暂停写入",
+				children: /* @__PURE__ */ (0, Q.jsx)(U, {
+					"aria-label": "启用容量保护",
+					isSelected: r.enabled,
+					isDisabled: !!a.busy,
+					onChange: (e) => c("enabled", e)
+				})
+			}), r.enabled ? /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
 				ba.map(([e, t, n]) => /* @__PURE__ */ (0, Q.jsx)(B, {
 					label: t,
 					description: n,
@@ -2119,7 +2141,7 @@ function xa({ initial: e, after: t, receipt: n }) {
 						className: "w-32 shrink-0",
 						placeholder: e === "minimum_free_gib" ? "自动" : "不限",
 						value: r[e] ? String(r[e]) : "",
-						onChange: (t) => o(e, Number(t)),
+						onChange: (t) => c(e, Number(t)),
 						isDisabled: !!a.busy
 					})
 				}, e)),
@@ -2130,19 +2152,19 @@ function xa({ initial: e, after: t, receipt: n }) {
 						"aria-label": "自动清理缓存",
 						isSelected: r.auto_clean,
 						isDisabled: !!a.busy,
-						onChange: (e) => o("auto_clean", e)
+						onChange: (e) => c("auto_clean", e)
 					})
 				}),
 				/* @__PURE__ */ (0, Q.jsx)(B, {
 					label: "外部缓存目录",
-					description: "监测 CloudDrive 等缓存，不自动清理",
+					description: o || "自动读取本机 CloudDrive，也可手动填写；不自动清理",
 					children: /* @__PURE__ */ (0, Q.jsx)(P, {
 						"aria-label": "外部缓存目录",
 						value: r.external_cache_path,
 						size: "small",
 						className: "w-40 shrink-0 sm:w-52",
 						placeholder: "未设置",
-						onChange: (e) => o("external_cache_path", e),
+						onChange: (e) => c("external_cache_path", e),
 						isDisabled: !!a.busy
 					})
 				}),
@@ -2158,16 +2180,16 @@ function xa({ initial: e, after: t, receipt: n }) {
 						inputMode: "numeric",
 						pattern: "[0-9]*",
 						value: r.external_cache_max_gib ? String(r.external_cache_max_gib) : "",
-						onChange: (e) => o("external_cache_max_gib", Number(e)),
+						onChange: (e) => c("external_cache_max_gib", Number(e)),
 						isDisabled: !!a.busy
 					})
 				}) : null
-			] }),
+			] }) : null] }),
 			/* @__PURE__ */ (0, Q.jsxs)(V, {
 				divided: !0,
 				children: [
-					/* @__PURE__ */ (0, Q.jsx)(N, { children: "推荐值待取得使用数据后给出。上限留空表示不限，在途任务可能超出。" }),
-					s?.paused ? /* @__PURE__ */ (0, Q.jsxs)(k, { children: [s.reasons.join("；"), "。调整或清理后，在任务中心重试补修。"] }) : null,
+					r.enabled ? /* @__PURE__ */ (0, Q.jsx)(N, { children: "推荐值待取得使用数据后给出。上限留空表示不限，在途任务可能超出。" }) : null,
+					r.enabled && l?.paused ? /* @__PURE__ */ (0, Q.jsxs)(k, { children: [l.reasons.join("；"), "。调整或清理后，在任务中心重试补修。"] }) : null,
 					a.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: a.error }) : null
 				]
 			}),
@@ -6271,4 +6293,4 @@ function Zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Js as ConfigurationPage };
 
-//# debugId=26992ce0-ef7b-4535-9ca9-a41df1cdf55d
+//# debugId=73db2ef4-4347-4de9-9940-c3d56934a8b7
