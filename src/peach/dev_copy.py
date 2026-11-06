@@ -17,6 +17,7 @@ def files(root: Path):
     yield root / "src/peach/routes_pages.py"
     yield root / "src/peach/onboarding.py"
     yield root / "src/peach/media_sources.py"
+    yield root / "src/peach/release_updates.py"
     yield from sorted((root / "frontend/src").rglob("*.js"))
     yield from sorted((root / "frontend/src").rglob("*.tsx"))
     yield from sorted((root / "frontend/src").rglob("*.ts"))
