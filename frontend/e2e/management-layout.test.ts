@@ -79,6 +79,8 @@ describe('管理页面容器与骨架', () => {
         assert.deepEqual(await keys(), expected);
         assert.deepEqual(server.posts.find(post => 'manageOrder' in post.body)?.body.manageOrder, expected);
         assert.equal(await menu.locator('[data-dragging],[data-manage-drop-line]').count(), 0);
+        assert.equal(await menu.evaluate(node => getComputedStyle(node).overflowY), 'hidden');
+        assert.equal(await page.locator('[data-manage-bar] .ov-y:not([hidden])').count(), 0, '放下后菜单右侧应清除纵向滚动条');
         assert.equal(new URL(page.url()).pathname, '/data-cleanup');
         await page.reload({ waitUntil: 'load' });
         await settle(page);
