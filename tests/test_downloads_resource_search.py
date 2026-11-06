@@ -46,6 +46,18 @@ def feed(*items):
 
 
 class SearchTests(unittest.TestCase):
+    def test_discovery_search_accepts_a_title_without_a_release_code(self):
+        requests = []
+        def respond(request):
+            requests.append(request)
+            return httpx.Response(200, text=CAPS if request.url.params['t'] == 'caps' else feed(item(title='A Western Film 1080p')))
+        search = Search(transport=httpx.MockTransport(respond))
+        result = search.run([ROW], 'A Western Film', Filters(), title_search=True)
+        self.assertEqual(requests[1].url.params['q'], 'A Western Film')
+        self.assertEqual(result['items'][0]['name'], 'A Western Film 1080p')
+        with self.assertRaises(ValueError):
+            search.run([ROW], 'A Western Film', Filters())
+
     def test_edition_badges_follow_the_catalog_suffix_rules(self):
         self.assertTrue(qualities("ABC-123-CH", [], "ABC-123")["chinese"])
         self.assertTrue(qualities("ABC-123-UC", [], "ABC-123")["uncensored"])

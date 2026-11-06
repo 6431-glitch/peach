@@ -81,11 +81,54 @@ def qbittorrent_submit(request: Request, body: dict = Body(...), _args=Depends(r
         raise HTTPException(403, 'This library is read-only.')
     from . import qbittorrent_client
     try:
-        return qbittorrent_client.submit(request.app.state.downloads.credentials, body.get('magnet', ''))
+        return qbittorrent_client.submit(request.app.state.downloads.credentials, body.get('magnet', ''), category=body.get('category'))
     except ValueError as error:
         raise HTTPException(400, str(error)) from error
     except httpx.HTTPError as error:
         raise HTTPException(502, 'Could not connect to qBittorrent.') from error
+
+
+@router.get('/api/discover/search')
+def discover_search(request: Request, query: str, indexers: str, _args=Depends(require_auth)):
+    from .resource_search import Filters, Indexers
+    from .web_resource_search import _SEARCH
+    selected = set(indexers.split(',')) - {''}
+    rows = Indexers(request.app.state.downloads.credentials).load()
+    allowed = {row['key'] for row in rows if row.get('enabled')}
+    if not selected or not selected <= allowed:
+        raise HTTPException(400, 'Choose at least one available indexer.')
+    try:
+        with request.app.state.web_contract.database.read_connection() as connection:
+            blocked = [row[0] for row in connection.execute('SELECT info_hash FROM download_task WHERE blocked_at IS NOT NULL')]
+        return _SEARCH.run([row for row in rows if row['key'] in selected], query, Filters(), blocked, title_search=True)
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+
+
+@router.get('/api/discover/detail')
+def discover_detail(source: str, id: str, _args=Depends(require_auth)):
+    try:
+        if source == 'stashdb':
+            from . import settings_file
+            from .stashdb_client import Client
+            uuid.UUID(id)
+            client = Client(settings_file.load_config())
+            try:
+                scene = client.scene(id)
+            finally:
+                client.close()
+            if not scene or scene.get('deleted'):
+                raise ValueError('Scene not found.')
+            return {'title': scene.get('title'), 'date': scene.get('release_date'), 'studio': (scene.get('studio') or {}).get('name'), 'image': ((scene.get('images') or [{}])[0]).get('url'), 'actors': [(p.get('performer') or {}).get('name') for p in scene.get('performers') or []]}
+        if source == 'dorcelvision' and id.startswith('/') and not id.startswith('//') and len(id) <= 500:
+            from .adult_empire_match import _service
+            result = _service('/dorcelvision/detail', {'path': id})
+            if result.get('id') != id:
+                raise ValueError('The source returned a different film.')
+            return result
+        raise ValueError('Invalid discovery source or film.')
+    except (ValueError, KeyError, TypeError) as error:
+        raise HTTPException(400, str(error)) from error
 
 
 @router.get('/api/western-discover')

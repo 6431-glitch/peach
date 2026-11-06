@@ -66,14 +66,22 @@ def configure(credentials, body, transport=None):
     return public(credentials)
 
 
-def submit(credentials, raw_magnet, transport=None):
+def submit(credentials, raw_magnet, transport=None, category=None):
     magnet = parse_magnet(raw_magnet)
     saved = credentials.load(CREDENTIAL)
     if not saved:
         raise ValueError('Configure qBittorrent in Download settings first.')
     client, url = _login(saved.values, transport)
     try:
-        response = client.post(url + '/api/v2/torrents/add', data={'urls': magnet.uri})
+        data = {'urls': magnet.uri}
+        if category is not None:
+            if category not in ('XXX', 'XXX 2'):
+                raise ValueError('Choose XXX or XXX 2.')
+            response = client.get(url + '/api/v2/torrents/categories')
+            if response.status_code != 200 or category not in response.json():
+                raise ValueError('The selected category does not exist in qBittorrent.')
+            data['category'] = category
+        response = client.post(url + '/api/v2/torrents/add', data=data)
         if response.status_code != 200 or response.text.strip() != 'Ok.':
             raise ValueError('qBittorrent did not accept the torrent.')
     finally:

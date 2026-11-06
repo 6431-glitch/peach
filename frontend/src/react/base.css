@@ -9,7 +9,7 @@
 html[data-blur-library-images] body img { filter: blur(18px); }
 @media (hover: hover) {
   html[data-blur-library-images] body img:hover,
-  html[data-blur-library-images] body :is([data-media-card], [data-mix-card], [data-follow-visual], a):hover img {
+  html[data-blur-library-images] body :is([data-media-card], [data-mix-card], [data-follow-visual], a, button):hover img {
     filter: none;
   }
 }

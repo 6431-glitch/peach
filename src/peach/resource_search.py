@@ -158,7 +158,7 @@ REJECT_REASONS = {"code": "番号不符", "size": "体积不在区间", "seeders
 
 def candidate(item, indexer: dict, code: str, filters: Filters,
               fetch: Callable[[str], str | None] | None = None,
-              rejected: Counter | None = None) -> dict | None:
+              rejected: Counter | None = None, *, title_search: bool = False) -> dict | None:
     """`fetch` 把索引器给的种子下载地址换成 infohash；条目自带磁力或 infohash 时不调用。
 
     筛掉的条目按 `REJECT_REASONS` 的键计入 `rejected`。
@@ -168,7 +168,7 @@ def candidate(item, indexer: dict, code: str, filters: Filters,
             rejected[reason] += 1
 
     title = str(item.title or "")[:500]
-    if not same_release_code(scan_code(title), code):
+    if not title_search and not same_release_code(scan_code(title), code):
         return reject("code")
     if item.size is None or not filters.min_size <= item.size <= filters.max_size:
         return reject("size")
@@ -256,9 +256,9 @@ class Search:
         self.lock = threading.Lock()
         self.cache: OrderedDict[tuple, tuple[float, dict]] = OrderedDict()
 
-    def run(self, indexers: list[dict], code: str, filters: Filters, blocked=()) -> dict:
-        code = normalise_code_key(code)
-        if not code or len(code) > 80 or not same_release_code(release_code_from_text(code), code):
+    def run(self, indexers: list[dict], code: str, filters: Filters, blocked=(), *, title_search=False) -> dict:
+        code = code.strip() if title_search else normalise_code_key(code)
+        if not code or len(code) > 200 or any(ord(c) < 32 for c in code) or (not title_search and (len(code) > 80 or not same_release_code(release_code_from_text(code), code))):
             raise ValueError("请输入可识别的作品番号")
         active = [row for row in indexers if row.get("enabled")]
         if len(active) > MAX_INDEXERS:
@@ -270,12 +270,12 @@ class Search:
             return {"ok": False, "state": "busy", "items": [], "warnings": [],
                     "error": "资源搜索正在进行，请稍后重试"}
         try:
-            key = (json.dumps(active, sort_keys=True), code, filters)
+            key = (json.dumps(active, sort_keys=True), code, filters, title_search)
             cached = self.cache.get(key)
             if cached and self.clock() - cached[0] < 60:
                 result = cached[1]
             else:
-                result = self._search(active, code, filters)
+                result = self._search(active, code, filters, title_search=title_search)
                 self.cache[key] = (self.clock(), result)
                 self.cache.move_to_end(key)
                 while len(self.cache) > 128:
@@ -286,7 +286,7 @@ class Search:
         finally:
             self.lock.release()
 
-    def _search(self, indexers: list[dict], code: str, filters: Filters) -> dict:
+    def _search(self, indexers: list[dict], code: str, filters: Filters, *, title_search=False) -> dict:
         found: dict[str, dict] = {}
         warnings = []
         rejected: Counter = Counter()
@@ -312,7 +312,7 @@ class Search:
                         budget[0] -= 1
                         return _torrent_hash(client, indexer, link, deadline)
                     for item in items[:MAX_ITEMS]:
-                        row = candidate(item, indexer, code, filters, fetch, rejected)
+                        row = candidate(item, indexer, code, filters, fetch, rejected, title_search=title_search)
                         if row is None:
                             continue
                         prior = found.get(row["info_hash"])
