@@ -316,6 +316,7 @@ class UpgradeRepairs:
                 self._restore_receipt(json.loads(applied[0]))
                 self._withdraw_stale_code_evidence()
                 self._isolate_system_files()
+                self._prepare_display_dimensions()
                 return
             self._restore_receipt(None)
             sources = Path(contract.follow_sources_root)
@@ -358,6 +359,37 @@ class UpgradeRepairs:
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
             self._withdraw_stale_code_evidence()
             self._isolate_system_files()
+            self._prepare_display_dimensions()
+
+    def _prepare_display_dimensions(self) -> None:
+        """一次显示尺寸重探；保留旧测量，媒体读取由有界队列执行。"""
+        from . import display_dimensions_repair
+        with self.contract.database.read_connection() as connection:
+            stored = connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
+                                        (REVISION,)).fetchone()
+            receipt = json.loads(stored[0]) if stored else None
+            if receipt is None or 'display_dimensions' in receipt:
+                return
+            earlier = connection.execute(
+                "SELECT result_json FROM ledger_upgrade_repair WHERE "
+                "json_extract(result_json,'$.display_dimensions.rule')=? ORDER BY applied_at DESC LIMIT 1",
+                (upgrade_rules.DISPLAY_DIMENSIONS,)).fetchone()
+            previous = json.loads(earlier[0]) if earlier else {}
+            dimensions = display_dimensions_repair.collect(connection) if not earlier else None
+        if previous:
+            receipt['display_dimensions'] = previous['display_dimensions']
+            receipt.setdefault('queued', {}).update({key: value for key, value in previous.get('queued', {}).items()
+                if f':{upgrade_rules.DISPLAY_DIMENSIONS}:' in key})
+        else:
+            backup = None
+            if dimensions:
+                backup = self.contract.db_path.with_name(f'ledger.pre-upgrade-{time.time_ns()}.db')
+                sqlite_backup(self.contract.db_path, backup)
+            receipt['display_dimensions'] = {'rule': upgrade_rules.DISPLAY_DIMENSIONS,
+                                             'dimensions': dimensions, 'backup': str(backup) if backup else None}
+        if receipt['display_dimensions']['dimensions']:
+            receipt['dispatch_complete'] = False
+        self._save_receipt(receipt)
 
     def _isolate_system_files(self) -> None:
         """旧系统元数据按路径规则隔离；回执保留原状态，媒体与关联行不动。"""
@@ -560,18 +592,21 @@ class UpgradeRepairs:
                                       "AND disposal IS NULL ORDER BY id").fetchall()
         from .followups import Followup
         selected = set(receipt.get('media_ids', []))
+        dimensions = receipt.get('display_dimensions', {}).get('dimensions', {})
         deferred = []
         for row in rows:
             if row['id'] in inherited:
                 continue
-            if row['id'] not in selected and not _stale_previews(self.contract, row):
+            dimension_key = f'{MEDIA_TASK}:{upgrade_rules.DISPLAY_DIMENSIONS}:{row["id"]}'
+            remeasure = str(row['id']) in dimensions and dimension_key not in seen
+            if not remeasure and row['id'] not in selected and not _stale_previews(self.contract, row):
                 continue
             rule = upgrade_rules.PROCESSING
             if row['id'] in receipt.get('text_media_ids', []):
                 rule += f':text-{upgrade_rules.PROVIDER_TEXT}'
             if row['id'] in receipt.get('code_media_ids', []):
                 rule += f':{CODE_EVIDENCE_RULE}'
-            key = f'{MEDIA_TASK}:{rule}:{row["id"]}'
+            key = dimension_key if remeasure else f'{MEDIA_TASK}:{rule}:{row["id"]}'
             if key in seen:
                 continue
             if cost_for(row['location'], row['path'], config) != 'free':
@@ -697,8 +732,20 @@ def _media_run(contract, key: str, handle) -> dict:
     def active():
         return service is None or not service.stopping.is_set()
     try:
+        display_repair = f':{upgrade_rules.DISPLAY_DIMENSIONS}:' in key
+        if display_repair:
+            from . import display_dimensions_repair
+            from .media_processing_policy import metadata_only
+            receipt = _read(Path(contract.follow_state_root) / 'upgrade-repairs' / 'receipt.json')
+            baseline = receipt.get('display_dimensions', {}).get('dimensions', {}).get(str(asset_id))
+            result = display_dimensions_repair.reprobe(contract, config, asset_id, baseline=baseline)
+            if not result['rebuild'] or metadata_only(contract.follow_state_root):
+                return {'outcome': '显示尺寸重探完成', 'name': title, 'asset_id': asset_id,
+                        'dimensions_changed': result['changed']}
+            previous.pop('completed_previews', None)
         result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
-                             database=contract.database, asset_ids=[asset_id], stage='collect',
+                             database=contract.database, asset_ids=[asset_id],
+                             stage='previews' if display_repair else 'collect',
                              recheck_existing=True, job_id=job_id,
                              state_file=state_file, resume_state=previous or None,
                              active=active,
@@ -714,6 +761,15 @@ def _media_run(contract, key: str, handle) -> dict:
         result.get('outcome') == 'partial' and not result.get('paused_count'))
     if not finished:
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
+    if display_repair:
+        if result.get('issue_count'):
+            raise RuntimeError(result.get('error') or '显示尺寸已更新，预览重建未完成，请重试')
+        try:
+            display_dimensions_repair.rebuild_timeline(contract, config, asset_id, active=active)
+        except InterruptedError:
+            if not active():
+                raise JobPaused('服务重启后继续') from None
+            raise
     return {'outcome': '影片升级补全完成', 'name': title, 'asset_id': asset_id}
 
 

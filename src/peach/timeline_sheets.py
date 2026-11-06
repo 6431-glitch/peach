@@ -102,7 +102,7 @@ def is_current(root: Path, asset_id: int, interval: int) -> bool:
     页面上则是一片取不到的图。
     """
     meta = read_meta(root, asset_id)
-    if not meta or int(meta.get("interval") or 0) != int(interval):
+    if not meta or meta.get('invalidated_by') or int(meta.get("interval") or 0) != int(interval):
         return False
     return all(sheet_path(root, asset_id, index).is_file()
                for index in range(int(meta.get("sheets") or 0)))

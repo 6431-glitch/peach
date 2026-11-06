@@ -15,6 +15,113 @@ from support.ledger import fresh_ledger
 
 
 class UpgradeRepairTests(unittest.TestCase):
+    def display_sample(self, *, width=720, height=1280):
+        from peach import artifact_rules
+        from peach.settings_file import load_config
+        self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
+        self.service.config = self.contract.upgrade_config
+        self.asset(1, code='EXM-001', duration=60)
+        sheet = self.contract.snapshot_root / '1.jpg'
+        sheet.parent.mkdir(parents=True)
+        sheet.write_bytes(b'old grid')
+        artifact_rules.remember(sheet)
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE asset SET width=?,height=?,ctx_orient=?,snapshot_path=?,rating=5 WHERE id=1',
+                               (width, height, '竖屏', str(sheet)))
+        self.service.prepare()
+        return sheet
+
+    def test_old_measured_videos_are_scheduled_once_without_clearing_measurements(self):
+        self.display_sample()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(receipt['display_dimensions']['dimensions'], {'1': [720, 1280]})
+        self.assertTrue(Path(receipt['display_dimensions']['backup']).is_file())
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT duration,width,height,rating FROM asset').fetchone()),
+                             (60, 720, 1280, 5))
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch('peach.media_sources.cost_for', return_value='metered'):
+            self.assertEqual(self.service._plan(receipt), [])
+            self.assertEqual(receipt['deferred'], [1])
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch('peach.media_sources.cost_for', return_value='free'):
+            planned = self.service._plan(receipt)
+        self.assertEqual([row.key for row in planned], ['upgrade-library:display-dimensions-1:1'])
+        receipt['queued'] = {planned[0].key: 1}
+        self.service._save_receipt(receipt)
+        self.asset(2, duration=60)
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE asset SET width=1920,height=1080 WHERE id=2')
+        with patch.object(upgrade_repairs, 'REVISION', upgrade_repairs.REVISION + '-next'):
+            self.service.prepare()
+            after = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(after['display_dimensions'], receipt['display_dimensions'])
+        self.assertEqual(after['queued'], receipt['queued'])
+
+    def test_changed_display_geometry_rebuilds_only_this_assets_previews(self):
+        from peach import artifact_rules, media_probe, timeline_sheets
+        sheet = self.display_sample()
+        self.contract.timeline_root = self.root / 'timeline'
+        timeline = timeline_sheets.sheet_dir(self.contract.timeline_root, 1)
+        timeline.mkdir(parents=True)
+        (timeline / 'meta.json').write_text(json.dumps({'interval': 10, 'frames': 6, 'sheets': 1}))
+        (timeline / '000.jpg').write_bytes(b'old timeline')
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch.object(media_probe, 'probe_file', return_value=(60, 2276, 1280, 'h264', 25, None)), \
+                patch('peach.library_processing.process_library', return_value={'status': 'complete'}) as process, \
+                patch('peach.ffmpeg.FFmpegResolver.ffmpeg', return_value=SimpleNamespace(path='ffmpeg')), \
+                patch.object(timeline_sheets, 'build', return_value={'frames': 6}) as rebuild:
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:display-dimensions-1:1', Mock())
+        self.assertEqual(process.call_args.kwargs['stage'], 'previews')
+        self.assertEqual(process.call_args.kwargs['asset_ids'], [1])
+        rebuild.assert_called_once()
+        self.assertEqual(rebuild.call_args.args[2:], (60, self.contract.timeline_root, 1, 10))
+        self.assertFalse(artifact_rules.current(sheet))
+        self.assertEqual(sheet.read_bytes(), b'old grid')
+        self.assertFalse(timeline_sheets.is_current(self.contract.timeline_root, 1, 10))
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT width,height,ctx_orient,rating FROM asset').fetchone()),
+                             (2276, 1280, '横屏', 5))
+
+    def test_failed_display_probe_preserves_old_measurements_and_artifacts(self):
+        from peach import artifact_rules, media_probe
+        sheet = self.display_sample()
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch.object(media_probe, 'probe_file', side_effect=ValueError('unavailable')), \
+                patch('peach.library_processing.process_library') as process, \
+                self.assertRaisesRegex(ValueError, '保留原有测量'):
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:display-dimensions-1:1', Mock())
+        process.assert_not_called()
+        self.assertTrue(artifact_rules.current(sheet))
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT duration,width,height,ctx_orient FROM asset').fetchone()),
+                             (60, 720, 1280, '竖屏'))
+
+    def test_unchanged_display_geometry_does_not_rebuild_previews(self):
+        from peach import media_probe
+        self.display_sample(width=1920, height=1080)
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch.object(media_probe, 'probe_file', return_value=(60, 1920, 1080, 'h264', 25, None)), \
+                patch('peach.library_processing.process_library') as process:
+            result = upgrade_repairs._media_run(self.contract, 'upgrade-library:display-dimensions-1:1', Mock())
+        self.assertFalse(result['dimensions_changed'])
+        process.assert_not_called()
+
+    def test_display_repair_retry_rebuilds_after_an_earlier_preview_checkpoint(self):
+        from peach import media_probe
+        self.display_sample()
+        state_file = self.service.root / '1.json'
+        state_file.write_text(json.dumps({'job_id': 'upgrade-library-display-dimensions-1-1',
+                                         'completed_previews': ['1:1.mp4'], 'issue_count': 1}))
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch.object(media_probe, 'probe_file', return_value=(60, 2276, 1280, 'h264', 25, None)), \
+                patch('peach.library_processing.process_library', return_value={'status': 'complete'}) as process, \
+                patch('peach.display_dimensions_repair.rebuild_timeline'):
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:display-dimensions-1:1', Mock())
+        self.assertEqual(process.call_args.kwargs['resume_state'].get('completed_previews', []), [])
+
     def test_old_system_metadata_is_isolated_once_without_deleting_files_or_records(self):
         from peach import system_file_repair
         file = self.root / '@eaDir/video.mp4@SynoEAStream'
