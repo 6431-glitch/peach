@@ -114,14 +114,20 @@ def current_control():
     return CURRENT.get() or TASK_CONTROL.get()
 
 
+def default_mode(database):
+    """从当前 profile 读取新任务默认档位。"""
+    from .profiles import read_settings
+    with database.read_connection() as connection:
+        return read_settings(connection).get('taskSpeedMode', 'standard')
+
+
 def execution_mode(database, requested=None, *, control):
     """执行中的任务沿用本轮档位，独立调用选择显式档位或设置默认值。"""
     if control is not None:
         return control.mode
     if requested is not None:
         return valid_mode(requested)
-    from .web_settings import task_speed_mode
-    return task_speed_mode(database)
+    return default_mode(database)
 
 
 def low_mode():

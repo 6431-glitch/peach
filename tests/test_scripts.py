@@ -1588,8 +1588,8 @@ class OperationalScriptTests(unittest.TestCase):
             provider = Flaky()
             clock = [0.0]
             health = root / "health.csv"
-            with mock.patch.object(self.scrape_codes.time, "monotonic",
-                                   side_effect=lambda: clock[0]):
+            with mock.patch.object(self.scrape_codes, "time", wraps=self.scrape_codes.time) as scrape_time:
+                scrape_time.monotonic.side_effect = lambda: clock[0]
                 with redirect_stdout(io.StringIO()):
                     self.scrape_codes.main([
                         "--db", str(db), "--out", str(root / "c.csv"),
@@ -1613,8 +1613,8 @@ class OperationalScriptTests(unittest.TestCase):
                 clock[0] += self.scrape_codes.COOLDOWN_SECONDS
                 return clock[0]
 
-            with mock.patch.object(self.scrape_codes.time, "monotonic",
-                                   side_effect=advancing):
+            with mock.patch.object(self.scrape_codes, "time", wraps=self.scrape_codes.time) as scrape_time:
+                scrape_time.monotonic.side_effect = advancing
                 with redirect_stdout(io.StringIO()):
                     self.scrape_codes.main([
                         "--db", str(db), "--out", str(root / "c2.csv"),

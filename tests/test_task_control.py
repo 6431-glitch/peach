@@ -100,7 +100,8 @@ class TaskControlTests(unittest.TestCase):
         return [sys.executable, '-u', '-c', HEARTBEAT_CHILD, str(path), str(count)]
 
     def test_new_tasks_snapshot_the_default_and_runtime_speed_stays_local(self):
-        from peach.web_settings import task_speed_mode, w_settings
+        from peach.processing_control import default_mode
+        from peach.web_settings import w_settings
         w_settings(self.store.database, {'taskSpeedMode': 'low'})
         first = self.store.start('scan', trigger='manual')
         w_settings(self.store.database, {'taskSpeedMode': 'high'})
@@ -110,7 +111,7 @@ class TaskControlTests(unittest.TestCase):
         task_control.request(self.store, first.id, 'set_speed', mode='standard')
         self.assertEqual(self.state(first.id)['speed_mode'], 'standard')
         self.assertEqual(self.state(second.id)['speed_mode'], 'high')
-        self.assertEqual(task_speed_mode(self.store.database), 'high')
+        self.assertEqual(default_mode(self.store.database), 'high')
         with self.assertRaises(ValueError):
             task_control.request(self.store, first.id, 'set_speed', mode='fast')
         self.assertEqual(self.state(first.id)['speed_mode'], 'standard')

@@ -87,9 +87,9 @@ def _project_speed(contract, state, run, control):
     elif state.get('status') in ACTIVE:
         mode = control.mode
     else:
-        from .web_settings import task_speed_mode
+        from .processing_control import default_mode
         from .repository import LedgerDatabase
-        mode = control.next_mode or task_speed_mode(LedgerDatabase(contract.db_path))
+        mode = control.next_mode or default_mode(LedgerDatabase(contract.db_path))
     if state.get('status') in ACTIVE and previous_mode and previous_mode != mode:
         state.update(_speed_fields(state, mode))
     state['speed_mode'] = mode
@@ -413,7 +413,7 @@ def retry_after_network_recovery(contract, sync=None):
 
 def _initial_speed(contract, control, previous, body, *, resume):
     """恢复沿用任务及旧记录的档位，新任务消费显式选择、待选值或默认值。"""
-    from .web_settings import task_speed_mode
+    from .processing_control import default_mode
     from .repository import LedgerDatabase
     control.refresh(force=True)
     if resume:
@@ -424,7 +424,7 @@ def _initial_speed(contract, control, previous, body, *, resume):
                               default=previous.get('speed_mode') or (body or {}).get('speed_mode') or control.mode)
         return valid_mode(control.mode)
     return valid_mode((body or {}).get('speed_mode') or control.next_mode
-                      or task_speed_mode(LedgerDatabase(contract.db_path)))
+                      or default_mode(LedgerDatabase(contract.db_path)))
 
 
 def w_library_processing(contract, body, *, resume=False):

@@ -2994,6 +2994,10 @@ class LibraryWatchdogTests(unittest.TestCase):
         contract = Mock()
         contract.db_path = self.root / 'database/ledger.db'
         contract.library_processing_job.snapshot.return_value = None
+        from peach.repository import LedgerDatabase
+        contract.db_path.parent.mkdir()
+        fresh_ledger(contract.db_path.parent)
+        contract.database = LedgerDatabase(contract.db_path)
         with patch('peach.web_library_processing.settings_file.active', return_value=config):
             self.assertEqual(q_library_processing(contract, {})['issues_log'], str(log))
 

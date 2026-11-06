@@ -70,13 +70,13 @@ def speed_mode(db, run_id, ancestors=(), *, default='standard'):
 
 
 def initialize_speed(store, run_id, parent=None):
-    from .web_settings import task_speed_mode
+    from .processing_control import default_mode
     from .update_tasks import _mutex
     db = store.database.db_path
     with _mutex(state_for(db)):
         path = _root(db) / f'{run_id}.speed.json'
         mode = (speed_mode(db, parent.id, (parent.parent_run_id, parent.root_run_id))
-                if parent is not None else task_speed_mode(store.database))
+                if parent is not None else default_mode(store.database))
         atomic_write_text(path, json.dumps({'speed_mode': mode, 'at': time.time_ns()}))
 
 

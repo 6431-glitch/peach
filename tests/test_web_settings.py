@@ -112,11 +112,12 @@ class SettingsRoundTripTests(unittest.TestCase):
         self.assertEqual(self._stored_json()["codePatterns"], saved)
 
     def test_default_task_speed_accepts_each_mode_and_rejects_unknown_values(self):
+        from peach.processing_control import default_mode
         for mode in ('low', 'standard', 'high'):
             with self.subTest(mode=mode):
                 saved = w_settings(self.contract, {'taskSpeedMode': mode})
                 self.assertEqual(saved['taskSpeedMode'], mode)
-                self.assertEqual(web_settings.task_speed_mode(self.contract), mode)
+                self.assertEqual(default_mode(self.contract), mode)
         for value in (None, '', 'fast', 1, ['low']):
             with self.subTest(value=value), self.assertRaises(ValueError):
                 w_settings(self.contract, {'taskSpeedMode': value})

@@ -693,7 +693,7 @@ class ProcessingControlTests(unittest.TestCase):
         from peach.task_runs import TaskRunStore
         from peach.web_job_recovery import restore
         from peach.web_library_processing import q_library_processing
-        from peach.web_settings import task_speed_mode
+        from peach.processing_control import default_mode
         database_root = self.config.directory('database')
         database_root.mkdir(parents=True)
         db = fresh_ledger(database_root)
@@ -738,7 +738,7 @@ class ProcessingControlTests(unittest.TestCase):
                 self.assertEqual(runs.get(run.id).status, 'succeeded')
                 self.assertTrue(speed_file.exists())
                 self.assertEqual(task_control.speed_mode(db, run.id), mode)
-                self.assertEqual(task_speed_mode(runs.database), 'standard')
+                self.assertEqual(default_mode(runs.database), 'standard')
 
     def test_three_intensities_set_distinct_io_start_intervals(self):
         control = control_for(self.config)
@@ -865,7 +865,7 @@ class ProcessingControlTests(unittest.TestCase):
         from peach.jobs import BackgroundJob
         from peach.task_runs import TaskRunStore
         from peach.web_library_processing import q_library_processing
-        from peach.web_settings import task_speed_mode
+        from peach.processing_control import default_mode
         runs = TaskRunStore(self.db)
         run = runs.start('library-processing', trigger='manual')
         job = BackgroundJob('library-processing')
@@ -880,7 +880,7 @@ class ProcessingControlTests(unittest.TestCase):
             state = w_library_processing(contract, {'action': 'set_speed', 'job_id': 'one', 'speed_mode': 'low'})
             self.assertEqual(state['speed_mode'], 'low')
             self.assertEqual(task_control.projection(runs, run)['speed_mode'], 'low')
-            self.assertEqual(task_speed_mode(runs.database), 'standard')
+            self.assertEqual(default_mode(runs.database), 'standard')
             with task_control.bind(runs, run.id), control.bind(
                     'one', publish=lambda **_: None, active=lambda: True, db_path=self.db):
                 self.assertEqual(control.mode, 'low')
@@ -907,8 +907,8 @@ class ProcessingControlTests(unittest.TestCase):
             self.assertEqual(start.call_args.kwargs['recovery']['speed_mode'], 'low')
             chosen = w_library_processing(contract, {'action': 'set_speed', 'speed_mode': 'high'})
             self.assertEqual(chosen['speed_mode'], 'high')
-            from peach.web_settings import task_speed_mode
-            self.assertEqual(task_speed_mode(runs.database), 'low')
+            from peach.processing_control import default_mode
+            self.assertEqual(default_mode(runs.database), 'low')
             selected = w_library_processing(contract, {'stage': 'metadata'})
             self.assertEqual(selected['speed_mode'], 'high')
             from peach.web_library_processing import q_library_processing

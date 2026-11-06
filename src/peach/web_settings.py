@@ -213,10 +213,6 @@ def q_settings(contract: SettingsContract, _args=None) -> dict:
     }
 
 
-def task_speed_mode(contract: SettingsContract) -> str:
-    return _stored(contract).get("taskSpeedMode", "standard")
-
-
 def w_settings(contract: SettingsContract, body) -> dict:
     """写入跟人走的设置；只认白名单里的键。
 
