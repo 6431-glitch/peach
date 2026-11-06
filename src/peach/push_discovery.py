@@ -44,7 +44,7 @@ from typing import Callable
 
 from .fsutil import atomic_write_text
 from .repository import in_background
-from .discovery_rules import system_directory, system_path
+from .discovery_rules import system_path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -66,11 +66,6 @@ IGNORED_SUFFIXES = frozenset({
     ".tmp", ".temp", ".part", ".partial", ".crdownload", ".download", ".downloading",
     ".!qb", ".!ut", ".aria2", ".bak", ".swp",
 })
-#: 系统与同步工具自己的落脚文件。
-IGNORED_NAMES = frozenset({
-    "desktop.ini", "thumbs.db", ".ds_store", ".localized",
-})
-
 #: CloudDrive2 那一侧要填的地址路径。页面上照着显示，两处不能各写一份。
 WEBHOOK_PATH = "/api/inbox/clouddrive"
 
@@ -98,8 +93,6 @@ def ignored(path: str) -> bool:
     if system_path(path):
         return True
     lowered = PureWindowsPath(path).name.casefold()
-    if lowered in IGNORED_NAMES or lowered.startswith("."):
-        return True
     return os.path.splitext(lowered)[1] in IGNORED_SUFFIXES
 
 
@@ -702,7 +695,7 @@ class PushDiscoveryService:
         return self.queue.submit(location, path, time.monotonic())
 
     def submit_move(self, location, old, new, *, directory=False):
-        if ignored(new) or (directory and system_directory(PureWindowsPath(new).name)):
+        if ignored(new):
             return
         if directory:
             from .media_folders import path_predicate

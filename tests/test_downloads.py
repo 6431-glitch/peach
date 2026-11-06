@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from contextlib import closing
 from pathlib import Path, PureWindowsPath
+from unittest.mock import patch
 
 from peach import downloads as dl
 from peach import push_discovery as push
@@ -402,6 +403,33 @@ class PollingTests(_Deployment):
 
 
 class LandingTests(_Deployment):
+    def test_metadata_subtrees_and_files_do_not_consume_the_landing_limit(self):
+        folder = self.cloud / '云下载' / 'package'
+        (folder / '.AppleDouble').mkdir(parents=True)
+        (folder / '.AppleDouble' / 'movie.mp4').write_bytes(b'metadata')
+        (folder / '._movie.mp4').write_bytes(b'metadata')
+        (folder / '@creator').mkdir()
+        (folder / '@creator' / '.hidden.mp4').write_bytes(b'media')
+        original = os.scandir
+        visited = []
+
+        def scandir(path):
+            visited.append(Path(path).name)
+            return original(path)
+
+        with patch.object(dl, 'MAX_LANDED_FILES', 1), patch('peach.scan.os.scandir', side_effect=scandir):
+            self.assertTrue(self.service.landing.ingest('115', self.ledger('云下载', 'package')))
+        self.assertNotIn('.AppleDouble', visited)
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(connection.execute('SELECT path FROM asset').fetchall(),
+                             [(self.ledger('云下载', 'package', '@creator', '.hidden.mp4'),)])
+
+    def test_a_system_directory_download_target_is_not_traversed(self):
+        (self.cloud / '云下载' / '@eaDir').mkdir()
+        with patch('peach.scan._walk') as walk:
+            self.assertFalse(self.service.landing.ingest('115', self.ledger('云下载', '@eaDir')))
+        walk.assert_not_called()
+
     def finish(self):
         task_id = self.submit()["task"]["id"]
         self.provider.statuses = [dl.RemoteStatus(dl.DONE, "r1", "ABC-123", 1.0)]

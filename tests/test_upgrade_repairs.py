@@ -1,6 +1,6 @@
 """升级补修以临时账本验证归属、原子标记、重试及无写入端边界。"""
 import json
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import tempfile
 import threading
 from types import SimpleNamespace
@@ -194,6 +194,61 @@ class UpgradeRepairTests(unittest.TestCase):
             self.service.prepare()
         with self.database.read_connection() as connection:
             self.assertIsNone(connection.execute('SELECT disposal FROM asset WHERE id=1').fetchone()[0])
+
+    def test_prior_restore_uses_windows_path_identity_without_exempting_other_paths(self):
+        from peach import system_file_repair
+        with self.database.write_transaction() as connection:
+            for key in (1, 2):
+                connection.execute("INSERT INTO asset(id,location,path,name,medium) "
+                                   "VALUES(?,'local',?,'metadata','other')",
+                                   (key, fr'R:\media\@eaDir\old{key}@SynoEAStream'))
+        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULE):
+            self.service.prepare()
+        with self.database.write_transaction() as connection:
+            connection.execute("UPDATE asset SET disposal=NULL,disposal_reason=NULL,path=? WHERE id=1",
+                               ('r:/MEDIA/@EADIR/OLD1@SYNOEASTREAM',))
+            connection.execute("UPDATE asset SET disposal=NULL,disposal_reason=NULL,path=? WHERE id=2",
+                               (r'R:\media\@eaDir\different@SynoEAStream',))
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual([tuple(row) for row in connection.execute('SELECT id,disposal FROM asset ORDER BY id')],
+                             [(1, None), (2, 'trash')])
+        receipt = upgrade_repairs._read(self.service.receipt)[system_file_repair.RULE]
+        self.assertEqual([row['id'] for row in receipt['isolated']], [2])
+
+    def test_expanded_system_rules_preserve_prior_restores_and_personal_records(self):
+        from peach import system_file_repair
+        with self.database.write_transaction() as connection:
+            connection.execute("INSERT INTO asset(id,location,path,name,medium) "
+                               "VALUES(1,'local',?,'old metadata','other')",
+                               (r'R:\media\@eaDir\old@SynoEAStream',))
+        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULE):
+            self.service.prepare()
+        previous = upgrade_repairs._read(self.service.receipt)[system_file_repair.PRIOR_RULE]
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE asset SET disposal=NULL,disposal_reason=NULL WHERE id=1')
+            for key, name, medium, rating, code, feedback, plays in (
+                    (2, '.DS_Store', 'other', None, None, None, 0),
+                    (3, 'Thumbs.db', 'other', 5, None, None, 0),
+                    (4, '._movie.mp4', 'video', None, None, None, 0),
+                    (5, '.localized', 'other', None, 'EXM-123', None, 0),
+                    (6, '.SYNOPPSDB1', 'other', None, None, 'like', 0),
+                    (7, 'desktop.ini', 'other', None, None, None, 3),
+                    (8, '.wfm_upload1', 'other', None, None, None, 0)):
+                connection.execute(
+                    'INSERT INTO asset(id,location,path,name,medium,rating,code,feedback,play_count) '
+                    "VALUES(?,'local',?,?,?,?,?,?,?)",
+                    (key, str(PureWindowsPath(r'R:\media', name)), name, medium, rating, code, feedback, plays))
+            connection.execute("INSERT INTO review_decision(category,item_key,status,note,updated_at) "
+                               "VALUES('junk_file','8','rejected','','2026-11-06')")
+        self.service.prepare()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(receipt[system_file_repair.PRIOR_RULE], previous)
+        self.assertEqual([row['id'] for row in receipt[system_file_repair.RULE]['isolated']], [2])
+        with self.database.read_connection() as connection:
+            self.assertEqual([tuple(row) for row in connection.execute('SELECT id,disposal FROM asset ORDER BY id')],
+                             [(1, None), (2, 'trash'), (3, None), (4, None), (5, None),
+                              (6, None), (7, None), (8, None)])
 
     def test_javdb_upgrade_requeues_legacy_evidence_and_keeps_manual_values(self):
         from peach import artifact_rules, upgrade_rules
