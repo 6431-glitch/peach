@@ -15,7 +15,9 @@ async function forwardHttp(page: Page, origin: string, service: string, signal: 
       await route.fulfill({ response });
     } catch (error) {
       if (signal.aborted && error instanceof Error && error.name === 'AbortError' && error.cause === signal.reason) {
-        await route.abort();
+        await route.abort().catch(error => {
+          if (!/already handled|disposed|closed/i.test(String(error))) throw error;
+        });
         return;
       }
       if (!/already handled|disposed|closed/i.test(String(error))) throw error;

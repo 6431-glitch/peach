@@ -11,6 +11,8 @@ import time
 import unittest
 from unittest.mock import patch
 
+import psutil
+
 from peach import job_recovery, task_control, update_tasks
 from peach.jobs import BackgroundJob
 from peach.task_runs import TaskRunStore
@@ -42,11 +44,14 @@ class TaskControlTests(unittest.TestCase):
         self.assertEqual(len(result.stdout.splitlines()), 8)
 
     def test_a_stalled_process_is_reaped_and_retains_its_output(self):
-        command = [sys.executable, '-u', '-c', "import time; print('started', flush=True); time.sleep(30)"]
+        command = [sys.executable, '-u', '-c',
+                   "import subprocess,sys,time; child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(30)']); "
+                   "print('started',child.pid,flush=True); time.sleep(30)"]
         with self.record_child():
             with self.assertRaises(subprocess.TimeoutExpired) as caught:
                 task_control.run(command, capture_output=True, idle_timeout=.8)
         self.assertIn(b'started', caught.exception.output)
+        self.assertFalse(psutil.pid_exists(int(caught.exception.output.split()[1])))
         self.assertIsNotNone(self.children[-1].poll())
 
     def test_stderr_activity_does_not_extend_the_stdout_idle_timeout(self):
@@ -96,7 +101,7 @@ class TaskControlTests(unittest.TestCase):
             task_control.request(self.store, run_id, 'cancel')
             job.thread.join(5)
             self.assertFalse(job.thread.is_alive())
-            self.assertEqual(self.store.get(run_id).status, 'cancelled')
+            self.assertEqual(self.store.get(run_id).status, 'cancelled', job.snapshot())
 
     def test_idle_timeout_excludes_a_user_pause_and_cancel_reaps_the_process(self):
         chunks = []

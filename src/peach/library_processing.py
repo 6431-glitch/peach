@@ -256,7 +256,9 @@ def describe_failure(error):
 def _source_failure_details(error, code, action, *, source=None):
     """采集问题保留脱敏异常链和阶段，页面摘要不暴露内部错误正文。"""
     from .error_reporting import exception_facts, scrub
-    return scrub({'stage': action, 'code': code, 'source': source, **exception_facts(error)})
+    from .task_retry import transient_delay
+    return scrub({'stage': action, 'code': code, 'source': source,
+                  'automatic_retry_delay': transient_delay(error), **exception_facts(error)})
 #: 来源说「没有」不是待办：馆藏里本来就有大量独立资源和创作者作品，任何目录站都收不到
 #: 它们。逐条记在日志里备查，界面只按这两类各报一个数（`state['notes']`），不进问题清单。
 MISS_MESSAGES = {'querying_metadata': '外部来源没有这部片的资料，7 天内不再问',
