@@ -2889,6 +2889,17 @@ def _initial_processing_scope(db_path, selected_ids, retry_ids, incremental, res
     return None, None
 
 
+def _prepare_library_scope(config, db_path, stage, asset_ids, retry_ids, database, library_id, resume_state):
+    """恢复原媒体库并校验显式选择，返回本轮可用的目录配置。"""
+    library_id = (resume_state or {}).get('library_id', library_id)
+    config = scoped_config(config, library_id)
+    selected_ids = _validate_processing_request(config, db_path, stage, asset_ids, retry_ids, database)
+    if library_id and selected_ids is not None:
+        if set(scoped_assets(config, db_path, library_id, selected_ids)) != set(selected_ids):
+            raise ValueError('所选影片不属于当前媒体库')
+    return config, library_id, selected_ids
+
+
 def process_library(config, db_path, candidate_root, cover_root, *, location='configured',
                     report=lambda state: None, provider_factory=None, job_id=None,
                     retry_ids=None, active=lambda: True, stage=ALL_STAGES,
@@ -2916,12 +2927,8 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
     可重试的「外部资料未取得」、补人物资料整段跳过，本地那几步照常做完；之后每一行读它的快照。
     不给就不判，命令行走这条。
     """
-    library_id = (resume_state or {}).get('library_id', library_id)
-    config = scoped_config(config, library_id)
-    selected_ids = _validate_processing_request(config, db_path, stage, asset_ids, retry_ids, database)
-    if library_id and selected_ids is not None:
-        if set(scoped_assets(config, db_path, library_id, selected_ids)) != set(selected_ids):
-            raise ValueError('所选影片不属于当前媒体库')
+    config, library_id, selected_ids = _prepare_library_scope(
+        config, db_path, stage, asset_ids, retry_ids, database, library_id, resume_state)
     from .repository import LedgerDatabase
     judgement_database = database if database is not None else LedgerDatabase(db_path)
     routes = metadata_routes.parse_route_overrides(route_overrides)
@@ -2955,7 +2962,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                      stage='检查配套文件' if retrying else '扫描文件',
                      checked=0, total=0, scanned=0, scanned_bytes=0, probed=0, identified=0, candidates=0, covers=0, previews=0,
                      requested_stage=stage, asset_ids=scope_ids, incremental=incremental,
-                     library_id=library_id, library_name=config.library_catalog[library_id]['name'] if library_id else '',
+                     library_id=library_id, library_name=config.library_catalog.get(library_id, {}).get('name', ''),
                      issue_count=0, paused_count=0, issue_preview=[], issues_truncated=False,
                      notes={}, retryable_asset_ids=[],
                      last_progress_at=time.time(), progress_seq=0,
@@ -3032,10 +3039,9 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                 scope_ids = _active_videos(db_path, sorted(set(initial_ids) | set(sources.new_ids)))
                 state['asset_ids'] = state['incremental_ids'] = scope_ids
                 traffic.asset_ids = scope_ids
-            if library_id:
-                scope_ids = scoped_assets(config, db_path, library_id, scope_ids)
-                state['asset_ids'] = scope_ids
-                traffic.asset_ids = scope_ids
+            scope_ids = scoped_assets(config, db_path, library_id, scope_ids)
+            state['asset_ids'] = scope_ids
+            traffic.asset_ids = scope_ids
             state.update(scanned=sources.scanned, scanned_bytes=sources.scanned_bytes, probed=sources.probed)
             state['junk_isolated'] = max(state['junk_isolated'], sources.junk_isolated)
             traffic.unknown_files = False

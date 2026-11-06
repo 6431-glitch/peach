@@ -26,7 +26,6 @@ export interface LibraryProcessingIssue {
 export interface LibraryProcessingData {
   library_id?: string | null;
   library_name?: string;
-  libraries?: { id: string; name: string }[];
   metadata_only?: boolean;
   /** `idle` | `running` | `pausing` | `paused` | `stopping` | `cancelled` | `complete` | `failed`。 */
   status: string;
