@@ -1,10 +1,10 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f068ff37-58fc-4e58-9bdb-bacd1069d40a", e._sentryDebugIdIdentifier = "sentry-dbid-f068ff37-58fc-4e58-9bdb-bacd1069d40a");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b331720c-a0ef-4130-8418-3443a933a205", e._sentryDebugIdIdentifier = "sentry-dbid-b331720c-a0ef-4130-8418-3443a933a205");
 	} catch {}
 })();
-import { BATCH_DELETE_TEXT as e, Button as t, CLEANUP_ENTRY as n, CLEANUP_ENTRY_GRID as r, CLEANUP_HASH_REDIRECTS as i, CLEANUP_TOOLS as a, Chip as o, DIRECTORY_TEMPLATE_ERROR as s, DUPLICATES_KEY as c, Fieldset as l, FieldsetTitle as u, IDLE_REPAIR as d, IconButton as f, IndexSearch as p, Input as m, JUNK_KEY as h, LINKS_KEY as g, LINK_CHECK_KEY as _, LINK_KINDS as v, LINK_PRUNE_KEY as ee, LOC as y, LibraryProcessingCard as b, MEDIA_REPAIR_KEY as x, MEDIA_REPAIR_URL as S, MEDIA_SOURCES_KEY as C, MEDIA_SOURCE_ICONS as w, Note as T, ORGANIZE_KEY as te, ORGANIZE_PARAMETER_HINT as ne, ORGANIZE_SCOPE_HINT as re, ORGANIZE_TEXT as E, ORPHAN_RECORDS_KEY as D, ORPHAN_RECORDS_TEXT as O, PERFORMER_DELETE_KEY as k, PLAIN_STAT_STRIP as ie, PlainStat as A, Progress as j, QUALITY_GOALS_KEY as ae, REPAIR_CARD_TEXT as M, REPAIR_LIBRARIES_KEY as oe, RESOURCE_APPLY_KEY as se, RESOURCE_SCAN_KEY as N, RESOURCE_SYNC_TEXT as P, RESULT_PANEL as F, RESULT_SECTION as I, REVIEW_COUNTS_KEY as ce, SOURCE_LABELS as L, SectionHeading as le, Select as ue, SelectItem as de, SourceMark as fe, StatusLabel as pe, TRASH_KEY as R, TaskProgress as z, Wt as me, __toESM as he, apiSend as ge, applyConfirmText as _e, applyLeftovers as B, applyPlanText as ve, applyText as V, attachOrphan as ye, baseName as be, busyProps as H, candidateText as xe, checkLine as Se, confirmModal as U, cx as Ce, deletePerformerVideos as we, entityDisplayName as Te, entityFaceImg as Ee, entityPath as De, errorMessage as W, esc as Oe, fetchDeletePerformers as ke, fetchDeletePlan as Ae, fetchDuplicates as je, fetchJunkSummary as Me, fetchLinkCheck as Ne, fetchLinkPrune as Pe, fetchLinkStats as Fe, fetchMediaRepair as Ie, fetchMediaSources as Le, fetchOrganize as Re, fetchOrganizeExample as ze, fetchOrphanRecords as Be, fetchQualityGoals as Ve, fetchRepairLibraries as He, fetchResourceApply as Ue, fetchResourceScan as We, fetchReviewCounts as Ge, fetchTrashSummary as Ke, firstGrapheme as qe, fmtSize as G, hasChanges as Je, hasResourceRoots as Ye, junkBreakdown as Xe, missingToolText as Ze, nameFallback as Qe, organizeOutcome as $e, pickOrganizeFolder as et, plainStatClass as K, planSummary as tt, previewOrganize as nt, pruneText as rt, purgeCount as it, purgeOrphan as at, queryClient as q, recordsText as ot, rememberTemplates as st, require_jsx_runtime as ct, require_react as lt, reviewSummary as ut, scanLine as dt, shellNavigate as ft, sourceMeta as pt, spriteGlyph as J, startLinkCheck as mt, startLinkPrune as ht, startOrganize as gt, startResourceApply as _t, startResourceScan as vt, statusLine as yt, useAction as bt, useBackgroundJob as Y, useEntityNames as xt, useMutation as St, useQuery as X, withOrganizeJob as Ct } from "./peach-app.js";
+import { BATCH_DELETE_TEXT as e, Button as t, CLEANUP_ENTRY as n, CLEANUP_ENTRY_GRID as r, CLEANUP_HASH_REDIRECTS as i, CLEANUP_TOOLS as a, Chip as o, DIRECTORY_TEMPLATE_ERROR as s, DUPLICATES_KEY as c, Fieldset as l, FieldsetTitle as u, IDLE_REPAIR as d, IconButton as f, IndexSearch as p, Input as m, JUNK_KEY as h, LINKS_KEY as g, LINK_CHECK_KEY as _, LINK_KINDS as v, LINK_PRUNE_KEY as ee, LOC as y, LibraryProcessingCard as b, MEDIA_REPAIR_KEY as x, MEDIA_REPAIR_URL as S, MEDIA_SOURCES_KEY as C, MEDIA_SOURCE_ICONS as w, Note as T, ORGANIZE_KEY as te, ORGANIZE_PARAMETER_HINT as ne, ORGANIZE_SCOPE_HINT as re, ORGANIZE_TEXT as E, ORPHAN_RECORDS_KEY as D, ORPHAN_RECORDS_TEXT as O, PERFORMER_DELETE_KEY as k, PLAIN_STAT_STRIP as ie, PlainStat as A, Progress as j, QUALITY_GOALS_KEY as ae, REPAIR_CARD_TEXT as M, REPAIR_LIBRARIES_KEY as oe, RESOURCE_APPLY_KEY as se, RESOURCE_SCAN_KEY as N, RESOURCE_SYNC_TEXT as P, RESULT_PANEL as F, RESULT_SECTION as I, REVIEW_COUNTS_KEY as ce, SOURCE_LABELS as L, SectionHeading as le, Select as ue, SelectItem as de, SourceMark as fe, StatusLabel as pe, TRASH_KEY as R, TaskProgress as z, Wt as me, __toESM as he, apiSend as ge, applyConfirmText as _e, applyLeftovers as B, applyPlanText as ve, applyText as V, attachOrphan as ye, baseName as be, busyProps as H, candidateText as xe, checkLine as Se, confirmModal as U, cx as Ce, deletePerformerVideos as we, entityDisplayName as Te, entityFaceImg as Ee, entityPath as De, errorMessage as W, esc as Oe, fetchDeletePerformers as ke, fetchDeletePlan as Ae, fetchDuplicates as je, fetchJunkSummary as Me, fetchLinkCheck as Ne, fetchLinkPrune as Pe, fetchLinkStats as Fe, fetchMediaRepair as Ie, fetchMediaSources as Le, fetchOrganize as Re, fetchOrganizeExample as ze, fetchOrphanRecords as Be, fetchQualityGoals as Ve, fetchRepairLibraries as He, fetchResourceApply as Ue, fetchResourceScan as We, fetchReviewCounts as Ge, fetchTrashSummary as Ke, firstGrapheme as qe, fmtSize as G, hasChanges as Je, hasResourceRoots as Ye, junkBreakdown as Xe, missingToolText as Ze, nameFallback as Qe, organizeOutcome as $e, peachHistory$1 as et, pickOrganizeFolder as tt, plainStatClass as K, planSummary as nt, previewOrganize as rt, pruneText as it, purgeCount as at, purgeOrphan as ot, queryClient as q, recordsText as st, rememberTemplates as ct, require_jsx_runtime as lt, require_react as ut, reviewSummary as dt, scanLine as ft, sourceMeta as pt, spriteGlyph as J, startLinkCheck as mt, startLinkPrune as ht, startOrganize as gt, startResourceApply as _t, startResourceScan as vt, statusLine as yt, useAction as bt, useBackgroundJob as Y, useEntityNames as xt, useMutation as St, useQuery as X, withOrganizeJob as Ct } from "./peach-app.js";
 import { Page as wt } from "./peach-app.page-QAncjzM1.js";
 import { ErrorExcerpt as Tt } from "./peach-app.error-excerpt-B8v2xEIP.js";
 import { DataTable as Et } from "./peach-app.data-table-BRJ5A5Cl.js";
@@ -13,7 +13,7 @@ import { LEGACY_AVATAR_IMG as Ot } from "./peach-app.legacy-avatar-NSITxLRS.js";
 import { FolderSearchIcon as kt } from "./peach-app.folder-rows-BWBfTyUD.js";
 import { ConnectionStatus as At } from "./peach-app.connection-status-DI6kgn3i.js";
 // src/react/data-cleanup/cleanup-entry-card.tsx
-var Z = /* @__PURE__ */ he(lt(), 1), Q = ct(), jt = J("chevron-right");
+var Z = /* @__PURE__ */ he(ut(), 1), Q = lt(), jt = J("chevron-right");
 function Mt({ label: e, icon: t, summary: r, detail: i, state: a, attributes: o, onOpen: s }) {
 	return /* @__PURE__ */ (0, Q.jsxs)("button", {
 		type: "button",
@@ -373,7 +373,7 @@ function Gt() {
 	else if (E && !y.length && !b.length) k = /* @__PURE__ */ (0, Q.jsx)(T, {
 		tone: "success",
 		title: "完成",
-		children: rt(E)
+		children: it(E)
 	});
 	else if (D) k = /* @__PURE__ */ (0, Q.jsx)(T, {
 		tone: "error",
@@ -409,7 +409,7 @@ function Gt() {
 				E?.status === "complete" ? /* @__PURE__ */ (0, Q.jsx)(T, {
 					tone: "success",
 					title: "完成",
-					children: rt(E)
+					children: it(E)
 				}) : null,
 				/* @__PURE__ */ (0, Q.jsx)(Wt, {
 					title: "地址已失效",
@@ -626,13 +626,13 @@ function Xt({ toast: e, failure: n }) {
 		file_template: _.file.trim(),
 		dir_template: _.dir.trim()
 	}), N = St({
-		mutationFn: nt,
+		mutationFn: rt,
 		onError: (e) => {
 			let t = /整理路径/.test(W(e)) ? "path" : s.test(W(e)) ? "dir" : "file";
 			D(t), (t === "path" ? ie : t === "dir" ? k : O).current?.focus();
 		}
 	}), P = St({
-		mutationFn: ({ initial: e }) => et(e),
+		mutationFn: ({ initial: e }) => tt(e),
 		onSuccess: (e, t) => {
 			e.path && t.location === S.current.location && t.path === S.current.path && (b({
 				location: t.location,
@@ -674,7 +674,7 @@ function Xt({ toast: e, failure: n }) {
 				await F.start.mutateAsync({
 					kind: "apply",
 					request: e
-				}), st({
+				}), ct({
 					...i?.templates ?? {},
 					[e.location]: {
 						file: e.file_template,
@@ -723,7 +723,7 @@ function Xt({ toast: e, failure: n }) {
 	}) : L && (B = /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [/* @__PURE__ */ (0, Q.jsx)(T, {
 		tone: "neutral",
 		title: "预览结果",
-		children: tt(L)
+		children: nt(L)
 	}), le ? /* @__PURE__ */ (0, Q.jsx)(Yt, { plan: L }) : null] }));
 	return /* @__PURE__ */ (0, Q.jsxs)(l, {
 		layout: "stack",
@@ -951,14 +951,14 @@ function $t({ item: e, toast: n }) {
 		},
 		onError: (e) => n(W(e))
 	}), o = St({
-		mutationFn: () => at(e.id),
+		mutationFn: () => ot(e.id),
 		onSuccess: (t) => {
 			n(t.blocked.length ? `「${e.name}」的文件已恢复，记录未删除；下次扫描后恢复为在库状态` : `已删除「${e.name}」的作品记录及个人记录`), Qt();
 		}
 	}), s = () => {
 		U({
 			title: "删除记录",
-			body: `将删除「${e.name}」的作品记录${ot(e.records) ? `及其个人记录（${ot(e.records)}）` : ""}。此操作不可撤销。`,
+			body: `将删除「${e.name}」的作品记录${st(e.records) ? `及其个人记录（${st(e.records)}）` : ""}。此操作不可撤销。`,
 			confirmLabel: "删除记录",
 			danger: !0,
 			onConfirm: () => o.mutateAsync()
@@ -1032,7 +1032,7 @@ function tn({ toast: e }) {
 		queryKey: D,
 		queryFn: ({ signal: e }) => Be(e)
 	}), a = i.data?.items ?? [], o = St({
-		mutationFn: (e) => at(e),
+		mutationFn: (e) => ot(e),
 		onSuccess: (t) => {
 			e(`已删除 ${t.purged} 条作品记录及其个人记录${t.blocked.length ? `；${t.blocked.length} 条文件已恢复，记录未删除` : ""}`), r([]), Qt();
 		}
@@ -1057,10 +1057,10 @@ function tn({ toast: e }) {
 			label: "个人记录",
 			width: 176,
 			min: 144,
-			value: (e) => ot(e.records),
+			value: (e) => st(e.records),
 			render: (e) => /* @__PURE__ */ (0, Q.jsx)("span", {
 				className: "block min-w-0 whitespace-normal wrap-anywhere",
-				children: ot(e.records) || "无"
+				children: st(e.records) || "无"
 			})
 		},
 		{
@@ -1332,7 +1332,7 @@ function un({ scan: e, partial: t = !1 }) {
 				className: K(),
 				children: /* @__PURE__ */ (0, Q.jsx)(A, {
 					label: "待永久删除",
-					figure: `${$(it(e))} 项`,
+					figure: `${$(at(e))} 项`,
 					meta: "文件已不在盘上，含回收站"
 				})
 			}),
@@ -1419,7 +1419,7 @@ function dn({ toast: e }) {
 		children: sn
 	});
 	else if (i?.status === "running") {
-		let e = dt(i);
+		let e = ft(i);
 		m = /* @__PURE__ */ (0, Q.jsx)(z, {
 			embedded: !0,
 			label: e,
@@ -1623,7 +1623,7 @@ function Cn({ toast: e, open: t, navigate: n }) {
 	});
 	return (0, Z.useEffect)(() => {
 		let e = i[location.hash];
-		e && ft(e + location.search, { replace: !0 });
+		e && et.replace(e + location.search);
 	}, []), /* @__PURE__ */ (0, Q.jsxs)(wt, { children: [
 		/* @__PURE__ */ (0, Q.jsxs)("section", {
 			"aria-labelledby": "cleanup-pending",
@@ -1639,7 +1639,7 @@ function Cn({ toast: e, open: t, navigate: n }) {
 						label: "人工复核",
 						icon: _n,
 						open: t,
-						value: mn(o, ut)
+						value: mn(o, dt)
 					}),
 					/* @__PURE__ */ (0, Q.jsx)(hn, {
 						section: "duplicates",
@@ -1722,4 +1722,4 @@ function Cn({ toast: e, open: t, navigate: n }) {
 }
 export { Cn as DataCleanupPage, pn as DataCleanupToolPage };
 
-//# debugId=f068ff37-58fc-4e58-9bdb-bacd1069d40a
+//# debugId=b331720c-a0ef-4130-8418-3443a933a205

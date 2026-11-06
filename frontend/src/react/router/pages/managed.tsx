@@ -17,7 +17,7 @@ import { useLocation } from 'react-router';
 import { appSettingsStore } from '@peach/appearance';
 import { followManageParams } from '../../follow-manage/manage-route';
 import {
-  isOverlayPath, managedEntry, openManagedRoute, peachHistory, shellNavigate,
+  isOverlayPath, managedEntry, openManagedRoute, peachHistory,
   configurationSection, updateManagedRoute,
 } from '@peach/history';
 import { api, isAbort } from '@peach/legacy/core';
@@ -113,10 +113,10 @@ async function openPage(path: ManagedPath, actions: ShellActions, run: Run): Pro
     peachHistory.replace(javLibraryPath(window.location.search)); return;
   }
   if (path === '/subscriptions' && search().get('tab') === 'wants') {
-    shellNavigate('/jav?tab=wants', { replace: true }); return;
+    peachHistory.replace('/jav?tab=wants'); return;
   }
   if (path === '/subscriptions' && search().get('tab') === 'source') {
-    shellNavigate('/settings/subscriptions', { replace: true }); return;
+    peachHistory.replace('/settings/subscriptions'); return;
   }
   const stats = document.getElementById('stats');
   if (!stats) return;
@@ -143,7 +143,7 @@ async function openPage(path: ManagedPath, actions: ShellActions, run: Run): Pro
   if (opened && isCurrent()) {
     const { hash } = window.location;
     if (path === '/settings/library' && hash === '#libraryProcessing') {
-      queueMicrotask(() => { if (isCurrent()) shellNavigate('/data-cleanup#libraryProcessing', { replace: true, state: null }) });
+      queueMicrotask(() => { if (isCurrent()) peachHistory.replace('/data-cleanup#libraryProcessing', null) });
     } else {
       void pageNavigationReady(isCurrent);
     }
@@ -201,7 +201,7 @@ export function ResourceSyncRedirect() {
     let live = true;
     queueMicrotask(() => {
       if (!live) return;
-      shellNavigate('/data-cleanup/resource-sync', { replace: true });
+      peachHistory.replace('/data-cleanup/resource-sync');
     });
     return () => { live = false };
   }, [started]);
