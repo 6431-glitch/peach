@@ -84,7 +84,7 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
             const css = getComputedStyle(part);
             return [css.display, css.padding, css.gap, css.borderTopWidth, css.borderRadius, css.backgroundColor];
           };
-          return { width: Math.round(card.getBoundingClientRect().width), face: style(card),
+          return { width: Math.round(card.getBoundingClientRect().width), height: Math.round(card.getBoundingClientRect().height), face: style(card),
             body: style(card.firstElementChild!), footer: style(card.querySelector('footer')!) };
         }));
         const waiting = await geometry();

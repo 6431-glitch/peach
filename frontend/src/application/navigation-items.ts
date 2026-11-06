@@ -32,8 +32,13 @@ export const MANAGE_SECTIONS = [
 ] as const satisfies readonly NavigationItem<ManagementKey>[];
 
 export const MANAGE_MENU_SECTIONS: readonly ManagementKey[] = ['stats', 'taste', 'cleanup', 'follow', 'activity', 'configuration'];
-export const getManageMenuSections = (configurable: boolean): readonly NavigationItem<ManagementKey>[] =>
-  MANAGE_SECTIONS.filter(([key]) => MANAGE_MENU_SECTIONS.includes(key) && (key !== 'configuration' || configurable));
+export function normalizeManageOrder(raw: unknown): ManagementKey[] {
+  const entries = Array.isArray(raw) ? raw : [];
+  return [...new Set([...entries.filter((key): key is ManagementKey => MANAGE_MENU_SECTIONS.includes(key)), ...MANAGE_MENU_SECTIONS])];
+}
+export const getManageMenuSections = (configurable: boolean, order?: unknown): readonly NavigationItem<ManagementKey>[] =>
+  normalizeManageOrder(order).flatMap(key => key === 'configuration' && !configurable ? []
+    : MANAGE_SECTIONS.filter(([entry]) => entry === key));
 
 export const OPTIONAL_SIDEBAR_ITEMS: readonly NavigationItem<SidebarKey>[] = MANAGE_SECTIONS
   .flatMap(([key, label, glyph]): NavigationItem<SidebarKey>[] => key === 'configuration' ? []

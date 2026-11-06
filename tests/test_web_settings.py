@@ -90,6 +90,15 @@ class SettingsRoundTripTests(unittest.TestCase):
             con.close()
         return json.loads(raw)
 
+    def test_manage_order_persists_independently_and_appends_missing_entries(self):
+        original_sidebar = q_settings(self.contract)['sidebarOrder']
+        saved = w_settings(self.contract, {'manageOrder': ['activity', 'stats', 'activity', 'invalid', 3]})
+        self.assertEqual(saved['manageOrder'], ['activity', 'stats', 'taste', 'cleanup', 'follow', 'configuration'])
+        self.assertEqual(q_settings(self.contract)['manageOrder'], saved['manageOrder'])
+        self.assertEqual(q_settings(self.contract)['sidebarOrder'], original_sidebar)
+        self.assertEqual(w_settings(self.contract, {'manageOrder': []})['manageOrder'],
+                         list(web_settings.DEFAULT_MANAGE_ORDER))
+
     def test_an_unset_profile_reads_the_default_order(self):
         self.assertEqual(q_settings(self.contract),
                          {"sidebarOrder": list(DEFAULT_SIDEBAR_ORDER),
