@@ -482,6 +482,8 @@ def _walk(top: Path, pending: list[str] | None = None, *, onerror=lambda error: 
     列表自带这两项，不必再对每个文件发一次 `os.stat`——网盘挂载上那一次就是一趟往返，
     几万个文件就是几万趟。读不了的目录跳过；符号链接指向的目录列出但不进入。
     """
+    if system_path(str(top)):
+        return
     from .smb_media import SmbResource
     if isinstance(top, SmbResource):
         yield from _walk_smb(top, pending, onerror)
@@ -490,6 +492,8 @@ def _walk(top: Path, pending: list[str] | None = None, *, onerror=lambda error: 
     while stack:
         checkpoint('scan')
         directory = stack.pop()
+        if system_path(directory):
+            continue
         try:
             if read_directory is not None:
                 entries = read_directory(directory)
@@ -540,6 +544,8 @@ def _walk_smb(top, pending, onerror):
         while stack:
             checkpoint('scan')
             directory = stack.pop()
+            if system_path(directory):
+                continue
             resource = top.joinpath(*_relative_directory(directory, top))
             try:
                 try:
@@ -585,6 +591,12 @@ class _ScanProgress:
 
 def scan_location(db_path, location, root, **kwargs) -> ScanResult:
     """命令行按来源与根目录保存断点，组合任务可提供自己的持久检查点。"""
+    if system_path(root):
+        check_scan_target(location, root, declared_roots=kwargs['declared_roots'])
+        result = ScanResult(location, root, 0, 0, 0, 0)
+        kwargs.get('progress', lambda files, total: None)(0, 0)
+        kwargs.get('report', print)(result.summary())
+        return result
     if 'save_checkpoint' in kwargs or 'resume_state' in kwargs:
         return _scan_location(db_path, location, root, **kwargs)
     from .update_tasks import state_for

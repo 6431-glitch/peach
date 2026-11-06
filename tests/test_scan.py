@@ -591,7 +591,8 @@ class NasDirectoryTests(unittest.TestCase):
             root = Path(temporary).resolve()
             for name in ("#recycle", "#RECYCLE", "@eaDir", "@snapshot", "@Recycle",
                          "@Recently-Snapshot", ".@__thumb", ".@__qini", ".@upload_cache", ".streams",
-                         ".zfs", ".snapshot", "~snapshot", ".recycle", ".AppleDouble", ".AppleDB",
+                         ".zfs", ".snapshot", ".snapshots", "~snapshot", ".recycle", ".Trash", ".Trash-1000",
+                         ".TemporaryItems", ".AppleDouble", ".AppleDB",
                          ".AppleDesktop", "Network Trash Folder", ".Spotlight-V100", ".Trashes",
                          ".fseventsd", "__MACOSX", "$Recycle.Bin", "System Volume Information",
                          ".wfm_upload123", "normal", "@creator", ".hidden"):
@@ -607,6 +608,31 @@ class NasDirectoryTests(unittest.TestCase):
 
 
 class SystemMetadataTests(_ScanCase):
+    def test_a_system_directory_scan_root_is_skipped_before_mapping_or_listing(self):
+        options = dict(declared_roots={'local': (r'R:\media\.snapshots',)},
+                       mounts={'local': (self.media,)}, windows=False)
+        progress = []
+        with patch.object(scan, 'walk_root_for') as mapped, patch.object(scan, '_walk') as walked:
+            result, output = self._scan(r'R:\media\.snapshots', **options,
+                                       progress=lambda files, total: progress.append((files, total)))
+        self.assertEqual((result.files, result.total_bytes, result.gone), (0, 0, 0))
+        self.assertEqual(progress, [(0, 0)])
+        self.assertIn('0 文件', output)
+        mapped.assert_not_called()
+        walked.assert_not_called()
+        self.assertEqual(self._paths(), {})
+        with self.assertRaises(scan.ScanTargetError):
+            self._scan(r'R:\media\.snapshots', declared_roots={})
+
+    def test_system_walk_roots_and_resumed_directories_are_not_listed(self):
+        system = self.media / '.Trash-1000'
+        system.mkdir()
+        (system / 'movie.mp4').write_bytes(b'media')
+        with patch.object(scan.os, 'scandir') as listed:
+            self.assertEqual(list(scan._walk(system)), [])
+            self.assertEqual(list(scan._walk(self.media, [str(system)])), [])
+        listed.assert_not_called()
+
     def test_full_scan_and_direct_ingest_share_metadata_file_rules(self):
         names = ('desktop.ini', 'Thumbs.db', '.DS_Store', '._movie.mp4', '.SYNOPPSDB123',
                  '.wfm_upload123.mp4', 'movie.mp4@SynoEAStream')

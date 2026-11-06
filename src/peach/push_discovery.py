@@ -44,7 +44,7 @@ from typing import Callable
 
 from .fsutil import atomic_write_text
 from .repository import in_background
-from .discovery_rules import system_directory, system_path
+from .discovery_rules import system_path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -695,7 +695,7 @@ class PushDiscoveryService:
         return self.queue.submit(location, path, time.monotonic())
 
     def submit_move(self, location, old, new, *, directory=False):
-        if ignored(new) or (directory and system_directory(PureWindowsPath(new).name)):
+        if ignored(new):
             return
         if directory:
             from .media_folders import path_predicate

@@ -195,6 +195,27 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             self.assertIsNone(connection.execute('SELECT disposal FROM asset WHERE id=1').fetchone()[0])
 
+    def test_prior_restore_uses_windows_path_identity_without_exempting_other_paths(self):
+        from peach import system_file_repair
+        with self.database.write_transaction() as connection:
+            for key in (1, 2):
+                connection.execute("INSERT INTO asset(id,location,path,name,medium) "
+                                   "VALUES(?,'local',?,'metadata','other')",
+                                   (key, fr'R:\media\@eaDir\old{key}@SynoEAStream'))
+        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULE):
+            self.service.prepare()
+        with self.database.write_transaction() as connection:
+            connection.execute("UPDATE asset SET disposal=NULL,disposal_reason=NULL,path=? WHERE id=1",
+                               ('r:/MEDIA/@EADIR/OLD1@SYNOEASTREAM',))
+            connection.execute("UPDATE asset SET disposal=NULL,disposal_reason=NULL,path=? WHERE id=2",
+                               (r'R:\media\@eaDir\different@SynoEAStream',))
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual([tuple(row) for row in connection.execute('SELECT id,disposal FROM asset ORDER BY id')],
+                             [(1, None), (2, 'trash')])
+        receipt = upgrade_repairs._read(self.service.receipt)[system_file_repair.RULE]
+        self.assertEqual([row['id'] for row in receipt['isolated']], [2])
+
     def test_expanded_system_rules_preserve_prior_restores_and_personal_records(self):
         from peach import system_file_repair
         with self.database.write_transaction() as connection:

@@ -211,7 +211,8 @@ class IgnoreAndSourceTests(unittest.TestCase):
             with self.subTest(name=repr(name)):
                 self.assertTrue(push.ignored(str(PureWindowsPath(r'R:\media', name))))
         for name in ('@creator', 'normal', '@eaDir-old', '#recycle-old', '.snapshot-old',
-                     'Snapshots', 'Recycle Bin', 'Temporary Items'):
+                     'Snapshots', 'Recycle Bin', 'Temporary Items', '.Trash-', '.Trash-1000-old',
+                     '.Trash-user', '.Trash-١٠٠٠', '.snapshots-old', '.TemporaryItems-old'):
             with self.subTest(directory=name):
                 self.assertFalse(system_directory(name))
                 self.assertFalse(push.ignored(str(PureWindowsPath(r'R:\media', name, 'movie.mp4'))))
@@ -396,7 +397,8 @@ class IngestPathTests(_ServiceCase):
         service = self.service()
         for parts in (('@Recently-Snapshot', 'movie.mp4'), ('.AppleDouble', 'movie.mp4'),
                       ('.zfs', 'snapshot', 'movie.mp4'), ('$Recycle.Bin', 'movie.mp4'),
-                      ('._movie.mp4',), ('desktop.ini',)):
+                      ('._movie.mp4',), ('desktop.ini',), ('@eaDir',), ('.Trash-1000',),
+                      ('.snapshots',), ('.TemporaryItems',)):
             path = self.ledger('local', *parts)
             with self.subTest(parts=parts), mock.patch.object(service.queue, 'submit') as submit, \
                     mock.patch.object(service, '_ingest') as ingest:
