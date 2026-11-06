@@ -392,6 +392,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             taste_history_import_root=self.taste_import_root,
             taste_history_output_root=self.taste_output_root,
             taste_history_manifest=self.taste_manifest,
+            follow_state_root=self.root / 'state',
             entry_links_root=self.root / "state",
         )
         self.app = create_app(self.settings)
@@ -524,6 +525,7 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual((await self.client.get("/api/background-issues")).status_code, 401)
             response = await self.client.get("/api/background-issues?t=secret")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual([item['key'] for item in response.json()['issues']], ['network'])
         [issue] = response.json()["issues"]
         self.assertEqual((issue["key"], issue["href"], issue["since"], issue["retry"]),
                          ("network", "/settings/network#peachProxy", None, "/api/network-status/check"))
