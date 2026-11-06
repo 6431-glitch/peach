@@ -19,15 +19,15 @@ const bar = '<span class="skeleton skeleton-text" aria-hidden="true"></span>';
 const waitingAction = 'disabled data-skeleton-action';
 const unavailable = 'aria-disabled="true"';
 const island = (card: string) => `<div class="peach-react"><div class="flex flex-col gap-4">${card}</div></div>`;
-const cardText = (title: string, text: string, layout: FieldsetLayout) => `<div class="${FIELDSET_BODY[layout]}"><div class="flex flex-col gap-2">
+const cardText = (title: string, text: string, layout: FieldsetLayout, controls = '') => `<div class="${FIELDSET_BODY[layout]}"><div class="flex flex-col gap-2">
           <h3 class="text-title-2-medium text-text-primary">${title}</h3>
-          <p class="text-body-2-regular text-text-secondary">${text}</p></div></div>`;
+          <p class="text-body-2-regular text-text-secondary">${text}</p>${controls}</div></div>`;
 
 /** 「扫描与采集」卡：与 React `LibraryProcessingCard` 同一副容器、同一段正文、同一组键。
  *  「复核资料」只在有候选时出现，这里不预画。 */
 export function scanCardSkeletonHtml(): string {
   return island(`<section aria-label="扫描与采集" class="${fieldsetClass('stack')}" data-cleanup-task data-cleanup-processing>
-        ${cardText('扫描与采集', SCAN_CARD_TEXT, 'stack')}
+        ${cardText('扫描与采集', SCAN_CARD_TEXT, 'stack', `<div class="w-full max-w-80"><p class="mb-1 text-body-2-medium text-text-secondary">媒体库</p>${islandSelect(bar, { attrs: `${waitingAction} aria-label="媒体库"` })}</div>`)}
         <footer class="${FIELDSET_FOOT.stack}"><a href="/sources" class="inline-flex items-center justify-center gap-1 whitespace-nowrap font-sans rounded-sm text-body-medium text-accent-600"><span>来源和凭证</span>${islandGlyph('arrow-up', 'size-(--icon-inline) shrink-0 rotate-90')}</a><span data-button-group data-split-button data-variant="primary">${islandButton({ label: '同步新增文件', attrs: waitingAction })}${islandButton({ glyph: 'chevron-down', attrs: `${waitingAction} aria-label="更多同步方式"` })}</span></footer>
       </section>`);
 }
