@@ -53,7 +53,7 @@ SEARCH_HISTORY_LIMIT_MAX = 50
 #: 替哪些壳补封面都按它算，所以跟着账本走。
 #: 番号识别规则描述的是这套馆藏的命名，处理任务按它往账本里写番号，同样跟着账本走。
 SYNCED_SETTING_KEYS = frozenset({
-    "sidebarOrder", "followInitialDays", "postSetupTutorialDone",
+    "sidebarOrder", "manageOrder", "followInitialDays", "postSetupTutorialDone",
     "organizeTemplates", "feedHideGroupCompilations", "feedHideSoloCompilations",
     "feedHideExcerpts", "searchHistoryLimit", "codePatterns", "performerNameLanguage", "taskSpeedMode",
 })
@@ -68,6 +68,15 @@ FEED_COMPILATION_SWITCHES = (
 class SettingsContract(Protocol):
     def read_connection(self): ...
     def write_transaction(self): ...
+
+
+DEFAULT_MANAGE_ORDER = ('stats', 'taste', 'cleanup', 'follow', 'activity', 'configuration')
+
+
+def normalise_manage_order(raw):
+    entries = raw if isinstance(raw, list) else []
+    return list(dict.fromkeys([value for value in entries if isinstance(value, str) and value in DEFAULT_MANAGE_ORDER]
+                             + list(DEFAULT_MANAGE_ORDER)))
 
 
 def normalise_sidebar_order(raw) -> list[str]:
@@ -200,6 +209,7 @@ def q_settings(contract: SettingsContract, _args=None) -> dict:
     payload = _stored(contract)
     return {
         "sidebarOrder": normalise_sidebar_order(payload.get("sidebarOrder")),
+        **({"manageOrder": normalise_manage_order(payload["manageOrder"])} if "manageOrder" in payload else {}),
         "avatarRefreshDays": AVATAR_REFRESH_SECONDS // 86400,
         "faviconRefreshDays": FAVICON_REFRESH_SECONDS // 86400,
         "followInitialDays": normalise_follow_initial_days(payload.get("followInitialDays")),
@@ -236,6 +246,8 @@ def w_settings(contract: SettingsContract, body) -> dict:
         if language not in ("zh-CN", "ja"):
             raise ValueError("performerNameLanguage 只收 zh-CN 或 ja")
         merged["performerNameLanguage"] = language
+    if "manageOrder" in body:
+        merged["manageOrder"] = normalise_manage_order(body["manageOrder"])
     if "sidebarOrder" in body:
         merged["sidebarOrder"] = normalise_sidebar_order(body["sidebarOrder"])
     if "followInitialDays" in body:

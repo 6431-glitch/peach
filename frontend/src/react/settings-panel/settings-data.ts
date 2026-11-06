@@ -41,6 +41,7 @@ export interface SyncedSettings {
   taskSpeedMode?: 'low' | 'standard' | 'high';
   performerNameLanguage?: 'zh-CN' | 'ja';
   sidebarOrder?: string[];
+  manageOrder?: string[];
   followInitialDays?: number;
   postSetupTutorialDone?: boolean;
   feedHideGroupCompilations?: boolean;

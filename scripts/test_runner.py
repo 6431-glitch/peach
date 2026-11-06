@@ -239,6 +239,7 @@ AUTO_SCOPE_FILES: dict[str, tuple[str, ...]] = {
     # `test_stale_candidates.py` 在 metadata，`test_web_e2e.py` 在 web 里整条跑它。
     # 模块名与测试文件名对不上，按名字推不出来，不指明就退化成 full。
     "src/peach/library_processing.py": ("metadata", "web"),
+    "src/peach/library_processing_scope.py": ("metadata", "web"),
     "src/peach/local_poster.py": ("metadata", "web"),
     "src/peach/media_io.py": ("metadata", "media", "tooling"),
     "src/peach/processing_control.py": ("media", "metadata", "web"),

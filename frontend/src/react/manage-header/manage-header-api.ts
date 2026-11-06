@@ -6,6 +6,7 @@
  *
  * 换页、确认弹层与写接口仍归壳：点下去回到 `openManage`、`openDataCleanup` 与清空回收站那条流程。
  * 页面标题的逐行揭示也由壳在每次推送之后做（换了页才放一遍），骨架阶段与路由树接手之后是同一处。 */
+import type { SettingsStore } from '../../settings-store';
 import type { ManageHeaderProps } from '../../manage-header';
 
 export type { ManageEntry, ManageHeaderProps, TrashCount } from '../../manage-header';
@@ -13,6 +14,7 @@ export type { ManageEntry, ManageHeaderProps, TrashCount } from '../../manage-he
 export interface ManageHeaderHost {
   /** 岛画进去的那一层（`[data-manage-header]`，本身 `display: contents`）。 */
   root: HTMLElement;
+  store: SettingsStore<{ manageOrder: string[] }>;
   /** 管理条上的一项。 */
   openManage(section: string): void;
   /** 面包屑的上一级。带修饰键或中键的点击不经这里，照链接自己的 href 走（新标签页、右键菜单）。 */
