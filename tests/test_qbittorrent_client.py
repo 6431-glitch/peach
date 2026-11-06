@@ -10,6 +10,18 @@ from peach import qbittorrent_client as qbit
 
 
 class QbittorrentClientTests(unittest.TestCase):
+    def test_no_content_login_requires_a_successful_authenticated_request(self):
+        with tempfile.TemporaryDirectory() as folder:
+            store = CredentialStore(Path(folder))
+            body = {'url': 'http://example.test', 'username': 'test', 'password': 'secret'}
+            def handler(request):
+                return httpx.Response(204) if request.url.path.endswith('/auth/login') else httpx.Response(200, text='v5')
+            self.assertTrue(qbit.check(store, body, httpx.MockTransport(handler))['ok'])
+            def denied(request):
+                return httpx.Response(204) if request.url.path.endswith('/auth/login') else httpx.Response(403)
+            with self.assertRaisesRegex(ValueError, 'did not accept'):
+                qbit.check(store, body, httpx.MockTransport(denied))
+
     def test_configuration_and_explicit_submission(self):
         calls = []
         def handler(request):

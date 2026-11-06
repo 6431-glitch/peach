@@ -27,7 +27,7 @@ def _login(values, transport=None):
         response = client.post(url + '/api/v2/auth/login', data={'username': username, 'password': password})
         if response.status_code == 403:
             raise ValueError('qBittorrent denied access; the address may be blocked or temporarily banned after failed logins.')
-        if response.status_code != 200 or response.text.strip() != 'Ok.':
+        if not ((response.status_code == 200 and response.text.strip() == 'Ok.') or response.status_code == 204):
             raise ValueError('qBittorrent login failed. Check the Web UI address and credentials.')
         response = client.get(url + '/api/v2/app/version')
         if response.status_code != 200:
