@@ -1,6 +1,7 @@
 """升级补修以临时账本验证归属、原子标记、重试及无写入端边界。"""
 import json
 from pathlib import Path, PureWindowsPath
+import subprocess
 import tempfile
 import threading
 from types import SimpleNamespace
@@ -15,6 +16,13 @@ from support.ledger import fresh_ledger
 
 
 class UpgradeRepairTests(unittest.TestCase):
+    def seed_receipt(self, receipt):
+        encoded = json.dumps(receipt)
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE ledger_upgrade_repair SET result_json=? WHERE id=?',
+                               (encoded, upgrade_repairs.REVISION))
+        self.service.receipt.write_text(encoded, encoding='utf-8')
+
     def display_sample(self, *, width=720, height=1280):
         from peach import artifact_rules
         from peach.settings_file import load_config
@@ -31,30 +39,33 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service.prepare()
         return sheet
 
-    def test_upgrade_does_not_schedule_measured_videos_for_display_geometry(self):
+    def test_upgrade_schedules_measured_videos_once_without_reading_media_during_planning(self):
         from peach import media_probe
         sheet = self.display_sample()
         receipt = upgrade_repairs._read(self.service.receipt)
-        self.assertNotIn('display_dimensions', receipt)
+        self.assertEqual(receipt['display_dimensions_v2']['dimensions'], {'1': [720, 1280]})
+        self.assertTrue(Path(receipt['display_dimensions_v2']['backup']).is_file())
         with patch('peach.library_processing._people_allowed', return_value=False), \
                 patch('peach.seed_followup.plan', return_value=[]), \
                 patch.object(upgrade_repairs, '_stale_previews', return_value=False), \
                 patch.object(media_probe, 'probe_file') as probe:
             self.service.tick()
         probe.assert_not_called()
-        self.assertEqual(upgrade_repairs._read(self.service.receipt)['queued'], {})
+        self.assertEqual(list(upgrade_repairs._read(self.service.receipt)['queued']),
+                         ['upgrade-library:display-dimensions-2:1'])
         self.assertEqual(sheet.read_bytes(), b'old grid')
         with self.database.read_connection() as connection:
             self.assertEqual(tuple(connection.execute('SELECT duration,width,height,rating FROM asset').fetchone()),
                              (60, 720, 1280, 5))
 
-    def test_existing_display_receipt_is_preserved_but_never_dispatches_more_reprobes(self):
+    def test_existing_display_receipt_is_preserved_and_new_rule_reopens_completed_dispatch(self):
         self.display_sample()
         receipt = upgrade_repairs._read(self.service.receipt)
         receipt['display_dimensions'] = {'rule': upgrade_rules.DISPLAY_DIMENSIONS,
                                          'dimensions': {'1': [720, 1280]}, 'backup': 'retained.db'}
-        receipt['dispatch_complete'] = False
-        self.service._save_receipt(receipt)
+        receipt.pop('display_dimensions_v2')
+        receipt['dispatch_complete'] = True
+        self.seed_receipt(receipt)
         self.service.prepare()
         with patch('peach.library_processing._people_allowed', return_value=False), \
                 patch('peach.seed_followup.plan', return_value=[]), \
@@ -62,8 +73,239 @@ class UpgradeRepairTests(unittest.TestCase):
             self.service.tick()
         after = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(after['display_dimensions'], receipt['display_dimensions'])
-        self.assertEqual(after['queued'], {})
-        self.assertTrue(after['dispatch_complete'])
+        self.assertEqual(list(after['queued']), ['upgrade-library:display-dimensions-2:1'])
+        self.assertFalse(after['dispatch_complete'])
+
+    def test_old_real_success_is_inherited_but_skipped_and_failed_reprobes_are_not(self):
+        self.display_sample()
+        for key in (2, 3):
+            self.asset(key, duration=60)
+            with self.database.write_transaction() as connection:
+                connection.execute('UPDATE asset SET width=720,height=1280 WHERE id=?', (key,))
+        parent = self.store.start('old-display', trigger='manual')
+        keys = [f'upgrade-library:display-dimensions-1:{key}' for key in (1, 2, 3)]
+        ids = self.store.enqueue_followups(parent.id, [(key, upgrade_repairs.MEDIA_TASK, '显示尺寸') for key in keys])['queued']
+        self.store.finish(ids[0], 'succeeded', summary={'outcome': '显示尺寸重探完成', 'dimensions_changed': True})
+        self.store.finish(ids[1], 'succeeded', summary={'outcome': 'skipped'})
+        self.store.finish(ids[2], 'failed', error='未取得')
+        self.store.finish(parent.id, 'succeeded')
+        receipt = upgrade_repairs._read(self.service.receipt)
+        receipt.pop('display_dimensions_v2')
+        receipt['queued'] = dict(zip(keys, ids))
+        receipt['display_dimensions'] = {'rule': upgrade_rules.DISPLAY_DIMENSIONS, 'backup': 'old.db'}
+        self.seed_receipt(receipt)
+        self.service.prepare()
+        after = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(after['display_dimensions_v2']['completed'],
+                         {'1': {'changed': True, 'inherited_rule': 'display-dimensions-1'}})
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch.object(upgrade_repairs, '_stale_previews', return_value=False):
+            planned = self.service._plan(after)
+        self.assertEqual([row.key for row in planned],
+                         ['upgrade-library:display-dimensions-2:2', 'upgrade-library:display-dimensions-2:3'])
+
+    def run_display_probe(self, measured, *, checkpoint=None):
+        from peach import display_dimensions_repair
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch('peach.media_probe.measure', return_value=measured) as probe:
+            result = display_dimensions_repair.reprobe(self.contract, self.service.config, 1,
+                                                       checkpoint=checkpoint or Mock())
+        return result, probe
+
+    def test_changed_dimensions_preserve_media_and_records_and_invalidate_only_owned_previews(self):
+        from peach import artifact_rules, timeline_sheets
+        sheet = self.display_sample()
+        timeline = self.root / 'timeline'
+        self.contract.timeline_root = timeline
+        meta = timeline_sheets.meta_path(timeline, 1)
+        meta.parent.mkdir(parents=True)
+        meta.write_text(json.dumps({'frames': 6, 'interval': 10, 'sheets': 1}), encoding='utf-8')
+        with self.database.write_transaction() as connection:
+            connection.execute("UPDATE asset SET has_audio=1,vcodec='old',fps=24 WHERE id=1")
+        measured = (61, 1440, 1280, 'new', 30, None, '速食', '横屏', '1080P', 1)
+        result, _ = self.run_display_probe(measured)
+        self.assertTrue(result['changed'])
+        self.assertEqual(sheet.read_bytes(), b'old grid')
+        self.assertFalse(artifact_rules.current(sheet))
+        self.assertEqual(json.loads(meta.read_text())['invalidated_by'], upgrade_rules.DISPLAY_DIMENSIONS_SAR)
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute(
+                'SELECT duration,width,height,ctx_orient,rating,has_audio,vcodec,fps FROM asset').fetchone()),
+                (60, 1440, 1280, '横屏', 5, 1, 'old', 24))
+            row = connection.execute('SELECT * FROM asset').fetchone()
+        self.assertFalse(upgrade_repairs._stale_previews(self.contract, row))
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]):
+            self.assertEqual(self.service._plan(upgrade_repairs._read(self.service.receipt)), [])
+
+    def test_successful_measurement_is_not_repeated_after_restart_or_task_settlement_failure(self):
+        from peach import artifact_rules
+        sheet = self.display_sample()
+        measured = (60, 720, 1280, 'h264', 25, None, '速食', '竖屏', '720P', 1)
+        first, _ = self.run_display_probe(measured)
+        self.service.prepare()
+        second, probe = self.run_display_probe(measured)
+        self.assertEqual(second, first)
+        probe.assert_not_called()
+        self.assertFalse(first['changed'])
+        self.assertTrue(artifact_rules.current(sheet))
+
+    def test_real_anamorphic_media_repairs_legacy_dimensions_without_rewriting_the_source(self):
+        from peach import display_dimensions_repair
+        from peach.ffmpeg import FFmpegResolver
+        from support.conditions import missing_prerequisite
+        self.display_sample(width=320, height=180)
+        resolver = FFmpegResolver(self.root / 'tools')
+        ffmpeg, ffprobe = resolver.ffmpeg(), resolver.ffprobe()
+        if ffmpeg is None or ffprobe is None:
+            missing_prerequisite('SAR 旧测量补修需要 FFmpeg 与 ffprobe')
+        source = self.root / 'anamorphic.mp4'
+        subprocess.run([str(ffmpeg.path), '-y', '-v', 'error', '-f', 'lavfi', '-i',
+                        'color=c=green:s=320x180:r=5:d=1', '-vf', 'setsar=2',
+                        '-c:v', 'libx264', '-pix_fmt', 'yuv420p', str(source)],
+                       capture_output=True, check=True, timeout=20)
+        original = source.read_bytes()
+        with patch('peach.library_processing._ffprobe_path', return_value=str(ffprobe.path)), \
+                patch('peach.media_probe.resolve_case_insensitive', return_value=str(source)):
+            result = display_dimensions_repair.reprobe(self.contract, self.service.config, 1, checkpoint=Mock())
+        self.assertEqual(result['dimensions'], [640, 180])
+        self.assertEqual(source.read_bytes(), original)
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT duration,width,height,rating FROM asset').fetchone()),
+                             (60, 640, 180, 5))
+
+    def test_failed_measurement_and_capacity_denial_preserve_old_measurements_for_retry(self):
+        from peach import artifact_rules
+        from peach.jobs import DiskSpaceDenied
+        sheet = self.display_sample()
+        with self.assertRaisesRegex(ValueError, '未取得'):
+            self.run_display_probe((-1, 0, 0, None, 0, 0, None, None, None, 1))
+        with self.assertRaises(DiskSpaceDenied):
+            self.run_display_probe((60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1),
+                                   checkpoint=Mock(side_effect=[None, DiskSpaceDenied('空间不足')]))
+        self.assertEqual(upgrade_repairs._read(self.service.receipt)['display_dimensions_v2']['completed'], {})
+        self.assertTrue(artifact_rules.current(sheet))
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT width,height FROM asset').fetchone()), (720, 1280))
+        result, _ = self.run_display_probe((60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1))
+        self.assertTrue(result['changed'])
+
+    def test_display_planner_defers_metered_sources_and_uses_the_existing_batch_limit(self):
+        self.display_sample()
+        for key in range(2, 72):
+            self.asset(key, duration=60)
+        receipt = upgrade_repairs._read(self.service.receipt)
+        receipt['display_dimensions_v2']['dimensions'] = {str(key): [720, 1280] for key in range(1, 72)}
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch('peach.media_sources.cost_for', side_effect=lambda _location, path, _config:
+                      'metered' if path == '1.mp4' else 'free'):
+            planned = self.service._plan(receipt)
+        self.assertEqual(len(planned), 64)
+        self.assertTrue(all(':display-dimensions-2:' in row.key for row in planned))
+        self.assertEqual(receipt['deferred'], [1])
+
+    def test_committed_measurement_survives_a_failed_file_receipt_write(self):
+        self.display_sample()
+        stale = upgrade_repairs._read(self.service.receipt)
+        with patch('peach.display_dimensions_repair.atomic_write_text', side_effect=OSError('disk full')), \
+                self.assertRaisesRegex(OSError, 'disk full'):
+            self.run_display_probe((60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1))
+        self.service._save_receipt(stale)
+        self.assertEqual(stale['display_dimensions_v2']['completed']['1']['dimensions'], [1440, 1280])
+        _, probe = self.run_display_probe((60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1))
+        probe.assert_not_called()
+
+    def test_display_handler_only_probes_and_pauses_before_committing_when_capacity_is_exhausted(self):
+        from peach.jobs import DiskSpaceDenied
+        from peach import task_control
+        self.display_sample()
+        self.contract.upgrade_repairs = self.service
+        parent = self.store.start('sar-batch', trigger='manual')
+        child = self.store.enqueue_followups(parent.id, [
+            ('upgrade-library:display-dimensions-2:1', upgrade_repairs.MEDIA_TASK, '补测')])['queued'][0]
+        with patch('peach.storage_budget.CapacityGuard.check', side_effect=[None, DiskSpaceDenied('空间不足')]), \
+                patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch('peach.media_probe.measure', return_value=(60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1)), \
+                patch('peach.library_processing.process_library') as process, \
+                self.assertRaises(DiskSpaceDenied):
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:display-dimensions-2:1', Mock())
+        process.assert_not_called()
+        self.assertEqual(task_control.requested(self.db, child), 'pause')
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT width,height FROM asset').fetchone()), (720, 1280))
+
+    def test_display_failure_is_recorded_independently_and_explicit_retry_keeps_successful_items(self):
+        from peach.followups import FollowupRunner
+        self.display_sample()
+        self.asset(2, duration=60)
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE asset SET width=720,height=1280 WHERE id=2')
+        receipt = upgrade_repairs._read(self.service.receipt)
+        receipt['display_dimensions_v2']['dimensions']['2'] = [720, 1280]
+        self.service._save_receipt(receipt)
+        self.contract.upgrade_repairs = self.service
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch('peach.storage_budget.CapacityGuard.check'), \
+                patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch('peach.media_probe.measure', side_effect=[
+                    (-1, 0, 0, None, 0, 0, None, None, None, 1),
+                    (60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 2)]) as probe, \
+                patch('peach.library_processing.process_library') as process:
+            self.service.tick()
+            queued = dict(upgrade_repairs._read(self.service.receipt)['queued'])
+            with self.assertLogs('peach.followups', level='WARNING'):
+                self.assertEqual(FollowupRunner(self.contract).drain(), 2)
+            self.assertEqual([self.store.get(run_id).status for run_id in queued.values()], ['failed', 'succeeded'])
+            self.service.retry()
+        self.assertEqual(probe.call_count, 2)
+        process.assert_not_called()
+        after = upgrade_repairs._read(self.service.receipt)
+        self.assertIn('2', after['display_dimensions_v2']['completed'])
+        self.assertNotIn('1', after['display_dimensions_v2']['completed'])
+        new = after['queued']['upgrade-library:display-dimensions-2:1']
+        self.assertNotEqual(new, queued['upgrade-library:display-dimensions-2:1'])
+        self.assertEqual(self.store.get(new).status, 'pending')
+
+    def test_cancel_after_probe_stops_measurement_and_leaves_success_checkpoint_empty(self):
+        from peach import task_control
+        from peach.followups import FollowupRunner
+        self.display_sample()
+        self.contract.upgrade_repairs = self.service
+        parent = self.store.start('sar-cancel', trigger='manual')
+        child = self.store.enqueue_followups(parent.id, [
+            ('upgrade-library:display-dimensions-2:1', upgrade_repairs.MEDIA_TASK, '补测')])['queued'][0]
+        self.store.finish(parent.id, 'succeeded')
+        def measured(*_args):
+            task_control.request(self.store, child, 'cancel')
+            return (60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1)
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch('peach.media_probe.measure', side_effect=measured):
+            self.assertEqual(FollowupRunner(self.contract).drain(), 1)
+        self.assertEqual(self.store.get(child).status, 'cancelled')
+        self.assertEqual(upgrade_repairs._read(self.service.receipt)['display_dimensions_v2']['completed'], {})
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT width,height FROM asset').fetchone()), (720, 1280))
+
+    def test_display_dispatch_refills_only_the_free_slots_in_the_existing_batch(self):
+        self.display_sample()
+        for key in range(2, 67):
+            self.asset(key, duration=60)
+        receipt = upgrade_repairs._read(self.service.receipt)
+        receipt['display_dimensions_v2']['dimensions'] = {str(key): [720, 1280] for key in range(1, 67)}
+        self.service._save_receipt(receipt)
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]):
+            self.service.tick()
+            receipt = upgrade_repairs._read(self.service.receipt)
+            first = next(iter(receipt['queued'].values()))
+            self.store.finish(first, 'succeeded')
+            self.service.tick()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(len(receipt['queued']), 65)
+        self.assertEqual(self.service._media_backlog(), 64)
 
     def test_queued_display_reprobe_skips_without_media_reads_or_measurement_changes(self):
         from peach import artifact_rules, media_probe
@@ -95,7 +337,7 @@ class UpgradeRepairTests(unittest.TestCase):
         from peach import task_control
         from peach.jobs import DiskSpaceDenied
         ids = self.disk_batch()
-        with patch('peach.jobs.DiskGuard.free_gb', return_value=0), \
+        with patch('peach.storage_budget.CapacityGuard.check', side_effect=DiskSpaceDenied('空间不足')), \
                 patch('peach.library_processing.process_library') as process, \
                 self.assertRaises(DiskSpaceDenied):
             upgrade_repairs._media_run(self.contract, 'upgrade-library:processing-v2:1', Mock())
@@ -106,7 +348,7 @@ class UpgradeRepairTests(unittest.TestCase):
         restarted = upgrade_repairs.UpgradeRepairs(self.contract, available=True, config=self.service.config)
         restarted.prepare()
         self.contract.upgrade_repairs = restarted
-        with patch('peach.jobs.DiskGuard.free_gb', return_value=100), \
+        with patch('peach.storage_budget.CapacityGuard.check'), \
                 patch('peach.library_processing.process_library') as process, \
                 patch('peach.seed_followup.plan', return_value=[]), \
                 patch('peach.library_processing._people_allowed', return_value=False), \
@@ -124,10 +366,10 @@ class UpgradeRepairTests(unittest.TestCase):
         from peach.jobs import DiskSpaceDenied
         ids = self.disk_batch()
         self.service.pause_media(DiskSpaceDenied('空间不足'))
-        with patch('peach.jobs.DiskGuard.free_gb', return_value=0), self.assertRaises(DiskSpaceDenied):
+        with patch('peach.storage_budget.CapacityGuard.check', side_effect=DiskSpaceDenied('空间不足')), self.assertRaises(DiskSpaceDenied):
             self.service.retry()
         self.assertEqual(task_control.requested(self.db, ids[0]), 'pause')
-        with patch('peach.jobs.DiskGuard.free_gb', return_value=100), patch.object(self.service, 'tick'):
+        with patch('peach.storage_budget.CapacityGuard.check'), patch.object(self.service, 'tick'):
             self.service.retry()
         self.assertNotIn('media_paused', upgrade_repairs._read(self.service.receipt))
         self.assertEqual(task_control.requested(self.db, ids[0]), 'resume')
@@ -139,13 +381,13 @@ class UpgradeRepairTests(unittest.TestCase):
         ids = self.disk_batch()
         for inside in (True, False):
             with self.subTest(inside=inside):
-                with patch('peach.jobs.DiskGuard.free_gb', side_effect=[100] if inside else [100, 0]), \
+                with patch('peach.storage_budget.CapacityGuard.check', side_effect=[None] if inside else [None, DiskSpaceDenied('空间不足')]), \
                         patch('peach.library_processing.process_library',
                               side_effect=DiskSpaceDenied('空间不足') if inside else None,
                               return_value={'status': 'complete'}), self.assertRaises(DiskSpaceDenied):
                     upgrade_repairs._media_run(self.contract, 'upgrade-library:processing-v2:1', Mock())
                 self.assertEqual(task_control.requested(self.db, ids[0]), 'pause')
-                with patch('peach.jobs.DiskGuard.free_gb', return_value=100), patch.object(self.service, 'tick'):
+                with patch('peach.storage_budget.CapacityGuard.check'), patch.object(self.service, 'tick'):
                     self.service.retry()
 
     def test_explicit_retry_preserves_a_later_manual_parent_pause(self):
@@ -156,7 +398,7 @@ class UpgradeRepairTests(unittest.TestCase):
         parent_id = self.store.get(ids[0]).parent_run_id
         task_control.request(self.store, parent_id, 'pause')
         manual = task_control.intent(self.db, ids[0], (parent_id,))
-        with patch('peach.jobs.DiskGuard.free_gb', return_value=100), patch.object(self.service, 'tick'):
+        with patch('peach.storage_budget.CapacityGuard.check'), patch.object(self.service, 'tick'):
             self.service.retry()
         self.assertEqual(task_control.intent(self.db, ids[0], (parent_id,)), manual)
         self.assertEqual(manual['action'], 'pause')
@@ -496,6 +738,9 @@ class UpgradeRepairTests(unittest.TestCase):
                              '人工题名')
 
     def setUp(self):
+        capacity = patch('peach.storage_budget.CapacityGuard.check')
+        capacity.start()
+        self.addCleanup(capacity.stop)
         holder = tempfile.TemporaryDirectory()
         self.addCleanup(holder.cleanup)
         self.root = Path(holder.name).resolve()
