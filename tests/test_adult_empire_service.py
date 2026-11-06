@@ -13,6 +13,13 @@ spec.loader.exec_module(service)
 
 
 class AdultEmpireServiceTests(unittest.TestCase):
+    def test_dorcel_discovery_prefers_larger_cover_with_thumbnail_fallback(self):
+        soup = BeautifulSoup('''<a class="movies" aria-label="Example" href="/en/movies/studio/example">
+        <img data-src="/images/cover8xs0400/1518950.jpg"></a>''', 'html.parser')
+        item = service.parse_dorcel_discover(soup)['candidates'][0]
+        self.assertEqual(item['image'], 'https://www.dorcelvision.com/images/coverxs1200/1518950.jpg')
+        self.assertEqual(item['image_fallback'], 'https://www.dorcelvision.com/images/cover8xs0400/1518950.jpg')
+
     def test_dorcel_home_sections_are_deduplicated(self):
         html = '''<div class="margined-block"><div class="slider-heading"><h2>New</h2></div>
         <a class="movies" aria-label="Example" href="/en/movies/studio/example"><img data-src="/image.jpg"></a></div>

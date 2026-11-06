@@ -204,8 +204,12 @@ def parse_dorcel_discover(soup: BeautifulSoup) -> dict:
         image_parts = urlsplit(image_url)
         if image_parts.scheme != 'https' or image_parts.hostname != 'www.dorcelvision.com':
             image_url = ''
+        fallback = image_url
+        if re.fullmatch(r'/images/cover8xs0400/\d+\.jpg', image_parts.path):
+            image_url = DORCEL + image_parts.path.replace('/cover8xs0400/', '/coverxs1200/', 1)
         studio = urlsplit(url).path.strip('/').split('/')[2].replace('-', ' ').title()
-        candidates.append({'id': urlsplit(url).path, 'title': title, 'url': url, 'image': image_url, 'studio': studio})
+        candidates.append({'id': urlsplit(url).path, 'title': title, 'url': url, 'image': image_url,
+                           'image_fallback': fallback, 'studio': studio})
     return {'candidates': candidates}
 
 

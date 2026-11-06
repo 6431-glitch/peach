@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
 import { Select, SelectItem } from '@/components/base/select/select';
+import { RiEyeLine, RiEyeOffLine } from '@remixicon/react';
 import { ApiError, apiGet, apiSend, errorMessage } from '../../api';
 import { Disclosure } from './section';
 
@@ -9,7 +10,8 @@ type Settings = { url: string; username: string; password_set: boolean };
 type ConnectionState = 'idle' | 'ok' | 'error';
 const connectionError = (cause: unknown) => {
   if (cause instanceof ApiError && cause.body && typeof cause.body === 'object') {
-    const detail = (cause.body as { detail?: unknown }).detail;
+    const body = cause.body as { detail?: unknown; error?: unknown };
+    const detail = body.detail || body.error;
     if (typeof detail === 'string') return detail;
   }
   return errorMessage(cause);
@@ -21,6 +23,7 @@ export function QbittorrentSettings() {
   const [port, setPort] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [saved, setSaved] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -61,7 +64,13 @@ export function QbittorrentSettings() {
         </div>
         <div className="gap-2" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', alignItems: 'end' }}>
           <Input label="Username" value={username} onChange={value => change(() => setUsername(value))} autoComplete="off" />
-          <Input label="Password" type="password" value={password} onChange={value => change(() => setPassword(value))} autoComplete="new-password" placeholder={saved ? 'Saved; leave blank to keep' : ''} />
+          <div className="relative min-w-0">
+            <Input label="Password" type={showPassword ? 'text' : 'password'} value={password} onChange={value => change(() => setPassword(value))} autoComplete="new-password" placeholder={saved ? 'Saved; leave blank to keep' : ''} inputClassName="pr-10" />
+            <button type="button" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword}
+              className="absolute bottom-0 right-1 flex h-9 w-9 items-center justify-center text-text-secondary" onClick={() => setShowPassword(value => !value)}>
+              {showPassword ? <RiEyeOffLine size={20} /> : <RiEyeLine size={20} />}
+            </button>
+          </div>
         </div>
         {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
         {message ? <p role="status">{message}</p> : null}

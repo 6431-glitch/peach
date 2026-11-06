@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { apiGet, errorMessage } from '../../api';
 import { Button } from '@/components/base/buttons/button';
 
-type Item = { id: string; title: string; url: string; image?: string; date?: string; studio?: string; actors?: string[] };
+type Item = { id: string; title: string; url: string; image?: string; image_fallback?: string; date?: string; studio?: string; actors?: string[] };
 type Result = { items: Item[]; has_more: boolean };
 type HomeResult = { sections: { title: string; items: Item[] }[] };
 
@@ -53,7 +53,8 @@ function DorcelSections() {
 function ReleaseCards({ items, source }: { items: Item[]; source: string }) {
   return <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
     {items.map(item => <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-xl border border-separator-border p-3">
-      {item.image ? <img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer" className={source === 'stashdb' ? 'aspect-video w-full rounded-lg object-contain' : 'aspect-[2/3] w-full rounded-lg object-contain'} /> : null}
+      {item.image ? <img src={item.image} alt="" loading="lazy" referrerPolicy="no-referrer" className={source === 'stashdb' ? 'aspect-video w-full rounded-lg object-contain' : 'aspect-[2/3] w-full rounded-lg object-contain'}
+        onError={event => { if (item.image_fallback && event.currentTarget.src !== item.image_fallback) event.currentTarget.src = item.image_fallback }} /> : null}
       <strong data-i18n-ignore="">{item.title}</strong>
       <span className="text-text-secondary" data-i18n-ignore="">{[item.studio, item.date, item.actors?.join(', ')].filter(Boolean).join(' · ')}</span>
     </a>)}
