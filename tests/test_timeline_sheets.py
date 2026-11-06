@@ -15,6 +15,17 @@ from support.ledger import fresh_ledger
 
 
 class SheetGeometryTests(unittest.TestCase):
+    def test_invalidated_display_geometry_keeps_images_but_requires_rebuilding(self):
+        directory = timeline_sheets.sheet_dir(self.root, 5)
+        directory.mkdir(parents=True)
+        sheet = directory / '000.jpg'
+        sheet.write_bytes(b'old frame geometry')
+        meta = {'interval': 10, 'frames': 2, 'sheets': 1, 'invalidated_by': 'display-dimensions-1'}
+        (directory / 'meta.json').write_text(json.dumps(meta), encoding='utf-8')
+        self.assertEqual(timeline_sheets.read_meta(self.root, 5), meta)
+        self.assertFalse(timeline_sheets.is_current(self.root, 5, 10))
+        self.assertEqual(sheet.read_bytes(), b'old frame geometry')
+
     def setUp(self):
         self.root = Path(tempfile.mkdtemp(prefix="timeline-geometry-"))
         self.addCleanup(lambda: shutil.rmtree(self.root, ignore_errors=True))

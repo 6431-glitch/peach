@@ -196,6 +196,15 @@ class IgnoreAndSourceTests(unittest.TestCase):
                 self.assertTrue(push.ignored(name))
         self.assertFalse(push.ignored("正片.mp4"))
 
+    def test_system_directories_are_ignored_before_names_are_encoded(self):
+        for path in (r'R:\media\@eaDir\video.mp4@SynoEAStream',
+                     '/media/@snapshot/nested/video.mp4', r'R:\media\#RECYCLE\video.mp4',
+                     'R:\\media\\@eaDir\\broken\udcff.mp4@SynoEAStream',
+                     r'R:\media\video.mp4@SynoEAStream'):
+            with self.subTest(path=ascii(path)):
+                self.assertTrue(push.ignored(path))
+        self.assertFalse(push.ignored(r'R:\media\scene@home\video.mp4'))
+
     def test_only_loopback_and_private_addresses_are_accepted(self):
         # 局域网那一档用 RFC 5737 的文档网段举例：`ipaddress` 把它判成 private，
         # 正是 `allowed_source` 看的那一位，写谁家的真实网段都不必要（`test_repo_hygiene`）。
@@ -349,6 +358,27 @@ class _ServiceCase(unittest.TestCase):
 
 
 class IngestPathTests(_ServiceCase):
+    def test_system_files_never_enter_any_push_registration_path(self):
+        service = self.service()
+        path = self.ledger('local', '@eaDir', 'broken\udcff.mp4@SynoEAStream')
+        with mock.patch.object(service.queue, 'submit') as submit, \
+                mock.patch.object(service, '_ingest') as ingest:
+            self.assertFalse(service.submit('local', path))
+            service.submit_move('local', self.ledger('local', 'old.mp4'), path)
+            service.submit_move('local', path, self.ledger('local', '@eaDir'), directory=True)
+            self.assertFalse(service.ingest_now('local', path))
+        submit.assert_not_called()
+        ingest.assert_not_called()
+
+    def test_direct_ingest_does_not_register_system_directory_contents(self):
+        file = self.media / '@eaDir/video.mp4@SynoEAStream'
+        file.parent.mkdir()
+        file.write_bytes(b'metadata')
+        result = scan.ingest_path(self.db, 'local', self.ledger('local', '@eaDir', file.name),
+                                  declared_roots=self.declared, mounts=self.mounts)
+        self.assertTrue(result.sidecar)
+        self.assertEqual(self.rows(), {})
+
     def test_move_event_keeps_upgrade_existing_asset_without_an_identity_cache(self):
         from contextlib import closing
         old = self.media / 'old.mp4'
