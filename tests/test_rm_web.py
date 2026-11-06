@@ -25,6 +25,31 @@ from support.ledger import fresh_ledger
 
 
 class WebDataTests(unittest.TestCase):
+    def test_watch_later_rejects_an_asset_deleted_before_submission(self):
+        with self.assertRaisesRegex(ValueError, 'asset not found'):
+            rm_web.w_watch_later(self.contract, {'id': 999999})
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            self.assertEqual(connection.execute('PRAGMA foreign_key_check').fetchall(), [])
+
+    def test_purge_preserves_follow_item_and_playback_without_a_dangling_asset(self):
+        media = Path(self.tmp.name).resolve() / 'purge-follow.mp4'
+        media.write_bytes(b'temporary media')
+        with self.contract.write_transaction() as connection:
+            connection.execute('UPDATE asset SET path=? WHERE id=1', (str(media),))
+            connection.execute("INSERT INTO follow_source(id,provider,ref,label,url,created_at,updated_at) "
+                               "VALUES(901,'test','author','author','https://example.test/author','now','now')")
+            connection.execute("INSERT INTO follow_item(id,source_id,external_id,title,release_key,asset_id,"
+                               "first_seen_at,last_seen_at) VALUES(901,901,'item','item','item',1,'now','now')")
+            connection.execute("INSERT INTO follow_playback(follow_item_id,profile_id,play_count) "
+                               "VALUES(901,'local-default',3)")
+        row = self.row(1)
+        with self.contract.write_transaction() as connection:
+            web_batch.purge_assets(connection, [row])
+            self.assertIsNone(connection.execute('SELECT id FROM asset WHERE id=1').fetchone())
+            self.assertIsNone(connection.execute('SELECT asset_id FROM follow_item WHERE id=901').fetchone()[0])
+            self.assertEqual(connection.execute('SELECT play_count FROM follow_playback WHERE follow_item_id=901').fetchone()[0], 3)
+            self.assertEqual(connection.execute('PRAGMA foreign_key_check').fetchall(), [])
+
     def test_release_year_filter_and_facets_share_scope_and_keep_other_year_options(self):
         with self.contract.write_transaction() as connection:
             connection.execute("UPDATE asset SET release_date='2024-03-05' WHERE id=1")

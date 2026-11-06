@@ -784,6 +784,8 @@ class UpgradeRepairs:
         except Exception as exc:
             store.finish(run.id, 'failed', error=str(exc))
             raise
+        finally:
+            store.prune(TASK_KEY)
         return True
 
     def retry(self) -> dict:
