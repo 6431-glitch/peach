@@ -81,3 +81,9 @@ class AdultEmpireServiceTests(unittest.TestCase):
     def test_invalid_detail_url_is_rejected(self):
         self.assertEqual(service._detail_url('https://elsewhere.test/123/a.html'), '')
         self.assertEqual(service._detail_url('/account/loginpage'), '')
+
+    def test_images_preserve_variant_without_resizing(self):
+        self.assertEqual(service._image('https://imgs4cdn.adultempire.com/movie/123?w=100&h=140&fit=cover'),
+                         'https://imgs4cdn.adultempire.com/movie/123')
+        self.assertEqual(service._image('https://imgs4cdn.adultempire.com/performer/123?w=143&v=bust'),
+                         'https://imgs4cdn.adultempire.com/performer/123?v=bust')

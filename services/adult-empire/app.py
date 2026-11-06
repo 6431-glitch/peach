@@ -7,7 +7,7 @@ import os
 import secrets
 from pathlib import Path
 from datetime import datetime
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 import httpx
 from bs4 import BeautifulSoup
@@ -66,7 +66,9 @@ def _image(value: str) -> str:
     parts = urlsplit(url)
     if parts.scheme != 'https' or parts.hostname != IMAGE_HOST or parts.port not in (None, 443) or parts.username or parts.password:
         return ''
-    return url
+    query = urlencode([(key, val) for key, val in parse_qsl(parts.query, keep_blank_values=True)
+                       if key.lower() not in {'w', 'h', 'width', 'height', 'fit'}])
+    return urlunsplit((parts.scheme, parts.netloc, parts.path, query, ''))
 
 
 def parse_search(soup: BeautifulSoup, category: str, page: int) -> dict:
@@ -128,7 +130,7 @@ def parse_detail(soup: BeautifulSoup, path: str) -> dict:
         if parts.hostname == HOST and match and name and match[1] not in seen:
             seen.add(match[1])
             cast.append({'id': match[1], 'name': name, 'url': BASE + parts.path,
-                         'image': _image(str(image.get('src', ''))) if image else f'https://imgs4cdn.adultempire.com/performer/{match[1]}?w=143&v=bust'})
+                         'image': _image(str(image.get('src', ''))) if image else f'https://imgs4cdn.adultempire.com/performer/{match[1]}?v=bust'})
     img = soup.select_one('#front-cover img[src]')
     og_image = soup.select_one('meta[property="og:image"][content]')
     synopsis = soup.select_one('.synopsis-content')

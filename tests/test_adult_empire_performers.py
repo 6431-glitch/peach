@@ -22,7 +22,7 @@ class AdultEmpirePerformerTests(unittest.TestCase):
         <li>Measurements: 32GG - 28 - 38</li></ul>'''
         result = source.profile(lambda *_: HttpResponse(200, {}, html, url), 'Sample Person', url)
         self.assertEqual(result['matched_name'], 'Sample Person')
-        self.assertEqual(result['portrait_url'], 'https://imgs4cdn.adultempire.com/performer/123?w=143&v=bust')
+        self.assertEqual(result['portrait_url'], 'https://imgs4cdn.adultempire.com/performer/123?v=bust')
         self.assertEqual(result['profile']['height_cm'], 157)
         self.assertEqual(result['profile']['raw']['Measurements'], '32GG - 28 - 38')
         self.assertNotIn('birth_date', result['profile'])

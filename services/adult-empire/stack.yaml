@@ -2,7 +2,7 @@ version: '3.8'
 # A separate stateless lookup replica on each explicitly selected node.
 # Create the external secret and distribute the exact image before deployment.
 x-lookup: &lookup
-  image: peach-meta:dorcel-cast-20261106
+  image: peach-meta:artwork-final-20261106
   environment:
     PEACH_EMPIRE_TOKEN_FILE: /run/secrets/peach_adult_empire_token
   secrets:
@@ -37,18 +37,24 @@ services:
     <<: *lookup
     deploy:
       replicas: 1
+      update_config:
+        order: stop-first
       placement:
         constraints: [node.hostname == n0-4g]
   n1:
     <<: *lookup
     deploy:
       replicas: 1
+      update_config:
+        order: stop-first
       placement:
         constraints: [node.hostname == n1-8g]
   n2:
     <<: *lookup
     deploy:
       replicas: 1
+      update_config:
+        order: stop-first
       placement:
         constraints: [node.hostname == n2-8g]
 

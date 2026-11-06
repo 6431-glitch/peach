@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
-from urllib.parse import urlencode, urljoin, urlsplit
+from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
 from bs4 import BeautifulSoup
 
@@ -60,6 +60,10 @@ def profile(http, name, profile_url):
     parts = urlsplit(image)
     if not public_https_url(image) or parts.hostname != 'imgs4cdn.adultempire.com' or not parts.path.startswith('/performer/'):
         image = ''
+    else:
+        query = urlencode([(key, val) for key, val in parse_qsl(parts.query, keep_blank_values=True)
+                           if key.lower() not in {'w', 'h', 'width', 'height', 'fit'}])
+        image = urlunsplit((parts.scheme, parts.netloc, parts.path, query, ''))
     fields = {}
     allowed = {'Height', 'Weight', 'Measurements', 'Eyes', 'From', 'Born', 'Zodiac Sign', 'Hair'}
     for item in soup.select('ul.list-unstyled > li'):
