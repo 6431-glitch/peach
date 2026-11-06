@@ -20,6 +20,7 @@ import type { Browser, Locator, Page } from 'playwright-core';
 
 import { configurationBody, expectBody, layout, launch, requiredEnv, settle, unmanagedScrollers, visit, VIEWPORTS } from './harness.ts';
 import { mockJavDetail } from './jav-detail-fixture.ts';
+import { CLEANUP_HASH_REDIRECTS } from '../src/cleanup-tools.ts';
 
 interface Route {
   path: string;
@@ -166,6 +167,14 @@ const ROUTES: readonly Route[] = [
   },
 ];
 
+const LEGACY_ROUTES: readonly Route[] = [
+  ...Object.entries(CLEANUP_HASH_REDIRECTS).map(([hash, path]) => ({
+    path: '/data-cleanup' + hash, body: ROUTES.find(route => route.path === path)!.body,
+  })),
+  { path: '/subscriptions?tab=wants', body: ROUTES.find(route => route.path === '/jav?tab=wants')!.body },
+  { path: '/subscriptions?tab=source', body: page => [page.locator('#stats form[aria-label="资源搜索"]')] },
+];
+
 async function assertHolds(page: Page, problems: string[], where: string): Promise<void> {
   assert.deepEqual(problems, [], `${where}：页面报错或有失败请求`);
   const box = await layout(page);
@@ -195,8 +204,42 @@ describe('路由冒烟', () => {
     await browser.close();
   });
 
+  it('入库 toast 打开真实详情，标题使用番号或文件名，返回与前进恢复对应页面', { timeout: 60_000 }, async () => {
+    const id = Number(requiredEnv('PEACH_E2E_ITEM'));
+    let items: Array<{ id: number; kind: string; asset_id: number; label: string; at: number }> = [];
+    let reads = 0;
+    const opened = await visit(browser, '/stats', DESKTOP, async page => {
+      await page.route('**/api/result-updates', route => {
+        reads += 1;
+        return route.fulfill({ json: { ok: true, busy: true, result_versions: {}, ingest_notices: { epoch: 'toast-navigation', items } } });
+      });
+    });
+    try {
+      await expectBody(opened.page, '/stats', [statsInventoryTab(opened.page)]);
+      await opened.page.waitForFunction(() => document.title === '统计 · Peach');
+      assert.ok(reads > 0, '通知基线没有读取');
+      const response = await opened.page.request.get(`${requiredEnv('PEACH_E2E_ORIGIN')}/api/item?id=${id}`);
+      const item = await response.json();
+      const label = [item.display_code, item.code, item.name].map(value => String(value || '').trim()).find(Boolean);
+      assert.ok(label, '样本作品缺少番号与文件名');
+      items = [{ id: 1, kind: 'download', asset_id: id, label, at: 0 }];
+      const open = opened.page.locator('[data-sonner-toast]').filter({ hasText: '已入库并整理完成' }).getByRole('button', { name: '打开', exact: true });
+      await open.click({ timeout: 15_000 });
+      const stage = opened.page.getByRole('dialog', { name: '作品详情', exact: true });
+      await stage.locator('[data-item-detail] [data-item-title]').waitFor({ state: 'visible' });
+      assert.equal(new URL(opened.page.url()).pathname, `/assets/${id}`);
+      await opened.page.waitForFunction(expected => document.title === expected, `${label} · Peach`);
+      await opened.page.goBack();
+      await statsInventoryTab(opened.page).waitFor({ state: 'visible' });
+      await opened.page.waitForFunction(() => document.title === '统计 · Peach');
+      await opened.page.goForward();
+      await stage.locator('[data-item-detail] [data-item-title]').waitFor({ state: 'visible' });
+      await opened.page.waitForFunction(expected => document.title === expected, `${label} · Peach`);
+    } finally { await opened.close() }
+  });
+
   for (const viewport of VIEWPORTS) {
-    for (const route of ROUTES) {
+    for (const route of [...ROUTES, ...LEGACY_ROUTES]) {
       // 单条超时远小于 Python 侧的整轮超时：卡住的那一条自己报名字，不拖垮整轮输出。
       it(`${route.path} @ ${viewport.name}`, { timeout: 60_000 }, async () => {
         const opened = await visit(browser, route.path.startsWith('/works/') ? '/stats' : route.path, viewport);

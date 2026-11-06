@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { fmtSize } from '@peach/legacy/core';
-import { shellNavigate } from '@peach/history';
+import { peachHistory } from '@peach/history';
 import { CLEANUP_HASH_REDIRECTS, CLEANUP_TOOLS, type CleanupTool } from '../../cleanup-tools';
 import type { DataCleanupProps, DataCleanupSection } from '../bundle';
 import { SectionHeading } from '../components/fieldset';
@@ -62,7 +62,7 @@ export function DataCleanupPage({ toast, open, navigate }: DataCleanupProps) {
   const trash = useQuery({ queryKey: TRASH_KEY, queryFn: ({ signal }) => fetchTrashSummary(signal) });
   useEffect(() => {
     const target = CLEANUP_HASH_REDIRECTS[location.hash];
-    if (target) shellNavigate(target + location.search, { replace: true });
+    if (target) peachHistory.replace(target + location.search);
   }, []);
 
   return <Page>

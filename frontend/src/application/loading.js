@@ -5,7 +5,8 @@ import { photoSize } from './../appearance/layout';
 import { $, ROUTE_ENTITIES } from '../core';
 import { fitSkeleton, LOAD_MORE_STATUS, loadingDotsHtml, revealSkeleton } from '../ui-kit';
 import { junkCountSkeletonHtml, junkRoute } from './../junk-queue';
-import { state } from './../shell/index';
+import { state, presentedItem } from './../shell/index';
+import { mediaRouteLabel } from '../history/page-title';
 import { catalogCardRatio, catalogHeadProps, catalogSkeletonHtml, clearCatalogGrid, gridTaken, paintCatalogFilter, syncCatalogFilterScreen } from './catalog.js';
 import { followListLayout, followManageParams, indexState, showIndexContainer } from './index.js';
 import { applicationEffects } from './effects';
@@ -152,7 +153,7 @@ loadingState.ENTITY_SHAPES_WAIT = 400;
 loadingState.syncPageTitle = path=>{
   const url=new URL(path,location.origin);
   const pathname=decodeURIComponent(url.pathname);
-  const label=routeMetaOf(pathname)?.title;
+  const label=mediaRouteLabel(pathname,presentedItem)||routeMetaOf(pathname)?.title;
   document.title=label?`${label} · Peach`:'Peach · 蜜桃';
   document.body.dataset.surface=url.pathname;
   paintNav();

@@ -12,6 +12,8 @@ import type { DataCleanupSection } from '../../src/react/bundle';
 import { DataCleanupPage, DataCleanupToolPage } from '../../src/react/data-cleanup/data-cleanup-page';
 import { prefetchDataCleanupTool } from '../../src/react/data-cleanup/data-cleanup';
 import type { CleanupToolKey } from '../../src/cleanup-tools';
+import { CLEANUP_HASH_REDIRECTS } from '../../src/cleanup-tools';
+import { peachHistory } from '../../src/history';
 import { junkBreakdown, prefetchDataCleanup, reviewSummary } from '../../src/react/data-cleanup/data-cleanup';
 import { LinkManager } from '../../src/react/data-cleanup/link-manager';
 import type { LinkCheckState } from '../../src/react/data-cleanup/links';
@@ -32,6 +34,22 @@ afterEach(() => {
   sessionStorage.clear();
 });
 notifyManager.setScheduler((notify) => notify());
+
+for (const [hash, target] of Object.entries(CLEANUP_HASH_REDIRECTS)) {
+  it(`数据管理旧锚点 ${hash} 交路由打开工具正文且不增加历史条目`, async () => {
+    serve({});
+    peachHistory.replace('/data-cleanup?library=local' + hash);
+    const length = window.history.length;
+    await mount(<QueryClientProvider client={queryClient}>
+      <DataCleanupPage toast={vi.fn()} failure={vi.fn()} open={vi.fn()} navigate={vi.fn()} />
+    </QueryClientProvider>);
+    await settle();
+    expect(location.pathname + location.search).toBe(target + '?library=local');
+    expect(peachHistory.navigation.claimed).toBe(false);
+    expect(window.history.length).toBe(length);
+    peachHistory.replace('/');
+  });
+}
 
 const FAIL = Symbol('fail');
 /** 一条端点回非 2xx。 */
