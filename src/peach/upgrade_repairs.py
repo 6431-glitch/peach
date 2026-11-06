@@ -1,10 +1,12 @@
 """版本化存量补修：本地事务、证据回执和有界后台派发。"""
 from __future__ import annotations
 
+import errno
 import json
 import logging
 import time
 import threading
+import sqlite3
 from pathlib import Path
 
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -13,7 +15,7 @@ from filelock import FileLock, Timeout
 from . import artifact_rules, composite_alias_repair, metadata_text_repair, r18_legacy_repair, upgrade_rules
 from .field_owners import SCAN_FILENAME, is_protected, owner_of, write_owned_fields
 from .followups import FollowupType, Attempts, attempts_root, register
-from .fsutil import atomic_write_text
+from .fsutil import atomic_path, atomic_write_text
 from .migrations import sqlite_backup
 from .task_runs import MAX_FOLLOWUPS
 
@@ -304,7 +306,23 @@ class UpgradeRepairs:
         return {'state': state, 'items': items, 'available': self.available,
                 'message': self.error or paused.get('message', '')}
 
-    def prepare(self) -> None:
+    def prepare(self, *, retry_media=False) -> None:
+        self._prepare_local()
+        if not self.available or not self.contract.task_runs.enabled:
+            return
+        if not retry_media and _read(self.receipt).get('media_paused'):
+            return
+        from .jobs import DiskSpaceDenied
+        try:
+            with FileLock(str(self.receipt) + '.lock', timeout=0):
+                self._prepare_display_dimensions()
+        except DiskSpaceDenied as error:
+            # 退出准备阶段的锁，再复用整批暂停；容量不足不关闭其他账本后台服务。
+            self.pause_media(error)
+            if retry_media:
+                raise
+
+    def _prepare_local(self) -> None:
         """服务恢复任务前应用本地确定性修复。"""
         if not self.available or not self.contract.task_runs.enabled:
             return
@@ -322,7 +340,6 @@ class UpgradeRepairs:
                 self._restore_receipt(json.loads(applied[0]))
                 self._withdraw_stale_code_evidence()
                 self._isolate_system_files()
-                self._prepare_display_dimensions()
                 return
             self._restore_receipt(None)
             sources = Path(contract.follow_sources_root)
@@ -366,7 +383,6 @@ class UpgradeRepairs:
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
             self._withdraw_stale_code_evidence()
             self._isolate_system_files()
-            self._prepare_display_dimensions()
 
     def _prepare_display_dimensions(self) -> None:
         from . import display_dimensions_repair
@@ -384,31 +400,47 @@ class UpgradeRepairs:
                 "json_extract(result_json,'$.display_dimensions.rule')=? "
                 "ORDER BY CAST(applied_at AS REAL) DESC LIMIT 1", (upgrade_rules.DISPLAY_DIMENSIONS,)).fetchone()
             dimensions = display_dimensions_repair.collect(connection) if previous is None else {}
+            generations = {str(row['id']): display_dimensions_repair.generation(row) for row in connection.execute(
+                f'SELECT {display_dimensions_repair.IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
+                (json.dumps(list(dimensions)),))}
         if previous is not None:
             receipt[key] = json.loads(previous[0])[key]
         else:
             old = json.loads(legacy[0]) if legacy else receipt
             if 'display_dimensions' in old:
                 receipt.setdefault('display_dimensions', old['display_dimensions'])
-            completed = {}
-            for task_key, run_id in old.get('queued', {}).items():
-                if f':{upgrade_rules.DISPLAY_DIMENSIONS}:' not in task_key:
-                    continue
-                run = self.contract.task_runs.get(run_id)
-                if run is not None and run.status == 'succeeded' and run.result_summary.get('outcome') in (
-                        '显示尺寸重探完成', '影片升级补全完成'):
-                    completed[task_key.rsplit(':', 1)[1]] = {'changed': bool(
-                        run.result_summary.get('dimensions_changed')), 'inherited_rule': upgrade_rules.DISPLAY_DIMENSIONS}
             backup = self.contract.db_path.with_name(f'ledger.pre-sar-{time.time_ns()}.db')
-            sqlite_backup(self.contract.db_path, backup)
+            self._backup_display_dimensions(backup)
             receipt[key] = {'rule': upgrade_rules.DISPLAY_DIMENSIONS_SAR, 'dimensions': dimensions,
-                            'completed': completed, 'backup': str(backup)}
+                            'generations': generations, 'completed': {}, 'backup': str(backup)}
         display = receipt[key]
         if any(asset_id not in display['completed'] and
-               f'{MEDIA_TASK}:{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:{asset_id}' not in receipt.get('queued', {})
+               f'{MEDIA_TASK}:{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:{display["generations"][asset_id]}:{asset_id}'
+               not in receipt.get('queued', {})
                for asset_id in display['dimensions']):
             receipt['dispatch_complete'] = False
         self._save_receipt(receipt)
+
+    def _backup_display_dimensions(self, backup):
+        from .jobs import DiskSpaceDenied
+        from .settings_file import load_config
+        from .storage_budget import CapacityGuard
+        config = self.config or getattr(self.contract, 'upgrade_config', None) or load_config()
+        guard = CapacityGuard(config)
+        with self.contract.database.read_connection() as connection:
+            page_size = connection.execute('PRAGMA page_size').fetchone()[0]
+            pages = connection.execute('PRAGMA page_count').fetchone()[0]
+        guard.check(force=True, required_bytes=page_size * pages, destination=backup.parent)
+        try:
+            with atomic_path(backup) as temporary:
+                sqlite_backup(self.contract.db_path, temporary, pages=256,
+                              progress=lambda _status, remaining, _total: guard.check(
+                                  force=True, required_bytes=page_size * remaining, destination=backup.parent))
+        except (OSError, sqlite3.Error) as error:
+            if (getattr(error, 'errno', None) == errno.ENOSPC or getattr(error, 'winerror', None) in (39, 112)
+                    or getattr(error, 'sqlite_errorcode', None) == sqlite3.SQLITE_FULL):
+                raise DiskSpaceDenied('显示尺寸补测备份空间不足，已暂停本批媒体') from error
+            raise
 
     def _isolate_system_files(self) -> None:
         """旧系统元数据按路径规则隔离；回执保留原状态，媒体与关联行不动。"""
@@ -563,10 +595,25 @@ class UpgradeRepairs:
             if stored is None:
                 raise ValueError('更新后的处理记录需要重新准备，请重试')
             # 媒体测量已提交而文件回执没写成时，调度不能用旧文件覆盖成功检查点。
-            from .display_dimensions_repair import RECEIPT_KEY
+            from .display_dimensions_repair import IDENTITY_COLUMNS, RECEIPT_KEY, generation
             saved = json.loads(stored[0]).get(RECEIPT_KEY)
             if saved is not None:
-                receipt.setdefault(RECEIPT_KEY, saved).setdefault('completed', {}).update(saved.get('completed', {}))
+                display = receipt.setdefault(RECEIPT_KEY, saved)
+                generations = display.setdefault('generations', {})
+                saved_generations = saved.get('generations', {})
+                different = [asset_id for asset_id in generations.keys() | saved_generations.keys()
+                             if generations.get(asset_id) != saved_generations.get(asset_id)]
+                if different:
+                    for row in connection.execute(
+                            f'SELECT {IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
+                            (json.dumps(different),)):
+                        generations[str(row['id'])] = generation(row)
+                completed = display.setdefault('completed', {})
+                for asset_id in list(completed):
+                    if not completed[asset_id].get('generation') or completed[asset_id]['generation'] != generations.get(asset_id):
+                        completed.pop(asset_id)
+                completed.update({asset_id: result for asset_id, result in saved.get('completed', {}).items()
+                                  if result.get('generation') and result['generation'] == generations.get(asset_id)})
             encoded = json.dumps(receipt, ensure_ascii=False)
             connection.execute('UPDATE ledger_upgrade_repair SET result_json=? WHERE id=? AND result_json<>?',
                                (encoded, REVISION, encoded))
@@ -588,11 +635,16 @@ class UpgradeRepairs:
         config = load_config(environ={DATA_ROOT_ENV: str(self.config.data_root)}) if self.config is not None else load_config()
         seen = set(receipt.get('queued', {}))
         inherited = set()
+        inherited_display = set()
         for key, run_id in receipt.get('queued', {}).items():
             if key.startswith(MEDIA_TASK + ':'):
                 run = self.contract.task_runs.get(run_id)
                 if run is not None and run.status in ('pending', 'running', 'cancelled'):
-                    inherited.add(int(key.rsplit(':', 1)[1]))
+                    asset_id = int(key.rsplit(':', 1)[1])
+                    if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
+                        inherited_display.add((asset_id, key.rsplit(':', 2)[1]))
+                    else:
+                        inherited.add(asset_id)
         attempts = Attempts(attempts_root(self.contract.candidate_root))
         with self.contract.database.read_connection() as connection:
             maximum = connection.execute('SELECT coalesce(max(id),0) FROM entity').fetchone()[0]
@@ -613,22 +665,27 @@ class UpgradeRepairs:
                 planned.extend(planner.stock(*args, limit=min(16, remaining), skip=seen))
             if not media or receipt.get('media_paused'):
                 return planned[:MAX_FOLLOWUPS]
-            rows = connection.execute("SELECT id,code,name,path,location,snapshot_path FROM asset WHERE medium='video' "
+            rows = connection.execute("SELECT id,code,name,path,location,size,mtime,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
         from .followups import Followup
         selected = set(receipt.get('media_ids', []))
-        from .display_dimensions_repair import RECEIPT_KEY
+        from .display_dimensions_repair import RECEIPT_KEY, generation, task_key
         display = receipt.get(RECEIPT_KEY, {})
         dimensions = display.get('dimensions', {})
         completed = display.get('completed', {})
+        generations = display.setdefault('generations', {})
         deferred = []
         media_count = 0
         for row in rows:
             if media_count >= media_limit:
                 break
-            if row['id'] in inherited:
+            if row['id'] in inherited or (row['id'], generation(row)) in inherited_display:
                 continue
-            display_key = f'{MEDIA_TASK}:{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:{row["id"]}'
+            display_key = task_key(row)
+            if str(row['id']) in dimensions:
+                generations[str(row['id'])] = generation(row)
+                if completed.get(str(row['id']), {}).get('generation') != generation(row):
+                    completed.pop(str(row['id']), None)
             if str(row['id']) in dimensions and str(row['id']) not in completed and display_key not in seen:
                 if cost_for(row['location'], row['path'], config) != 'free':
                     deferred.append(row['id'])
@@ -669,7 +726,8 @@ class UpgradeRepairs:
                     with self.contract.database.read_connection() as connection:
                         maximum = connection.execute('SELECT coalesce(max(id),0) FROM entity').fetchone()[0]
                         seed = seed_followup.plan(connection, since_entity_id=maximum)
-                    if not receipt.get('deferred') and not any(row.key not in receipt.get('queued', {}) for row in seed):
+                    if (not receipt.get('deferred') and not self._display_due(receipt)
+                            and not any(row.key not in receipt.get('queued', {}) for row in seed)):
                         return
                     receipt['dispatch_complete'] = False
                 # 影片补全只有一条通道、一次一部；不等前面那批跑下去就每分钟再派一批，
@@ -692,6 +750,16 @@ class UpgradeRepairs:
         except Exception as exc:
             self.error = str(exc)
             LOGGER.exception('升级补修派发失败')
+
+    def _display_due(self, receipt):
+        from .display_dimensions_repair import IDENTITY_COLUMNS, RECEIPT_KEY, generation, task_key
+        display = receipt.get(RECEIPT_KEY, {})
+        with self.contract.database.read_connection() as connection:
+            rows = connection.execute(f'SELECT {IDENTITY_COLUMNS} FROM asset WHERE medium=\'video\' '
+                'AND disposal IS NULL AND id IN (SELECT value FROM json_each(?))',
+                (json.dumps(list(display.get('dimensions', {}))),)).fetchall()
+        return any(display.get('completed', {}).get(str(row['id']), {}).get('generation') != generation(row)
+                   and task_key(row) not in receipt.get('queued', {}) for row in rows)
 
     def _dispatch(self, planned, receipt):
         store = self.contract.task_runs
@@ -722,7 +790,7 @@ class UpgradeRepairs:
         """显式重试失败项；用户取消的任务保持取消。"""
         if not self.available:
             raise ValueError('更新后自动处理只在本机写入端可用')
-        self.prepare()
+        self.prepare(retry_media=True)
         with FileLock(str(self.receipt) + '.lock', timeout=0):
             receipt = _read(self.receipt)
             paused = receipt.get('media_paused', {})
@@ -877,7 +945,8 @@ def _display_run(contract, key: str, handle) -> dict:
             if paused:
                 raise DiskSpaceDenied(paused['message'])
         handle.progress(label='补测视频显示尺寸')
-        result = display_dimensions_repair.reprobe(contract, config, asset_id, checkpoint=available)
+        result = display_dimensions_repair.reprobe(contract, config, asset_id, checkpoint=available,
+                                                   expected_generation=key.rsplit(':', 2)[1])
     except DiskSpaceDenied as error:
         if service is not None:
             service.pause_media(error)
@@ -886,7 +955,8 @@ def _display_run(contract, key: str, handle) -> dict:
         if service is not None and service.stopping.is_set():
             raise JobPaused('服务重启后继续') from None
         raise
-    return {'outcome': '显示尺寸补测完成', 'asset_id': asset_id, 'dimensions_changed': result['changed']}
+    return {'outcome': 'skipped' if result.get('skipped') else '显示尺寸补测完成',
+            'asset_id': asset_id, 'dimensions_changed': result['changed']}
 
 
 TYPE = register(FollowupType(MEDIA_TASK, '更新影片资料', True, _media_run))
