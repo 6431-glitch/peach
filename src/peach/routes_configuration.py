@@ -714,6 +714,22 @@ def measure_storage(request: Request, _args=Depends(require_auth)):
     return data_storage.snapshot(config)
 
 
+@router.post("/api/configuration/storage/policy")
+def save_storage_policy(request: Request, body: dict[str, Any] = Body(default_factory=dict),
+                        _args=Depends(require_auth)):
+    from . import storage_budget
+    local_only(request)
+    same_origin(request)
+    config = _storage_config()
+    try:
+        storage_budget.save_policy(config, body)
+    except ValueError as error:
+        raise HTTPException(400, str(error)) from error
+    except OSError as error:
+        raise HTTPException(500, f'容量设置保存失败：{error}') from error
+    return data_storage.snapshot(config)
+
+
 @router.post("/api/configuration/storage/clean")
 def clean_storage(request: Request, body: dict[str, Any] = Body(default_factory=dict),
                   _args=Depends(require_auth)):

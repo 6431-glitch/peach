@@ -439,6 +439,14 @@ class DataStorageTests(unittest.TestCase):
                 patch("peach.standalone_update.public", return_value={"state": "idle"}):
             snapshot = client.get("/api/configuration/storage").json()
             self.assertEqual((snapshot["data_root"], snapshot["usage"]), (str(self.data), None))
+            saved = client.post('/api/configuration/storage/policy', json={'data_max_gib': 64})
+            self.assertEqual(saved.status_code, 200)
+            self.assertEqual(saved.json()['budget']['policy']['data_max_gib'], 64)
+            self.assertEqual(client.get('/api/configuration/storage').json()['budget']['policy']['data_max_gib'], 64)
+            self.assertEqual(client.post('/api/configuration/storage/policy', json={'cache_max_gib': True}).status_code, 400)
+            self.assertEqual(client.post('/api/configuration/storage/policy', json={'data_max_gib': 32},
+                                         headers={'origin':'https://other.invalid'}).status_code, 403)
+            self.assertEqual(client.get('/api/configuration/storage').json()['budget']['policy']['data_max_gib'], 64)
             self.assertEqual(client.post("/api/configuration/storage/clean", json={"category": "downloads"}).status_code, 400)
             self.assertEqual(client.post("/api/configuration/storage/clean",
                                          json={"categories": ["logs", "previews"]}).status_code, 400)
@@ -493,6 +501,171 @@ class DataStorageTests(unittest.TestCase):
         self.assertIn("释放 3 KB", message)
         with self.assertRaisesRegex(ValueError, "不能在这里清理"):
             jobs.start(config, ["logs", "downloads"])
+
+
+class CapacityProtectionTests(unittest.TestCase):
+    def test_manual_cache_cleanup_records_allocated_bytes_and_excludes_logs(self):
+        from peach.capacity_history import project
+        write(self.root / 'generated/transcodes/1-key.mp4', 1024)
+        write(self.root / 'logs/tray.until-20260101.log', 1024)
+        with patch.object(self.budget, 'allocated_bytes', return_value=64):
+            self.assertEqual(data_storage.clean(self.config, 'playback')['bytes'], 1024)
+            data_storage.clean(self.config, 'logs')
+        self.assertEqual(project(self.config)['windows']['7d']['cleaned_bytes'], 64)
+
+    def test_manual_cleanup_invalidates_budget_measurement_before_immediate_retry(self):
+        from peach.jobs import DiskSpaceDenied
+        write(self.root / 'generated/transcodes/1-key.mp4', 2048)
+        self.policy(cache_max_gib=1, auto_clean=False)
+        guard = self.budget.CapacityGuard(self.config)
+        with patch.object(self.budget, 'GIB', 1024), \
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            with self.assertRaises(DiskSpaceDenied):
+                guard.check(force=True)
+            data_storage.clean(self.config, 'playback')
+            self.assertFalse(guard.check(force=True)['paused'])
+
+    def setUp(self):
+        from peach import storage_budget
+        self.budget = storage_budget
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.config = settings_file.PeachConfig(self.root, self.root / 'config.toml')
+        self.root.joinpath('state').mkdir()
+        self.budget._SCANS.clear()
+        self.addCleanup(self.budget._SCANS.clear)
+        free = 100 * self.budget.GIB
+        self.disks = patch.object(self.budget, '_disks', return_value=[('system', free, free * 2), ('data', free, free * 2)])
+        self.disks.start()
+        self.addCleanup(self.disks.stop)
+
+    def policy(self, **changes):
+        from dataclasses import asdict
+        raw = {**asdict(self.budget.StoragePolicy()), **changes}
+        return self.budget.save_policy(self.config, raw)
+
+    def test_new_data_directory_checks_existing_parent_and_saves_status(self):
+        result = self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertFalse(result['paused'])
+        self.assertEqual(result['cache_bytes'], 0)
+        self.assertFalse(self.config.directory('generated').exists())
+        self.assertEqual(self.budget.snapshot(self.config)['last_check'], result)
+
+    def test_invalid_policy_and_unreadable_capacity_pause_instead_of_reporting_zero(self):
+        from peach.jobs import DiskSpaceDenied
+        for payload in ({'cache_max_gib': True}, {'minimum_free_gib': -1}, {'data_max_gib': -1}, {'unknown': 5}):
+            with self.subTest(payload=payload), self.assertRaises(ValueError):
+                self.budget.save_policy(self.config, payload)
+        (self.root / 'state' / self.budget.POLICY_NAME).write_text('{broken', encoding='utf-8')
+        with self.assertRaisesRegex(DiskSpaceDenied, '设置未取得'):
+            self.budget.CapacityGuard(self.config).check(force=True)
+        (self.root / 'state' / self.budget.POLICY_NAME).unlink()
+        with patch.object(self.budget, '_measure', side_effect=PermissionError('denied')), \
+                self.assertRaisesRegex(DiskSpaceDenied, 'denied'):
+            self.budget.CapacityGuard(self.config).check(force=True)
+
+    def test_either_system_or_data_disk_low_space_refuses_work(self):
+        from peach.jobs import DiskSpaceDenied
+        for disks in ([('system', 100, 200 * self.budget.GIB), ('data', 100 * self.budget.GIB, 200 * self.budget.GIB)],
+                      [('system', 100 * self.budget.GIB, 200 * self.budget.GIB), ('data', 100, 200 * self.budget.GIB)]):
+            with self.subTest(disks=disks), patch.object(self.budget, '_disks', return_value=disks), \
+                    self.assertRaises(DiskSpaceDenied):
+                self.budget.CapacityGuard(self.config).check(force=True)
+
+    def test_external_cache_uses_allocated_bytes_and_never_deletes_external_files(self):
+        from peach.jobs import DiskSpaceDenied
+        external = tempfile.TemporaryDirectory()
+        self.addCleanup(external.cleanup)
+        cache = Path(external.name).resolve()
+        video = write(cache / 'cache', 1024 * 1024)
+        self.policy(external_cache_path=str(cache), external_cache_max_gib=1)
+        with patch.object(self.budget, 'allocated_bytes', return_value=32):
+            result = self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertEqual(result['external_cache_bytes'], 32)
+        self.budget._SCANS.clear()
+        with patch.object(self.budget, 'allocated_bytes', return_value=2 * self.budget.GIB), \
+                self.assertRaisesRegex(DiskSpaceDenied, '外部缓存'):
+            self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertTrue(video.is_file())
+
+    def test_cleanup_removes_signed_local_derivatives_and_preserves_every_other_category(self):
+        from peach import artifact_rules
+        source = write(self.root / 'generated/covers/source.jpg')
+        thumbnail = write(self.root / 'generated/cover-thumbs/known.webp', 2048)
+        artifact_rules.remember(thumbnail, source=source)
+        protected = [source, write(self.root / 'generated/cover-thumbs/manual.webp', 30),
+                     write(self.root / 'generated/snapshots/grid.jpg'),
+                     write(self.root / 'database/ledger.db'), write(self.root / 'database/ledger.pre-copy.db'),
+                     write(self.root / 'sources/import.json'), write(self.root / 'review/manual.csv')]
+        self.policy(cache_max_gib=1)
+        # 小文件按同一单位缩放触发预算，避免测试写入 GiB 级样本。
+        with patch.object(self.budget, 'GIB', 1024), \
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            result = self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertFalse(result['paused'])
+        self.assertFalse(thumbnail.exists())
+        self.assertFalse(Path(str(thumbnail) + '.rule').exists())
+        self.assertTrue(all(path.is_file() for path in protected))
+
+    def test_unreclaimable_usage_pauses_and_saved_limit_change_applies_without_restart(self):
+        from peach.jobs import DiskSpaceDenied
+        cached = write(self.root / 'generated/transcodes/1-fingerprint.mp4', 2048)
+        self.policy(cache_max_gib=1)
+        guard = self.budget.CapacityGuard(self.config)
+        with patch.object(self.budget, 'GIB', 1024), \
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            with self.assertRaisesRegex(DiskSpaceDenied, 'Peach 缓存'):
+                guard.check(force=True)
+            self.policy(cache_max_gib=3)
+            self.assertFalse(guard.check(force=True)['paused'])
+        self.assertTrue(cached.exists())
+
+    def test_disabling_cleanup_preserves_signed_cache_when_limit_is_reached(self):
+        from peach import artifact_rules
+        from peach.jobs import DiskSpaceDenied
+        source = write(self.root / 'generated/covers/source.jpg')
+        thumbnail = write(self.root / 'generated/cover-thumbs/known.webp', 2048)
+        artifact_rules.remember(thumbnail, source=source)
+        self.policy(cache_max_gib=1, auto_clean=False)
+        with patch.object(self.budget, 'GIB', 1024), \
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size), \
+                self.assertRaises(DiskSpaceDenied):
+            self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertTrue(thumbnail.is_file())
+
+    def test_automatic_reserve_handles_small_disks_and_large_storage_volumes(self):
+        policy = self.budget.StoragePolicy()
+        self.assertEqual(self.budget.reserve_bytes(policy, 10 * self.budget.GIB), self.budget.GIB)
+        self.assertEqual(self.budget.reserve_bytes(policy, 200 * self.budget.GIB), 10 * self.budget.GIB)
+        self.assertEqual(self.budget.reserve_bytes(policy, 20_000 * self.budget.GIB), 40 * self.budget.GIB)
+        explicit = self.budget.StoragePolicy(minimum_free_gib=7)
+        self.assertEqual(self.budget.reserve_bytes(explicit, 200 * self.budget.GIB), 7 * self.budget.GIB)
+
+    def test_planned_backup_size_is_checked_against_disk_reserve_before_writing(self):
+        from peach.jobs import DiskSpaceDenied
+        self.policy(minimum_free_gib=1, auto_clean=False)
+        disk = SimpleNamespace(free=3 * 1024, total=20 * 1024)
+        with patch.object(self.budget, 'GIB', 1024), patch.object(self.budget.shutil, 'disk_usage', return_value=disk), \
+                self.assertRaisesRegex(DiskSpaceDenied, '预计写入后'):
+            self.budget.CapacityGuard(self.config).check(force=True, required_bytes=2500,
+                                                         destination=self.root / 'database')
+
+    def test_a_denied_guard_remains_denied_during_the_check_interval(self):
+        from peach.jobs import DiskSpaceDenied
+        guard = self.budget.CapacityGuard(self.config)
+        with patch.object(self.budget, '_disks', return_value=[('data', 1, 200 * self.budget.GIB)]):
+            with self.assertRaises(DiskSpaceDenied):
+                guard.check(force=True)
+            with self.assertRaises(DiskSpaceDenied):
+                guard.check()
+
+    def test_external_cache_directory_cannot_overlap_peach_managed_data(self):
+        managed = self.root / 'generated'
+        managed.mkdir()
+        for target in (self.root, self.root.parent, managed):
+            with self.subTest(target=target), self.assertRaisesRegex(ValueError, '独立'):
+                self.policy(external_cache_path=str(target))
 
 
 if __name__ == "__main__":

@@ -5,12 +5,13 @@ import { Switch } from '@/components/base/switch/switch';
 import { StatusLabel } from '../components/status-label';
 
 import { apiSend } from '../../api';
-import { ErrorText, Rows, Stack } from './section';
+import { Disclosure, ErrorText, Help, Rows, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
 export interface RemoteReportingState {
   usage: boolean; errors: boolean; available: boolean;
   fields: { usage: string; errors: string }; notice: string;
+  delivery?: Partial<Record<'usage' | 'errors', { status: string; at?: string; reason?: string }>>;
 }
 
 export function ReportingChoices({ value, onChange, busy = false }: {
@@ -39,6 +40,23 @@ export function RemoteReportingSettings({ initial, receipt }: {
       setValue(saved); receipt('已保存诊断选项');
     });
     }} />
+    <Stack divided>
+      <Disclosure summary="统计字段与发送规则">
+        <Help>{value.fields.usage}</Help>
+        <Help>{value.fields.errors}</Help>
+        <Help>{value.notice}</Help>
+      </Disclosure>
+      {(['usage', 'errors'] as const).map(kind => {
+        const delivery = value.delivery?.[kind];
+        if (!delivery) return null;
+        const names: Record<string, string> = {
+          queued: '等待发送', accepted: '接收端已响应，留存未核实',
+          failed: '发送失败', unknown: '结果未取得', blocked: '已拦截',
+        };
+        return <Help key={kind}>{kind === 'usage' ? '版本统计' : '错误诊断'}：{names[delivery.status] || '结果未取得'}
+          {delivery.at ? ` · ${new Date(delivery.at).toLocaleString()}` : ''}</Help>;
+      })}
+    </Stack>
     {action.error ? <Stack divided><ErrorText>{action.error}</ErrorText></Stack> : null}
   </>;
 }

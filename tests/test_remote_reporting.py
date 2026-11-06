@@ -148,7 +148,7 @@ class RemoteReportingTests(unittest.TestCase):
             reporting.usage()
         client.capture_event.assert_not_called()
         (kind, log), (session_kind, session) = self._telemetry(client)
-        self.assertEqual((kind, session_kind, log['body']), ('log', 'sessions', 'Peach started'))
+        self.assertEqual((kind, session_kind, log['body']), ('log', 'sessions', 'Peach daily activity'))
         attributes = {key: value['value'] for key, value in log['attributes'].items()}
         self.assertEqual(attributes["purpose"], "version-statistics")
         self.assertEqual(attributes["distribution"], "source")
@@ -355,12 +355,12 @@ class RemoteReportingTests(unittest.TestCase):
 
     def test_frequency_timer_flushes_without_another_occurrence(self):
         from peach import diagnostic_frequency as frequency
-        reporting.save({"usage": True, "errors": True})
         now = datetime(2026, 10, 18, 12, tzinfo=timezone.utc)
         client = mock.Mock()
         with mock.patch.object(reporting, '_new_client', return_value=client), \
                 mock.patch.object(reporting.threading, 'Timer') as timer, \
                 mock.patch.object(frequency, '_now', return_value=now) as clock:
+            reporting.save({"usage": True, "errors": True})
             for _ in range(4):
                 reporting.capture('unhandled-main', ValueError('private'))
             callback = timer.call_args.args[1]
@@ -368,6 +368,41 @@ class RemoteReportingTests(unittest.TestCase):
             callback()
             self.assertEqual(client.capture_event.call_count, 1)
             self.assertEqual([count['occurrence_count'] for count in self._counts(client)], [3])
+
+    def test_daily_activity_is_reported_after_midnight_without_restarting(self):
+        client = mock.Mock()
+        start = datetime(2026, 11, 1, 12, tzinfo=timezone.utc)
+        with mock.patch.object(reporting, '_new_client', return_value=client), \
+                mock.patch.object(reporting.threading, 'Timer'), \
+                mock.patch.object(reporting, 'datetime', wraps=datetime) as clock:
+            clock.now.return_value = start
+            reporting.save({'usage': True, 'errors': True})
+            reporting.usage(self.config)
+            reporting._frequency_tick()
+            self.assertEqual(client.transport.capture_envelope.call_count, 1)
+            clock.now.return_value = start + timedelta(days=1)
+            reporting._frequency_tick()
+            self.assertEqual(client.transport.capture_envelope.call_count, 2)
+            reporting.save({'usage': False, 'errors': False})
+            clock.now.return_value = start + timedelta(days=2)
+            reporting._frequency_tick()
+            self.assertEqual(client.transport.capture_envelope.call_count, 2)
+
+    def test_missing_transport_records_failure_instead_of_leaving_queued(self):
+        reporting.save({'usage': True, 'errors': True})
+        client = mock.Mock(transport=None)
+        with mock.patch.object(reporting, '_new_client', return_value=client):
+            reporting.usage(self.config)
+        self.assertEqual(reporting.snapshot(self.config)['delivery']['usage']['status'], 'failed')
+
+    def test_enabling_starts_background_reporting_without_restart_and_disable_cancels_it(self):
+        with mock.patch.object(reporting.threading, 'Timer') as timer:
+            reporting.save({'usage': True, 'errors': True})
+            timer.return_value.start.assert_called_once()
+            self.assertIn(str(self.config.directory('state')), reporting._frequency_configs)
+            reporting.save({'usage': False, 'errors': False})
+            timer.return_value.cancel.assert_called_once()
+            self.assertIsNone(reporting._frequency_timer)
 
     def test_actionable_faults_keep_codes_and_omit_private_text(self):
         with mock.patch.object(reporting, "send") as send:

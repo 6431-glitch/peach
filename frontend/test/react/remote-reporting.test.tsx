@@ -10,6 +10,18 @@ const initial: RemoteReportingState = {
 };
 
 describe('版本统计与错误诊断', () => {
+  it('显示字段规则和实际回执，不把接收响应解释为已留存', async () => {
+    const host = await mount(<RemoteReportingSettings initial={{ ...initial, delivery: {
+      usage: { status: 'accepted' }, errors: { status: 'unknown' },
+    } }} receipt={vi.fn()} />);
+    expect(host.textContent).toContain('接收端已响应，留存未核实');
+    expect(host.textContent).toContain('错误诊断：结果未取得');
+    const rules = host.querySelector('summary');
+    await click(rules);
+    expect(host.querySelector('details')?.open).toBe(true);
+    expect(host.textContent).toContain(initial.fields.usage);
+    expect(host.textContent).toContain(initial.notice);
+  });
   it('单个推荐开关保留已保存的关闭选择，开启后共同保存版本统计与错误诊断', async () => {
     const fetcher = vi.fn(async () => ({ ok: true, json: async () => ({ ...initial, usage: true, errors: true }) }));
     vi.stubGlobal('fetch', fetcher);

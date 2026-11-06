@@ -5,7 +5,7 @@ import * as legacyUi from '@peach/legacy/ui';
 
 import type { StorageCategory, StorageState } from '../../src/react/bundle';
 import { StorageSettings } from '../../src/react/settings/storage-settings';
-import { buttonNamed, click, fetchMock, mount, sentBody, settle } from './render';
+import { buttonNamed, click, fetchMock, mount, sentBody, settle, submit, type } from './render';
 
 const category = (key: string, label: string, bytes: number, reclaimable: number, cleanable: boolean,
                   note: string): StorageCategory =>
@@ -100,4 +100,23 @@ it('容器部署不给更改位置，列出在宿主机上迁移的几步', asyn
   const steps = host.querySelector('ol[aria-label="在宿主机上迁移"]')!;
   expect([...steps.querySelectorAll('code')].map((node) => node.textContent))
     .toEqual(['docker compose down', 'docker compose up -d']);
+});
+
+it('容量字段带 GiB 单位，保存整数上限及留空的不设限，并保留占比与分类清理', async () => {
+  const policy = { minimum_free_gib: 0, data_max_gib: 0, cache_max_gib: 0, auto_clean: true,
+    external_cache_path: '', external_cache_max_gib: 0 };
+  const storage = { ...measured, budget: { policy, last_check: null, error: '' } };
+  const fetcher = fetchMock(200, storage);
+  vi.stubGlobal('fetch', fetcher);
+  const host = await mount(<StorageSettings initial={storage} receipt={vi.fn()} />);
+  const field = host.querySelector<HTMLInputElement>('input[aria-label="Peach 数据上限（GiB）"]');
+  expect(field?.value).toBe('');
+  expect([...host.querySelectorAll('[aria-hidden="true"]')].filter(node => node.textContent === 'GiB')).toHaveLength(3);
+  expect(host.querySelector('[data-storage-result]')).not.toBeNull();
+  expect(buttonNamed('清理所选', host)).not.toBeNull();
+  await type(field, '80');
+  await submit(host.querySelector('#storageBudgetSettings'));
+  await settle();
+  expect(fetcher.mock.calls[0]?.[0]).toBe('/api/configuration/storage/policy');
+  expect(sentBody(fetcher)).toEqual({ ...policy, data_max_gib: 80 });
 });

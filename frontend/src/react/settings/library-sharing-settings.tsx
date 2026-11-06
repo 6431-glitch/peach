@@ -14,6 +14,9 @@ import { busyProps, useAction } from './use-action';
 export interface LibrarySharingState {
   enabled: boolean; available: boolean; schema: number; fields: string[]; notice: string;
   last_attempt?: { period?: string; status?: string; reason?: string; attempted?: boolean };
+  consent_state?: 'enabled' | 'disabled' | 'needs-consent' | 'not-selected';
+  participation?: { status: string; pending_state?: 'enabled' | 'disabled' | null;
+    state?: 'enabled' | 'disabled'; last_seen?: string; reason?: string };
 }
 interface Preview { data: { library: unknown[]; preferences: unknown; coverage: { uncoded_items: number } }; bytes: number; token: string; schema: number }
 
@@ -26,6 +29,11 @@ export function LibrarySharingSettings({ initial, receipt }: {
   const [accepted, setAccepted] = useState(false);
   const previewText = useMemo(() => preview ? JSON.stringify(preview.data, null, 2) : '', [preview]);
   const action = useAction();
+  const participation = value.participation;
+  const deliveryNames: Record<string, string> = {
+    'not-attempted': '尚未发送', queued: '等待发送', accepted: '接收端已响应，留存未核实',
+    failed: '发送失败', unknown: '结果未取得', blocked: '已拦截',
+  };
   const save = (enabled: boolean) => void action.run('save', (signal) =>
     apiSend<LibrarySharingState>('/api/configuration/library-sharing', {
       enabled, schema: value.schema, consent: accepted, preview_token: preview?.token,
@@ -42,12 +50,28 @@ export function LibrarySharingSettings({ initial, receipt }: {
     }
   };
   return <>
-    <Rows><SettingsRow label="上传馆藏与口味明细" description={value.notice}>
+    <Rows><SettingsRow label="上传馆藏与口味明细" description="每周分享馆藏、偏好与容量统计，需先预览并同意。">
       <Switch aria-label="上传馆藏与口味明细" isSelected={value.enabled}
         onChange={(enabled) => enabled ? setReviewing(true) : save(false)}
         {...busyProps(action.busy === 'save')} />
     </SettingsRow></Rows>
     {!value.available ? <Stack divided><span className="self-start"><StatusLabel>上传服务未配置</StatusLabel></span></Stack> : null}
+    {value.consent_state === 'needs-consent' ? <Stack divided>
+      <span className="self-start"><StatusLabel tone="warning">待重新同意</StatusLabel></span>
+      <Help>字段已更新，需重新预览并同意。</Help>
+    </Stack> : null}
+    <Stack divided><Disclosure summary="馆藏统计字段与发送规则">
+      <ul className="list-disc space-y-2 pl-5">{value.fields.map(field => <li key={field}><Help>{field}</Help></li>)}</ul>
+      <Help>{value.notice}</Help>
+    </Disclosure></Stack>
+    {participation ? <Stack divided>
+      <Help>参与状态：{participation.pending_state
+        ? `待发送${participation.pending_state === 'disabled' ? '关闭' : '开启'}状态`
+        : deliveryNames[participation.status] || '结果未取得'}
+        {participation.last_seen ? ` · 上次尝试 ${new Date(participation.last_seen).toLocaleString()}` : ''}</Help>
+    </Stack> : null}
+    {value.enabled && ['accepted', 'queued', 'blocked'].includes(value.last_attempt?.status || '')
+      ? <Stack divided><Help>馆藏周报：{deliveryNames[value.last_attempt!.status!]}</Help></Stack> : null}
     {value.enabled && value.last_attempt?.status === 'failed'
       ? <Stack divided><span className="self-start"><StatusLabel tone={value.last_attempt.attempted ? 'error' : 'warning'}>{value.last_attempt.attempted ? '上传失败' : '待重新准备'}</StatusLabel></span><ErrorText>{value.last_attempt.attempted
         ? '馆藏与口味上传失败，本周不再发送。' : '馆藏与口味上传未完成，将自动重新准备。'}</ErrorText></Stack> : null}
@@ -56,7 +80,8 @@ export function LibrarySharingSettings({ initial, receipt }: {
     {value.enabled && value.last_attempt?.status === 'unknown'
       ? <Stack divided><span className="self-start"><StatusLabel tone="warning">结果未取得</StatusLabel></span><Help>未取得上传结果，本周不再发送。</Help></Stack> : null}
     {preview ? <Stack divided>
-      <Help>当前预览包含 {preview.data.library.length} 部有编号作品、{preview.data.coverage.uncoded_items} 条无编号馆藏的汇总，约 {(preview.bytes / 1024).toFixed(1)} KiB。不含账号、设备、文件路径和浏览器历史记录等个人数据。</Help>
+      <Help>预览含 {preview.data.library.length} 部作品和 {preview.data.coverage.uncoded_items} 条无编号汇总，约 {(preview.bytes / 1024).toFixed(1)} KiB。</Help>
+      <Help>随机标识用于实例去重。状态每日一次；关闭后仅补发一次关闭状态。</Help>
       <Disclosure summary="上传数据预览" defaultOpen>
         <CodeBlock code={previewText} language="json" label="馆藏与口味上传预览" maxCharacters={24000} />
       </Disclosure>
@@ -69,6 +94,12 @@ export function LibrarySharingSettings({ initial, receipt }: {
       {reviewing && !value.enabled ? <Button variant="secondary" onClick={() => {
         setReviewing(false); setPreview(null); setAccepted(false);
       }}>取消</Button> : null}
+      {participation ? <Button variant="secondary" onClick={() => void action.run('refresh',
+        async signal => {
+          const data = await apiGet<{ library_sharing?: LibrarySharingState }>('/api/configuration', signal);
+          if (!data.library_sharing) throw new Error('馆藏上传状态未取得');
+          return data.library_sharing;
+        }, setValue)} {...busyProps(action.busy === 'refresh')}>刷新发送状态</Button> : null}
       <Button variant="secondary" onClick={() => { setReviewing(true); void action.run('preview',
         (signal) => apiGet<Preview>('/api/configuration/library-sharing/preview', signal),
         (data) => { setPreview(data); setAccepted(false) }) }}

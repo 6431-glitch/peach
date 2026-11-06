@@ -527,6 +527,14 @@ def create_app(
         available=managed_configuration() and bool(settings.configured),
     )
     upgrade_repairs = _configure_upgrade_repairs(settings, contract, sync)
+    from .storage_budget import CapacityGuard
+    capacity_config = contract.upgrade_config
+    contract.capacity_guard = (CapacityGuard(capacity_config)
+        if settings.transcode_root.parent.resolve() == capacity_config.directory('generated').resolve() else None)
+    transcode_service.capacity_guard = contract.capacity_guard
+    hls_service.capacity_guard = contract.capacity_guard
+    for service in (entity_thumb_service, cover_thumb_service, cover_small_thumb_service):
+        service.capacity_guard = contract.capacity_guard
 
     async def warm_startup_entries():
         """配置页首屏要的开机启动项状态，先在后台问一遍。

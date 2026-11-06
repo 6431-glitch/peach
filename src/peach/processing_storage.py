@@ -15,13 +15,14 @@ def volume_space(path):
         target = target.parent
     try:
         usage = shutil.disk_usage(target)
-        return target.stat().st_dev, usage.free, str(target.anchor)
+        return target.stat().st_dev, usage.free, str(target.anchor), usage.total
     except OSError:
-        return str(target), None, str(target.anchor or target)
+        return str(target), None, str(target.anchor or target), None
 
 
 class ProcessingStorage:
     def __init__(self, config):
+        self.config = config
         self.generated = config.directory('generated')
         self.sources = config.directory('sources') / 'library-metadata'
         self.temporary = Path(tempfile.gettempdir())
@@ -60,21 +61,25 @@ class ProcessingStorage:
         if finished:
             generated = source_bytes = temporary = 0
         volumes = {}
+        from .storage_budget import load_policy, reserve_bytes
+        policy = load_policy(self.config)
         for path, label, retained, transient in (
                 (self.generated, '预览与封面', generated, 0),
                 (self.sources, '影片资料', source_bytes, 0),
                 (self.temporary, '临时文件', 0, temporary)):
-            key, free, mount = volume_space(path)
+            key, free, mount, total = volume_space(path)
             volume = volumes.setdefault(key, dict(path=mount, labels=[], free_bytes=free,
-                estimated_bytes=0, temporary_bytes=0, reserve_bytes=1024 * MIB))
+                estimated_bytes=0, temporary_bytes=0,
+                reserve_bytes=reserve_bytes(policy, total) if total is not None else None))
             volume['labels'].append(label)
             volume['estimated_bytes'] += retained
             volume['temporary_bytes'] += transient
         for volume in volumes.values():
-            volume['required_bytes'] = volume['estimated_bytes'] + volume['temporary_bytes'] + volume['reserve_bytes']
+            reserve = volume['reserve_bytes']
+            volume['required_bytes'] = volume['estimated_bytes'] + volume['temporary_bytes'] + reserve if reserve is not None else None
             free = volume['free_bytes']
-            volume['shortfall_bytes'] = max(0, volume['required_bytes'] - free) if free is not None else None
-            volume['can_fit'] = volume['shortfall_bytes'] == 0 if free is not None else None
+            volume['shortfall_bytes'] = max(0, volume['required_bytes'] - free) if free is not None and reserve is not None else None
+            volume['can_fit'] = volume['shortfall_bytes'] == 0 if volume['shortfall_bytes'] is not None else None
         cache_unknown = not finished and any(amount and rows[key]['root'] and rows[key]['network']
             for unit in plan.units.values() for key, amount in unit.items())
         return dict(estimated_bytes=generated + source_bytes, temporary_bytes=temporary,

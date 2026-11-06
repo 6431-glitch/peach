@@ -4,6 +4,7 @@ import { Radio } from 'react-aria-components';
 import { Input, type InputProps } from '@/components/base/input/input';
 import { Label } from '@/components/base/input/label';
 import { SEGMENT, SEGMENTED_TRACK, SegmentedRadioGroup } from './segmented';
+import { cx } from '@/utils/cx';
 
 export function ConfigurationChoice({ id, label, value, onChange, options, isDisabled, isInvalid, children }: {
   id: string; label: string; value: string; onChange(value: string): void;
@@ -21,11 +22,13 @@ export function ConfigurationChoice({ id, label, value, onChange, options, isDis
   </div>;
 }
 
-export function ConfigurationInput({ prefix, suffix, ...props }: Omit<InputProps, 'leadingAddon' | 'trailingIcon'> & {
-  prefix?: string; suffix?: string;
+export function ConfigurationInput({ prefix, suffix, unit, fieldClassName, ...props }: Omit<InputProps, 'leadingAddon' | 'trailingIcon'> & {
+  prefix?: string; suffix?: string; unit?: string;
 }) {
-  const Suffix = () => <span className="shrink-0 pr-1 text-body-regular text-text-secondary">{suffix}</span>;
+  const Suffix = () => <span aria-hidden={unit ? true : undefined} className={cx('shrink-0 text-body-regular text-text-secondary',
+    unit ? 'flex h-full items-center border-l border-border-button-default px-2' : 'pr-1')}>{unit || suffix}</span>;
   return <Input {...props}
+    fieldClassName={cx(unit && 'border border-border-button-default py-0 pr-0 [&>div]:h-full', fieldClassName)}
     leadingAddon={prefix ? <span className="shrink-0 pl-1 text-body-regular text-text-secondary">{prefix}</span> : undefined}
-    trailingIcon={suffix ? Suffix : undefined} />;
+    trailingIcon={unit || suffix ? Suffix : undefined} />;
 }

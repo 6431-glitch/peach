@@ -96,7 +96,7 @@ export interface ProcessingTraffic {
   disk?: {
     estimated_bytes: number; temporary_bytes: number; can_fit: boolean | null; cache_unknown: boolean;
     volumes: { path: string; labels: string[]; free_bytes: number | null; estimated_bytes: number;
-      temporary_bytes: number; reserve_bytes: number; required_bytes: number;
+      temporary_bytes: number; reserve_bytes: number | null; required_bytes: number | null;
       shortfall_bytes: number | null; can_fit: boolean | null }[];
   };
   unknown_route_estimated_bytes?: number;
