@@ -17,6 +17,7 @@ import time
 import unicodedata
 from collections import defaultdict
 from dataclasses import dataclass
+from functools import lru_cache
 from pathlib import Path
 
 from .catalog_rules import (
@@ -726,13 +727,22 @@ def _candidate_identifies_code(code: str, candidate: dict) -> bool:
 
 
 def _parsed_candidates(row: dict) -> list[dict]:
-    """一行 `candidates_json` 里形状成立的候选，不做任何取舍。"""
+    """一行 `candidates_json` 里形状成立的候选，不做任何取舍。
+
+    候选字典按 JSON 原文缓存、各次调用共用：读的人只取值或另拼新字典，不在原地改。
+    """
+    return list(_candidates_from_json(str(row.get("candidates_json") or "[]")))
+
+
+#: 复核页每次重算都要把三万多行的 `candidates_json` 各解析一两遍；候选文件不换，原文就不变。
+@lru_cache(maxsize=65536)
+def _candidates_from_json(text: str) -> tuple[dict, ...]:
     try:
-        parsed = json.loads(str(row.get("candidates_json") or "[]"))
+        parsed = json.loads(text)
     except (TypeError, ValueError):
-        return []
-    return [candidate for candidate in parsed if isinstance(candidate, dict)
-            and str(candidate.get("candidate_key") or "").strip()]
+        return ()
+    return tuple(candidate for candidate in parsed if isinstance(candidate, dict)
+                 and str(candidate.get("candidate_key") or "").strip())
 
 
 #: FC2 番号，带不带分段后缀都算：`FC2-PPV-3312576-1` 也是同一个平台上卖的。
