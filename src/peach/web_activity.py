@@ -103,6 +103,8 @@ def w_watch_later(contract: ActivityContract, body):
     contract.cache_bust()
     aid = int(body["id"])
     with contract.write_transaction() as connection:
+        if not connection.execute("SELECT 1 FROM asset WHERE id=?", (aid,)).fetchone():
+            raise ValueError("asset not found")
         exists = connection.execute(
             "SELECT 1 FROM watch_queue WHERE profile_id=? AND asset_id=?",
             (DEFAULT_PROFILE_ID, aid),
