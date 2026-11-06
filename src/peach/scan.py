@@ -160,11 +160,13 @@ def video_stems(names) -> frozenset[str]:
 
 def is_sidecar(name: str, videos: frozenset[str], *, artwork_dir: bool = False,
                path: str | None = None, library_roots: tuple[str, ...] = ()) -> bool:
-    """`name` 是否为不登记的附属文件或工具隔离文件。
+    """`name` 是否为不登记的附属文件、系统元数据或工具隔离文件。
 
     `videos` 是同目录的 `video_stems`；`artwork_dir` 表示这个目录叫 `extrafanart` 之类、
     且上一层有视频。判据只看名字，不读文件内容。
     """
+    if system_path(path or name):
+        return True
     if re.fullmatch(r'peach-purge-[a-f0-9]{32}\.peach-quarantine', name, re.IGNORECASE):
         return True
     stem, suffix = os.path.splitext(name)
@@ -379,8 +381,7 @@ def ingest_path(
     except OSError:
         return IngestResult(location, str(ledger_path), False)
     library_roots = tuple(chain.from_iterable(declared_roots.values()))
-    if system_path(str(ledger_path)) or _sidecar_on_disk(
-            name, directory, ledger_path=str(ledger_path), library_roots=library_roots):
+    if _sidecar_on_disk(name, directory, ledger_path=str(ledger_path), library_roots=library_roots):
         return IngestResult(location, str(ledger_path), True, stat.st_size, sidecar=True)
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     mtime = time.strftime("%Y-%m-%d", time.localtime(stat.st_mtime))
@@ -749,8 +750,8 @@ def _scan_location(
                 if cursor is not None and name <= cursor:
                     continue
                 ledger_path = str(ledger_root.joinpath(*relative, name))
-                if system_path(ledger_path) or is_sidecar(name, videos, artwork_dir=artwork_dir,
-                                                        path=ledger_path, library_roots=library_roots):
+                if is_sidecar(name, videos, artwork_dir=artwork_dir,
+                              path=ledger_path, library_roots=library_roots):
                     skipped += 1
                     continue
                 if new_only and ledger_path.casefold() in registered:
