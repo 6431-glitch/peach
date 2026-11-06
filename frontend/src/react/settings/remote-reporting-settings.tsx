@@ -33,6 +33,9 @@ export function RemoteReportingSettings({ initial, receipt }: {
 }) {
   const [value, setValue] = useState(initial);
   const action = useAction();
+  const sentDates = Object.values(value.delivery ?? {}).flatMap(delivery =>
+    delivery.last_sent_at ? [Date.parse(delivery.last_sent_at)] : []).filter(Number.isFinite);
+  const lastSent = sentDates.length ? Math.max(...sentDates) : null;
   return <>
     <ReportingChoices value={value} busy={action.busy === 'save'} onChange={(next) => {
       void action.run('save', (signal) => apiSend<RemoteReportingState>('/api/configuration/remote-reporting',
@@ -46,12 +49,7 @@ export function RemoteReportingSettings({ initial, receipt }: {
         <Help>{value.fields.errors}</Help>
         <Help>{value.notice}</Help>
       </Disclosure>
-      {(['usage', 'errors'] as const).map(kind => {
-        const delivery = value.delivery?.[kind];
-        if (!delivery?.last_sent_at) return null;
-        return <Help key={kind}>{kind === 'usage' ? '版本统计' : '错误诊断'}上次发送：
-          {new Date(delivery.last_sent_at).toLocaleDateString()}</Help>;
-      })}
+      {lastSent !== null ? <Help>上次发送：{new Date(lastSent).toLocaleDateString()}</Help> : null}
     </Stack>
     {action.error ? <Stack divided><ErrorText>{action.error}</ErrorText></Stack> : null}
   </>;

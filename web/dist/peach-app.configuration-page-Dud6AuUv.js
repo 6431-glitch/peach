@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "de9b11fc-0b02-4871-9be3-7e6d24e5ef83", e._sentryDebugIdIdentifier = "sentry-dbid-de9b11fc-0b02-4871-9be3-7e6d24e5ef83");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "26992ce0-ef7b-4535-9ca9-a41df1cdf55d", e._sentryDebugIdIdentifier = "sentry-dbid-26992ce0-ef7b-4535-9ca9-a41df1cdf55d");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -1023,7 +1023,7 @@ function Hr({ value: e, onChange: t, busy: n = !1 }) {
 	})] });
 }
 function Ur({ initial: e, receipt: t }) {
-	let [n, r] = (0, Z.useState)(e), i = Y();
+	let [n, r] = (0, Z.useState)(e), i = Y(), a = Object.values(n.delivery ?? {}).flatMap((e) => e.last_sent_at ? [Date.parse(e.last_sent_at)] : []).filter(Number.isFinite), o = a.length ? Math.max(...a) : null;
 	return /* @__PURE__ */ (0, Q.jsxs)(Q.Fragment, { children: [
 		/* @__PURE__ */ (0, Q.jsx)(Hr, {
 			value: n,
@@ -1046,14 +1046,7 @@ function Ur({ initial: e, receipt: t }) {
 					/* @__PURE__ */ (0, Q.jsx)(N, { children: n.fields.errors }),
 					/* @__PURE__ */ (0, Q.jsx)(N, { children: n.notice })
 				]
-			}), ["usage", "errors"].map((e) => {
-				let t = n.delivery?.[e];
-				return t?.last_sent_at ? /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
-					e === "usage" ? "版本统计" : "错误诊断",
-					"上次发送：",
-					new Date(t.last_sent_at).toLocaleDateString()
-				] }, e) : null;
-			})]
+			}), o === null ? null : /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["上次发送：", new Date(o).toLocaleDateString()] })]
 		}),
 		i.error ? /* @__PURE__ */ (0, Q.jsx)(V, {
 			divided: !0,
@@ -6278,4 +6271,4 @@ function Zs({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Js as ConfigurationPage };
 
-//# debugId=de9b11fc-0b02-4871-9be3-7e6d24e5ef83
+//# debugId=26992ce0-ef7b-4535-9ca9-a41df1cdf55d
