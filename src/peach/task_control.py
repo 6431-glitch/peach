@@ -8,11 +8,13 @@ import signal
 import subprocess
 import sys
 import threading
+import tempfile
 import time
 import uuid
 from functools import wraps
-from contextlib import contextmanager
+from contextlib import ExitStack, contextmanager
 from contextvars import ContextVar
+from pathlib import Path
 
 import psutil
 
@@ -391,16 +393,113 @@ def committing():
             CURRENT.reset(token)
 
 
+class _OutputCapture:
+    """独立读写句柄观察输出；Windows communicate 只在 EOF 后交出管道内容。"""
+
+    def __init__(self):
+        self.stack = ExitStack()
+        root = Path(self.stack.enter_context(tempfile.TemporaryDirectory(prefix='peach-process-')))
+        self.writers = [self.stack.enter_context((root / name).open('wb')) for name in ('stdout', 'stderr')]
+        self.readers = [self.stack.enter_context((root / name).open('rb')) for name in ('stdout', 'stderr')]
+        self.parts = [[], []]
+
+    def drain(self, on_stdout):
+        chunks = [reader.read() for reader in self.readers]
+        for parts, chunk in zip(self.parts, chunks):
+            if chunk:
+                parts.append(chunk)
+        if chunks[0] and on_stdout is not None:
+            # 短进度投影不重入无进程的检查点，暂停由等待循环携子进程响应。
+            token = CURRENT.set(None)
+            try:
+                on_stdout(chunks[0])
+            finally:
+                CURRENT.reset(token)
+        return bool(chunks[0])
+
+    def result(self, process=None):
+        output = tuple(b''.join(parts) for parts in self.parts)
+        if process is not None and process.text_mode:
+            return tuple(value.decode(process.encoding, process.errors or 'strict').replace('\r\n', '\n').replace('\r', '\n')
+                         for value in output)
+        return output
+
+    def close(self):
+        self.stack.close()
+
+
+def _wait_process(process, control, capture, *, input, timeout, idle_timeout, on_stdout):
+    """轮询进程并观察 stdout 活动；用户暂停的时间不计入两种超时。"""
+    started = time.monotonic()
+    paused = 0.0
+    last_output_at = 0.0
+    while True:
+        if control is not None:
+            paused += control.checkpoint(process) or 0.0
+        try:
+            output = process.communicate(input=input, timeout=.1)
+            if capture is not None:
+                capture.drain(on_stdout)
+                output = capture.result(process)
+            return output
+        except subprocess.TimeoutExpired as error:
+            input = None
+            elapsed = time.monotonic() - started - paused
+            if capture is not None and capture.drain(on_stdout):
+                last_output_at = elapsed
+            if idle_timeout is not None and elapsed - last_output_at >= idle_timeout:
+                raise subprocess.TimeoutExpired(process.args, idle_timeout, output=error.output, stderr=error.stderr) from None
+            if timeout is not None and elapsed >= timeout:
+                raise subprocess.TimeoutExpired(process.args, timeout, output=error.output, stderr=error.stderr) from None
+
+
+def _reap_process(process, job):
+    """终止本次进程树并回收输出，完成后才允许任务结算。"""
+    from .process_job import close_job
+    try:
+        if process.poll() is None:
+            try:
+                children = psutil.Process(process.pid).children(recursive=True)
+            except psutil.NoSuchProcess:
+                children = []
+            for child in reversed(children):
+                try:
+                    child.kill()
+                except psutil.NoSuchProcess:
+                    pass
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+    finally:
+        if os.name != 'nt':
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            except PermissionError:
+                # macOS 上进程组只剩已退出但未回收的进程时会报 EPERM。
+                if sys.platform != 'darwin':
+                    raise
+        close_job(job)
+    return process.communicate()
+
+
 @controlled
-def run(command, *, capture_output=False, timeout=None, check=False, input=None, **kwargs):
-    """执行当前任务拥有的子进程；暂停保留进程，取消回收后才向外结算。"""
+def run(command, *, capture_output=False, timeout=None, check=False, input=None,
+        idle_timeout=None, on_stdout=None, **kwargs):
+    """执行当前任务拥有的子进程；idle_timeout 监测 stdout，回调接收增量 bytes。"""
     control = CURRENT.get()
-    if control is None:
+    if control is None and idle_timeout is None and on_stdout is None:
         return subprocess.run(command, capture_output=capture_output, timeout=timeout,
                               check=check, input=input, **kwargs)
     checkpoint()
+    if (idle_timeout is not None or on_stdout is not None) and not capture_output:
+        raise ValueError('输出活动监测需要 capture_output=True')
+    capture = _OutputCapture() if idle_timeout is not None or on_stdout is not None else None
     if capture_output:
-        kwargs.update(stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        kwargs.update(stdout=capture.writers[0] if capture else subprocess.PIPE,
+                      stderr=capture.writers[1] if capture else subprocess.PIPE)
     if input is not None:
         kwargs['stdin'] = subprocess.PIPE
     if os.name != 'nt':
@@ -411,66 +510,44 @@ def run(command, *, capture_output=False, timeout=None, check=False, input=None,
         process = subprocess.Popen(command, **kwargs)
     except BaseException:
         close_job(job)
+        if capture is not None:
+            capture.close()
         raise
     assign_to_job(job, process)
-    with control.lock:
-        control.operations[id(process)] = False
-        control.owners[id(process)] = threading.get_ident()
-    started = time.monotonic()
-    paused = 0.0
+    if control is not None:
+        with control.lock:
+            control.operations[id(process)] = False
+            control.owners[id(process)] = threading.get_ident()
     timeout_error = None
     try:
-        control.usage.enter_process(process)
-        while True:
-            paused += control.checkpoint(process) or 0.0
-            try:
-                stdout, stderr = process.communicate(input=input, timeout=.1)
-                break
-            except subprocess.TimeoutExpired as error:
-                input = None
-                elapsed = time.monotonic() - started - paused
-                if timeout is not None and elapsed >= timeout:
-                    timeout_error = subprocess.TimeoutExpired(command, timeout, output=error.output, stderr=error.stderr)
-                    raise timeout_error from None
+        if control is not None:
+            control.usage.enter_process(process)
+        stdout, stderr = _wait_process(process, control, capture, input=input, timeout=timeout,
+                                       idle_timeout=idle_timeout, on_stdout=on_stdout)
         checkpoint()
         result = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
         if check:
             result.check_returncode()
         return result
+    except subprocess.TimeoutExpired as error:
+        timeout_error = error
+        raise
     finally:
         try:
-            if process.poll() is None:
-                try:
-                    children = psutil.Process(process.pid).children(recursive=True)
-                except psutil.NoSuchProcess:
-                    children = []
-                for child in reversed(children):
-                    try:
-                        child.kill()
-                    except psutil.NoSuchProcess:
-                        pass
-                try:
-                    process.kill()
-                except ProcessLookupError:
-                    pass
+            stdout, stderr = _reap_process(process, job)
+            if timeout_error is not None:
+                if capture is not None:
+                    capture.drain(None)
+                    stdout, stderr = capture.result()
+                timeout_error.output = stdout
+                timeout_error.stderr = stderr
         finally:
-            if os.name != 'nt':
-                try:
-                    os.killpg(process.pid, signal.SIGKILL)
-                except ProcessLookupError:
-                    pass
-                except PermissionError:
-                    # 进程组由 start_new_session 自建；macOS 上组内只剩未回收的僵尸时 killpg 报 EPERM。
-                    if sys.platform != 'darwin':
-                        raise
-            close_job(job)
             try:
-                stdout, stderr = process.communicate()
-                if timeout_error is not None:
-                    timeout_error.output = stdout
-                    timeout_error.stderr = stderr
+                if control is not None:
+                    with control.lock:
+                        control.operations.pop(id(process), None)
+                        control.owners.pop(id(process), None)
+                    control.usage.leave_process(process)
             finally:
-                with control.lock:
-                    control.operations.pop(id(process), None)
-                    control.owners.pop(id(process), None)
-                control.usage.leave_process(process)
+                if capture is not None:
+                    capture.close()

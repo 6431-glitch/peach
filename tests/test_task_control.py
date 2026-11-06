@@ -32,6 +32,95 @@ for _ in range(int(sys.argv[2])):
 
 
 class TaskControlTests(unittest.TestCase):
+    def test_output_activity_allows_a_process_to_outlive_the_idle_timeout(self):
+        command = [sys.executable, '-u', '-c',
+                   "import time; [(print(i, flush=True), time.sleep(.15)) for i in range(8)]"]
+        chunks = []
+        result = task_control.run(command, capture_output=True, idle_timeout=.8, on_stdout=chunks.append)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(b''.join(chunks), result.stdout)
+        self.assertEqual(len(result.stdout.splitlines()), 8)
+
+    def test_a_stalled_process_is_reaped_and_retains_its_output(self):
+        command = [sys.executable, '-u', '-c', "import time; print('started', flush=True); time.sleep(30)"]
+        with self.record_child():
+            with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                task_control.run(command, capture_output=True, idle_timeout=.8)
+        self.assertIn(b'started', caught.exception.output)
+        self.assertIsNotNone(self.children[-1].poll())
+
+    def test_stderr_activity_does_not_extend_the_stdout_idle_timeout(self):
+        command = [sys.executable, '-u', '-c',
+                   "import sys,time; [(print('decode error', file=sys.stderr, flush=True), time.sleep(.1)) "
+                   "for _ in range(300)]"]
+        with self.record_child(), self.assertRaises(subprocess.TimeoutExpired) as caught:
+            task_control.run(command, capture_output=True, idle_timeout=.8)
+        self.assertIn(b'decode error', caught.exception.stderr)
+        self.assertIsNotNone(self.children[-1].poll())
+
+    def test_output_monitor_keeps_the_text_result_and_binary_callback_contracts(self):
+        chunks = []
+        command = [sys.executable, '-u', '-c', "print('sample')"]
+        result = task_control.run(command, capture_output=True, text=True, encoding='utf-8',
+                                  idle_timeout=1, on_stdout=chunks.append)
+        self.assertEqual(result.stdout, 'sample\n')
+        self.assertEqual(b''.join(chunks).replace(b'\r\n', b'\n'), b'sample\n')
+        with self.assertRaisesRegex(ValueError, 'capture_output'):
+            task_control.run(command, idle_timeout=1)
+
+    def test_a_pause_requested_inside_progress_projection_suspends_the_owned_child(self):
+        path = self.root / 'heartbeat-progress'
+        chunks = []
+        def work(job, identity):
+            def progress(chunk):
+                chunks.append(chunk)
+                if len(chunks) == 1:
+                    task_control.request(self.store, job.snapshot()['run_id'], 'pause')
+                job.update(identity, checked=len(chunks))
+            command = [sys.executable, '-u', '-c',
+                       "import sys,time; from pathlib import Path; p=Path(sys.argv[1]); "
+                       "[(p.write_bytes(str(i).encode()), print(i, flush=True), time.sleep(.15)) for i in range(200)]",
+                       str(path)]
+            task_control.run(command, capture_output=True, idle_timeout=.8, on_stdout=progress)
+        with self.record_child():
+            job, original = self.start(work)
+            run_id = original['run_id']
+            self.wait_until(lambda: self.state(run_id)['state'] == 'paused')
+            before = path.read_bytes()
+            time.sleep(1)
+            self.assertEqual(path.read_bytes(), before)
+            count = len(chunks)
+            task_control.request(self.store, run_id, 'resume')
+            self.wait_until(lambda: len(chunks) > count)
+            self.assertEqual(self.store.get(run_id).status, 'running')
+            task_control.request(self.store, run_id, 'cancel')
+            job.thread.join(5)
+            self.assertFalse(job.thread.is_alive())
+            self.assertEqual(self.store.get(run_id).status, 'cancelled')
+
+    def test_idle_timeout_excludes_a_user_pause_and_cancel_reaps_the_process(self):
+        chunks = []
+        command = [sys.executable, '-u', '-c',
+                   "import time; [(print(i, flush=True), time.sleep(.15)) for i in range(200)]"]
+        def work(_job, _identity):
+            task_control.run(command, capture_output=True, idle_timeout=.8, on_stdout=chunks.append)
+        with self.record_child():
+            job, original = self.start(work)
+            self.wait_until(lambda: len(chunks) >= 2)
+            run_id = original['run_id']
+            task_control.request(self.store, run_id, 'pause')
+            self.wait_until(lambda: self.state(run_id)['state'] == 'paused')
+            time.sleep(1)
+            count = len(chunks)
+            task_control.request(self.store, run_id, 'resume')
+            self.wait_until(lambda: len(chunks) > count)
+            self.assertEqual(self.store.get(run_id).status, 'running')
+            task_control.request(self.store, run_id, 'cancel')
+            job.thread.join(5)
+            self.assertFalse(job.thread.is_alive())
+            self.assertEqual(self.store.get(run_id).status, 'cancelled')
+            self.assertIsNotNone(self.children[-1].poll())
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
