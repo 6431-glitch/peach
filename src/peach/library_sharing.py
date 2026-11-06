@@ -13,7 +13,7 @@ from urllib.parse import urlsplit
 from . import __version__, remote_reporting
 from .fsutil import atomic_write_text
 
-SCHEMA = 4
+SCHEMA = 5
 MAX_BYTES = 18 * 1024 * 1024
 MAX_RAW_BYTES = 100 * 1024 * 1024
 FILENAME = "peach-library-taste.json.gz"
@@ -21,9 +21,10 @@ FIELDS = [
     "去重后的作品编号，以及评分、喜欢、不喜欢、已看、稍后看、播放次数、观看比例与手动添加的标签",
     "出演者、创作者、厂牌、系列、手动标签、年代与时长分组的收藏、喜欢、不喜欢、观看数量和评分分布（有编号作品与无编号条目分开），以及主动收藏的实体名称",
     "馆藏文件数量、有编号作品数量与无编号条目数量",
+    "近 7 天与 30 天已观测的容量天数、播放活跃天数及其记录覆盖天数；数据与缓存的当前占用、峰值、已观测正增长量和自动清理量。未取得的值为空，不补足 30 天记录",
     "Peach 版本、字段版本与 UTC 自然周",
 ]
-NOTICE = "匿名处理后上传馆藏与各类偏好明细。"
+NOTICE = "匿名处理后上传馆藏、各类偏好及本机容量日聚合；活跃天数仅指已记录播放开始的日期，不代表全部日常使用。容量字段不含新增路径、作品或账号信息。"
 
 
 def _path(config):
@@ -52,12 +53,23 @@ def _used(value, period):
 
 def useful_payload(payload):
     """公共编号或任一偏好分组提供可分析内容。"""
-    return bool(payload["library"] or any(payload["preferences"].values()))
+    window = payload['capacity']['windows']['30d']
+    return bool(payload["library"] or any(payload["preferences"].values())
+                or window['observed_days'] or window['activity_observed_days'] or window['cleaned_bytes'] is not None)
 
 
 def consent(config):
     value = remote_reporting._read(_path(config))
     return value if value.get("enabled") is True and value.get("schema") == SCHEMA else {}
+
+
+def consent_state(config):
+    value = remote_reporting._read(_path(config))
+    if value.get('enabled') is False:
+        return 'disabled'
+    if value.get('enabled') is True:
+        return 'enabled' if value.get('schema') == SCHEMA else 'needs-consent'
+    return 'not-selected'
 
 
 def save_choice(config, enabled):
@@ -88,7 +100,7 @@ def snapshot(config):
     attempt = remote_reporting._read(config.directory("state") / "library-sharing-attempt.json")
     if attempt.get("status") == "attempted":
         attempt = {**attempt, "status": "unknown", "attempted": True}
-    return {"enabled": bool(consent(config)), "available": bool(target()),
+    return {"enabled": bool(consent(config)), 'consent_state': consent_state(config), "available": bool(target()),
             "schema": SCHEMA, "fields": FIELDS, "notice": NOTICE,
             "last_attempt": attempt if attempt.get("schema") == SCHEMA and attempt.get("period") == _period() else {}}
 
@@ -96,11 +108,12 @@ def snapshot(config):
 def collect(contract):
     """在本机生成群体分析投影，不读取浏览历史或写入缓存。"""
     from .library_research import project
+    from .capacity_history import project as capacity_projection
     with contract.read_connection() as connection:
         connection.execute("BEGIN")
         projection = project(connection)
     payload = {"schema": SCHEMA, "peach": __version__, "period": datetime.now(timezone.utc).strftime("%G-W%V"),
-               **projection}
+               **projection, 'capacity': capacity_projection(getattr(contract, 'upgrade_config', None))}
     data = json.dumps(payload, ensure_ascii=False, allow_nan=False, separators=(",", ":")).encode()
     if len(data) > MAX_RAW_BYTES:
         raise ValueError("馆藏与口味明细超过 100 MiB，整份未发送")
@@ -117,12 +130,13 @@ def compressed(data):
 
 def valid_payload(payload):
     from .library_research import valid_projection
-    if (not isinstance(payload, dict) or set(payload) != {"schema", "peach", "period", "library", "preferences", "coverage"}
+    from .capacity_history import valid_projection as valid_capacity
+    if (not isinstance(payload, dict) or set(payload) != {"schema", "peach", "period", "library", "preferences", "coverage", "capacity"}
             or payload["schema"] != SCHEMA or payload["peach"] != __version__
             or payload["period"] != datetime.now(timezone.utc).strftime("%G-W%V")
             or not isinstance(payload["library"], list) or not isinstance(payload["preferences"], dict)):
         return False
-    return valid_projection(payload)
+    return valid_projection(payload) and valid_capacity(payload['capacity'])
 
 
 class Service:

@@ -5,16 +5,138 @@ import os
 import tempfile
 import threading
 import unittest
+from datetime import date, timedelta
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
 
-from peach import library_sharing as sharing
+from peach import capacity_history, library_sharing as sharing
 from peach.repository import LedgerDatabase
 from peach.settings_file import PeachConfig
 from support.ledger import fresh_ledger
 
 DSN = 'https://public@o123.ingest.us.sentry.io/789'
+
+
+class CapacityHistoryTests(unittest.TestCase):
+    def setUp(self):
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.root = Path(temporary.name).resolve()
+        self.config = PeachConfig(self.root, self.root / 'config.toml')
+        self.today = date(2026, 11, 7)
+        self.enterContext(mock.patch.object(capacity_history, '_today', side_effect=lambda: self.today))
+
+    def test_absent_history_is_read_only_and_does_not_manufacture_thirty_days(self):
+        value = capacity_history.project(self.config)
+        self.assertEqual(value['state'], 'unavailable')
+        self.assertFalse(self.config.directory('state').exists())
+        self.assertTrue(capacity_history.sample_due(self.config))
+        row = value['windows']['30d']
+        self.assertEqual((row['observed_days'], row['activity_observed_days']), (0, 0))
+        self.assertIsNone(row['active_days'])
+        self.assertIsNone(row['data']['current_bytes'])
+        self.assertIsNone(row['cleaned_bytes'])
+
+    def test_sample_due_requires_both_actual_measurements_and_resets_at_utc_day_boundary(self):
+        capacity_history.record_sample(self.config, None, 50)
+        self.assertTrue(capacity_history.sample_due(self.config))
+        capacity_history.record_sample(self.config, 100, None)
+        self.assertFalse(capacity_history.sample_due(self.config))
+        self.today += timedelta(days=1)
+        self.assertTrue(capacity_history.sample_due(self.config))
+        capacity_history.record_sample(self.config, 0, 0)
+        self.assertFalse(capacity_history.sample_due(self.config))
+
+    def test_daily_peaks_growth_and_cleaning_use_observed_samples_inside_each_window(self):
+        now = self.today
+        self.today = now - timedelta(days=8)
+        capacity_history.record_sample(self.config, 100, 50)
+        capacity_history.record_activity(self.config)
+        self.today = now - timedelta(days=6)
+        capacity_history.record_sample(self.config, 120, 60)
+        capacity_history.record_sample(self.config, 150, 45, cleaned_bytes=20)
+        capacity_history.record_activity(self.config)
+        self.today = now
+        capacity_history.record_sample(self.config, 140, 70, cleaned_bytes=5)
+        self.assertTrue(capacity_history.record_activity(self.config))
+        before = capacity_history._path(self.config).read_bytes()
+        self.assertFalse(capacity_history.record_activity(self.config))
+        self.assertEqual(capacity_history._path(self.config).read_bytes(), before)
+        value = capacity_history.project(self.config)
+        short, long = (value['windows'][key] for key in ('7d', '30d'))
+        self.assertEqual((short['observed_days'], long['observed_days']), (2, 3))
+        self.assertEqual((short['active_days'], long['active_days']), (2, 3))
+        self.assertEqual((short['activity_observed_days'], long['activity_observed_days']), (7, 9))
+        self.assertEqual(short['data'], {'observed_days': 2, 'current_bytes': 140, 'peak_bytes': 150,
+                                       'positive_growth_bytes': 30, 'growth_observations': 2})
+        self.assertEqual((short['cache']['positive_growth_bytes'], long['cache']['positive_growth_bytes']), (25, 35))
+        self.assertEqual(long['data']['positive_growth_bytes'], 50)
+        self.assertEqual(short['cleaned_bytes'], 25)
+        self.assertTrue(capacity_history.valid_projection(value))
+
+    def test_capacity_samples_do_not_establish_playback_activity_coverage(self):
+        now = self.today
+        self.today = now - timedelta(days=10)
+        capacity_history.record_sample(self.config, 100, 50)
+        self.today = now
+        self.assertEqual(capacity_history.project(self.config)['windows']['30d']['activity_observed_days'], 0)
+        capacity_history.record_activity(self.config)
+        row = capacity_history.project(self.config)['windows']['30d']
+        self.assertEqual((row['activity_observed_days'], row['active_days']), (1, 1))
+        self.assertIsNone(row['data']['positive_growth_bytes'])
+
+    def test_history_is_bounded_and_keeps_the_start_of_recorded_activity(self):
+        first = self.today - timedelta(days=capacity_history.RETENTION_DAYS)
+        for index in range(capacity_history.RETENTION_DAYS + 1):
+            self.today = first + timedelta(days=index)
+            capacity_history.record_sample(self.config, index, index)
+            capacity_history.record_activity(self.config)
+        value = capacity_history._read(self.config)
+        self.assertEqual(len(value['days']), capacity_history.RETENTION_DAYS)
+        self.assertEqual(value['activity_started'], first.isoformat())
+        self.assertNotIn(first.isoformat(), value['days'])
+
+    def test_invalid_or_unknown_history_remains_a_failure_without_scanning_or_disclosing_it(self):
+        path = capacity_history._path(self.config)
+        path.parent.mkdir(parents=True)
+        path.write_text(json.dumps({'private_path': 'R:/private-person', 'schema': 1}))
+        value = capacity_history.project(self.config)
+        self.assertEqual(value['state'], 'failed')
+        self.assertNotIn('private', json.dumps(value))
+        with self.assertRaises(ValueError):
+            capacity_history.sample_due(self.config)
+        with self.assertRaises(ValueError):
+            capacity_history.record_sample(self.config, 10, 5)
+
+    def test_sample_values_reject_booleans_nonfinite_negatives_and_excessive_sizes(self):
+        for value in (True, -1, 1.5, float('nan'), float('inf'), capacity_history.MAX_BYTES + 1):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                capacity_history.record_sample(self.config, value, 0)
+        self.assertFalse(capacity_history.record_sample(self.config, None, None))
+        self.assertFalse(capacity_history._path(self.config).exists())
+
+    def test_playback_hooks_only_record_explicit_success_and_never_initialize_network_clients(self):
+        from peach import web_activity, web_follow
+        database = LedgerDatabase(fresh_ledger(self.root))
+        with database.write_transaction() as connection:
+            connection.execute("INSERT INTO asset(location,path,name) VALUES('local','sample','sample')")
+        contract = SimpleNamespace(upgrade_config=self.config, database=database,
+            write_transaction=database.write_transaction, cache_bust=mock.Mock())
+        with mock.patch('peach.remote_reporting._new_client') as network:
+            web_activity.w_play(contract, {'id': 1})
+            network.assert_not_called()
+        self.assertEqual(capacity_history.project(self.config)['windows']['7d']['active_days'], 1)
+        capacity_history._path(self.config).unlink()
+        web_activity.w_play(contract, {'id': 999})
+        self.assertFalse(capacity_history._path(self.config).exists())
+        with mock.patch.object(web_follow, '_store', return_value=SimpleNamespace(record_playback=lambda _item: 'seen')):
+            self.assertEqual(web_follow.w_follow_play(contract, {'item': 1})['status'], 'seen')
+        self.assertEqual(capacity_history.project(self.config)['windows']['7d']['active_days'], 1)
+        with mock.patch.object(capacity_history, 'record_activity', side_effect=OSError('private path')), \
+                self.assertLogs('peach.capacity_history', level='WARNING') as logs:
+            self.assertTrue(web_activity.w_play(contract, {'id': 1})['ok'])
+        self.assertNotIn('private path', ' '.join(logs.output))
 
 
 class LibrarySharingTests(unittest.TestCase):
@@ -26,7 +148,7 @@ class LibrarySharingTests(unittest.TestCase):
         self.config = PeachConfig(self.root, self.root / 'config.toml')
         self.database = LedgerDatabase(fresh_ledger(self.root))
         self.contract = SimpleNamespace(read_connection=self.database.read_connection,
-                                        taste_history_store=self.root / 'taste/history.sqlite')
+                                        taste_history_store=self.root / 'taste/history.sqlite', upgrade_config=self.config)
         self.service = sharing.Service(self.config, self.contract)
         self.addCleanup(self.service.stop)
         patcher = mock.patch.dict(os.environ, {'PEACH_SENTRY_DSN': '', 'PEACH_LIBRARY_SENTRY_DSN': DSN})
@@ -102,7 +224,7 @@ class LibrarySharingTests(unittest.TestCase):
         self.assertEqual(self.database.db_path.read_bytes(), before)
         self.assertFalse((self.contract.taste_history_store.parent / 'preference-cache.json').exists())
         self.assertFalse((self.contract.taste_history_store.parent / 'browser-preference-cache.json').exists())
-        self.assertEqual(set(payload), {'schema', 'peach', 'period', 'library', 'preferences', 'coverage'})
+        self.assertEqual(set(payload), {'schema', 'peach', 'period', 'library', 'preferences', 'coverage', 'capacity'})
         self.assertEqual(len(payload['library']), 1)
         work = payload['library'][0]
         self.assertEqual(work['code'], 'EXM-001')
@@ -175,6 +297,53 @@ class LibrarySharingTests(unittest.TestCase):
             self.service.attempt()
             collect.assert_not_called()
         self.assertFalse(sharing.snapshot(self.config)['enabled'])
+
+    def test_schema_four_consent_requires_review_and_is_distinct_from_manual_disable(self):
+        self.enable()
+        path = self.config.directory('state') / 'library-sharing.json'
+        state = json.loads(path.read_text())
+        path.write_text(json.dumps({**state, 'schema': 4}))
+        with mock.patch.object(sharing, 'collect') as collect, mock.patch('peach.remote_reporting._new_client') as client:
+            self.service.attempt()
+        collect.assert_not_called()
+        client.assert_not_called()
+        self.assertEqual(sharing.snapshot(self.config)['consent_state'], 'needs-consent')
+        self.assertFalse(sharing.snapshot(self.config)['enabled'])
+        sharing.save_choice(self.config, False)
+        self.assertEqual(sharing.snapshot(self.config)['consent_state'], 'disabled')
+        path.unlink()
+        self.assertEqual(sharing.snapshot(self.config)['consent_state'], 'not-selected')
+        self.assertEqual(self.enable()['consent_state'], 'enabled')
+
+    def test_capacity_projection_reads_only_local_history_and_keeps_missing_values_unknown(self):
+        capacity_history.record_sample(self.config, 1234, None)
+        before = capacity_history._path(self.config).read_bytes()
+        payload, _ = sharing.collect(self.contract)
+        self.assertEqual(capacity_history._path(self.config).read_bytes(), before)
+        self.assertEqual(payload['capacity']['windows']['30d']['data']['current_bytes'], 1234)
+        self.assertIsNone(payload['capacity']['windows']['30d']['cache']['current_bytes'])
+        self.assertEqual(payload['capacity']['windows']['30d']['observed_days'], 1)
+        self.assertIsNone(payload['capacity']['windows']['30d']['active_days'])
+        self.assertTrue(sharing.valid_payload(payload))
+        self.assertTrue(sharing.useful_payload(payload))
+
+    def test_capacity_payload_rejects_private_fields_and_invalid_numeric_relationships(self):
+        from copy import deepcopy
+        capacity_history.record_sample(self.config, 100, 50)
+        payload, _ = sharing.collect(self.contract)
+        cases = []
+        for key, value in (('path', 'R:/private'), ('account', 'private'), ('days', 31),
+                           ('observed_days', True), ('active_days', 8), ('cleaned_bytes', float('nan'))):
+            invalid = deepcopy(payload)
+            invalid['capacity']['windows']['7d'][key] = value
+            cases.append(invalid)
+        for key, value in (('current_bytes', -1), ('peak_bytes', 0), ('positive_growth_bytes', 20),
+                           ('growth_observations', float('inf'))):
+            invalid = deepcopy(payload)
+            invalid['capacity']['windows']['7d']['data'][key] = value
+            cases.append(invalid)
+        for invalid in cases:
+            self.assertFalse(sharing.valid_payload(invalid))
 
     def test_transport_rejects_invalid_signal_and_distribution_values(self):
         from copy import deepcopy
