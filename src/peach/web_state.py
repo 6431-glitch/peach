@@ -54,6 +54,7 @@ LOGGER = logging.getLogger(__name__)
 
 #: 当前读请求的账本版本快照，见 `WebContract.revision_snapshot`；不在请求里时为 None，每次现读。
 _REVISION_SNAPSHOT: ContextVar[dict | None] = ContextVar("peach_revision_snapshot", default=None)
+_FRESH_AGGREGATES: ContextVar[bool] = ContextVar('peach_fresh_aggregates', default=False)
 
 
 @contextmanager
@@ -393,7 +394,7 @@ class WebContract:
             snapshot.update(contract=self, generation=generation, revisions=revisions)
         return revisions
 
-    def cached_until_changed(self, key: str, fn, *inputs, tables=()):
+    def cached_until_changed(self, key: str, fn, *inputs, tables=(), allow_stale=True):
         """只读账本聚合的缓存：账本版本号与 `inputs` 都没变就一直命中，不按时间过期。
 
         `inputs` 是聚合读到的账本之外的东西的版本（候选目录、头像目录、浏览历史库），
@@ -405,9 +406,16 @@ class WebContract:
 
         带 `tables` 的键在版本变了、手上那份之后只有本进程的后台提交时，先回那一份，另起
         后台重算（ADR-0146）：后台任务写的东西晚几秒无妨；前台写入与进程外的写之后照旧
-        当场重算。不带 `tables` 的键每次提交都被清掉，没有旧值可回。
+        当场重算。不带 `tables` 的键按全库版本同步核验，不返回过期结果。
+        `allow_stale=False` 的馆藏统计与本次读取的列表配对，后台写入后也同步重算。
         """
-        if not tables:
+        if not allow_stale:
+            token = _FRESH_AGGREGATES.set(True)
+            try:
+                return self._cached_by_tables(key, fn, inputs, tables)
+            finally:
+                _FRESH_AGGREGATES.reset(token)
+        if not tables or _FRESH_AGGREGATES.get():
             return self._cached_by_tables(key, fn, inputs, tables)
         revision = self.ledger_revision(tables)
         if revision is not None:
@@ -460,7 +468,7 @@ class WebContract:
         with lock:
             revision = self.ledger_revision(tables)
             with self.cache_lock:
-                if revision is None or not tables:
+                if revision is None:
                     self.revision_cache_keys.discard(key)
                 else:
                     self.revision_cache_keys.add(key)

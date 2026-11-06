@@ -21,7 +21,7 @@ from peach.follow_sources import FollowCandidate, SourceFetch
 from peach.follow_store import FollowStore
 from peach.previews import entity_image_key, logo_key
 from peach.repository import LedgerDatabase, in_background
-from peach.web_catalog import FACETS_TABLES, GROUP_TABLES, TOPS_TABLES
+from peach.web_catalog import CATALOG_TOTAL_TABLES, FACETS_TABLES, GROUP_TABLES, TOPS_TABLES
 from peach.web_contract import dispatch_api_get
 from peach.web_entity import INDEX_TABLES
 from peach.web_state import WebContract
@@ -44,6 +44,7 @@ class LedgerRevisionTests(unittest.TestCase):
         self.addCleanup(self.directory.cleanup)
         self.db_path = fresh_ledger(self.directory.name)
         self.contract = WebContract(self.db_path)
+        self.addCleanup(self.contract.stop_background_jobs)
         self.calls = 0
 
     def compute(self):
@@ -101,6 +102,52 @@ class LedgerRevisionTests(unittest.TestCase):
         before = self.contract.ledger_revision()
         insert_asset(self.db_path, 91)
         self.assertGreater(self.contract.ledger_revision(), before)
+
+    def test_catalog_totals_are_shared_across_sort_seeds_and_refresh_after_writes(self):
+        from peach import web_catalog
+        insert_asset(self.db_path, 1)
+        insert_asset(self.db_path, 2)
+        with mock.patch.object(web_catalog, 'video_work_key', wraps=web_catalog.video_work_key) as work_key:
+            first = dispatch_api_get(self.contract, '/api/items', {'sort': 'seed', 'seed': '1', 'limit': '1'})
+            second = dispatch_api_get(self.contract, '/api/items', {'sort': 'seed', 'seed': '2', 'limit': '1'})
+            self.assertEqual((first['total'], second['total']), (2, 2))
+            self.assertEqual(work_key.call_count, 1)
+            with self.contract.database.write_transaction() as connection:
+                connection.execute("UPDATE asset SET size=3 WHERE id=1")
+            refreshed = dispatch_api_get(self.contract, '/api/items', {'sort': 'seed', 'seed': '2', 'limit': '1'})
+            self.assertEqual(refreshed['bytes'], 4)
+            self.assertEqual(work_key.call_count, 2)
+
+    def test_background_insert_does_not_pair_fresh_rows_with_stale_totals(self):
+        insert_asset(self.db_path, 1)
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE asset SET code='ABC-001',name='ABC-001-CD1.mp4' WHERE id=1")
+        self.assertEqual(dispatch_api_get(self.contract, '/api/items', {})['total'], 1)
+
+        @in_background
+        def add():
+            with self.contract.database.write_transaction() as connection:
+                connection.execute("INSERT INTO asset(location,path,name,medium,size,code) VALUES(?,?,?,?,?,?)",
+                                   ('local', r'R:\media\second.mp4', 'ABC-001-CD2.mp4', 'video', 2, 'ABC-001'))
+        worker = threading.Thread(target=add)
+        worker.start()
+        worker.join()
+        result = dispatch_api_get(self.contract, '/api/items', {})
+        self.assertEqual(result['total'], 2)
+        self.assertEqual(len(result['items']), 2)
+        self.assertEqual(result['work_total'], 1)
+
+    def test_sql_identity_rules_reuse_inputs_across_connections(self):
+        from peach import repository
+        with mock.patch.object(repository, 'is_jav_code', wraps=repository.is_jav_code) as identify:
+            database = LedgerDatabase(self.db_path)
+            for _ in range(3):
+                with database.read_connection() as connection:
+                    self.assertEqual(connection.execute('SELECT is_jav_code(?)', ('ABC-001',)).fetchone()[0], 1)
+            self.assertEqual(identify.call_count, 1)
+            with database.read_connection() as connection:
+                self.assertEqual(connection.execute('SELECT is_jav_code(?)', ('plain',)).fetchone()[0], 0)
+            self.assertEqual(identify.call_count, 2)
 
     def test_task_center_heartbeats_keep_the_cache(self):
         self.contract.cached_until_changed("review", self.compute)
@@ -323,9 +370,9 @@ class DeclaredTablesTests(unittest.TestCase):
 
         real_cached = WebContract.cached_until_changed
 
-        def cached_until_changed(contract, key, fn, *inputs, tables=()):
+        def cached_until_changed(contract, key, fn, *inputs, tables=(), **options):
             return real_cached(contract, key, lambda: self.reads.measure(key, tables, fn),
-                               *inputs, tables=tables)
+                               *inputs, tables=tables, **options)
 
         real_inputs = web_follow._follow_inputs
 
@@ -487,6 +534,7 @@ class DeclaredTablesTests(unittest.TestCase):
             "GROUP_TABLES": GROUP_TABLES, "TOPS_TABLES": TOPS_TABLES,
             "FACETS_TABLES": FACETS_TABLES, "INDEX_TABLES": INDEX_TABLES,
             "STATS_TABLES": web_stats.STATS_TABLES,
+            "CATALOG_TOTAL_TABLES": CATALOG_TOTAL_TABLES,
             "FOLLOW_GROUP_TABLES": web_follow.FOLLOW_GROUP_TABLES,
             "TASTE_TABLES": web_stats.TASTE_TABLES,
             "PROFILE_TABLES": taste_preferences.PROFILE_TABLES,
@@ -644,6 +692,7 @@ class ResultVersionTablesTests(unittest.TestCase):
     #: `frontend/test/react/result-updates.test.tsx` 核对。
     REFRESHED_BY = {
         "catalog-grid": ("catalog",),
+        "catalog-totals": ("catalog", "follow"),
         "index": ("catalog", "follow", "discoveries"),
         "stats": ("catalog", "follow"),
         "taste": ("catalog", "follow"),
@@ -657,6 +706,7 @@ class ResultVersionTablesTests(unittest.TestCase):
         from peach.web_result_versions import RESULT_TABLES
         declared = {
             "catalog-grid": GROUP_TABLES, "index": INDEX_TABLES, "stats": web_stats.STATS_TABLES,
+            "catalog-totals": CATALOG_TOTAL_TABLES,
             "taste": web_stats.TASTE_TABLES, "follow-feed": web_follow.FOLLOW_GROUP_TABLES,
         }
         missing = {}

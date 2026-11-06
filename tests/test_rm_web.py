@@ -380,11 +380,11 @@ class WebDataTests(unittest.TestCase):
                 ('2500 400 1', 'sqlite_autoindex_entity_1'),
             ])
         calls = 0
-        def counted_extra(name, path, **kwargs):
+        def counted_extra(name, path, roots):
             nonlocal calls
             calls += 1
-            return catalog_rules.is_local_extra(name, path, **kwargs)
-        with mock.patch('peach.repository.is_local_extra', counted_extra):
+            return catalog_rules.sql_is_local_extra(name, path, roots)
+        with mock.patch('peach.repository.sql_is_local_extra', counted_extra):
             with self.contract.read_connection() as connection:
                 actual = web_entity._entity_shape_parts(self.contract, connection)
                 self.assertEqual(actual, expected)
