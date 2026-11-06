@@ -44,6 +44,7 @@ from typing import Callable
 
 from .fsutil import atomic_write_text
 from .repository import in_background
+from .discovery_rules import system_directory, system_path
 
 LOGGER = logging.getLogger(__name__)
 
@@ -92,9 +93,11 @@ class CloudPathError(ValueError):
     """云端路径映射不出账本路径。消息可以直接给人看。"""
 
 
-def ignored(name: str) -> bool:
-    """这个文件名要不要直接丢掉。"""
-    lowered = name.casefold()
+def ignored(path: str) -> bool:
+    """系统目录、系统文件与半成品不进入登记队列。"""
+    if system_path(path):
+        return True
+    lowered = PureWindowsPath(path).name.casefold()
     if lowered in IGNORED_NAMES or lowered.startswith("."):
         return True
     return os.path.splitext(lowered)[1] in IGNORED_SUFFIXES
@@ -694,11 +697,13 @@ class PushDiscoveryService:
             LOGGER.exception("推送发现探测时长失败：%s", path)
 
     def submit(self, location: str, path: str) -> bool:
-        if ignored(PureWindowsPath(path).name):
+        if ignored(path):
             return False
         return self.queue.submit(location, path, time.monotonic())
 
     def submit_move(self, location, old, new, *, directory=False):
+        if ignored(new) or (directory and system_directory(PureWindowsPath(new).name)):
+            return
         if directory:
             from .media_folders import path_predicate
             from contextlib import closing
@@ -709,8 +714,6 @@ class PushDiscoveryService:
                 tail = PureWindowsPath(path).relative_to(PureWindowsPath(old))
                 self.submit_move(location, path, str(PureWindowsPath(new) / tail))
             return
-        if ignored(PureWindowsPath(new).name):
-            return
         self.queue.submit(location, new, time.monotonic(), move_from=old)
 
     def ingest_now(self, location: str, path: str) -> bool:
@@ -719,7 +722,7 @@ class PushDiscoveryService:
         云下载对账时用：远端已经完成、文件就在挂载目录里，推送发现那一侧却没送来通知
         （没开、没配会员，或通知丢了）。文件不在返回假。
         """
-        if ignored(PureWindowsPath(path).name):
+        if ignored(path):
             return False
         # 云下载整理完成时另有一条通知，这里落地登记不再弹。
         return self._ingest(location, path, notify=False)

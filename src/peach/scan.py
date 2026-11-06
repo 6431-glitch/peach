@@ -49,6 +49,7 @@ from . import folder_rules, junk, record_rehome, subtitles, wants
 from .platform import is_windows_path, is_unmapped, resolve_location, resolve_root
 from .processing_control import checkpoint
 from .fsutil import atomic_write_text
+from .discovery_rules import system_directory, system_path
 from .catalog_rules import AUDIO_EXTENSIONS, VIDEO_EXTENSIONS, is_local_extra
 
 VIDEO = VIDEO_EXTENSIONS
@@ -378,7 +379,8 @@ def ingest_path(
     except OSError:
         return IngestResult(location, str(ledger_path), False)
     library_roots = tuple(chain.from_iterable(declared_roots.values()))
-    if _sidecar_on_disk(name, directory, ledger_path=str(ledger_path), library_roots=library_roots):
+    if system_path(str(ledger_path)) or _sidecar_on_disk(
+            name, directory, ledger_path=str(ledger_path), library_roots=library_roots):
         return IngestResult(location, str(ledger_path), True, stat.st_size, sidecar=True)
     now = time.strftime("%Y-%m-%d %H:%M:%S")
     mtime = time.strftime("%Y-%m-%d", time.localtime(stat.st_mtime))
@@ -505,7 +507,7 @@ def _walk(top: Path, pending: list[str] | None = None, *, onerror=lambda error: 
                 is_dir = False
             if is_dir:
                 try:
-                    if not entry.is_symlink() and entry.name.casefold() != "#recycle" and not entry.name.startswith("@"):
+                    if not entry.is_symlink() and not system_directory(entry.name):
                         subdirectories.append(entry.path)
                 except OSError:
                     pass
@@ -556,7 +558,7 @@ def _walk_smb(top, pending, onerror):
                     continue
                 path = str(resource / entry.name)
                 if entry.is_dir:
-                    if not entry.name.startswith('@') and entry.name.casefold() != '#recycle':
+                    if not system_directory(entry.name):
                         children.append(path)
                 else:
                     stat = SimpleNamespace(st_size=entry.size, st_mtime=entry.mtime, st_mtime_ns=entry.mtime_ns)
@@ -747,8 +749,8 @@ def _scan_location(
                 if cursor is not None and name <= cursor:
                     continue
                 ledger_path = str(ledger_root.joinpath(*relative, name))
-                if is_sidecar(name, videos, artwork_dir=artwork_dir,
-                              path=ledger_path, library_roots=library_roots):
+                if system_path(ledger_path) or is_sidecar(name, videos, artwork_dir=artwork_dir,
+                                                        path=ledger_path, library_roots=library_roots):
                     skipped += 1
                     continue
                 if new_only and ledger_path.casefold() in registered:

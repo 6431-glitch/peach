@@ -15,6 +15,39 @@ from support.ledger import fresh_ledger
 
 
 class UpgradeRepairTests(unittest.TestCase):
+    def test_old_system_metadata_is_isolated_once_without_deleting_files_or_records(self):
+        from peach import system_file_repair
+        file = self.root / '@eaDir/video.mp4@SynoEAStream'
+        file.parent.mkdir()
+        file.write_bytes(b'metadata')
+        rows = [(1, str(file), None), (2, r'R:\media\@eaDir\kept@SynoEAStream', 5),
+                (3, r'R:\media\normal.txt', None)]
+        with self.database.write_transaction() as connection:
+            for key, path, rating in rows:
+                connection.execute("INSERT INTO asset(id,location,path,name,medium,rating) "
+                                   "VALUES(?,'local',?,'metadata','other',?)", (key, path, rating))
+            connection.execute("INSERT INTO asset_tag(asset_id,tag,source) VALUES(1,'retained','test')")
+        self.service.prepare()
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual([tuple(row) for row in connection.execute('SELECT id,disposal,rating FROM asset')],
+                             [(1, 'trash', None), (2, None, 5), (3, None, None)])
+            self.assertEqual(connection.execute('SELECT count(*) FROM asset_tag WHERE asset_id=1').fetchone()[0], 1)
+        self.assertEqual(file.read_bytes(), b'metadata')
+        receipt = upgrade_repairs._read(self.service.receipt)[system_file_repair.RULE]
+        self.assertEqual(receipt['isolated'], [dict(id=1, path=str(file), disposal=None,
+                                                   disposal_reason=None, feedback_at=None)])
+        self.assertTrue(Path(receipt['backup']).is_file())
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE asset SET disposal=NULL,disposal_reason=NULL WHERE id=1')
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertIsNone(connection.execute('SELECT disposal FROM asset WHERE id=1').fetchone()[0])
+        with patch.object(upgrade_repairs, 'REVISION', upgrade_repairs.REVISION + '-next'):
+            self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertIsNone(connection.execute('SELECT disposal FROM asset WHERE id=1').fetchone()[0])
+
     def test_javdb_upgrade_requeues_legacy_evidence_and_keeps_manual_values(self):
         from peach import artifact_rules, upgrade_rules
         self.asset(1, code='EXM-001', duration=1)

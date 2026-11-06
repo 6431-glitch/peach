@@ -315,6 +315,7 @@ class UpgradeRepairs:
             if applied is not None:
                 self._restore_receipt(json.loads(applied[0]))
                 self._withdraw_stale_code_evidence()
+                self._isolate_system_files()
                 return
             self._restore_receipt(None)
             sources = Path(contract.follow_sources_root)
@@ -356,6 +357,37 @@ class UpgradeRepairs:
                                    (REVISION, str(time.time()), json.dumps(receipt, ensure_ascii=False)))
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
             self._withdraw_stale_code_evidence()
+            self._isolate_system_files()
+
+    def _isolate_system_files(self) -> None:
+        """旧系统元数据按路径规则隔离；回执保留原状态，媒体与关联行不动。"""
+        from . import system_file_repair
+        with self.contract.database.read_connection() as connection:
+            stored = connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
+                                        (REVISION,)).fetchone()
+            receipt = json.loads(stored[0]) if stored else None
+            if receipt is None or system_file_repair.RULE in receipt:
+                return
+            earlier = connection.execute(
+                'SELECT result_json FROM ledger_upgrade_repair WHERE json_type(result_json,?) IS NOT NULL '
+                'ORDER BY applied_at DESC LIMIT 1', (f'$."{system_file_repair.RULE}"',)).fetchone()
+            if earlier:
+                receipt[system_file_repair.RULE] = json.loads(earlier[0])[system_file_repair.RULE]
+            else:
+                rows = system_file_repair.collect(connection)
+        if earlier:
+            self._save_receipt(receipt)
+            return
+        backup = None
+        if rows:
+            backup = self.contract.db_path.with_name(f'ledger.pre-upgrade-{time.time_ns()}.db')
+            sqlite_backup(self.contract.db_path, backup)
+        with self.contract.database.write_transaction() as connection:
+            changed = system_file_repair.apply(connection, rows, time.time())
+            receipt[system_file_repair.RULE] = {'isolated': changed, 'backup': str(backup) if backup else None}
+            connection.execute('UPDATE ledger_upgrade_repair SET result_json=? WHERE id=?',
+                               (json.dumps(receipt, ensure_ascii=False), REVISION))
+        atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
 
     def _withdraw_stale_code_evidence(self) -> None:
         """撤掉旧番号下取到的候选与快照（`stale_code_evidence`），被撤的影片按现番号重采。
