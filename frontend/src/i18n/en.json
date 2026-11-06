@@ -1,4 +1,7 @@
 {
+  "等下一轮订阅检查分批取图": "Waiting for the next subscription check to fetch artwork.",
+  "优先处理": "Fetch now",
+  "立即重试": "Retry now",
   "连接检查": "Connection checks",
   "检查各来源页面与 DMM 高清图片服务器，最多四个来源同时进行；正在冷却的来源不再请求。可连接只说明检查地址可达，不代表登录有效。": "Check source pages and the DMM high-resolution image server, with up to four sources checked at once. Sources in cooldown are skipped. A successful connection means the address is reachable; it does not verify login.",
   "连接检查进度": "Connection check progress",
