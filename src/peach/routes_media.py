@@ -934,7 +934,7 @@ def source_icon(request: Request, provider: str = "", args: dict[str, str] = Dep
         client = state.http_transport.client
         path = follow_assets.cached_image(
             _asset_root(state), "icons", provider, FAVICON_REFRESH_SECONDS,
-            lambda: follow_assets.fetch_image(client, target))
+            lambda: follow_assets.legible_icon(follow_assets.fetch_image(client, target)))
     if path is None:
         return Response((PROJECT_ROOT / 'resources' / 'site-marks' / 'globe.svg').read_bytes(),
                         status_code=404, media_type='image/svg+xml', headers={'cache-control': 'no-store'})
