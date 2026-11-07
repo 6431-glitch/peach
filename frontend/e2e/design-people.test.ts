@@ -708,9 +708,10 @@ describe('设计决定：人物与厂牌资料页', () => {
     }
   });
 
-  it('人物页骨架第一帧就带着这一位有的新作行与同台艺人，数据到了一次换齐、高度不变、封面不再等第二遍', { timeout: 60_000 }, async () => {
+  it('人物页首帧保留新作和同台艺人的高度，文字先呈现、封面独立加载', { timeout: 60_000 }, async () => {
     const name = '七沢みあ';
     const opened = await visit(browser, '/', DESKTOP);
+    let releaseCover = () => {};
     try {
       await opened.page.route(/\/api\/entity\/shapes/, (route) => route.fulfill({ json: {
         ok: true, entities: [{ id: 90_001, kind: 'performer', names: [name], parts: ['feed', 'costars'] }] } }));
@@ -758,9 +759,10 @@ describe('设计决定：人物与厂牌资料页', () => {
           has_cover: true, cover_frame: null, poster_box: null, release_date: '2026-09-01',
           studio: '厂牌', performers: name, source_name: '', read: false, ignored: false,
           scrape_error: null }] } }));
-      // 封面比数据晚到一截：整页要等它，而不是先换上真卡、再在封面格里微光一遍。
+      // 封面尚未返回时，身份、标题和操作仍应可见。
+      const coverWaiting = new Promise<void>(resolve => { releaseCover = resolve });
       await opened.page.route(/\/cover\?code=ABC-001/, async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 400));
+        await coverWaiting;
         await route.fulfill({ contentType: 'image/png', body: Buffer.from(PIXEL, 'base64') });
       });
       await opened.page.goto(new URL(`/performers/${encodeURIComponent(name)}`,
@@ -810,9 +812,14 @@ describe('设计决定：人物与厂牌资料页', () => {
       assert.equal(after.footHeight, before.footHeight, '同台艺人那一条占位和真的不一样高，资料卡会伸缩');
       assert.equal(after.busy, null);
       assert.equal(after.second, false, '整页画出来之后新作那一行又单独骨架了一轮');
-      assert.equal(after.waiting, 0, '骨架退场后封面格里又微光了一遍');
+      assert.equal(after.waiting, 1, '封面独立等待时保留卡片标题和操作');
+      releaseCover();
+      await opened.page.waitForFunction(() => !document.querySelector('[data-feed-id] .pic.imgwait'));
+      assert.equal(await row.locator('[data-feed-id] img').first().evaluate(image =>
+        (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0), true);
       assert.deepEqual(opened.problems, []);
     } finally {
+      releaseCover();
       await opened.close();
     }
   });
