@@ -593,9 +593,6 @@ class UpgradeRepairs:
     def _settle_dangling_candidates_once(self) -> None:
         from .review_csv import write_rows
         from .stale_candidates import metadata_candidate_files, settle_dangling_rows
-        from .web_resource_sync import _managed_cache_root
-        if not _managed_cache_root(self.contract, self.contract.candidate_root):
-            return
         with self.contract.database.read_connection() as connection:
             if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?', (DANGLING_KEY,)).fetchone():
                 return
