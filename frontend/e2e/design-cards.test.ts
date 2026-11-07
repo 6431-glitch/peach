@@ -130,6 +130,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
        目录那一页给前三条挂半程观看进度，量进度条的颜色。 */
     const opened = await openCatalogFixture(browser, (payload, url) => {
       if (url.searchParams.get('state') !== 'trash') {
+        if (!url.searchParams.has('orient')) assert.ok(payload.items.length >= 8, 'Mix 外观夹具至少提供八张作品');
         for (const item of payload.items.slice(0, 3)) Object.assign(item, { duration: 600, play_seconds: 300 });
         return;
       }
@@ -137,7 +138,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
       if (!item) throw new Error('演示目录不够两条');
       Object.assign(item, { medium: 'archive', name: '演示资料.zip', disposal: 'trash' });
       Object.assign(payload.items[0], { disposal: 'trash', is_jav: false, has_cover: false, has_thumb: true });
-    });
+    }, { completeFirstPage: true });
     const { page } = opened;
     await page.route('**/poster**', (route) => route.fulfill({
       status: 200, contentType: 'image/png', body: Buffer.from(PIXEL, 'base64'),
@@ -174,13 +175,7 @@ describe('设计决定：作品卡、管理页与复核', () => {
     try {
       await page.locator('#grid [data-shorts-strip]').first().waitFor({ timeout: 10_000 });
       await page.locator('#grid [data-media-grid] > [data-media-card] [data-media-progress]').first().waitFor({ timeout: 10_000 });
-      // Mix 在累计八张作品后才出现；渐进首批不足时正常续载到对应卡片，再量它的样式。
-      while (!await page.locator('#grid [data-mix-card]').count() && await page.locator('#grid [data-load-more]').count()) {
-        const before = await page.locator('#grid [data-media-card]').count();
-        await page.evaluate(() => document.querySelector('#grid [data-load-more]')?.scrollIntoView());
-        await page.waitForFunction(before => document.querySelectorAll('#grid [data-media-card]').length > before
-          || !document.querySelector('#grid [data-load-more]'), before);
-      }
+      // 本例检查外观，夹具提供完整首页，Mix 按累计八张的真实规则插入。
       await page.locator('#grid [data-mix-glyph]').first().waitFor({ state: 'attached' });
       const catalog = await readStyles({
         card: '[data-media-grid] > [data-media-card]',
