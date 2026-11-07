@@ -947,7 +947,7 @@ def management_route_redirect(request: Request, args: dict[str, str] = Depends(r
 def settings_section_route(request: Request, section: str,
                            args: dict[str, str] = Depends(require_page_auth)):
     if section not in {"appearance", "playback", "jav", "search", "content", "library",
-                       "subscriptions", "downloads", "network", "maintenance", "repairs", "diagnostics"}:
+                       "subscriptions", "downloads", "network", "maintenance", "diagnostics"}:
         raise HTTPException(404, "not found")
     return index(request, args)
 

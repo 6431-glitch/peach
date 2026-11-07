@@ -2,12 +2,12 @@
 import { useEffect, useState } from 'react';
 import { RiArrowRightLine } from '@remixicon/react';
 import { Button } from '@/components/base/buttons/button';
-import { LinkButton } from '@/components/base/buttons/link-button';
 import { apiSend } from '../../api';
 import { useClientUpdates } from '../client-updates';
 import type { ClientUpdates } from '../client-updates';
 import { AnimatedNumber } from '../components/animated-number';
 import { StatusLabel } from '../components/status-label';
+import { REPAIR_CENTER_HASH, RepairCenterDialog } from './repair-center';
 import { ErrorText, ExternalLink, Fact, FactList, Footer, Help, Section, Stack, TaskCenterLink } from './section';
 import { useAction } from './use-action';
 
@@ -18,6 +18,8 @@ export function UpgradeRepairs() {
   const { snapshot } = useClientUpdates();
   const [saved, setSaved] = useState<ClientUpdates['repairs'] | null>(null);
   const action = useAction();
+  // 公告等处用 `#repairCenter` 直达这个子页面。
+  const [center, setCenter] = useState(() => location.hash === REPAIR_CENTER_HASH);
   useEffect(() => setSaved(null), [snapshot]);
   const data = saved ?? snapshot?.repairs;
   const state = data?.state || 'pending';
@@ -42,11 +44,12 @@ export function UpgradeRepairs() {
     {data?.message || action.error ? <Stack><ErrorText>{action.error || data?.message}</ErrorText></Stack> : null}
     {state === 'running' ? <Stack><Help>资料与预览正在后台补全。</Help><TaskCenterLink /></Stack> : null}
     <Footer status={<div className="flex flex-wrap items-center gap-3">
-      <LinkButton href="/settings/repairs" size="small" trailingIcon={RiArrowRightLine}>修复与迁移</LinkButton>
+      <Button size="small" variant="ghost" trailingIcon={RiArrowRightLine} onClick={() => setCenter(true)}>修复与迁移</Button>
       {review ? <ExternalLink href="/api/configuration/upgrade-repairs/review">下载复核记录</ExternalLink> : null}
     </div>}>
       <Button size="small" variant="secondary" disabled={!data?.available || state === 'running' || !!action.busy || (!failed && state !== 'failed')}
         onClick={retry}>重试失败项</Button>
     </Footer>
+    {center ? <RepairCenterDialog close={() => setCenter(false)} /> : null}
   </Section>;
 }

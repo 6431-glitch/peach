@@ -35,7 +35,7 @@ NOTICES: dict[str, dict] = {
         ],
         "attention": [
             {"title": "网盘视频可以手动补测尺寸", "when": "display_cloud_pending",
-             "route": "/settings/repairs",
+             "route": "/settings/maintenance#repairCenter",
              "body": "为免撑大网盘缓存，网盘里的视频没有自动补测"},
         ],
     },
