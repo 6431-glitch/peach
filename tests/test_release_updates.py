@@ -448,6 +448,5 @@ class ReleaseNoticeFactsTests(unittest.TestCase):
         ])
         request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(
             upgrade_repairs=SimpleNamespace(available=False))))
-        with patch.object(routes_configuration.settings_file, 'load_config', side_effect=OSError):
-            facts = routes_configuration._release_notice_facts(request, connection)
+        facts = routes_configuration._release_notice_facts(request, connection)
         self.assertEqual(facts, {'system_files': {'count': 2}, 'garbled_performers': {'count': 1}})

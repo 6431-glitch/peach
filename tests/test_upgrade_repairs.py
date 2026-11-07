@@ -48,6 +48,74 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service.prepare()
         return sheet
 
+    def test_cloud_videos_wait_for_the_user_before_their_display_size_is_measured(self):
+        """网盘里的旧视频不在升级时补测；用户在「修复与迁移」里确认才加进来，之后不再等确认。"""
+        from peach import media_probe, repair_center
+        with self.database.write_transaction() as connection:
+            connection.execute(
+                "INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration,width,height) "
+                "VALUES(2,'115','2.mp4','ABC-002.mp4','video','ABC-002','{}',60,720,1280)")
+        self.display_sample()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(receipt['display_dimensions_v2']['dimensions'], {'1': [720, 1280]})
+        self.assertEqual(self.service.cloud_display_videos(), 1)
+
+        def cloud_item():
+            with self.database.read_connection() as connection:
+                center = repair_center.snapshot(connection, upgrade_repairs._read(self.service.receipt),
+                                                cloud_pending=self.service.cloud_display_videos())
+            return next(item for item in center['items'] if item['id'] == 'display-cloud')
+
+        self.assertEqual((cloud_item()['mode'], cloud_item()['state'], cloud_item()['pending']), ('confirm', 'waiting', 1))
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch.object(upgrade_repairs, '_stale_previews', return_value=False), \
+                patch.object(media_probe, 'probe_file') as probe:
+            self.service.include_cloud_display_dimensions()
+        probe.assert_not_called()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(sorted(receipt['display_dimensions_v2']['dimensions']), ['1', '2'])
+        self.assertEqual(self.service.cloud_display_videos(), 0)
+        self.assertEqual((cloud_item()['state'], cloud_item()['pending']), ('done', 0))
+
+    def test_repair_history_shows_each_run_and_whether_its_backup_is_still_kept(self):
+        """历史与「账本备份」联动：修复前的备份还在就能去恢复，按保留规则清退了照实写。"""
+        from peach import repair_center
+        kept = self.root / 'ledger.pre-sar-1.db'
+        kept.write_bytes(b'')
+        with self.database.write_transaction() as connection:
+            connection.execute('DELETE FROM ledger_upgrade_repair')
+            connection.executemany('INSERT INTO ledger_upgrade_repair(id,result_json,applied_at) VALUES(?,?,?)', [
+                ('catalog-v4:x', json.dumps({'local': {'changed': {'codes': 2, 'probe_retry': 9,
+                                                                    'text_snapshots_invalidated': 40},
+                                                       'backup': str(self.root / 'ledger.pre-upgrade-1.db')},
+                                             'display_dimensions_v2': {'backup': str(kept)}}), '200'),
+                ('stale-filename-codes-1', json.dumps({'cleared': [1, 2, 3]}), '100'),
+                ('stale-filename-codes-0', json.dumps({'cleared': []}), '50'),
+            ])
+        with self.database.read_connection() as connection:
+            history = repair_center.snapshot(connection, {}, cloud_pending=0,
+                                             backup_directories=[self.root])['history']
+        self.assertEqual([(row['title'], row['changed']) for row in history],
+                         [('资料与番号整理', 2), ('清除误认的番号', 3)])
+        self.assertEqual(sorted((row['name'], row['exists']) for row in history[0]['backups']),
+                         [('ledger.pre-sar-1.db', True), ('ledger.pre-upgrade-1.db', False)])
+        self.assertEqual(history[1]['backups'], [])
+
+    def test_repair_page_lists_only_what_touched_this_library(self):
+        """没有网盘视频、NAS 系统目录与乱码人物的馆藏，这几项不出现；只改了资料的那项才列。"""
+        from peach import repair_center
+        with self.database.write_transaction() as connection:
+            connection.execute('DELETE FROM ledger_upgrade_repair')
+            connection.execute('INSERT INTO ledger_upgrade_repair(id,result_json,applied_at) VALUES(?,?,?)',
+                               ('garbled-people-1', json.dumps({'garbled_people': {'links': []}}), '10'))
+        receipt = {'local': {'state': 'done', 'changed': {'codes': 2}}}
+        with self.database.read_connection() as connection:
+            items = repair_center.snapshot(connection, receipt, cloud_pending=0)['items']
+            self.assertEqual([item['id'] for item in items], ['catalog'])
+            waiting = repair_center.snapshot(connection, {}, cloud_pending=3)['items']
+        self.assertEqual([(item['id'], item['state']) for item in waiting], [('display-cloud', 'waiting')])
+
     def test_upgrade_schedules_measured_videos_once_without_reading_media_during_planning(self):
         from peach import media_probe
         sheet = self.display_sample()

@@ -7,7 +7,7 @@ from filelock import FileLock
 
 from . import artifact_rules, media_probe, timeline_sheets, upgrade_rules
 from .fsutil import atomic_write_text
-from .media_sources import cost_for
+from .media_sources import CLOUD_LOCATIONS, cost_for
 from .platform import translate_ledger_path
 from .media_identity import path_key
 from .strm import skip_background_read
@@ -25,10 +25,15 @@ def task_key(row) -> str:
     return f'upgrade-library:{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:{generation(row)}:{row["id"]}'
 
 
-def collect(connection) -> dict:
+def collect(connection, *, cloud: bool = False) -> dict:
+    """要补测的旧视频。网盘挂载默认不在内：逐部读文件头会撑大网盘客户端缓存、耗流量，
+    收益只有少数非方形像素的片子；用户在「自动修复」里点「补测网盘视频」才加进来。"""
+    places = ','.join('?' * len(CLOUD_LOCATIONS))
+    condition = f"location IN ({places})" if cloud else f"location NOT IN ({places})"
     return {str(row['id']): [row['width'], row['height']] for row in connection.execute(
         "SELECT id,path,width,height FROM asset WHERE medium='video' AND disposal IS NULL "
-        "AND duration>0 AND width>0 AND height>0") if not skip_background_read(row['path'])}
+        f"AND duration>0 AND width>0 AND height>0 AND {condition}", tuple(CLOUD_LOCATIONS))
+        if not skip_background_read(row['path'])}
 
 
 def _invalidate(contract, config, row) -> None:

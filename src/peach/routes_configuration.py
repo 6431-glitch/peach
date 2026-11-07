@@ -18,6 +18,7 @@ import json
 import secrets
 import time
 import uuid
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -828,10 +829,9 @@ def client_updates(request: Request, _args=Depends(require_auth)):
 
 
 def _release_notice_facts(request: Request, connection) -> dict:
-    """公告条目的显示条件：只看本机回执与设置，不发外部请求。读不到的一项按不显示处理。"""
-    from . import storage_budget, system_file_repair
+    """公告条目的显示条件：只看本机回执，不发外部请求。读不到的一项按不显示处理。"""
+    from . import system_file_repair
     from .display_dimensions_repair import RECEIPT_KEY
-    from .downloads import DownloadSettings
     from .upgrade_repairs import _read
     facts: dict[str, Any] = {}
     service = request.app.state.upgrade_repairs
@@ -854,13 +854,8 @@ def _release_notice_facts(request: Request, connection) -> dict:
     unlinked = json.loads(row[0])['garbled_people'].get('links') if row else None
     if unlinked:
         facts['garbled_performers'] = {'count': len(unlinked)}
-    try:
-        config = settings_file.load_config()
-        if (config.present and DownloadSettings(config.directory('state')).load().clouddrive_address
-                and not storage_budget.load_policy(config).external_cache_max_gib):
-            facts['clouddrive_unlimited'] = True
-    except (OSError, ValueError):
-        pass
+    if service.available and (cloud := service.cloud_display_videos()):
+        facts['display_cloud_pending'] = {'count': cloud}
     return facts
 
 
@@ -899,6 +894,48 @@ async def retry_upgrade_repairs(request: Request, _args=Depends(require_auth)):
                 return service.snapshot()
         await asyncio.to_thread(service.retry)
         return service.snapshot()
+    except (ValueError, OSError, Timeout) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+def _repair_center(request: Request) -> dict:
+    from . import ledger_backups, repair_center
+    from .upgrade_repairs import _read
+    service = request.app.state.upgrade_repairs
+    try:
+        receipt = _read(service.receipt) if service.available else {}
+    except (OSError, ValueError, TypeError):
+        receipt = {}
+    directories = [Path(service.contract.db_path).parent]
+    try:
+        directories.append(ledger_backups.organize_dir(settings_file.active().directory('generated')))
+    except (OSError, ValueError):
+        pass
+    with request.app.state.web_contract.read_connection() as connection:
+        result = repair_center.snapshot(connection, receipt, backup_directories=directories,
+                                        cloud_pending=service.cloud_display_videos() if service.available else 0)
+    return {**result, 'available': service.available}
+
+
+@router.get('/api/configuration/repairs')
+def read_repair_center(request: Request, _args=Depends(require_auth)):
+    """「修复与迁移」：各项修复的结果、修复前的备份，以及等用户确认的项。"""
+    local_only(request)
+    return _repair_center(request)
+
+
+@router.post('/api/configuration/repairs/display-cloud')
+async def include_cloud_display_dimensions(request: Request, _args=Depends(require_auth)):
+    """网盘视频的显示尺寸不在升级时自动补测，由用户在「修复与迁移」里确认后开始。"""
+    import asyncio
+    from .api import _installation_in_progress
+    local_only(request)
+    same_origin(request)
+    try:
+        if await asyncio.to_thread(_installation_in_progress, request.app.state.settings.db_path):
+            raise ValueError('正在安装更新，请稍后重试')
+        await asyncio.to_thread(request.app.state.upgrade_repairs.include_cloud_display_dimensions)
+        return _repair_center(request)
     except (ValueError, OSError, Timeout) as exc:
         raise HTTPException(409, str(exc)) from exc
 

@@ -922,6 +922,47 @@ class UpgradeRepairs:
             store.prune(TASK_KEY)
         return True
 
+    def cloud_display_videos(self) -> int:
+        """网盘里还没加进显示尺寸补测的旧视频数；用户点过「补测网盘视频」就是 0。"""
+        from . import display_dimensions_repair as repair
+        try:
+            display = _read(self.receipt).get(repair.RECEIPT_KEY)
+        except (OSError, ValueError, TypeError):
+            return 0
+        if display is None or display.get('cloud_included_at'):
+            return 0
+        with self.contract.database.read_connection() as connection:
+            return sum(asset_id not in display.get('dimensions', {})
+                       for asset_id in repair.collect(connection, cloud=True))
+
+    def include_cloud_display_dimensions(self) -> dict:
+        """用户在「自动修复」里点了「补测网盘视频」：把网盘来源的旧视频加进显示尺寸补测。
+
+        升级时自动补测只看本机与局域网的来源（`display_dimensions_repair.collect`）；
+        网盘这一批交给用户决定什么时候做，照样受容量保护和计费来源设置约束。"""
+        if not self.available:
+            raise ValueError('更新后自动处理只在本机写入端可用')
+        from . import display_dimensions_repair as repair
+        self.prepare()
+        with FileLock(str(self.receipt) + '.lock', timeout=0):
+            receipt = _read(self.receipt)
+            display = receipt.get(repair.RECEIPT_KEY)
+            if display is None:
+                raise ValueError('显示尺寸补测还没准备好，请稍后再试')
+            with self.contract.database.read_connection() as connection:
+                extra = {asset_id: size for asset_id, size in repair.collect(connection, cloud=True).items()
+                         if asset_id not in display['dimensions']}
+                generations = {str(row['id']): repair.generation(row) for row in connection.execute(
+                    f'SELECT {repair.IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
+                    (json.dumps(list(extra)),))}
+            display['dimensions'].update(extra)
+            display.setdefault('generations', {}).update(generations)
+            display['cloud_included_at'] = time.time()
+            receipt['dispatch_complete'] = False
+            self._save_receipt(receipt)
+        self.tick()
+        return self.snapshot()
+
     def retry(self) -> dict:
         """显式重试失败项；用户取消的任务保持取消。"""
         if not self.available:

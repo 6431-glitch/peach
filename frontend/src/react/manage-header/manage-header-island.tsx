@@ -63,7 +63,7 @@ function ManageHeader({ host: at, props: current }: { host: ManageHeaderHost; pr
   return (
     <>
       <ManageBar host={at} pressed={view.pressed} menu={current.menu} />
-      {view.crumb ? <Crumb host={at} label={view.crumb} /> : null}
+      {view.crumb ? <Crumb host={at} label={view.crumb} parent={view.parent} /> : null}
       <h2 data-manage-title="" data-compact={view.compact ? '' : undefined}>{view.title}</h2>
       {view.lede.kind === 'none' ? null : <TrashLede host={at} lede={view.lede} />}
     </>
@@ -122,16 +122,16 @@ function ManageBar({ host: at, pressed: key, menu }: Pick<ManageHeaderProps, 'me
 /* ── 面包屑 ──
    Geist Breadcrumbs：上一级是链接、当前页是纯文本并带 `aria-current="true"`。href 留给新标签页与右键
    菜单；普通左键走路由，整页重载会丢掉返回表面与已读位置。 */
-function Crumb({ host: at, label }: { host: ManageHeaderHost; label: string }) {
+function Crumb({ host: at, label, parent }: { host: ManageHeaderHost; label: string; parent: ManageHeaderView['parent'] }) {
   const follow = (event: MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button) return;
     event.preventDefault();
-    at.openDataCleanup();
+    at.openPath(parent.href);
   };
   return (
     <nav data-manage-crumb="" aria-label="当前位置">
       <ol>
-        <li><a href="/data-cleanup" onClick={follow}>数据管理</a><Icon name="chevron-right" /></li>
+        <li><a href={parent.href} onClick={follow}>{parent.label}</a><Icon name="chevron-right" /></li>
         <li aria-current="true"><span>{label}</span></li>
       </ol>
     </nav>
