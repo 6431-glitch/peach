@@ -3,12 +3,12 @@
  *  条目已经由服务端按平台和本机数据挑过，这里只负责显示。列表沿用新手教程「开始使用」的
  *  图标行（`peach-guide-routes`），每条一句短话；修复与完整清单在 Release 页。
  *  新安装与不弹窗的补丁版直接记为已读，不打扰。 */
-import { useEffect, useState, type ComponentType, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import {
   RiArrowLeftRightLine, RiAspectRatioLine, RiCheckboxMultipleLine, RiDatabase2Line, RiDraggable, RiFolderLine,
   RiHardDrive3Line, RiRefreshLine, RiServerLine, RiShieldCheckLine, RiSparklingLine, RiSpeedUpLine, RiStackLine,
-  RiUserLine,
+  RiUserLine, type RemixiconComponentType,
 } from '@remixicon/react';
 import { Button } from '@/components/base/buttons/button';
 import { apiGet, apiSend } from '../api';
@@ -29,7 +29,7 @@ interface ReleaseNoticeSnapshot {
 }
 
 export const RELEASE_NOTICE_EVENT = 'peach:release-notice';
-const ICONS: Record<string, ComponentType<{ className?: string; 'aria-hidden'?: boolean }>> = {
+const ICONS: Record<string, RemixiconComponentType> = {
   storage: RiHardDrive3Line, reorder: RiDraggable, library: RiFolderLine, select: RiCheckboxMultipleLine,
   resize: RiAspectRatioLine, server: RiServerLine, person: RiUserLine, shield: RiShieldCheckLine,
   stack: RiStackLine, switch: RiArrowLeftRightLine, speed: RiSpeedUpLine, refresh: RiRefreshLine,
@@ -41,7 +41,7 @@ function progressLabel(progress: NoticeItem['progress']) {
   if (progress.total) {
     return progress.done! >= progress.total
       ? <StatusLabel tone="success">已完成</StatusLabel>
-      : <StatusLabel tone="info">{(progress.done || 0).toLocaleString()} / {progress.total.toLocaleString()}</StatusLabel>;
+      : <StatusLabel tone="progress">{(progress.done || 0).toLocaleString()} / {progress.total.toLocaleString()}</StatusLabel>;
   }
   return progress.count ? <StatusLabel tone="success">{progress.count.toLocaleString()} 个</StatusLabel> : null;
 }
