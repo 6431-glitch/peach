@@ -44,6 +44,30 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service.prepare()
         return sheet
 
+    def test_cloud_videos_wait_for_the_user_before_their_display_size_is_measured(self):
+        """网盘里的旧视频不在升级时补测；用户点「补测网盘视频」才加进来，之后入口消失。"""
+        from peach import media_probe
+        with self.database.write_transaction() as connection:
+            connection.execute(
+                "INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration,width,height) "
+                "VALUES(2,'115','2.mp4','ABC-002.mp4','video','ABC-002','{}',60,720,1280)")
+        self.display_sample()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(receipt['display_dimensions_v2']['dimensions'], {'1': [720, 1280]})
+        self.assertEqual(self.service.cloud_display_videos(), 1)
+        self.assertIn({'id': 'display-cloud', 'label': '网盘视频显示尺寸', 'state': 'available', 'cloud_videos': 1},
+                      self.service.snapshot()['items'])
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch.object(upgrade_repairs, '_stale_previews', return_value=False), \
+                patch.object(media_probe, 'probe_file') as probe:
+            snapshot = self.service.include_cloud_display_dimensions()
+        probe.assert_not_called()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(sorted(receipt['display_dimensions_v2']['dimensions']), ['1', '2'])
+        self.assertEqual(self.service.cloud_display_videos(), 0)
+        self.assertNotIn('display-cloud', [row['id'] for row in snapshot['items']])
+
     def test_upgrade_schedules_measured_videos_once_without_reading_media_during_planning(self):
         from peach import media_probe
         sheet = self.display_sample()

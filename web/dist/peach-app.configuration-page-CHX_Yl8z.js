@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "4742193f-bbf7-419e-a593-f0a4953df5a1", e._sentryDebugIdIdentifier = "sentry-dbid-4742193f-bbf7-419e-a593-f0a4953df5a1");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "3335a7ec-bbf2-4aba-9a58-9800813c4d7c", e._sentryDebugIdIdentifier = "sentry-dbid-3335a7ec-bbf2-4aba-9a58-9800813c4d7c");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2897,7 +2897,9 @@ var Ja = {
 function Ya() {
 	let { snapshot: e } = Hn(), [t, n] = (0, Z.useState)(null), r = Y();
 	(0, Z.useEffect)(() => n(null), [e]);
-	let i = t ?? e?.repairs, a = i?.state || "pending", o = i?.items.reduce((e, t) => e + (t.pending || 0), 0) || 0, s = i?.items.reduce((e, t) => e + (t.failed || 0), 0) || 0, c = i?.items.reduce((e, t) => e + (t.review_count || 0), 0) || 0;
+	let i = t ?? e?.repairs, a = i?.state || "pending", o = i?.items.reduce((e, t) => e + (t.pending || 0), 0) || 0, s = i?.items.reduce((e, t) => e + (t.failed || 0), 0) || 0, c = i?.items.reduce((e, t) => e + (t.review_count || 0), 0) || 0, l = i?.items.find((e) => e.id === "display-cloud")?.cloud_videos || 0, u = (e, t) => void r.run(e, (e) => G(t, {}, "POST", e), (e) => {
+		n(e), document.dispatchEvent(new Event("peach:client-updates"));
+	});
 	return /* @__PURE__ */ (0, Q.jsxs)(L, {
 		id: "upgradeRepairs",
 		title: "自动修复",
@@ -2926,20 +2928,28 @@ function Ya() {
 			] }),
 			i?.message || r.error ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(k, { children: r.error || i?.message }) }) : null,
 			a === "running" ? /* @__PURE__ */ (0, Q.jsxs)(V, { children: [/* @__PURE__ */ (0, Q.jsx)(N, { children: "资料与预览正在后台补全。" }), /* @__PURE__ */ (0, Q.jsx)(Kt, {})] }) : null,
-			/* @__PURE__ */ (0, Q.jsx)(M, {
+			l ? /* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
+				"网盘里有 ",
+				l.toLocaleString(),
+				" 部视频没有自动补测显示尺寸。补测要逐部读取文件头，网盘缓存和流量会增加。"
+			] }) }) : null,
+			/* @__PURE__ */ (0, Q.jsxs)(M, {
 				status: c ? /* @__PURE__ */ (0, Q.jsx)(A, {
 					href: "/api/configuration/upgrade-repairs/review",
 					children: "下载复核记录"
 				}) : void 0,
-				children: /* @__PURE__ */ (0, Q.jsx)(E, {
+				children: [/* @__PURE__ */ (0, Q.jsx)(E, {
 					size: "small",
 					variant: "secondary",
 					disabled: !i?.available || a === "running" || !!r.busy || !s && a !== "failed",
-					onClick: () => void r.run("retry", (e) => G("/api/configuration/upgrade-repairs/retry", {}, "POST", e), (e) => {
-						n(e), document.dispatchEvent(new Event("peach:client-updates"));
-					}),
+					onClick: () => u("retry", "/api/configuration/upgrade-repairs/retry"),
 					children: "重试失败项"
-				})
+				}), l ? /* @__PURE__ */ (0, Q.jsx)(E, {
+					size: "small",
+					disabled: !i?.available || !!r.busy,
+					onClick: () => u("cloud", "/api/configuration/upgrade-repairs/display-cloud"),
+					children: "补测网盘视频"
+				}) : null]
 			})
 		]
 	});
@@ -6292,4 +6302,4 @@ function $s({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Xs as ConfigurationPage };
 
-//# debugId=4742193f-bbf7-419e-a593-f0a4953df5a1
+//# debugId=3335a7ec-bbf2-4aba-9a58-9800813c4d7c

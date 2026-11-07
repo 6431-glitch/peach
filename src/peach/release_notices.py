@@ -34,9 +34,9 @@ NOTICES: dict[str, dict] = {
              "title": "清理乱码人物", "body": "重新补采演员"},
         ],
         "attention": [
-            {"title": "建议给网盘缓存设上限", "when": "clouddrive_unlimited",
-             "route": "/settings/maintenance#storageBudgetSettings",
-             "body": "补测期间网盘缓存会增长"},
+            {"title": "网盘视频可以手动补测尺寸", "when": "display_cloud_pending",
+             "route": "/settings/maintenance#upgradeRepairs",
+             "body": "为免撑大网盘缓存，网盘里的视频没有自动补测"},
         ],
     },
     "0.56.0": {
