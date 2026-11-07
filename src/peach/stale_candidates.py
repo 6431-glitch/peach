@@ -93,12 +93,16 @@ def settle_dangling_rows(connection, files) -> dict:
 
     返回 `files`（改过的文件 → 表头与新行）、`repinned`、`withdrawn`，后两样原样进回执。
     """
-    from .metadata_auto_apply import asset_at_path
+    from .metadata_auto_apply import pinned_asset_ids
     existing = {row[0] for row in connection.execute("SELECT id FROM asset")}
     taken = {row["item_key"] for _path, _header, rows in files for row in rows
              if pinned_id(row) is None or pinned_id(row) in existing}
     taken |= {row[0] for row in connection.execute(
         "SELECT item_key FROM review_decision WHERE category='metadata_fields'")}
+    dangling = [row for _path, _header, rows in files for row in rows
+                if pinned_id(row) is not None and pinned_id(row) not in existing]
+    # 编号已不在表里，`pinned_asset_ids` 给的就是路径恰好对上的那一条。
+    targets = dict(zip(map(id, dangling), pinned_asset_ids(connection, dangling)))
     changed, repinned, withdrawn = {}, [], []
     for path, header, rows in files:
         kept, touched = [], False
@@ -109,7 +113,7 @@ def settle_dangling_rows(connection, files) -> dict:
                 continue
             touched = True
             field = str(row.get("field") or "").strip()
-            target = asset_at_path(connection, row.get("asset_path"))
+            target = targets[id(row)]
             key = (f"asset:{target}:{field}" if row["item_key"] == f"asset:{old}:{field}"
                    else row["item_key"])
             if target is not None and (key == row["item_key"] or key not in taken):

@@ -1207,29 +1207,51 @@ def _pinned_asset_id(connection, group: dict) -> int | None:
     编号认不到时按记下的路径找：永久删除后同一个文件被扫描重新登记，拿到的是新编号（#486）。
     路径恰好对上一条在库视频的才是它；候选件不记 `location`，对上多条就不认。
     """
-    asset_id = str(group.get("asset_id") or "").strip()
-    if not asset_id.isdigit():
-        return None
-    found = connection.execute(
-        "SELECT path,code FROM asset WHERE id=? AND medium='video' AND disposal IS NULL",
-        (int(asset_id),)).fetchone()
-    if found is not None:
-        if found[0] == group.get("asset_path"):
-            return int(asset_id)
+    return pinned_asset_ids(connection, [group])[0]
+
+
+def pinned_asset_ids(connection, groups: list[dict]) -> list[int | None]:
+    """`_pinned_asset_id` 的整批版，按顺序给出每一行指的编号。
+
+    复核队列一次判几万行，逐行查编号再逐行扫路径（`path` 没有单列索引）要一两秒；这里按
+    编号、按路径各查一趟。
+    """
+    def chunks(values):
+        values = sorted(values)
+        for offset in range(0, len(values), 900):
+            batch = values[offset:offset + 900]
+            yield batch, ",".join("?" * len(batch))
+
+    raws = [str(group.get("asset_id") or "").strip() for group in groups]
+    found = {}
+    for batch, marks in chunks({int(raw) for raw in raws if raw.isdigit()}):
+        for asset_id, path, code in connection.execute(
+                f"SELECT id,path,code FROM asset WHERE medium='video' AND disposal IS NULL AND id IN ({marks})",
+                batch):
+            found[int(asset_id)] = (path, code)
+    result: list[int | None] = []
+    lost: dict[int, str] = {}
+    for index, (group, raw) in enumerate(zip(groups, raws)):
+        result.append(None)
+        if not raw.isdigit():
+            continue
+        hit = found.get(int(raw))
         code = normalise_code_key(str(group.get("code") or ""))
-        if code and normalise_code_key(str(found[1] or "")) == code:
-            return int(asset_id)
-    return asset_at_path(connection, group.get("asset_path"))
-
-
-def asset_at_path(connection, path) -> int | None:
-    """这个路径现在是哪一条在库视频；没有或不止一条时返回 None。"""
-    if not path:
-        return None
-    found = connection.execute(
-        "SELECT id FROM asset WHERE path=? AND medium='video' AND disposal IS NULL LIMIT 2",
-        (str(path),)).fetchall()
-    return int(found[0][0]) if len(found) == 1 else None
+        if hit is not None and (hit[0] == group.get("asset_path")
+                                or (code and normalise_code_key(str(hit[1] or "")) == code)):
+            result[index] = int(raw)
+        elif group.get("asset_path"):
+            lost[index] = str(group["asset_path"])
+    at_path: dict[str, list[int]] = defaultdict(list)
+    for batch, marks in chunks(set(lost.values())):
+        for asset_id, path in connection.execute(
+                f"SELECT id,path FROM asset WHERE medium='video' AND disposal IS NULL AND path IN ({marks})",
+                batch):
+            at_path[path].append(int(asset_id))
+    for index, path in lost.items():
+        if len(at_path[path]) == 1:
+            result[index] = at_path[path][0]
+    return result
 
 
 def verification_outcome(connection, row: dict, *, assets=None) -> Verification | None:

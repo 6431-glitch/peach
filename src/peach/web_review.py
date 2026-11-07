@@ -46,7 +46,7 @@ from .metadata_auto_apply import (
     _offers_another_stage_name,
     _only_mib_official,
     _parsed_candidates,
-    _pinned_asset_id,
+    pinned_asset_ids,
     _row_candidates,
     _split_multi,
     genres_still_pending,
@@ -340,13 +340,15 @@ def _repin_file_rows(connection, rows: list[dict]) -> list[dict]:
     对不上的那些不论点哪个都写不进账本，留在队列里只是一张点了就报错的卡。
     """
     keys = {row["item_key"] for row in rows}
+    pinned_rows = [row for row in rows
+                   if row.get("asset_path") and str(row.get("asset_id") or "").strip().isdigit()]
+    pins = dict(zip(map(id, pinned_rows), pinned_asset_ids(connection, pinned_rows)))
     kept = []
     for row in rows:
-        raw = str(row.get("asset_id") or "").strip()
-        if not row.get("asset_path") or not raw.isdigit():
+        if id(row) not in pins:
             kept.append(row)
             continue
-        pinned = _pinned_asset_id(connection, row)
+        raw, pinned = str(row["asset_id"]).strip(), pins[id(row)]
         if pinned is None:
             continue
         if pinned != int(raw):
