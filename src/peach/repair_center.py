@@ -73,6 +73,25 @@ def _backups(value, directories) -> list[dict]:
     return found
 
 
+def _history(rows, backup_directories) -> list[dict]:
+    """历史记录：认得的规则里确实改了东西的那几次，连同修复前的备份还在不在。"""
+    history = []
+    for row_id, applied_at, result in rows:
+        rule = next((rule for rule in RULES if row_id.startswith(rule[0])), None)
+        if rule is None:
+            continue
+        if rule[2] is None:
+            changed = _count({key: value for key, value in result.get('local', {}).get('changed', {}).items()
+                              if key not in _NOT_CHANGES})
+        else:
+            changed = sum(_count(result.get(key)) for key in rule[2])
+        if not changed:
+            continue
+        backups = list({row['name']: row for row in _backups(result, backup_directories)}.values())
+        history.append({'id': row_id, 'title': rule[1], 'at': applied_at, 'changed': changed, 'backups': backups})
+    return history
+
+
 def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directories=()) -> dict:
     rows = sorted(((row[0], float(row[1] or 0), json.loads(row[2] or '{}')) for row in connection.execute(
         'SELECT id, applied_at, result_json FROM ledger_upgrade_repair')), key=lambda row: row[1], reverse=True)
@@ -97,18 +116,4 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
     }
     items = [{'id': key, 'title': title, 'summary': summary, 'mode': mode, **facts[key]}
              for key, title, summary, mode in ITEMS if _touched(facts[key])]
-    history = []
-    for row_id, applied_at, result in rows:
-        rule = next((rule for rule in RULES if row_id.startswith(rule[0])), None)
-        if rule is None:
-            continue
-        if rule[2] is None:
-            changed = _count({key: value for key, value in result.get('local', {}).get('changed', {}).items()
-                              if key not in _NOT_CHANGES})
-        else:
-            changed = sum(_count(result.get(key)) for key in rule[2])
-        if not changed:
-            continue
-        backups = list({row['name']: row for row in _backups(result, backup_directories)}.values())
-        history.append({'id': row_id, 'title': rule[1], 'at': applied_at, 'changed': changed, 'backups': backups})
-    return {'items': items, 'history': history}
+    return {'items': items, 'history': _history(rows, backup_directories)}
