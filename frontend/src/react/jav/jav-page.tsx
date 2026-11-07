@@ -11,6 +11,7 @@ import { CloudDownloadDialog, type DownloadPrefill } from '../activity/cloud-dow
 import { Note } from '../components/note';
 import { EmptyState } from '../components/empty-state';
 import { WantList } from '../wants/want-list';
+import { JavSelectionProvider, useVisibleJavWorks } from './jav-selection';
 import { addWant, invalidateWants } from '../wants/wants';
 import { busyProps, useAction } from '../settings/use-action';
 import { discoveryKey, fetchDiscoveries, writeJavQuery, type DiscoveryScope } from './jav';
@@ -35,7 +36,7 @@ export function JavPage({ tab, readOnly, navigate, receipt }: {
   const [download, setDownload] = useState<DownloadPrefill | null>(null);
   const [text, changeText] = useState(() => new URLSearchParams(location.search).get('q') || '');
   const setText = (value: string) => { changeText(value); writeJavQuery({ q: value }) };
-  return <div className="flex w-full flex-col gap-6">
+  return <JavSelectionProvider key={tab} readOnly={readOnly} receipt={receipt}><div className="flex w-full flex-col gap-6">
     <JavHeader tab={tab} navigate={navigate} find={() => setDownload({})}
       search={<IndexSearch label={SEARCH_LABELS[tab] || '筛选'} value={text} onQuery={setText} />} />
     {tab === 'releases'
@@ -44,7 +45,7 @@ export function JavPage({ tab, readOnly, navigate, receipt }: {
       ? <Discover readOnly={readOnly} receipt={receipt} resource={setDownload} query={text.trim()} navigate={navigate} clearText={() => setText('')} />
       : <WantList readOnly={readOnly} toast={receipt} query={text.trim()} clearQuery={() => setText('')} />}
     <CloudDownloadDialog prefill={download} close={() => setDownload(null)} receipt={receipt} />
-  </div>;
+  </div></JavSelectionProvider>;
 }
 
 function Discover({ readOnly, receipt, resource, query, navigate, clearText }: {
@@ -102,6 +103,7 @@ function Discover({ readOnly, receipt, resource, query, navigate, clearText }: {
   const items = all.filter(item => (!tag || item.tags?.includes(tag)) &&
     (!query || [item.code, item.title, item.performers, item.studio, ...(item.tags || []), ...(item.performer_refs || []).map(ref => ref.name)].join(' ').toLocaleLowerCase().includes(query.toLocaleLowerCase())));
   const waiting = discoveries.isPending;
+  useVisibleJavWorks(items);
   return <section ref={section} aria-label="为你推荐" aria-busy={waiting} className="flex min-w-0 flex-col gap-4">
     <FilterGlassRows label="发现筛选与排序" topLabel="发现范围与标签" attrs={{ 'data-filter-frame': '', 'data-jav-filter': '', 'data-catalog-frame': '' }}
       busy={waiting} topClassName="gap-1.5 overflow-visible" bottomClassName="min-h-12" top={<div data-catalog-scroll="">

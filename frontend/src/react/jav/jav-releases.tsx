@@ -32,6 +32,7 @@ import { coverArrived, fetchCoverNow, fetchReleases, releaseFilters, releaseKey,
 import { ReleaseTable } from './jav-release-table';
 import { CatalogViewToggle } from '../catalog-grid/catalog-view-toggle';
 import { useCatalogView } from '../catalog-grid/catalog-view';
+import { useVisibleJavWorks } from './jav-selection';
 
 type Facet = 'performer' | 'studio' | 'tag';
 /** 等数据时两排头像的占位，与路由骨架（`releasesFilterSkeleton`）同一份。 */
@@ -135,6 +136,7 @@ export function Releases({ readOnly, receipt, resource, query, navigate, clearTe
     receipt('已加入想要'); void invalidateWants(); void releases.refetch();
   }) };
   const data = releases.data;
+  useVisibleJavWorks(data?.items || []);
   const waiting = releases.isPending;
   const filtered = !!(filters.performer || filters.studio || filters.tag || filters.q);
   const pages = Math.max(1, Math.ceil((data?.total || 0) / filters.size));
