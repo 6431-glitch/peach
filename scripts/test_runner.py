@@ -419,12 +419,13 @@ FULL_ONLY_PREFIXES: tuple[str, ...] = (
 )
 
 
-def selected_files(scope: str) -> tuple[Path, ...]:
+def selected_files(scope: str, *, root: Path | None = None) -> tuple[Path, ...]:
+    tests = TESTS if root is None else root / "tests"
     if scope == "full":
-        return tuple(sorted(TESTS.glob("test_*.py")))
+        return tuple(sorted(tests.glob("test_*.py")))
     found: set[Path] = set()
     for pattern in (*COMMON_PATTERNS, *SCOPES[scope]):
-        found.update(TESTS.glob(pattern))
+        found.update(tests.glob(pattern))
     return tuple(sorted(found))
 
 
@@ -449,13 +450,13 @@ def scopes_of_module(stem: str) -> tuple[str, ...]:
                         for pattern in patterns))
 
 
-def _imported_modules(path: Path) -> frozenset[str]:
+def _imported_modules(path: Path, *, root: Path | None = None) -> frozenset[str]:
     """一个 Python 文件导入了 `peach` 下哪些顶层模块（含函数里的延迟导入）。"""
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"))
     except (OSError, SyntaxError, UnicodeError, ValueError):
         return frozenset()
-    source = ROOT / "src" / "peach"
+    source = (ROOT if root is None else root) / "src" / "peach"
     depth = len(path.relative_to(source).parts) if path.is_relative_to(source) else None
     found: set[str] = set()
     for node in ast.walk(tree):
@@ -475,17 +476,19 @@ def _imported_modules(path: Path) -> frozenset[str]:
     return frozenset(found)
 
 
-@lru_cache(maxsize=1)
-def _import_index() -> tuple[dict[str, frozenset[str]], dict[str, frozenset[str]], frozenset[str]]:
+@lru_cache(maxsize=None)
+def _import_index(root: Path = ROOT) -> tuple[dict[str, frozenset[str]], dict[str, frozenset[str]], frozenset[str]]:
     """测试文件、`src/peach` 下的文件与 `tests/support` 各自导入的 `peach` 模块。"""
-    tests = {path.name: _imported_modules(path) for path in TESTS.glob("test_*.py")}
-    sources = {path.relative_to(ROOT).as_posix(): _imported_modules(path)
-               for path in (ROOT / "src" / "peach").rglob("*.py")}
-    support = frozenset(name for path in (TESTS / "support").glob("*.py") for name in _imported_modules(path))
+    tests = {path.name: _imported_modules(path, root=root) for path in (root / "tests").glob("test_*.py")}
+    sources = {path.relative_to(root).as_posix(): _imported_modules(path, root=root)
+               for path in (root / "src" / "peach").rglob("*.py")}
+    support = frozenset(name for path in (root / "tests/support").glob("*.py")
+                        for name in _imported_modules(path, root=root))
     return tests, sources, support
 
 
-def scopes_of_importers(stem: str, seen: frozenset[str] = frozenset()) -> tuple[str, ...]:
+def scopes_of_importers(stem: str, seen: frozenset[str] = frozenset(), *,
+                        root: Path = ROOT) -> tuple[str, ...]:
     """按名字推不出测试的 `src/peach/<stem>.py`：取直接导入它的测试所在的域，加上直接导入它
     的源码文件按本表推出的域。
 
@@ -494,7 +497,7 @@ def scopes_of_importers(stem: str, seen: frozenset[str] = frozenset()) -> tuple[
     互相导入的一组模块合起来算。
     共享测试设施 `tests/support` 用到它、或者谁都不直接导入它，返回空，由调用方按未知面跑 full。
     """
-    tests, sources, support = _import_index()
+    tests, sources, support = _import_index(root)
     if stem in support:
         return ()
     found: set[str] = set()
@@ -508,7 +511,7 @@ def scopes_of_importers(stem: str, seen: frozenset[str] = frozenset()) -> tuple[
             if not nested and importer in seen:
                 # 互相导入的一组模块：正在求值的那一层已经在收它自己的导入者。
                 continue
-            scopes = mapped_scopes(path, seen | {stem}) if nested or importer != "__init__" else ()
+            scopes = mapped_scopes(path, seen | {stem}, root=root) if nested or importer != "__init__" else ()
             if not scopes:
                 return ()
             found.update(scopes)
@@ -575,7 +578,7 @@ def special_scopes(path: str, kind: str) -> tuple[str, ...] | None:
     return None
 
 
-def mapped_scopes(path: str, seen: frozenset[str] = frozenset()) -> tuple[str, ...]:
+def mapped_scopes(path: str, seen: frozenset[str] = frozenset(), *, root: Path = ROOT) -> tuple[str, ...]:
     """按显式映射、测试归属、模块测试名和直接导入者定位功能域。"""
     name = path.rsplit("/", 1)[-1]
     if path in AUTO_SCOPE_FILES:
@@ -590,13 +593,14 @@ def mapped_scopes(path: str, seen: frozenset[str] = frozenset()) -> tuple[str, .
         by_name = scopes_of_module(stem)
         if by_name or "/" in path.removeprefix("src/peach/") or stem == "__init__":
             return by_name
-        return scopes_of_importers(stem, seen)
+        return scopes_of_importers(stem, seen, root=root)
     return ()
 
 
 def scopes_for_changes(paths: Iterable[str], *, contents: dict | None = None,
-                       kinds: dict | None = None) -> tuple[tuple[str, ...], str]:
-    """纯函数：改动清单与可选内容差异 → 验证范围和原因。"""
+                       kinds: dict | None = None, root: Path | None = None) -> tuple[tuple[str, ...], str]:
+    """由目标源码树、改动清单与可选内容差异选择验证范围。"""
+    root = ROOT if root is None else root
     picked: dict[str, list[str]] = {}
     full_reasons = []
     for raw in paths:
@@ -608,11 +612,11 @@ def scopes_for_changes(paths: Iterable[str], *, contents: dict | None = None,
             kind = change_impact.kind(path, *contents[path])
         scopes = special_scopes(path, kind)
         if scopes is None:
-            scopes = mapped_scopes(path)
+            scopes = mapped_scopes(path, root=root)
         if kind not in {"unsafe", "prose"} and path.startswith("src/peach/") and path.endswith(".py") \
                 and scopes and "full" not in scopes:
             stem = path.removeprefix("src/peach/").split("/", 1)[0].removesuffix(".py")
-            tests, _, _ = _import_index()
+            tests, _, _ = _import_index(root)
             consumers = {scope for name, modules in tests.items() if stem in modules
                          for scope in scopes_of_test_file(name)}
             scopes = tuple(scope for scope in SCOPES if scope in {*scopes, *consumers})
