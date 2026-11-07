@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "2d3fcd90-dc41-4d9c-8a5e-8c187e2d380c", e._sentryDebugIdIdentifier = "sentry-dbid-2d3fcd90-dc41-4d9c-8a5e-8c187e2d380c");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "10dd0e84-63d6-49d0-9d3a-0d9410dc3e69", e._sentryDebugIdIdentifier = "sentry-dbid-10dd0e84-63d6-49d0-9d3a-0d9410dc3e69");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2087,7 +2087,7 @@ var wa = [
 	[
 		"data_max_gib",
 		"Peach 数据上限",
-		"达到上限暂停补修与缓存写入"
+		"达到上限暂停刮削与补修，不影响播放"
 	],
 	[
 		"cache_max_gib",
@@ -2126,7 +2126,7 @@ function Ta({ initial: e, after: t, receipt: n }) {
 		children: [
 			/* @__PURE__ */ (0, Q.jsxs)(I, { children: [/* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "启用容量保护",
-				description: "超限时先清理可重建缓存，仍超限则暂停写入",
+				description: "超限先清理旧缓存，仍超限只暂停后台任务；磁盘空间不足时才影响播放",
 				children: /* @__PURE__ */ (0, Q.jsx)(U, {
 					"aria-label": "启用容量保护",
 					isSelected: r.enabled,
@@ -2150,7 +2150,7 @@ function Ta({ initial: e, after: t, receipt: n }) {
 				})
 			}, e)), /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "自动清理缓存",
-				description: "从最旧的开始清理播放缓存与缩略图，仍超限则暂停",
+				description: "从最旧的开始清理播放缓存与缩略图",
 				children: /* @__PURE__ */ (0, Q.jsx)(U, {
 					"aria-label": "自动清理缓存",
 					isSelected: r.auto_clean,
@@ -6296,4 +6296,4 @@ function tc({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Qs as ConfigurationPage };
 
-//# debugId=2d3fcd90-dc41-4d9c-8a5e-8c187e2d380c
+//# debugId=10dd0e84-63d6-49d0-9d3a-0d9410dc3e69

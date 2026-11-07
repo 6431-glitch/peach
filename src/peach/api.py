@@ -378,7 +378,8 @@ class _LedgerActivation:
 def _configure_capacity_guard(settings, contract, services):
     from .storage_budget import CapacityGuard
     config = contract.upgrade_config
-    guard = (CapacityGuard(config)
+    # 服务进程里这把闸门守的是播放、浏览与网络媒体缓存：总量超限只清理，不挡请求。
+    guard = (CapacityGuard(config, foreground=True)
              if settings.transcode_root.parent.resolve() == config.directory('generated').resolve() else None)
     contract.capacity_guard = guard
     for service in services:

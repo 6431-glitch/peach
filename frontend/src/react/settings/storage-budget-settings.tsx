@@ -11,7 +11,7 @@ import { busyProps, useAction } from './use-action';
 
 const NUMBERS = [
   ['minimum_free_gib', '磁盘保留空间', '留空自动保留 5%，最低 1 GiB、最高 40 GiB'],
-  ['data_max_gib', 'Peach 数据上限', '达到上限暂停补修与缓存写入'],
+  ['data_max_gib', 'Peach 数据上限', '达到上限暂停刮削与补修，不影响播放'],
   ['cache_max_gib', 'Peach 缓存上限', '播放、网络媒体与缩略图缓存'],
 ] as const;
 
@@ -52,7 +52,7 @@ export function StorageBudgetSettings({ initial, after, receipt }: {
       result => { setCacheRead(''); after(result); receipt('已保存容量保护设置'); });
   }}>
     <Rows>
-      <SettingsRow label="启用容量保护" description="超限时先清理可重建缓存，仍超限则暂停写入">
+      <SettingsRow label="启用容量保护" description="超限先清理旧缓存，仍超限只暂停后台任务；磁盘空间不足时才影响播放">
         <Switch aria-label="启用容量保护" isSelected={policy.enabled} isDisabled={Boolean(action.busy)}
           onChange={value => update('enabled', value)} />
       </SettingsRow>
@@ -63,7 +63,7 @@ export function StorageBudgetSettings({ initial, after, receipt }: {
           value={policy[key] ? String(policy[key]) : ''} onChange={value => update(key, Number(value))}
           isDisabled={Boolean(action.busy)} />
       </SettingsRow>)}
-      <SettingsRow label="自动清理缓存" description="从最旧的开始清理播放缓存与缩略图，仍超限则暂停">
+      <SettingsRow label="自动清理缓存" description="从最旧的开始清理播放缓存与缩略图">
         <Switch aria-label="自动清理缓存" isSelected={policy.auto_clean} isDisabled={Boolean(action.busy)}
           onChange={value => update('auto_clean', value)} />
       </SettingsRow>

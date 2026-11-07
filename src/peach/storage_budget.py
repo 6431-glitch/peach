@@ -26,18 +26,21 @@ from .platform import system_volume
 GIB = 1024 ** 3
 POLICY_NAME = 'storage-policy.json'
 STATUS_NAME = 'storage-budget-status.json'
+READINGS_NAME = 'storage-budget-readings.json'
 SCAN_SECONDS = 30
-#: 后台总量统计的间隔。数据目录可达几十万个文件，统计一遍要分钟级，不能放进播放请求。
-REFRESH_SECONDS = 300
+#: 后台统计间隔按变化速度分开：缓存约一万个文件、几秒一遍，几分钟统计一次；
+#: 整个数据目录可达几十万个文件、一遍要几分钟，而它按天增长，每天统计一次。
+REFRESH_SECONDS = {'cache': 300, 'data': 86400}
 _LOCK = threading.RLock()
 _SCANS: dict[tuple, tuple[float, dict]] = {}
-#: 后台统计的最近读数、开始时间与失败；键是目录布局加容量设置，迁移或改设置后旧读数不复用。
-_READINGS: dict[tuple, tuple[float, dict]] = {}
-_STARTED: dict[tuple, float] = {}
-_FAILURES: dict[tuple, Exception] = {}
+#: 后台统计的最近读数（墙钟时间, 读数）、本进程开始统计的时间与失败，按 `_reading_key` 分开。
+_READINGS: dict[str, tuple[float, dict]] = {}
+_STARTED: dict[str, float] = {}
+_FAILURES: dict[str, Exception] = {}
 _REFRESH_GUARD = threading.Lock()
 _GENERATION = [0]
 _UNKNOWN = {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None}
+_FIELDS = {'cache': ('cache_bytes', 'external_cache_bytes'), 'data': ('data_bytes',)}
 
 
 @dataclass(frozen=True)
@@ -98,95 +101,155 @@ def save_policy(config, raw) -> StoragePolicy:
     path.parent.mkdir(parents=True, exist_ok=True)
     with FileLock(str(path) + '.lock'):
         atomic_write_text(path, json.dumps(asdict(policy), ensure_ascii=False))
-    invalidate_measurements()
+    # 读数按统计范围分键，只改上限数值时旧读数照样能用，不必重新统计整个数据目录。
     return policy
 
 
-def invalidate_measurements():
+def invalidate_measurements(config=None):
+    """手动清理、迁移后旧读数作废；传入配置时连同保存在状态目录里的读数一起删。"""
     with _REFRESH_GUARD:
         _GENERATION[0] += 1
         _SCANS.clear()
         _READINGS.clear()
         _STARTED.clear()
         _FAILURES.clear()
-
-
-def _limited(policy) -> bool:
-    return bool(policy.data_max_gib or policy.cache_max_gib or policy.external_cache_max_gib)
-
-
-def _reading_key(config, policy):
-    return json.dumps(layout(config, policy), sort_keys=True), policy
-
-
-def refresh_usage(config, policy=None) -> dict:
-    """同步统计一次总量并记为最新读数；后台线程与需要即时读数的调用方共用。"""
-    policy = policy or load_policy(config)
-    key = _reading_key(config, policy)
-    generation = _GENERATION[0]
-    try:
-        usage = _measure(config, policy)
-    except (OSError, ValueError) as error:
-        with _REFRESH_GUARD:
-            if generation == _GENERATION[0]:
-                _FAILURES[key] = error
-        raise
-    with _REFRESH_GUARD:
-        # 统计期间改了设置或手动清理过，这份读数已过时，不发布。
-        if generation == _GENERATION[0]:
-            _READINGS[key] = (time.monotonic(), usage)
-            _FAILURES.pop(key, None)
-    return dict(usage)
-
-
-def _refresh_in_background(config, policy, key):
-    def run():
+    if config is not None:
         try:
-            refresh_usage(config, policy)
+            (config.directory('state') / READINGS_NAME).unlink(missing_ok=True)
+        except OSError as error:
+            logging.getLogger(__name__).warning('容量读数未清除（%s）', type(error).__name__)
+
+
+def _parts(policy) -> tuple[str, ...]:
+    """设了哪类上限才统计哪类：缓存与外部缓存同一轮，数据目录单独一轮。"""
+    parts = []
+    if policy.cache_max_gib or policy.external_cache_max_gib:
+        parts.append('cache')
+    if policy.data_max_gib:
+        parts.append('data')
+    return tuple(parts)
+
+
+def _reading_key(config, policy, part) -> str:
+    """统计范围的身份：目录布局、类别，以及缓存一类实际统计了哪些目录；与上限数值无关。"""
+    scope = ([bool(policy.cache_max_gib), policy.external_cache_path if policy.external_cache_max_gib else '']
+             if part == 'cache' else [])
+    return json.dumps([part, layout(config, policy), scope], sort_keys=True)
+
+
+def _load_saved(config) -> dict:
+    try:
+        saved = json.loads((config.directory('state') / READINGS_NAME).read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return {}
+    return saved if isinstance(saved, dict) else {}
+
+
+def _publish(config, key, measured_at, usage):
+    """读数存进状态目录：重启后与其他进程（托盘任务、命令行）直接复用，不重新统计。"""
+    _READINGS[key] = (measured_at, usage)
+    path = config.directory('state') / READINGS_NAME
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with FileLock(str(path) + '.lock', timeout=5):
+            saved = _load_saved(config)
+            saved[key] = {'measured_at': measured_at, 'usage': usage}
+            atomic_write_text(path, json.dumps(saved, ensure_ascii=False))
+    except (OSError, TimeoutError) as error:
+        logging.getLogger(__name__).warning('容量读数未保存（%s）', type(error).__name__)
+
+
+def refresh_usage(config, policy=None, parts=None) -> dict:
+    """同步统计并发布读数；后台线程、手动统计与需要即时读数的调用方共用。"""
+    policy = policy or load_policy(config)
+    result = {}
+    for part in (parts or _parts(policy)):
+        key = _reading_key(config, policy, part)
+        generation = _GENERATION[0]
+        try:
+            usage = _measure_part(config, policy, part)
+        except (OSError, ValueError) as error:
+            with _REFRESH_GUARD:
+                if generation == _GENERATION[0]:
+                    _FAILURES[key] = error
+            raise
+        with _REFRESH_GUARD:
+            # 统计期间手动清理或迁移过，这份读数已过时，不发布。
+            if generation != _GENERATION[0]:
+                continue
+            _FAILURES.pop(key, None)
+            _publish(config, key, time.time(), usage)
+        result.update(usage)
+    return result
+
+
+def _refresh_in_background(config, policy, part):
+    def run():
+        lock = FileLock(str(config.directory('state') / f'storage-measure-{part}.lock'))
+        try:
+            config.directory('state').mkdir(parents=True, exist_ok=True)
+            # 同一数据目录只让一个进程统计；别的进程正在统计就跳过，等它发布读数。
+            lock.acquire(timeout=0)
+        except (OSError, TimeoutError):
+            return
+        try:
+            refresh_usage(config, policy, (part,))
         except DiskSpaceDenied:
             # 统计途中余量触线，请求侧的实时余量检查会拦下写入。
             pass
         except (OSError, ValueError) as error:
             logging.getLogger(__name__).warning('容量统计未取得（%s）', type(error).__name__)
-    threading.Thread(target=run, name='PeachCapacityMeasure', daemon=True).start()
+        finally:
+            lock.release()
+    threading.Thread(target=run, name=f'PeachCapacityMeasure-{part}', daemon=True).start()
 
 
 def latest_usage(config, policy) -> dict:
-    """请求只读后台最近一次总量读数，不展开目录。
+    """请求只读最近一次总量读数，不展开目录。
 
-    没有读数或已到统计间隔就交后台重算，同一布局同时只跑一份；还没有读数时按未知处理，
-    这段时间只由实时磁盘余量把关。最近一次统计失败则如实报出，不把未知当成零。
+    读数先找本进程，再找状态目录里别的进程或上次运行留下的；没有或已到该类的统计间隔就交后台
+    重算，同一类同时只跑一份。还没有读数时按未知处理，这段时间只由实时磁盘余量把关；最近一次
+    统计失败则如实报出，不把未知当成零。
     """
-    if not _limited(policy):
-        return {**_UNKNOWN, 'measured_at': None}
-    key = _reading_key(config, policy)
-    now = time.monotonic()
-    with _REFRESH_GUARD:
-        reading, failure, started = _READINGS.get(key), _FAILURES.get(key), _STARTED.get(key)
-        due = started is None or now - started >= REFRESH_SECONDS
+    usage = {**_UNKNOWN, 'measured_at': None}
+    now = time.time()
+    saved = None
+    for part in _parts(policy):
+        key = _reading_key(config, policy, part)
+        with _REFRESH_GUARD:
+            reading, failure = _READINGS.get(key), _FAILURES.get(key)
+        if reading is None or now - reading[0] >= REFRESH_SECONDS[part]:
+            saved = _load_saved(config) if saved is None else saved
+            stored = saved.get(key)
+            if isinstance(stored, dict) and (reading is None or stored.get('measured_at', 0) > reading[0]):
+                reading = (float(stored['measured_at']), dict(stored['usage']))
+                with _REFRESH_GUARD:
+                    _READINGS[key] = reading
+        stale = reading is None or now - reading[0] >= REFRESH_SECONDS[part]
+        with _REFRESH_GUARD:
+            started = _STARTED.get(key)
+            due = stale and (started is None or now - started >= REFRESH_SECONDS[part])
+            if due:
+                _STARTED[key] = now
         if due:
-            _STARTED[key] = now
-    if due:
-        _refresh_in_background(config, policy, key)
-    if failure is not None:
-        raise OSError(f'容量统计未取得：{failure}') from failure
-    if reading is None:
-        return {**_UNKNOWN, 'measured_at': None}
-    return dict(reading[1])
+            _refresh_in_background(config, policy, part)
+        if failure is not None:
+            raise OSError(f'容量统计未取得：{failure}') from failure
+        if reading is not None:
+            usage.update({name: reading[1].get(name) for name in _FIELDS[part]})
+            usage['measured_at'] = min(filter(None, (usage['measured_at'], reading[0])))
+    return usage
 
 
 def _remember_cleanup(config, policy, freed):
-    """自动清理后从最近读数里扣掉释放量，下一次后台统计前不重复清理同一缺口。"""
-    key = _reading_key(config, policy)
-    with _REFRESH_GUARD:
-        reading = _READINGS.get(key)
-        if reading is None:
-            return
-        usage = dict(reading[1])
-        for name in ('cache_bytes', 'data_bytes'):
-            if usage[name] is not None:
-                usage[name] = max(0, usage[name] - freed)
-        _READINGS[key] = (reading[0], usage)
+    """自动清理后从最近读数里扣掉释放量，下一次统计前不重复清理同一缺口；缓存也算在数据目录里。"""
+    for part, name in (('cache', 'cache_bytes'), ('data', 'data_bytes')):
+        key = _reading_key(config, policy, part)
+        with _REFRESH_GUARD:
+            reading = _READINGS.get(key)
+            if reading is None or reading[1].get(name) is None:
+                continue
+            _publish(config, key, reading[0], {**reading[1], name: max(0, reading[1][name] - freed)})
 
 
 def snapshot(config, *, usage=None) -> dict:
@@ -378,13 +441,8 @@ def _allocated(roots, check):
     return total
 
 
-def _measure(config, policy, *, interval_secs=2):
-    binding = layout(config, policy)
-    key = (json.dumps(binding, sort_keys=True), policy)
-    now = time.monotonic()
-    cached = _SCANS.get(key)
-    if cached and now - cached[0] < SCAN_SECONDS:
-        return dict(cached[1])
+def _free_space_check(config, policy, interval_secs=2):
+    """长遍历按间隔复查余量，触线就中断，不在磁盘快满时继续读分配量。"""
     next_check = 0.0
     def check_free():
         nonlocal next_check
@@ -392,10 +450,37 @@ def _measure(config, policy, *, interval_secs=2):
         if now < next_check:
             return
         next_check = now + interval_secs
-        reasons = _exceeded(policy, {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None},
-                            _disks(config, policy))
+        reasons = _exceeded(policy, dict(_UNKNOWN), _disks(config, policy))
         if reasons:
             raise DiskSpaceDenied('扫描期间磁盘余量触线，已暂停当前写入，请清理或重试：' + '；'.join(reasons))
+    return check_free
+
+
+def _measure_part(config, policy, part) -> dict:
+    """后台分类统计：数据目录一类，缓存与外部缓存一类；统计期间目录变化则不发布。"""
+    binding = layout(config, policy)
+    check_free = _free_space_check(config, policy)
+    if part == 'data':
+        usage = {'data_bytes': data_usage(config, check=check_free)}
+    else:
+        cache = cache_usage(config, policy, managed=bool(policy.cache_max_gib),
+                            external=bool(policy.external_cache_max_gib), check=check_free)
+        usage = {'cache_bytes': cache['managed_cache_bytes'], 'external_cache_bytes': cache['external_cache_bytes']}
+    if layout(config, policy) != binding:
+        raise OSError('容量目录在统计期间发生变化，请重新统计')
+    record_history(config, data_bytes=usage.get('data_bytes'), cache_bytes=usage.get('cache_bytes'))
+    return usage
+
+
+def _measure(config, policy, *, interval_secs=2):
+    """预估写入量时的即时统计，按设了上限的类别一次统计完。"""
+    binding = layout(config, policy)
+    key = (json.dumps(binding, sort_keys=True), policy)
+    now = time.monotonic()
+    cached = _SCANS.get(key)
+    if cached and now - cached[0] < SCAN_SECONDS:
+        return dict(cached[1])
+    check_free = _free_space_check(config, policy, interval_secs)
     cache = cache_usage(config, policy, managed=bool(policy.cache_max_gib),
                         external=bool(policy.external_cache_max_gib), check=check_free)
     result = {'cache_bytes': cache['managed_cache_bytes'], 'data_bytes': None,
@@ -428,15 +513,17 @@ def _exceeded(policy, usage, disks):
     return reasons
 
 
-def _disks(config, policy):
+def _disks(config, policy, *, strict=True):
+    """各写入目录所在卷的余量；`strict=False` 时跳过不可访问的外部缓存目录，其余照查。"""
     from .settings_file import DIRECTORY_KEYS
     paths = [system_volume(), config.data_root, *(config.directory(name) for name in DIRECTORY_KEYS),
              Path(tempfile.gettempdir())]
     if policy.external_cache_path:
         external = Path(policy.external_cache_path)
-        if not external.is_absolute() or not external.is_dir():
+        if external.is_absolute() and external.is_dir():
+            paths.append(external)
+        elif strict:
             raise OSError('外部缓存目录不可访问，迁移后请更新容量设置中的路径')
-        paths.append(external)
     devices, result = set(), []
     for path in dict.fromkeys(paths):
         target = _existing(path)
@@ -504,9 +591,17 @@ def _clean_rebuildable(config, needed):
 
 
 class CapacityGuard:
-    def __init__(self, config, interval_secs=2):
+    """容量闸门。
+
+    后台任务（刮削、补修、抽帧等让数据增长的工作）遇到任一上限或余量不足都暂停。
+    `foreground=True` 用于播放与浏览：总量上限只触发清理，不挡请求；只有磁盘余量真的
+    不够才拒绝写缓存；检查本身出错时放行并记下原因，不让保护机制挡住播放。
+    """
+
+    def __init__(self, config, interval_secs=2, *, foreground=False):
         self.config = config
         self.interval_secs = interval_secs
+        self.foreground = foreground
         self.next_check = 0.0
         self._reservation_started = False
         self._reserved_data = None
@@ -543,7 +638,13 @@ class CapacityGuard:
             return unknown
         if required_bytes:
             return _measure(self.config, policy, interval_secs=self.interval_secs)
-        return latest_usage(self.config, policy)
+        try:
+            return latest_usage(self.config, policy)
+        except OSError as error:
+            if not self.foreground:
+                raise
+            # 总量读不到不影响播放，照样按实时余量把关。
+            return {**unknown, 'error': str(error)}
 
     def _after_cleanup(self, policy, usage, disks, freed, required_bytes):
         if not required_bytes:
@@ -575,7 +676,7 @@ class CapacityGuard:
                 return {'enabled': False, 'paused': False, 'reasons': [], 'freed_bytes': 0,
                         'data_bytes': None, 'cache_bytes': None, 'external_cache_bytes': None,
                         'checked_at': time.time()}
-            disks = _disks(self.config, policy)
+            disks = _disks(self.config, policy, strict=not self.foreground)
             if required_bytes and not self._reservation_started:
                 _SCANS.clear()
                 self._reservation_started = True
@@ -589,7 +690,7 @@ class CapacityGuard:
                 with _LOCK, FileLock(str(self.config.directory('state') / 'storage-auto-clean.lock')):
                     # 多清 1 MiB 余量，免得每次只差几个字节就再清一轮。
                     freed = _clean_rebuildable(self.config, needed + GIB // 1024)
-                disks = _disks(self.config, policy)
+                disks = _disks(self.config, policy, strict=not self.foreground)
                 usage = self._after_cleanup(policy, usage, disks, freed, required_bytes)
                 reasons = self._projected_reasons(policy, usage, disks, required_bytes, destination)
                 if freed:
@@ -602,7 +703,11 @@ class CapacityGuard:
             with _LOCK:
                 atomic_write_text(self.config.directory('state') / STATUS_NAME,
                                   json.dumps(status, ensure_ascii=False))
-            if reasons:
+            if self.foreground:
+                blocking = _exceeded(policy, dict(_UNKNOWN), disks)
+                if blocking:
+                    raise DiskSpaceDenied('；'.join(blocking) + '；磁盘空间不足，已停止写入缓存，请清理后重试')
+            elif reasons:
                 raise DiskSpaceDenied('；'.join(reasons) + '；已停止领取新项，请调整容量或清理后重试')
             self._denied = None
             return status
@@ -610,5 +715,9 @@ class CapacityGuard:
             self._denied = error
             raise
         except (OSError, ValueError) as error:
+            if self.foreground:
+                logging.getLogger(__name__).warning('容量检查未取得，播放照常（%s）', type(error).__name__)
+                self._denied = None
+                return {'paused': False, 'reasons': [], 'error': str(error), 'checked_at': time.time()}
             self._denied = DiskSpaceDenied(f'容量保护检查未取得，已暂停：{error}')
             raise self._denied from error

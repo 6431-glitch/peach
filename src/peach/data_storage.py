@@ -319,7 +319,7 @@ def clean(config, category: str) -> dict:
             size += decided.removable_bytes
         if removed:
             from .storage_budget import invalidate_measurements
-            invalidate_measurements()
+            invalidate_measurements(config)
         return {"files": removed, "bytes": size, "failed": 0}
     if category == "playback":
         transcodes, segments = generated / "transcodes", generated / "stream-segments"
@@ -346,7 +346,7 @@ def clean(config, category: str) -> dict:
         record_history(config, data_bytes=None, cache_bytes=None, cleaned_bytes=sum(allocations))
     if totals[0]:
         from .storage_budget import invalidate_measurements
-        invalidate_measurements()
+        invalidate_measurements(config)
     return {"files": totals[0], "bytes": totals[1], "failed": totals[2]}
 
 
