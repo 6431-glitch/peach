@@ -154,6 +154,8 @@ GitGud 的 Linux 平台 Runner 不提供 Docker 守护进程，Docker 镜像由 
 
 媒体工具源码可通过 `PEACH_SOURCE_CACHE_BASE` 指定 HTTPS 缓存入口，按 `<SHA-256>/<归档名>` 定位文件。标签流水线使用发布桶的 `_sources/` 前缀；维护者填充缓存前须核对锁文件的原始 SHA-256，缓存同样计入桶容量预算。下载缓存失败时尝试锁定的上游地址；任一来源的哈希不符立即拒绝，不能放宽清单。未配置缓存的对应源码包直接使用上游。
 
+GitHub 发版时，`release.yml` 的 `r2-mirror` 作业在 Release 公开后下载它的制品、`SHA256SUMS.txt` 与签名，交给 `scripts/release_r2.py` 原样上传到 R2，逐个从 `https://downloads.peach.video` 完整下载核对后改写 `releases.json`。凭据用 `release` environment 里与 Sparkle appcast 相同的 R2 secret 和变量。镜像只留最新三个版本：新版本登记进索引后删除更老的版本目录，GitHub 上的同版本制品不受影响；比保留版本还旧的版本拒绝上传。连不上 GitHub 的客户端靠这份索引更新，作业失败时它们停在上一个镜像版本，重跑这个作业即可。
+
 可选的 `r2` 后端使用独立 Standard 桶与 HTTPS 自定义域名。`PEACH_R2_ACCESS_KEY_ID`、`PEACH_R2_SECRET_ACCESS_KEY`、`PEACH_R2_ENDPOINT` 放入受保护且隐藏的 CI 变量，环境作用域为 `release`；`PEACH_R2_BUCKET` 和 `PEACH_R2_PUBLIC_BASE` 指定发布目标。S3 传输复用 rclone，版本文件禁止覆盖；每份文件必须从公开入口完整下载并核对大小及 SHA-256 后，才更新公开版本索引和 Release 链接。
 
 GitLab 演练通过 R2 暂存传递媒体工具、Windows 发行目录、macOS 镜像和 Docker 验收回执，job artifacts 保存 JSON 清单。中转需要上述 R2 变量；构建与验收任务使用 `release` 环境的 `prepare` 或 `verify` 动作，只有受保护版本标签与受保护 master 上的版本提交演练能取得凭据。候选保留到桌面与镜像都发布成功，由 `publication-cleanup` 回收；失败时保留供重试。构建期 rclone 按当前操作系统和 CPU 架构从官方固定版本归档安装并核对 SHA-256。
@@ -849,7 +851,7 @@ Windows 托盘在取得单实例锁后启动独立监视器。监视器用 Win32
 - 版本号在发布时才动，一次发布加一格，所以每个 `X.Y.Z` 都有一份能下载的制品。
 - **依赖升级**：定版前完成[每次发版检查](TESTING.md#每次发版检查)的依赖升级批次，包括适用的兼容修改、派生产物、完整验证与本地集成；暂不能升级的保留具体原因和失败证据。定版后发现需要改依赖时，先保存发行说明草稿，撤回本轮尚未提交的版本修改，完成升级后重新定版。
 - **定版**：在干净的 master 主检出上运行 `python scripts/release_tag.py --bump auto --apply`。它按上一个版本标签到 HEAD 的区间定档（`bump_part_for()`：主题以 `feat` 开头、带破坏性标记 `!`，或 `migrations/` 有新文件时推 minor，其余推 patch；1.0 要手工 `--bump major` 并另立 ADR，见 ADR-0012），写入 `__version__`，并把 `CHANGELOG.md` 的未发布一节定成这个版本号。区间只改了文档、技能和测试时直接拒绝，因为那样打出的包和上一个标签完全相同。minor 及以上的版本还须先在 `src/peach/release_notices.py` 写好这一版的更新公告，缺了也直接拒绝（[ADR-0152](adr/0152-release-notice-after-upgrade.md)）。`--bump` 只写文件不提交，并打印定版的那一节供人检查；不带 `--apply` 只打印计划。
-- **发布**：确认之后运行 `python scripts/release_tag.py --ship --apply`，一次完成剩下四步：提交 `src/peach/__init__.py` 与 `CHANGELOG.md`（消息 `chore(release): 版本 <新版本>`）、推送 master、每 30 秒查一次这个提交的 Test 工作流、变绿后创建并推送 annotated tag。默认最多等 30 分钟，用 `--timeout` 修改。不带 `--apply` 只打印步骤。
+- **发布**：确认之后运行 `python scripts/release_tag.py --ship --apply`，一次完成剩下四步：提交 `src/peach/__init__.py` 与 `CHANGELOG.md`（消息 `chore(release): 版本 <新版本>`）、推送 master、每 30 秒查一次这个提交的 Test 工作流、变绿后创建并推送 annotated tag。打标签后继续等 GitHub Release 把 README 下载直链对应的制品全部上传完，再单独提交 `docs(readme): 下载直链指向 <标签>` 并推送；等待期间 README 仍指向上一版，中断后用 `--point-readme --apply` 补做。默认最多等 30 分钟，用 `--timeout` 修改。不带 `--apply` 只打印步骤。
 - `--ship` 在动手前检查：不在 master、变更日志缺这一节、标签已被占用、工作区除了那两份定版文件还有别的改动，任何一条成立就拒绝（标签指向发布提交，夹带什么就等于发布什么）。Test 结束不是绿色就立刻停，这时标签还没打。
 - 标签流水线第一步就跑仓库根与 `frontend` 两份 npm 审计；新公布的高危漏洞会让已打出的标签什么也发不了。所以 `--bump --apply` 写文件前、`--ship` 在 Test 转绿之后打标签之前，都先用 `scripts/npm_audit.py` 的同一判据复查一次，有高危漏洞就停，版本文件与标签都不动。
 - 等 Test 期间能确定等不到结果的也立刻停，不耗到超时：GitLab 必需任务（`verify-linux`、`verify-windows`、`verify-macos`、`wheel-smoke`）已失败；任务排着队没人接，且带这些 tags 的 runner 都不在线或已暂停（读 runner 列表要维护者权限；读不到，或列表里查不到带这些 tags 的 runner 时，按排队满 5 分钟仍未开始判停）；推送 5 分钟后仍没有 Test 记录。报错写明任务名、tags 和已等时长。GitHub 只对自建 runner 任务做同样判断，托管 runner 排队照常等。处理好之后再跑一次 `--ship --apply` 接着走。
