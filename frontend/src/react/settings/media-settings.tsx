@@ -36,7 +36,8 @@ import {
 } from './library-policy-settings';
 import { PushDiscoveryForm } from './push-discovery-settings';
 import { rememberShape } from '../../configuration-skeleton';
-import { useLibraryTints, useOrderedLibraries } from '../components/library-tint';
+import { useLibraryTints } from '../components/library-tint';
+import { useOrderedLibraries } from '../components/library-order';
 import { LIBRARY_FOLDER_HELP } from './library-policy-copy';
 import {
   ErrorText, ExternalLink, Fact, FactList, Footer, Help, Section, SourceMark, Stack,

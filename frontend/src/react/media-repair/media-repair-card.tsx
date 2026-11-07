@@ -14,7 +14,7 @@ import { REPAIR_CARD_TEXT } from '../../management';
 import { useBackgroundJob } from '../background-job';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
 import { Note } from '../components/note';
-import { useOrderedLibraries } from '../components/library-tint';
+import { useOrderedLibraries } from '../components/library-order';
 import { Progress } from '../components/progress';
 import { queryClient } from '../query';
 import { SourceMark } from '../settings/section';

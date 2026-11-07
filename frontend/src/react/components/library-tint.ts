@@ -8,14 +8,7 @@
 import { useSyncExternalStore } from 'react';
 import { MEDIA_SOURCE_ICONS } from '@peach/legacy/ui';
 import { apiGet } from '../../api';
-import { cachedLibraryColors, onLibraries, publishLibraries, publishedLibraries, orderLibraries, type LibraryRow } from '../../library-catalog';
-import { appSettingsStore } from '../../appearance/settings';
-
-export function useOrderedLibraries<T>(rows: readonly T[], id: (row: T) => string): T[] {
-  const store = appSettingsStore();
-  useSyncExternalStore(store.subscribe, store.version);
-  return orderLibraries(rows, store.value.libraryOrder, id);
-}
+import { cachedLibraryColors, onLibraries, publishLibraries, publishedLibraries, type LibraryRow } from '../../library-catalog';
 
 export interface LibraryTint { id: string; name: string; icon: string; location: string; color: string }
 

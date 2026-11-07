@@ -40,7 +40,8 @@ import { ProcessingControls } from './processing-controls';
 import { downloadIssueList, exportProcessingIssues } from './issue-export';
 import { busyProps, useAction } from '../settings/use-action';
 import { SourceMark } from '../settings/section';
-import { useLibraryTints, useOrderedLibraries, type LibraryTint } from '../components/library-tint';
+import { useLibraryTints, type LibraryTint } from '../components/library-tint';
+import { useOrderedLibraries } from '../components/library-order';
 
 const ALL_LIBRARIES = { id: '', name: '所有媒体库', icon: 'database' };
 
