@@ -650,6 +650,37 @@ def _record_directory_subtitles(connection, location, directory, here, conflicts
     return subtitles.record(connection, location, unambiguous, now)
 
 
+def _follow_case_rename(connection, registered, conflicts, location, ledger_root, walk_root, ledger_path, native):
+    """文件或目录只改了大小写时，把账本路径改成磁盘上的实际写法（#487）。
+
+    账本按不区分大小写的键认旧行，区分大小写的文件系统上旧写法已经打不开。只在旧写法确实
+    不存在、或与新写法是同一个文件（不区分大小写的文件系统）时改；两种写法各是一个文件时不动，
+    交给 `conflicts`。身份、标签与观看记录都挂在资产 id 上，跟着走。
+    """
+    key = ledger_path.casefold()
+    stored = registered.get(key)
+    if stored is None or stored == ledger_path or key in conflicts:
+        return
+    # 根目录前缀的写法来自设置，不是磁盘；只跟随根以下文件与目录的改名，不批量改写整库前缀。
+    if not stored.startswith(str(ledger_root)):
+        return
+    try:
+        old_native = Path(walk_root).joinpath(*PureWindowsPath(stored).relative_to(ledger_root).parts)
+    except ValueError:
+        return
+    try:
+        old = os.stat(old_native)
+    except FileNotFoundError:
+        old = None
+    except OSError:
+        return
+    if old is not None and not os.path.samestat(old, os.stat(native)):
+        return
+    if connection.execute('UPDATE asset SET path=?, name=? WHERE location=? AND path=?',
+                          (ledger_path, native.name, location, stored)).rowcount:
+        registered[key] = ledger_path
+
+
 def _scan_file_stat(connection, identities, registered, observations, location, ledger_path, directory, entry, *,
                     direct, relocate=lambda path: None):
     """读取本次文件快照，接回已移动的身份或同番号的旧行，并积累提交后的身份观测。"""
@@ -769,6 +800,9 @@ def _scan_location(
                 if new_only and ledger_path.casefold() in registered:
                     here[name] = (None, None)
                     continue
+                if read_directory is None:
+                    _follow_case_rename(connection, registered, conflicts, location, ledger_root, walk_root,
+                                        ledger_path, Path(directory) / name)
                 try:
                     stat = _scan_file_stat(connection, identities, registered, observations, location,
                                            ledger_path, directory, entry, direct=read_directory is None,
