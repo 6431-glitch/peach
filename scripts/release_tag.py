@@ -390,7 +390,7 @@ def point_readme(repo: str, *, apply: bool, timeout: float = TEST_TIMEOUT, poll:
     if not apply:
         return result
     start = clock()
-    while missing := [name for name in names if name not in release_assets(repo, tag)]:
+    while missing := sorted(set(names) - release_assets(repo, tag)):
         if clock() - start >= timeout:
             raise ValueError(f"等了 {timeout / 60:.0f} 分钟，{tag} 的 Release 仍缺 {'、'.join(missing)}；"
                              "README 仍指向上一版，制品齐了以后跑 --point-readme --apply")
