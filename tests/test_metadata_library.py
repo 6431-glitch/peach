@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path, PureWindowsPath
 from types import SimpleNamespace
 from unittest.mock import DEFAULT, Mock, patch
-from contextlib import closing
+from contextlib import closing, contextmanager
 
 from filelock import FileLock
 from PIL import Image
@@ -4194,39 +4194,56 @@ class ProcessingLockTests(unittest.TestCase):
     def test_a_running_background_collection_yields_to_a_user_run_at_its_next_checkpoint(self):
         config, db, database = self.config, self.db, self.database
         entered, proceed = threading.Event(), threading.Event()
+        stopping = threading.Event()
 
-        def query(*_args, **_kwargs):
-            if not entered.is_set():
-                entered.set()
-                proceed.wait(10)
-            return {}
+        processing_lock = library_processing._processing_lock
+
+        @contextmanager
+        def pause_background(config, *, background, active):
+            with processing_lock(config, background=background, active=active) as locked_active:
+                if background:
+                    entered.set()
+                    proceed.wait()
+                yield locked_active
 
         provider = stub_provider()
-        provider.query.side_effect = query
+        provider.query.return_value = {}
         background, user = [], []
 
         def run(sink, **options):
             try:
                 sink.append(process_library(config, db, self.root / 'generated', self.root / 'covers',
-                                            provider_factory=lambda: provider, database=database, **options))
+                                            provider_factory=lambda: provider, database=database,
+                                            active=lambda: not stopping.is_set(), **options))
             except Exception as error:
                 sink.append(error)
 
         with patch('peach.library_processing.LOCK_RETRY_SECONDS', 0.01), \
+                patch('peach.library_processing._processing_lock', pause_background), \
                 patch('peach.library_processing._enrich_finished_performers',
                       return_value={'aliases': 0, 'avatars': 0, 'conflicts': 0, 'failed': 0}):
             first = threading.Thread(target=run, args=(background,), kwargs=dict(
                 asset_ids=[1, 2], stage='collect', state_file=self.root / 'state/upgrade-repairs/1.json'))
+            threads = [first]
             first.start()
-            self.assertTrue(entered.wait(10))
-            second = threading.Thread(target=run, args=(user,))
-            second.start()
-            deadline = time.monotonic() + 10
-            while not library_processing._foreground_waiting() and time.monotonic() < deadline:
-                time.sleep(0.01)
-            proceed.set()
-            first.join(30)
-            second.join(30)
+            try:
+                self.assertTrue(entered.wait(10), f'后台处理尚未取得锁，实际结果：{background!r}')
+                second = threading.Thread(target=run, args=(user,))
+                second.start()
+                threads.append(second)
+                deadline = time.monotonic() + 10
+                while not library_processing._foreground_waiting() and time.monotonic() < deadline:
+                    time.sleep(0.01)
+                self.assertTrue(library_processing._foreground_waiting())
+                proceed.set()
+                for thread in threads:
+                    thread.join(30)
+                    self.assertFalse(thread.is_alive())
+            finally:
+                stopping.set()
+                proceed.set()
+                for thread in threads:
+                    thread.join()
         self.assertIsInstance(background[0], ProcessingBusy)
         self.assertIsInstance(user[0], dict)
         self.assertNotEqual(user[0].get('outcome'), 'interrupted')
