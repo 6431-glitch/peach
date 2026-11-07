@@ -431,3 +431,23 @@ class ReleaseNoticeTests(unittest.TestCase):
                     tokens = {part for token in item.get('platforms', []) for part in token.split('+')}
                     self.assertLessEqual(tokens, release_notice.PLATFORM_TOKENS, (version, item['title']))
                     self.assertIn(item.get('when', 'display_reprobe'), release_notice.FACTS, (version, item['title']))
+
+
+class ReleaseNoticeFactsTests(unittest.TestCase):
+    """公告条目的显示条件只读本机回执：移出过系统文件、解除过乱码人物关联才显示对应条目。"""
+
+    def test_counts_come_from_the_latest_upgrade_receipts(self):
+        import sqlite3
+        from peach import routes_configuration
+        connection = sqlite3.connect(':memory:')
+        self.addCleanup(connection.close)
+        connection.execute('CREATE TABLE ledger_upgrade_repair(id TEXT, result_json TEXT, applied_at TEXT)')
+        connection.executemany('INSERT INTO ledger_upgrade_repair VALUES(?,?,?)', [
+            ('a', json.dumps({'discovery-system-files-2': {'isolated': [{'id': 1}, {'id': 2}]}}), '1'),
+            ('b', json.dumps({'garbled_people': {'links': [{'asset_id': 7}], 'tags': [], 'entities': []}}), '2'),
+        ])
+        request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(
+            upgrade_repairs=SimpleNamespace(available=False))))
+        with patch.object(routes_configuration.settings_file, 'load_config', side_effect=OSError):
+            facts = routes_configuration._release_notice_facts(request, connection)
+        self.assertEqual(facts, {'system_files': {'count': 2}, 'garbled_performers': {'count': 1}})

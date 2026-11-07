@@ -847,6 +847,13 @@ def _release_notice_facts(request: Request, connection) -> dict:
     isolated = json.loads(row[0])[system_file_repair.RULE].get('isolated') if row else None
     if isolated:
         facts['system_files'] = {'count': len(isolated) if isinstance(isolated, list) else int(isolated)}
+    # 乱码人物补修（`metadata_text_repair.RECEIPT_KEY`）把解除的关联逐行记在升级回执顶层。
+    row = connection.execute(
+        "SELECT result_json FROM ledger_upgrade_repair WHERE json_type(result_json,'$.garbled_people') IS NOT NULL "
+        'ORDER BY applied_at DESC LIMIT 1').fetchone()
+    unlinked = json.loads(row[0])['garbled_people'].get('links') if row else None
+    if unlinked:
+        facts['garbled_performers'] = {'count': len(unlinked)}
     try:
         config = settings_file.load_config()
         if (config.present and DownloadSettings(config.directory('state')).load().clouddrive_address
