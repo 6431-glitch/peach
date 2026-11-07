@@ -89,6 +89,39 @@ describe('设计决定：作品卡、管理页与复核', () => {
     }
   });
 
+  it('长悬浮主控在窄卡同步缩小，两颗角落按钮保持同档且不覆盖主控', { timeout: 60_000 }, async () => {
+    const opened = await openCatalog(browser);
+    try {
+      const card = opened.page.locator('#grid [data-media-card]:has([data-media-seek])').first();
+      for (const [width, main, corner] of [[470, 58, 36], [200, 36, 30]]) {
+        await card.evaluate((node, size) => {
+          const element = node as HTMLElement;
+          element.style.width = `${size}px`;
+          element.style.minWidth = `${size}px`;
+          element.style.maxWidth = `${size}px`;
+          element.dataset.longhover = '';
+        }, width!);
+        await opened.page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+        const geometry = await card.evaluate(node => {
+          const primary = [...node.querySelectorAll('[data-media-seek] button')];
+          const corners = [...node.querySelectorAll('[data-media-preview], [data-media-later] button')];
+          const sizes = (nodes: Element[]) => nodes.map(button => {
+            const style = getComputedStyle(button);
+            return [parseFloat(style.width), parseFloat(style.height)];
+          });
+          const overlaps = corners.some(corner => primary.some(button => {
+            const a = corner.getBoundingClientRect(), b = button.getBoundingClientRect();
+            return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+          }));
+          return { primary: sizes(primary), corners: sizes(corners), overlaps };
+        });
+        assert.deepEqual(geometry.primary, Array.from({ length: 3 }, () => [main, main]));
+        assert.deepEqual(geometry.corners, [[corner, corner], [corner, corner]]);
+        assert.equal(geometry.overlaps, false, JSON.stringify({ width, geometry }));
+      }
+    } finally { await opened.close() }
+  });
+
   it('馆藏卡片的字取页面正文那一档，角标、悬停控件、进度条、竖屏带、Mix 与回收站卡面按定下的样子画', { timeout: 90_000 }, async () => {
     /* 演示库凑不出回收站里的非视频资源：回收站那一页把第二条换成一个压缩包。
        目录那一页给前三条挂半程观看进度，量进度条的颜色。 */
@@ -205,9 +238,8 @@ describe('设计决定：作品卡、管理页与复核', () => {
       assert.equal(catalog.progress?.background, catalog.tungsten.background, '观看进度条不是钨丝蓝');
       assert.deepEqual([catalog.mixGlyph?.background, catalog.mixGlyph?.borderWidth, catalog.mixGlyph?.borderColor],
         [catalog.overlay.background, '1px', catalog.overlay.borderColor], 'Mix 署名位那枚字形不是半透明底加细边');
-      /* 居中的快退快进和右下角「稍后看」是同一种控件，只是尺寸不同：58px 配 34px 图标；稍后看是卡片悬浮动作，
-         取紧凑档 32px 配 18px 图标。 */
-      assert.deepEqual([catalog.seekGlyph?.width, catalog.laterButton?.width, catalog.laterGlyph?.width], ['34px', '32px', '18px'],
+      /* 主控保持 58px 配 34px 图标；角落动作取同一档 36px 配 18px 图标。 */
+      assert.deepEqual([catalog.seekGlyph?.width, catalog.laterButton?.width, catalog.laterGlyph?.width], ['34px', '36px', '18px'],
         '悬停控件的尺寸和图标比例变了');
       const denseShort = await page.evaluate(() => {
         document.body.dataset.density = 'dense';

@@ -202,14 +202,13 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
   const flaggedBy = [Number(item.liked) > 0 ? '喜欢' : '', Number(item.o_count) > 0 ? '有高潮记录' : ''].filter(Boolean);
   const latest = useRef(item);
   latest.current = item;
-  /* 悬停预览只接一次：`wireHover` 往卡上挂监听，ref 回调换了身份 React 就会先卸后挂，
-     同一张卡上会叠出第二套。卸载时收掉正在放的预览。 */
+  /* 资源身份或缩略图能力变化时重绑；wireHover 先清理旧事件，避免虚拟卡片复用旧资源。 */
   const attach = useCallback((el: HTMLElement | null) => {
     const current = latest.current;
     if (card.current && card.current !== el) releaseHover(card.current);
     card.current = el;
     if (el && (!current.medium || current.medium === 'video')) wireHover(el, current);
-  }, []);
+  }, [item.id, item.location, item.has_thumb, item.medium]);
 
   /* 按画幅筛的列表里，接口只算同画幅的卷与版本，组可能只剩一卷或一个版本：那张卡就是这一个
      文件自己，不叠纸边、不标卷数或版本数。 */

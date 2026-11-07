@@ -27,7 +27,7 @@ export function feedNewCoverHtml(item){
 export function feedNewCardHtml(item){
   // 署名与日期各占一行，长出演名单可从悬停说明查看。
   const label=[item.performers&&`<span class="feednewperformers" title="${esc(item.performers)}">${esc(item.performers)}</span>`,
-    item.release_date&&`<span>${esc(item.release_date)}</span>`].filter(Boolean)
+    item.release_date&&`<time class="feednewdate" datetime="${esc(item.release_date)}">${esc(item.release_date)}</time>`].filter(Boolean)
     .join('');
   const cover=feedNewCoverHtml(item);
   // 番号与标题排在同一个两行的标题块里，和资产卡一样：番号加粗打头，标题接在后面截断。
