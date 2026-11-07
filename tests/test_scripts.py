@@ -5242,6 +5242,116 @@ class R2ReleaseTests(unittest.TestCase):
         self.assertEqual(uploads[-1], ("releases.json", False))
         self.assertTrue(all(immutable for _key, immutable in uploads[:-1]))
 
+    def publish_into(self, module, objects: dict, root: Path, version: str) -> list[tuple]:
+        """在内存桶上跑一次发布，返回按顺序发生的 `("upload"|"purge", 键)`。"""
+        events = []
+
+        def read(command, **_kwargs):
+            if command[1] == "lsjson":
+                return json.dumps([{"Path": key, "Size": len(value)} for key, value in objects.items()])
+            return objects["releases.json"].decode()
+
+        def run(command, **_kwargs):
+            if command[1] == "purge":
+                folder = command[2].split("peach:peach-releases/", 1)[1]
+                for key in [key for key in objects if key.startswith(folder + "/")]:
+                    del objects[key]
+                events.append(("purge", folder))
+                return
+            key = command[3].split("peach:peach-releases/", 1)[1]
+            objects[key] = Path(command[2]).read_bytes()
+            events.append(("upload", key))
+
+        def verify(url, item):
+            content = objects[url.split("https://downloads.example/", 1)[1].split("?", 1)[0]]
+            self.assertEqual((len(content), hashlib.sha256(content).hexdigest()), (item["size"], item["sha256"]))
+
+        environment = {"PEACH_RCLONE": "rclone", "PEACH_R2_BUCKET": "peach-releases",
+                       "PEACH_R2_PUBLIC_BASE": "https://downloads.example", "CI_COMMIT_SHA": "a" * 40,
+                       "CI_COMMIT_TIMESTAMP": "2026-11-08T00:00:00Z"}
+        with mock.patch.object(module, "rclone_environment", return_value=environment), \
+                mock.patch.object(module.subprocess, "check_output", side_effect=read), \
+                mock.patch.object(module.subprocess, "run", side_effect=run), \
+                mock.patch.object(module, "verify_download", side_effect=verify):
+            module.publish(root, version, apply=True)
+        return events
+
+    @staticmethod
+    def release_files(root: Path, version: str) -> list[str]:
+        names = [f"Peach-{version}-windows-x64{suffix}" for suffix in (".zip", "-setup.exe", "-lite-setup.exe", "-update.zip")]
+        names += [f"Peach-{version}-macos-{arch}.dmg" for arch in ("arm64", "x86_64")]
+        for name in names:
+            (root / name).write_bytes(name.encode())
+        return names
+
+    def test_github_release_is_mirrored_with_its_signed_sums_and_only_three_versions_kept(self):
+        """GitHub 发版作业的 `SHA256SUMS.txt` 带 `./` 前缀且已签名：镜像原样转存，签名才验得过。"""
+        module = load_script("release_r2")
+        objects = {"releases.json": json.dumps([{"tag_name": f"v1.{minor}.0"} for minor in (2, 1, 0)]).encode(),
+                   "sparkle/macos-arm64.xml": b"feed", "_ci/1/2/keep.json": b"ci"}
+        objects.update({f"v1.{minor}.0/app.zip": b"old" for minor in (0, 1, 2)})
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            names = self.release_files(root, "1.3.0")
+            sums = "".join(f"{hashlib.sha256(name.encode()).hexdigest()}  ./{name}\n" for name in names).encode()
+            (root / "SHA256SUMS.txt").write_bytes(sums)
+            (root / "SHA256SUMS.txt.sig").write_bytes(b"key signature\n")
+            events = self.publish_into(module, objects, root, "1.3.0")
+        index = json.loads(objects["releases.json"])
+        self.assertEqual([row["tag_name"] for row in index], ["v1.3.0", "v1.2.0", "v1.1.0"])
+        self.assertEqual(index[0]["html_url"], "https://github.com/peach-mitao/peach/releases/tag/v1.3.0")
+        self.assertEqual(objects["v1.3.0/SHA256SUMS.txt"], sums)
+        self.assertEqual(objects["v1.3.0/SHA256SUMS.txt.sig"], b"key signature\n")
+        self.assertEqual(sorted(key for key in objects if key.startswith(("v1.0.0/", "v1.1.0/", "v1.2.0/"))),
+                         ["v1.1.0/app.zip", "v1.2.0/app.zip"])
+        self.assertEqual((objects["sparkle/macos-arm64.xml"], objects["_ci/1/2/keep.json"]), (b"feed", b"ci"))
+        # 旧目录在索引不再指向它之后才删。
+        self.assertEqual(events[-2:], [("upload", "releases.json"), ("purge", "v1.0.0")])
+
+    def test_mirror_refuses_versions_older_than_the_kept_ones_and_mismatched_sums(self):
+        module = load_script("release_r2")
+        index = json.dumps([{"tag_name": f"v1.{minor}.0"} for minor in (3, 2, 1)]).encode()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            self.release_files(root, "1.0.0")
+            objects = {"releases.json": index}
+            with self.assertRaisesRegex(ValueError, "都旧"):
+                self.publish_into(module, objects, root, "1.0.0")
+            self.assertEqual(objects, {"releases.json": index})
+            (root / "SHA256SUMS.txt").write_text("0" * 64 + "  Peach-1.0.0-windows-x64.zip\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "摘要与制品不一致"):
+                module.release_sums(root, module.inventory(root, "1.0.0"), root)
+
+    def test_every_github_release_runs_the_mirror_publication(self):
+        """镜像索引断过档：GitHub 发版后没有作业调 `release_r2.py`，`releases.json` 停在旧版。
+
+        按作业依赖判定：创建 Release 的作业之后，必须有一个同条件运行的作业发布镜像。
+        """
+        jobs, current = {}, None
+        lines = (ROOT / ".github/workflows/release.yml").read_text(encoding="utf-8").splitlines()
+        for line in lines[lines.index("jobs:") + 1:]:
+            header = re.fullmatch(r"  ([A-Za-z0-9_-]+):", line)
+            if header:
+                current = jobs.setdefault(header[1], {"needs": [], "if": None, "body": ""})
+            elif current is not None:
+                current["body"] += line + "\n"
+                field = re.fullmatch(r"    (needs|if): (.+)", line)
+                if field and field[1] == "needs":
+                    current["needs"] = re.findall(r"[A-Za-z0-9_-]+", field[2])
+                elif field:
+                    current["if"] = field[2]
+
+        def ancestors(name):
+            return {parent for need in jobs[name]["needs"] for parent in {need, *ancestors(need)}}
+
+        creators = [name for name, job in jobs.items() if "gh release create" in job["body"]]
+        mirrors = [name for name, job in jobs.items()
+                   if "scripts/release_r2.py" in job["body"] and "--apply" in job["body"]]
+        self.assertEqual(len(creators), 1)
+        self.assertEqual(len(mirrors), 1)
+        self.assertEqual(ancestors(mirrors[0]) & set(creators), set(creators))
+        self.assertEqual(jobs[mirrors[0]]["if"], jobs[creators[0]]["if"])
+
     def test_capacity_keeps_existing_versions_and_stops_before_upload(self):
         module = load_script("release_r2")
         existing = [{"Path": "v1.0.0/old.zip", "Size": 2_000_000}, {"Path": "v1.2.3/app.zip", "Size": 3_000_000}]
