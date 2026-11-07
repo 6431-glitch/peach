@@ -650,16 +650,18 @@ def _record_directory_subtitles(connection, location, directory, here, conflicts
     return subtitles.record(connection, location, unambiguous, now)
 
 
-def _follow_case_rename(connection, registered, conflicts, location, ledger_root, walk_root, ledger_path, native):
+def _follow_case_rename(connection, registered, conflicts, location, ledger_root, walk_root, ledger_path, native,
+                        *, direct):
     """文件或目录只改了大小写时，把账本路径改成磁盘上的实际写法（#487）。
 
     账本按不区分大小写的键认旧行，区分大小写的文件系统上旧写法已经打不开。只在旧写法确实
     不存在、或与新写法是同一个文件（不区分大小写的文件系统）时改；两种写法各是一个文件时不动，
-    交给 `conflicts`。身份、标签与观看记录都挂在资产 id 上，跟着走。
+    交给 `conflicts`。身份、标签与观看记录都挂在资产 id 上，跟着走。只看本机直读的目录：
+    SMB 走协议读取，没有本机路径可比。
     """
     key = ledger_path.casefold()
     stored = registered.get(key)
-    if stored is None or stored == ledger_path or key in conflicts:
+    if not direct or stored is None or stored == ledger_path or key in conflicts:
         return
     # 根目录前缀的写法来自设置，不是磁盘；只跟随根以下文件与目录的改名，不批量改写整库前缀。
     if not stored.startswith(str(ledger_root)):
@@ -800,9 +802,8 @@ def _scan_location(
                 if new_only and ledger_path.casefold() in registered:
                     here[name] = (None, None)
                     continue
-                if read_directory is None:
-                    _follow_case_rename(connection, registered, conflicts, location, ledger_root, walk_root,
-                                        ledger_path, Path(directory) / name)
+                _follow_case_rename(connection, registered, conflicts, location, ledger_root, walk_root,
+                                    ledger_path, Path(directory) / name, direct=read_directory is None)
                 try:
                     stat = _scan_file_stat(connection, identities, registered, observations, location,
                                            ledger_path, directory, entry, direct=read_directory is None,
