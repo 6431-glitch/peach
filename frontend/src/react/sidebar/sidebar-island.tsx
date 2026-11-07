@@ -36,6 +36,8 @@ import type {
 } from './sidebar-api';
 import { useCommitNavigationOrder } from './sidebar-order';
 import { useSidebarReorder } from './use-sidebar-reorder';
+import { resetSidebarOrder } from '../../sidebar';
+import { NavigationOrderMenu } from '../components/navigation-order';
 
 /* 首页那一项的键是空串；空串写进 dataTransfer 等于没写，给它一个占位。 */
 const HOME = '__home__';
@@ -146,6 +148,7 @@ function Navigation({ host: at, epoch, version }: { host: SidebarHost; epoch: nu
         )})}
         {reorder.hint ? <span data-sidebar-drop-line="" aria-hidden="true"
           style={{ '--sidebar-line-top': `${reorder.linePosition}px` } as CSSProperties}><span /></span> : null}
+        <NavigationOrderMenu order={{ label: '左侧导航', keys: order, defaults: resetSidebarOrder(order), commit }} />
         <span role="status" aria-live="polite" data-sidebar-order-status="">{reorder.announcement}</span>
       </div>
       {drawer ? createPortal(<span data-sidebar-glide="" aria-hidden="true" ref={pane} />, drawer) : null}

@@ -9,6 +9,7 @@
 
 /** `[键, 名称, 字形]`，同壳的 `MANAGE_SECTIONS`。 */
 import { CLEANUP_CRUMB_PAGES } from './cleanup-tools';
+import { MANAGE_MENU_SECTIONS } from './application/navigation-items';
 
 export type ManageEntry = readonly [key: string, label: string, glyph: string];
 
@@ -110,7 +111,10 @@ export function manageHeaderSkeletonHtml(props: ManageHeaderProps): string {
   const lede = view.lede.kind === 'none' ? ''
     : `<p class="mono" data-manage-lede="">${view.lede.kind === 'skeleton' ? TRASH_LEDE_SKELETON_HTML
       : `<span data-lede-text="">${escape(view.lede.text)}</span>${view.lede.total ? EMPTY_TRASH_HTML : ''}`}</p>`;
-  return `<nav data-manage-bar="" aria-label="管理"><div data-manage-menu="" data-pill-nav="" role="group">${menu}</div><span data-manage-order-status="" role="status" aria-live="polite"></span></nav>`
+  const keys = props.menu.map(([key]) => key);
+  const reset = keys.join(',') === MANAGE_MENU_SECTIONS.filter(key => keys.includes(key)).join(',') ? ''
+    : `<button type="button" disabled data-navigation-menu="" aria-label="管理顶部菜单排序设置" aria-haspopup="dialog" aria-expanded="false">${glyph('ellipsis')}</button>`;
+  return `<nav data-manage-bar="" aria-label="管理"><div data-manage-menu="" data-pill-nav="" role="group">${menu}</div>${reset}<span data-manage-order-status="" role="status" aria-live="polite"></span></nav>`
     + crumb
     + `<h2 data-manage-title=""${view.compact ? ' data-compact=""' : ''}>${escape(view.title)}</h2>`
     + lede;

@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "50082b41-272c-44d5-a222-494f8bc12f4d", e._sentryDebugIdIdentifier = "sentry-dbid-50082b41-272c-44d5-a222-494f8bc12f4d");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "0bf149fb-a309-49a0-9fb3-d0f80ca427fa", e._sentryDebugIdIdentifier = "sentry-dbid-0bf149fb-a309-49a0-9fb3-d0f80ca427fa");
 	} catch {}
 })();
 import { ActivePoints as e, AnimatedItems as t, CHART_CARD as n, CHART_COLORS as r, CartesianLabelListContextProvider as i, CategoryTick as a, ChartBackground as o, ChartContainer as s, ChartHead as c, ChartLegend as l, ChartLegendContent as u, ChartTip as d, ChartTooltip as f, ChartTooltipContent as p, DefaultZIndexes as m, Dots as h, EvilBarChart as g, LabelListFromLabelProp as _, Layer as v, LoadingIndicator as y, PolarChart as b, PolarLabelContextProvider as x, PolarLabelFromLabelProp as S, RegisterGraphicalItemId as C, SetPolarGraphicalItem as ee, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Text as E, ZIndexLayer as D, adaptEventsOfChild as te, addRadiusAxis as ne, arrayTooltipSearcher as re, categoryAxisWidth as ie, cn as ae, createSelector as O, defaultPolarChartProps as oe, defaultPolarRadiusAxisProps as se, fitLabel as ce, getAxisTypeBasedOnLayout as le, getBandSizeOfAxis as ue, getClassNameFromUnknown as de, getColorsCount as fe, getTooltipNameProp as pe, getValueByDataKey as me, identity as he, interpolate as ge, isArrayLike as _e, isCategoricalAxis as ve, isNullish as ye, iteratee as be, matchAnimationItems as xe, matchByIndex as Se, noop as Ce, polarToCartesian as k, removeRadiusAxis as we, resolveDefaultProps as A, selectAngleAxis as Te, selectChartDataAndAlwaysIgnoreIndexes as Ee, selectChartLayout as De, selectPolarViewBox as Oe, selectRadiusAxis as ke, selectUnfilteredPolarItems as Ae, svgPropertiesAndEvents as je, svgPropertiesNoEvents as j, svgPropertiesNoEventsFromUnknown as Me, tone as Ne, useAnimationCallbacks as Pe, useAnimationStartSnapshot as Fe, useAppDispatch as Ie, useAppSelector as M, useIsPanorama as Le, usePolarChartLayout as Re } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2114,13 +2114,13 @@ function ua(e) {
 							"aria-label": "口味分析的数据来源",
 							className: ot,
 							children: [/* @__PURE__ */ (0, X.jsx)(Ve, {
-								id: "browser",
-								className: at,
-								children: "浏览器记录"
-							}), /* @__PURE__ */ (0, X.jsx)(Ve, {
 								id: "peach",
 								className: at,
 								children: "Peach 观看与评价"
+							}), /* @__PURE__ */ (0, X.jsx)(Ve, {
+								id: "browser",
+								className: at,
+								children: "浏览器记录"
 							})]
 						}), /* @__PURE__ */ (0, X.jsxs)("div", {
 							className: "flex flex-wrap items-center gap-2",
@@ -2482,4 +2482,4 @@ function da({ term: e, value: t, rest: n }) {
 }
 export { $i as TASTE_GUIDE_KEY, ua as TastePage };
 
-//# debugId=50082b41-272c-44d5-a222-494f8bc12f4d
+//# debugId=0bf149fb-a309-49a0-9fb3-d0f80ca427fa

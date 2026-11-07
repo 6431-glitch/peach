@@ -16,7 +16,6 @@
  * 行之间也只用分隔线，不各自套框；字号只取 BoardUI 排好的那几档 token。 */
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Tab, TabPanel, Tabs } from 'react-aria-components';
 
 import { resolveFollowSort } from '../../follow-sort';
 import type { FollowManageProps } from '../bundle';
@@ -24,7 +23,7 @@ import { cardClass } from '../components/card';
 import { Note } from '../components/note';
 import { Page } from '../components/page';
 import { TagManager } from '../index/tag-manager';
-import { PillAriaTabList } from '../components/pill-aria-tab-list';
+import { SortableBoardTabs } from '../components/navigation-order';
 import { STAT_STRIP_SIX } from '../components/stat-card';
 import { ExternalLink } from '../settings/section';
 import { AddSource } from './add-source';
@@ -137,23 +136,16 @@ export function FollowManagePage(props: FollowManageProps) {
         <Reading term="未看新作" figure={feeds.data?.unread || 0} unit="条" />
       </div>
 
-      <Tabs selectedKey={tab} onSelectionChange={(key) => {
-        const next = String(key);
-        if (!isTab(next)) return;
-        setSelected(new Set());
-        setFeedSelected(new Set());
-        setTab(next);
-        go({ tab: next });
-      }} className="flex flex-col gap-6">
-        <PillAriaTabList aria-label="关注管理区域" data-section-nav data-section-items
-          className="flex max-w-full flex-nowrap overflow-x-auto">
-          {TABS.map(([key, name]) => (
-            <Tab key={key} id={key} data-pill-selected={tab === key ? '' : undefined} data-pill-variant="gray"
-              className="cursor-pointer whitespace-nowrap">{name}</Tab>
-          ))}
-        </PillAriaTabList>
+      <div className="flex flex-col gap-6">
+        <div data-section-nav>
+          <SortableBoardTabs group="follow" label="关注管理区域" value={tab} panelPrefix="follow" sectionItems
+            tabs={TABS.map(([value, label]) => ({ value, label }))} className=""
+            itemClassName="cursor-pointer whitespace-nowrap" onChange={next => {
+              setSelected(new Set()); setFeedSelected(new Set()); setTab(next); go({ tab: next });
+            }} />
+        </div>
 
-        <TabPanel id="list" className="flex flex-col gap-4">
+        {tab === 'list' ? <div role="tabpanel" id="follow-panel-list" aria-labelledby="follow-tab-list" className="flex flex-col gap-4">
           <FeedSources readOnly={readOnly} toast={toast}
             onAdd={() => { setTab('add'); go({ tab: 'add' }) }}
             selection={{ ids: feedSelected, onChange: setFeedSelected, onActivate: () => setSelected(new Set()) }} />
@@ -181,21 +173,21 @@ export function FollowManagePage(props: FollowManageProps) {
               savePreference({ pageSize: next });
               go({ page: 1 });
             }} />
-        </TabPanel>
+        </div> : null}
 
-        <TabPanel id="add" className="flex flex-col gap-8">
+        {tab === 'add' ? <div role="tabpanel" id="follow-panel-add" aria-labelledby="follow-tab-add" className="flex flex-col gap-8">
           <AddSource data={data} credentials={creds} readOnly={readOnly} toast={toast} />
           <AddFeed readOnly={readOnly} toast={toast}
             onAdded={() => { void feeds.refetch(); setTab('list'); go({ tab: 'list' }) }} />
           <AliasManager groups={data.author_aliases || []} readOnly={readOnly} toast={toast}
             suggestions={data.alias_suggestions || []} sources={data.sources} />
-        </TabPanel>
+        </div> : null}
 
-        <TabPanel id="tags" className="flex flex-col gap-4">
+        {tab === 'tags' ? <div role="tabpanel" id="follow-panel-tags" aria-labelledby="follow-tab-tags" className="flex flex-col gap-4">
           <TagManager scope="online" />
-        </TabPanel>
+        </div> : null}
 
-      </Tabs>
+      </div>
       <div><ButtonLink variant="secondary" href="/settings/subscriptions">来源与订阅设置{pending ? `（${pending}）` : ''}</ButtonLink></div>
     </Page>
   );

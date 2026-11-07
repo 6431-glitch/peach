@@ -9,6 +9,7 @@ import { boundedPreference } from '../number-setting';
 import { createSettingsStore, type SettingsStore } from '../settings-store';
 import { MANAGE_MENU_SECTIONS, normalizeManageOrder } from '../application/navigation-items';
 import { DEFAULT_SIDEBAR_ORDER, normalizeSidebarOrder } from '../sidebar';
+import { normalizeNavigationOrders, type NavigationOrders } from '../navigation-order';
 import { SORT_ALIASES, SORT_KEYS } from '../sort-preferences';
 import { DEFAULT_ACCENT, DEFAULT_HOME_GLOW, normalizeAccent, normalizeHomeGlow, type HomeGlow } from './home-glow';
 
@@ -58,6 +59,8 @@ export interface AppSettings {
   followInitialDays: number;
   sidebarOrder: string[];
   manageOrder: string[];
+  navigationOrders: NavigationOrders;
+  libraryOrder: string[];
   homeGlow: HomeGlow;
   accent: string;
 }
@@ -68,6 +71,8 @@ export const DEFAULT_SETTINGS = {
   followLayout: 'default', peopleLayout: 'big', photoSize: 'small', ambientMode: true, miniplayer: true,
   theaterMode: false, theme: 'system', groupCollapse: true, sidebarOrder: [...DEFAULT_SIDEBAR_ORDER], manageOrder: [...MANAGE_MENU_SECTIONS],
   homeGlow: DEFAULT_HOME_GLOW, accent: DEFAULT_ACCENT, performerNameLanguage: 'zh-CN',
+  navigationOrders: {},
+  libraryOrder: [],
 } as const;
 
 /** 白名单里的值原样给回，否则给 `fallback`。 */
@@ -115,6 +120,8 @@ export function normalizeAppSettings(raw: unknown): { settings: AppSettings; mig
   settings.accent = normalizeAccent(settings.accent);
   settings.sidebarOrder = normalizeSidebarOrder(settings.sidebarOrder);
   settings.manageOrder = normalizeManageOrder(settings.manageOrder);
+  settings.navigationOrders = normalizeNavigationOrders(settings.navigationOrders);
+  settings.libraryOrder = Array.isArray(settings.libraryOrder) ? [...new Set(settings.libraryOrder.filter(key => typeof key === 'string'))] : [];
   return { settings: settings as AppSettings, migrated };
 }
 
@@ -149,6 +156,8 @@ export interface SyncedSettings {
   searchHistoryLimit?: unknown;
   sidebarOrder?: unknown;
   manageOrder?: unknown;
+  navigationOrders?: unknown;
+  libraryOrder?: unknown;
 }
 
 /* 数据库那一份落进本地缓存。启动时壳取一次、设置面板每次打开再取一次，都交到这里；开着的面板与
@@ -185,6 +194,18 @@ export function applySyncedSettings(
     if (manageOrder.join(',') !== settings.manageOrder.join(',')) { settings.manageOrder = manageOrder; target.save() }
   }
   const order = Array.isArray(remote && remote.sidebarOrder) ? remote!.sidebarOrder as string[] : null;
+  if (Array.isArray(remote?.libraryOrder) && remote.libraryOrder.every(key => typeof key === 'string')
+    && remote.libraryOrder.join(',') !== settings.libraryOrder.join(',')) {
+    settings.libraryOrder = remote.libraryOrder;
+    target.save();
+  }
+  if (remote?.navigationOrders) {
+    const navigationOrders = normalizeNavigationOrders(remote.navigationOrders);
+    if (JSON.stringify(navigationOrders) !== JSON.stringify(settings.navigationOrders)) {
+      settings.navigationOrders = navigationOrders;
+      target.save();
+    }
+  }
   if (!order || !order.length || order.join(',') === settings.sidebarOrder.join(',')) return;
   settings.sidebarOrder = order;
   target.save();

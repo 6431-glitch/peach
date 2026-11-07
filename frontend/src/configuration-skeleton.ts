@@ -8,7 +8,8 @@
  *   画好时记下的结构画：记的是行数与每行是否展开这类结构，不是高度。没有记录时按空集合或一行的最小结构画。 */
 import { esc } from '@peach/legacy/core';
 import { islandButton, islandGlyph, islandSelect } from './island-skeleton';
-import { CONFIGURATION_SECTIONS } from './history/settings-route';
+import { appSettingsStore } from './appearance/settings';
+import { NAVIGATION_GROUPS, normalizeNavigationOrder } from './navigation-order';
 import { diagnosticsSkeleton } from './diagnostics-skeleton';
 import { LIBRARY_FOLDER_HELP, POLICY_SUMMARY } from './react/settings/library-policy-copy';
 import { ENTRY_LINKS_HELP, ENTRY_LINKS_HINT } from './configuration-copy';
@@ -371,6 +372,8 @@ export function configurationContentSkeleton(chosen: string): string {
 }
 
 export function configurationSkeleton(chosen = '媒体库与入库'): string {
-  const nav = `<div class="ui-board-local-nav" data-section-nav data-section-items>${Object.values(CONFIGURATION_SECTIONS).map(title => `<button type="button" tabindex="-1" aria-selected="${title === chosen}">${title}</button>`).join('')}</div>`;
+  const titles = normalizeNavigationOrder('configuration', appSettingsStore().value.navigationOrders.configuration)
+    .map(key => NAVIGATION_GROUPS.configuration.items.find(([id]) => id === key)![1]);
+  const nav = `<div class="ui-board-local-nav" data-section-nav data-section-items>${titles.map(title => `<button type="button" tabindex="-1" aria-selected="${title === chosen}">${title}</button>`).join('')}</div>`;
   return `<div class="peach-react"><div class="ui-configpage">${nav}<div class="flex min-w-0 flex-col gap-6">${configurationContentSkeleton(chosen)}</div></div></div>`;
 }

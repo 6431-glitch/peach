@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "27e6addd-c099-4061-a555-550d94bc3913", e._sentryDebugIdIdentifier = "sentry-dbid-27e6addd-c099-4061-a555-550d94bc3913");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "52a5a8c7-46ea-4b1d-9750-3d9eb976353b", e._sentryDebugIdIdentifier = "sentry-dbid-52a5a8c7-46ea-4b1d-9750-3d9eb976353b");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -21652,61 +21652,210 @@ var N_ = (e) => structuredClone((M_.find(([t]) => t === e) || M_[0])[2]), P_ = [
 	["fuchsia", "品红"],
 	["rose", "玫红"]
 ];
-({ ...N_("ash") });
+({ ...N_("ash") }), Object.fromEntries(Object.entries({
+	fresh: "/unseen",
+	later: "/watch-later",
+	flagged: "/flagged",
+	ads: "/junk-files"
+}).map(([e, t]) => [t, e])), typeof Intl < "u" && typeof Intl.Segmenter == "function" && new Intl.Segmenter(void 0, { granularity: "grapheme" }), { ...Am };
+// src/application/navigation-items.ts
+var F_ = [
+	[
+		"",
+		"首页",
+		"home"
+	],
+	[
+		"performers",
+		"艺人",
+		"user-round"
+	],
+	[
+		"studios",
+		"厂牌",
+		"clapperboard"
+	],
+	[
+		"tags",
+		"标签",
+		"tags"
+	],
+	[
+		"jav",
+		"JAV",
+		"jav"
+	],
+	[
+		"flagged",
+		"已标记",
+		"bookmark"
+	],
+	[
+		"playlists",
+		"播放列表",
+		"playlist"
+	],
+	[
+		"follow",
+		"关注",
+		"rss"
+	],
+	[
+		"immerse",
+		"沉浸模式",
+		"gallery-vertical-end"
+	],
+	[
+		"manage",
+		"管理",
+		"wrench"
+	]
+], I_ = [
+	[
+		"stats",
+		"统计",
+		"chart"
+	],
+	[
+		"taste",
+		"口味",
+		"heart"
+	],
+	[
+		"review",
+		"人工复核",
+		"square-check-big"
+	],
+	[
+		"cleanup",
+		"数据管理",
+		"hard-drive"
+	],
+	[
+		"trash",
+		"回收站",
+		"trash"
+	],
+	[
+		"follow",
+		"关注管理",
+		"rss"
+	],
+	[
+		"quality",
+		"高清版",
+		"sparkles"
+	],
+	[
+		"activity",
+		"任务中心",
+		"history"
+	],
+	[
+		"configuration",
+		"Peach 配置",
+		"folder-cog"
+	]
+], L_ = [
+	"stats",
+	"taste",
+	"cleanup",
+	"follow",
+	"activity",
+	"configuration"
+], R_ = I_.flatMap(([e, t, n]) => e === "configuration" ? [] : [[
+	e === "follow" ? "follow-manage" : e === "cleanup" ? "data-cleanup" : e,
+	t,
+	n
+]]);
+[...F_, ...R_];
+// src/sidebar.ts
+var z_ = [
+	"",
+	"follow",
+	"jav",
+	"performers",
+	"tags",
+	"studios",
+	"flagged",
+	"manage"
+], B_ = [
+	"playlists",
+	"immerse",
+	"stats",
+	"review",
+	"data-cleanup",
+	"trash",
+	"follow-manage",
+	"quality"
+];
+[...z_, ...B_];
+// src/sort-preferences.ts
+var V_ = [
+	["seed", "随机"],
+	["rating", "评分"],
+	["o", "高潮计数"],
+	["plays", "观看次数"],
+	["dur", "时长"],
+	["size", "体积"],
+	["new", "入库时间"],
+	["played", "观看时间"]
+], H_ = ["release", "发行时间"];
+[...V_, H_].map(([e]) => e), [...z_], [...L_];
 // src/react/components/library-tint.ts
-var F_ = /* @__PURE__ */ new Map(), I_ = /* @__PURE__ */ new Set();
-function L_(e) {
+var U_ = /* @__PURE__ */ new Map(), W_ = /* @__PURE__ */ new Set();
+function G_(e) {
 	let t = document.createElement("span");
 	t.setAttribute("data-accent-ball", e), t.hidden = !0, document.body.append(t);
 	let n = getComputedStyle(t).getPropertyValue("--color-accent-500").trim();
 	return t.remove(), n;
 }
-function R_(e) {
-	F_ = e;
+function K_(e) {
+	U_ = e;
 	let t = document.getElementById("peach-library-tints");
-	t || (t = document.createElement("style"), t.id = "peach-library-tints", document.head.append(t)), t.textContent = [...F_.values()].filter((e) => e.color).map((e) => `[data-library="${CSS.escape(e.id)}"]{--library-color:${L_(e.color)}}`).join("\n");
+	t || (t = document.createElement("style"), t.id = "peach-library-tints", document.head.append(t)), t.textContent = [...U_.values()].filter((e) => e.color).map((e) => `[data-library="${CSS.escape(e.id)}"]{--library-color:${G_(e.color)}}`).join("\n");
 }
-function z_(e) {
-	R_(e), I_.forEach((e) => e());
+function q_(e) {
+	K_(e), W_.forEach((e) => e());
 }
-function B_(e, t) {
-	let n = F_.get(e) ?? {
+function J_(e, t) {
+	let n = U_.get(e) ?? {
 		id: e,
 		name: "",
 		icon: "database",
 		location: "",
 		color: ""
 	};
-	z_(new Map([...F_, [e, {
+	q_(new Map([...U_, [e, {
 		...n,
 		color: t
 	}]]));
 }
 // src/react/components/overlay-host.ts
-function V_(e) {
+function Y_(e) {
 	let t = e.querySelector(":scope > [data-react-overlays]");
 	if (t) return t;
 	let n = e.ownerDocument.createElement("div");
 	return n.className = "peach-react", n.dataset.reactOverlays = "", e.append(n), n;
 }
-function H_(e) {
+function X_(e) {
 	let t = e?.ownerDocument ?? globalThis.document, n = e?.closest("dialog[open]");
-	return V_(n ?? t.body);
+	return Y_(n ?? t.body);
 }
 // src/react/settings/library-policy-settings.tsx
-var U_ = [
+var Z_ = [
 	["probe", "读取视频信息"],
 	["metadata", "联网补资料"],
 	["cover", "联网补封面"],
 	["people", "联网补人物图片"],
 	["preview", "生成九宫格预览"]
-], W_ = [
+], Q_ = [
 	"probe",
 	"metadata",
 	"cover",
 	"people",
 	"preview"
-], G_ = [
+], $_ = [
 	[
 		"auto",
 		"自动补全",
@@ -21723,7 +21872,7 @@ var U_ = [
 		"逐项选择要做的步骤"
 	]
 ];
-function K_({ name: e, value: t, onChange: n }) {
+function ev({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, z.jsx)(j_, {
 		"data-guide-target": "library-policy",
 		className: "w-full",
@@ -21732,10 +21881,10 @@ function K_({ name: e, value: t, onChange: n }) {
 		prefix: "处理方式",
 		renderValue: /* @__PURE__ */ (0, z.jsx)("span", {
 			className: "truncate",
-			children: G_.find(([e]) => e === t)?.[1]
+			children: $_.find(([e]) => e === t)?.[1]
 		}),
 		onSelectionChange: (e) => n(String(e)),
-		children: G_.map(([e, t, n]) => /* @__PURE__ */ (0, z.jsx)(Dh, {
+		children: $_.map(([e, t, n]) => /* @__PURE__ */ (0, z.jsx)(Dh, {
 			id: e,
 			textValue: t,
 			children: /* @__PURE__ */ (0, z.jsxs)("span", {
@@ -21748,15 +21897,15 @@ function K_({ name: e, value: t, onChange: n }) {
 		}, e))
 	});
 }
-function q_({ name: e, value: t, onChange: n }) {
+function tv({ name: e, value: t, onChange: n }) {
 	return /* @__PURE__ */ (0, z.jsx)(Um, {
 		defaultOpen: !0,
-		summary: `${e} 的处理步骤（${t.length}/${U_.length}）`,
+		summary: `${e} 的处理步骤（${t.length}/${Z_.length}）`,
 		children: /* @__PURE__ */ (0, z.jsx)("div", {
 			className: "flex flex-wrap gap-x-6 gap-y-2",
 			role: "group",
 			"aria-label": `${e} 处理步骤`,
-			children: U_.map(([e, r]) => /* @__PURE__ */ (0, z.jsx)(Qp, {
+			children: Z_.map(([e, r]) => /* @__PURE__ */ (0, z.jsx)(Qp, {
 				isSelected: t.includes(e),
 				onChange: (r) => n(r ? [...t, e] : t.filter((t) => t !== e)),
 				children: r
@@ -21764,9 +21913,9 @@ function q_({ name: e, value: t, onChange: n }) {
 		})
 	});
 }
-function J_({ id: e, name: t, value: n, onChange: r }) {
+function nv({ id: e, name: t, value: n, onChange: r }) {
 	let i = (0, j.useRef)(null), [a, o] = (0, j.useState)(!1), s = P_.find(([e]) => e === n)?.[1] || "无颜色", c = (t) => {
-		r(t), B_(e, t), o(!1);
+		r(t), J_(e, t), o(!1);
 	};
 	return /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsxs)("button", {
 		ref: i,
@@ -21797,7 +21946,7 @@ function J_({ id: e, name: t, value: n, onChange: r }) {
 			/* @__PURE__ */ (0, z.jsx)("span", { children: s })
 		]
 	}), /* @__PURE__ */ (0, z.jsx)(ff, {
-		getContainer: () => H_(i.current),
+		getContainer: () => X_(i.current),
 		children: /* @__PURE__ */ (0, z.jsx)(Cf, {
 			triggerRef: i,
 			isOpen: a,
@@ -21847,12 +21996,12 @@ function J_({ id: e, name: t, value: n, onChange: r }) {
 	})] });
 }
 // src/react/settings/peach-proxy-fields.tsx
-var Y_ = [
+var rv = [
 	["environment", "跟随环境"],
 	["direct", "直连"],
 	["proxy", "自定义"]
 ];
-function X_({ mode: e, onChange: t, labelledBy: n }) {
+function iv({ mode: e, onChange: t, labelledBy: n }) {
 	return /* @__PURE__ */ (0, z.jsx)(Eh, {
 		"aria-label": n ? void 0 : "连接方式",
 		"aria-labelledby": n,
@@ -21860,13 +22009,13 @@ function X_({ mode: e, onChange: t, labelledBy: n }) {
 		onSelectionChange: (e) => {
 			e !== null && t(String(e));
 		},
-		children: Y_.map(([e, t]) => /* @__PURE__ */ (0, z.jsx)(Dh, {
+		children: rv.map(([e, t]) => /* @__PURE__ */ (0, z.jsx)(Dh, {
 			id: e,
 			children: t
 		}, e))
 	});
 }
-function Z_({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
+function av({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 	return /* @__PURE__ */ (0, z.jsx)(pm, {
 		id: e,
 		type: "password",
@@ -21881,7 +22030,7 @@ function Z_({ id: e, value: t, onChange: n, saved: r = !1, error: i }) {
 		hint: i
 	});
 }
-function Q_(e) {
+function ov(e) {
 	try {
 		let t = new URL(e).hostname;
 		return [
@@ -21894,7 +22043,7 @@ function Q_(e) {
 	}
 }
 // src/react/boardui/components/base/badges/chip.tsx
-var $_ = Ft({
+var sv = Ft({
 	base: "inline-flex items-center justify-center rounded-md px-1.5 whitespace-nowrap transition-[padding,font-size] duration-200 ease",
 	variant: {
 		bold: "py-0.5 text-body-medium",
@@ -21913,31 +22062,31 @@ var $_ = Ft({
 		soft: "bg-background-secondary-default text-text-secondary"
 	}
 });
-function ev({ variant: e = "bold", color: t = "neutral", className: n, ref: r, ...i }) {
+function cv({ variant: e = "bold", color: t = "neutral", className: n, ref: r, ...i }) {
 	return /* @__PURE__ */ (0, z.jsx)("span", {
 		ref: r,
-		className: R($_.base, $_.variant[e], $_.color[t], n),
+		className: R(sv.base, sv.variant[e], sv.color[t], n),
 		...i
 	});
 }
 // src/react/components/status-label.tsx
-var tv = {
+var lv = {
 	success: "lime",
 	progress: "blue",
 	warning: "yellow",
 	error: "rose",
 	neutral: "neutral"
 };
-function nv({ tone: e = "neutral", ...t }) {
-	return /* @__PURE__ */ (0, z.jsx)(ev, {
+function uv({ tone: e = "neutral", ...t }) {
+	return /* @__PURE__ */ (0, z.jsx)(cv, {
 		"data-status-tone": e,
 		variant: "caption",
-		color: tv[e],
+		color: lv[e],
 		...t
 	});
 }
 // src/react/settings/remote-reporting-settings.tsx
-function rv({ value: e, onChange: t, busy: n = !1 }) {
+function dv({ value: e, onChange: t, busy: n = !1 }) {
 	return /* @__PURE__ */ (0, z.jsxs)(z.Fragment, { children: [/* @__PURE__ */ (0, z.jsx)(Im, { children: /* @__PURE__ */ (0, z.jsx)(Nm, {
 		label: "发送版本统计与错误诊断（推荐）",
 		description: "上传版本、系统信息、故障类型、代码位置与发生次数。",
@@ -21955,12 +22104,12 @@ function rv({ value: e, onChange: t, busy: n = !1 }) {
 		divided: !0,
 		children: /* @__PURE__ */ (0, z.jsx)("span", {
 			className: "self-start",
-			children: /* @__PURE__ */ (0, z.jsx)(nv, { children: "上传服务未配置" })
+			children: /* @__PURE__ */ (0, z.jsx)(uv, { children: "上传服务未配置" })
 		})
 	})] });
 }
 // src/react/pages/setup/setup-processing.tsx
-function iv(e) {
+function fv(e) {
 	return e ? {
 		library_id: e.library_id,
 		library: e.library,
@@ -21970,15 +22119,15 @@ function iv(e) {
 		library_stages: e.library_stages
 	} : {};
 }
-function av(e) {
+function pv(e) {
 	if (e.library_policy === "local") return "仅使用本地资料";
 	if (e.library_policy !== "custom") return "自动补全";
-	let t = U_.filter(([t]) => e.library_stages?.split(",").includes(t)).map(([, e]) => e);
+	let t = Z_.filter(([t]) => e.library_stages?.split(",").includes(t)).map(([, e]) => e);
 	return t.length ? `自定义：${t.join("、")}` : "自定义：只读取本地 NFO 和图片";
 }
 // src/react/pages/setup/setup-form.tsx
-var ov = ["port", "mdns_name"];
-function sv(e, t) {
+var mv = ["port", "mdns_name"];
+function hv(e, t) {
 	return Array.isArray(e) ? e.length === t ? {
 		rows: e,
 		table: ""
@@ -21990,11 +22139,11 @@ function sv(e, t) {
 		table: e ?? ""
 	};
 }
-function cv(e) {
+function gv(e) {
 	return e.length ? `完成设置后扫描 ${e.length} 个文件夹` : "完成设置后扫描媒体目录";
 }
-var lv = (e) => Array.isArray(e) ? e.filter(Boolean).join(" ") : e ?? "";
-function uv({ setup: e, onDone: t, onRestore: n }) {
+var _v = (e) => Array.isArray(e) ? e.filter(Boolean).join(" ") : e ?? "";
+function vv({ setup: e, onDone: t, onRestore: n }) {
 	let [r, i] = (0, j.useState)(0), [a, o] = (0, j.useState)(1), s = (0, j.useRef)(null), c = (0, j.useRef)(null), l = (e) => {
 		o(e > r ? 1 : -1), i(e);
 	};
@@ -22020,7 +22169,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 		describe: sh,
 		focusAfterPick: !0
 	});
-	g.current = iv(v.rows[0]);
+	g.current = fv(v.rows[0]);
 	let [y, b] = (0, j.useState)(() => Object.fromEntries(f.map((e) => [e.key, e.default]))), [x, S] = (0, j.useState)(!1), [C, w] = (0, j.useState)(""), T = !!e.access_preset, [E, D] = (0, j.useState)(e.access_enabled && !T), [O, k] = (0, j.useState)(""), [ee, A] = (0, j.useState)(""), [te, ne] = (0, j.useState)(e.scan_now), [re, M] = (0, j.useState)(!1), [ie, ae] = (0, j.useState)(e.remote_reporting), [oe, se] = (0, j.useState)(e.peach_proxy?.mode ?? "environment"), [ce, le] = (0, j.useState)(""), [ue, de] = (0, j.useState)({}), [fe, pe] = (0, j.useState)(""), [me, he] = (0, j.useState)(""), [ge, _e] = (0, j.useState)(!1), [N, P] = (0, j.useState)(!1), [ve, ye] = (0, j.useState)(0), be = (0, j.useRef)(null), xe = (0, j.useRef)(null), [Se, Ce] = (0, j.useState)(0);
 	(0, j.useEffect)(() => {
 		Se && [...be.current?.querySelectorAll("input[aria-invalid=\"true\"]") ?? []].find((e) => !e.closest("[hidden]"))?.focus();
@@ -22070,14 +22219,14 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 			t(await ih(a));
 		} catch (e) {
 			if (e instanceof th && e.status === 400 && e.errors) {
-				let t = e.errors, { rows: n, table: r } = sv(t.media_dir, v.rows.length);
-				v.setErrors(n), pe(r), de(t), ov.some((e) => t[e]) && ye((e) => e + 1), t.access_password && D(!0), l(t.media_dir || d && t[d.key] ? 1 : 2), Ce((e) => e + 1);
+				let t = e.errors, { rows: n, table: r } = hv(t.media_dir, v.rows.length);
+				v.setErrors(n), pe(r), de(t), mv.some((e) => t[e]) && ye((e) => e + 1), t.access_password && D(!0), l(t.media_dir || d && t[d.key] ? 1 : 2), Ce((e) => e + 1);
 			} else he(sh(e));
 		} finally {
 			_e(!1);
 		}
 	}, Oe = (e) => {
-		let t = lv(ue[e.key]), n = e.help.join("");
+		let t = _v(ue[e.key]), n = e.help.join("");
 		return e.input === "choice" ? /* @__PURE__ */ (0, z.jsxs)(m_, {
 			id: `setup-${e.key}`,
 			label: e.label,
@@ -22113,7 +22262,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 				S(!1);
 			}
 		}
-	}, Ae = d ? lv(ue[d.key]) || C : "", je = v.rows.map((e) => e.path.trim()).filter(Boolean), Me = v.rows.some((e) => y_(e.location)), Ne = [...new Map(v.rows.map((e) => [e.library_id, e])).values()], Pe = (e, t) => v.rows.forEach((n, r) => {
+	}, Ae = d ? _v(ue[d.key]) || C : "", je = v.rows.map((e) => e.path.trim()).filter(Boolean), Me = v.rows.some((e) => y_(e.location)), Ne = [...new Map(v.rows.map((e) => [e.library_id, e])).values()], Pe = (e, t) => v.rows.forEach((n, r) => {
 		n.library_id === e.library_id && v.edit(r, t);
 	}), Fe = y.host === "2", Ie = Fe && !e.standalone ? `https://${y.mdns_name || "peach"}.local/` : `http://${Fe ? `${y.mdns_name || "peach"}.local` : "127.0.0.1"}:${y.port || "8900"}/`;
 	return /* @__PURE__ */ (0, z.jsx)(mh, {
@@ -22247,7 +22396,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																	value: e.library || "",
 																	onChange: (t) => Pe(e, { library: t })
 																}),
-																/* @__PURE__ */ (0, z.jsx)(J_, {
+																/* @__PURE__ */ (0, z.jsx)(nv, {
 																	id: e.library_id || "",
 																	name: e.library || "未命名媒体库",
 																	value: e.library_color || "",
@@ -22255,20 +22404,20 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																}),
 																/* @__PURE__ */ (0, z.jsx)("div", {
 																	"data-setup-library-policy": "",
-																	children: /* @__PURE__ */ (0, z.jsx)(K_, {
+																	children: /* @__PURE__ */ (0, z.jsx)(ev, {
 																		name: e.library || "未命名媒体库",
 																		value: e.library_policy || "auto",
 																		onChange: (t) => Pe(e, {
 																			library_policy: t,
-																			library_stages: t === "custom" ? e.library_stages || W_.join(",") : ""
+																			library_stages: t === "custom" ? e.library_stages || Q_.join(",") : ""
 																		})
 																	})
 																})
 															]
 														}),
-														e.library_policy === "custom" ? /* @__PURE__ */ (0, z.jsx)(q_, {
+														e.library_policy === "custom" ? /* @__PURE__ */ (0, z.jsx)(tv, {
 															name: e.library || "未命名媒体库",
-															value: e.library_stages?.split(",").filter(Boolean) ?? W_,
+															value: e.library_stages?.split(",").filter(Boolean) ?? Q_,
 															onChange: (t) => Pe(e, { library_stages: t.join(",") })
 														}) : null,
 														/* @__PURE__ */ (0, z.jsxs)("div", {
@@ -22318,7 +22467,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																			}),
 																			onSelectionChange: (e) => {
 																				let t = v.rows.find((t) => t.library_id === e);
-																				t && v.edit(n, iv(t));
+																				t && v.edit(n, fv(t));
 																			},
 																			children: [...new Map(v.rows.map((e) => [e.library_id, e])).values()].map((e) => /* @__PURE__ */ (0, z.jsx)(Dh, {
 																				id: e.library_id,
@@ -22335,7 +22484,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 																	"aria-label": `给 ${e.library || "未命名媒体库"} 添加文件夹`,
 																	onClick: () => {
 																		v.add(), v.edit(v.rows.length, {
-																			...iv(e),
+																			...fv(e),
 																			location: e.location,
 																			cost: e.cost
 																		});
@@ -22454,7 +22603,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 												confirmation: ee,
 												onPassword: k,
 												onConfirmation: A,
-												passwordError: we(lv(ue.access_password)),
+												passwordError: we(_v(ue.access_password)),
 												passwordHint: "请输入 8–256 个字符。",
 												confirmationInvalid: !!ue.access_password
 											}) : null
@@ -22474,20 +22623,20 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 													elementType: "span",
 													id: "setup-proxy-mode-label",
 													children: "连接方式"
-												}), /* @__PURE__ */ (0, z.jsx)(X_, {
+												}), /* @__PURE__ */ (0, z.jsx)(iv, {
 													mode: oe,
 													onChange: se,
 													labelledBy: "setup-proxy-mode-label"
 												})]
 											}),
-											oe === "proxy" ? /* @__PURE__ */ (0, z.jsx)(Z_, {
+											oe === "proxy" ? /* @__PURE__ */ (0, z.jsx)(av, {
 												id: "setupProxyAddress",
 												value: ce,
 												onChange: le,
 												saved: e.peach_proxy?.proxy_saved,
-												error: we(lv(ue.peach_proxy))
-											}) : ue.peach_proxy ? /* @__PURE__ */ (0, z.jsx)(zm, { children: lv(ue.peach_proxy) }, Se) : null,
-											e.docker && oe === "proxy" && Q_(ce) ? /* @__PURE__ */ (0, z.jsx)(mm, {
+												error: we(_v(ue.peach_proxy))
+											}) : ue.peach_proxy ? /* @__PURE__ */ (0, z.jsx)(zm, { children: _v(ue.peach_proxy) }, Se) : null,
+											e.docker && oe === "proxy" && ov(ce) ? /* @__PURE__ */ (0, z.jsx)(mm, {
 												tone: "warning",
 												title: "请填写容器可访问的代理地址",
 												children: "回环地址指向容器自身；宿主机代理需使用容器可访问的宿主机地址。"
@@ -22526,14 +22675,14 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 											children: [/* @__PURE__ */ (0, z.jsx)(Qp, {
 												isSelected: te,
 												onChange: ne,
-												children: cv(je)
+												children: gv(je)
 											}), /* @__PURE__ */ (0, z.jsx)(Rm, { children: te ? "扫描会在后台开始，期间可以进入 Peach。" : "先保存处理方式，稍后在「媒体库与入库」开始扫描。" })]
 										}), v.rows.some((e) => e.cost === "metered") ? /* @__PURE__ */ (0, z.jsx)(Rm, { children: "开启代理保护的目录不会自动读取视频信息或生成预览；播放时会读取视频。" }) : null] })]
 									}),
 									me ? /* @__PURE__ */ (0, z.jsx)(zm, { children: me }) : null,
 									ie ? /* @__PURE__ */ (0, z.jsxs)(Vt, { children: [
 										/* @__PURE__ */ (0, z.jsx)(Ht, { children: "版本统计与错误诊断" }),
-										/* @__PURE__ */ (0, z.jsx)(rv, {
+										/* @__PURE__ */ (0, z.jsx)(dv, {
 											value: ie,
 											onChange: ae
 										}),
@@ -22574,7 +22723,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 											}) : null,
 											re ? null : Ne.map((e) => /* @__PURE__ */ (0, z.jsx)(Hm, {
 												term: e.library || "未命名媒体库",
-												children: av(e)
+												children: pv(e)
 											}, e.library_id))
 										] })]
 									})
@@ -22609,7 +22758,7 @@ function uv({ setup: e, onDone: t, onRestore: n }) {
 	});
 }
 // src/react/pages/setup/setup-restore.tsx
-function dv({ onDone: e, onBack: t }) {
+function yv({ onDone: e, onBack: t }) {
 	let [n, r] = (0, j.useState)(""), [i, a] = (0, j.useState)(""), [o, s] = (0, j.useState)(!1), c = (0, j.useRef)(null);
 	return (0, j.useEffect)(() => {
 		c.current?.focus({ preventScroll: !0 });
@@ -22693,7 +22842,7 @@ function dv({ onDone: e, onBack: t }) {
 	});
 }
 // src/react/pages/setup/setup-page.tsx
-function fv() {
+function bv() {
 	let [e, t] = (0, j.useState)({ kind: "loading" }), [n, r] = (0, j.useState)(0), [i, a] = (0, j.useState)(!1);
 	return (0, j.useEffect)(() => {
 		let e = new AbortController();
@@ -22709,14 +22858,14 @@ function fv() {
 				message: sh(n)
 			});
 		}), () => e.abort();
-	}, [n]), e.kind === "done" ? /* @__PURE__ */ (0, z.jsx)(hh, { done: e.done }) : e.kind === "form" && !i ? /* @__PURE__ */ (0, z.jsx)(uv, {
+	}, [n]), e.kind === "done" ? /* @__PURE__ */ (0, z.jsx)(hh, { done: e.done }) : e.kind === "form" && !i ? /* @__PURE__ */ (0, z.jsx)(vv, {
 		setup: e.setup,
 		onRestore: e.setup.docker ? void 0 : () => a(!0),
 		onDone: (e) => t({
 			kind: "done",
 			done: e
 		})
-	}) : e.kind === "form" ? /* @__PURE__ */ (0, z.jsx)(dv, {
+	}) : e.kind === "form" ? /* @__PURE__ */ (0, z.jsx)(yv, {
 		onBack: () => a(!1),
 		onDone: (e) => t({
 			kind: "done",
@@ -22783,13 +22932,13 @@ function fv() {
 	});
 }
 // src/react/pages/index.tsx
-var pv = {
-	setup: fv,
+var xv = {
+	setup: bv,
 	login: Xm,
 	error: B
 };
 E();
-var mv = document.getElementById("peach-page"), hv = mv ? pv[mv.dataset.page ?? ""] : void 0;
-mv && hv && (0, M.createRoot)(mv).render(/* @__PURE__ */ (0, z.jsx)(hv, { data: { ...mv.dataset } }));
+var Sv = document.getElementById("peach-page"), Cv = Sv ? xv[Sv.dataset.page ?? ""] : void 0;
+Sv && Cv && (0, M.createRoot)(Sv).render(/* @__PURE__ */ (0, z.jsx)(Cv, { data: { ...Sv.dataset } }));
 
-//# debugId=27e6addd-c099-4061-a555-550d94bc3913
+//# debugId=52a5a8c7-46ea-4b1d-9750-3d9eb976353b

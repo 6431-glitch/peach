@@ -53,7 +53,7 @@ SEARCH_HISTORY_LIMIT_MAX = 50
 #: 替哪些壳补封面都按它算，所以跟着账本走。
 #: 番号识别规则描述的是这套馆藏的命名，处理任务按它往账本里写番号，同样跟着账本走。
 SYNCED_SETTING_KEYS = frozenset({
-    "sidebarOrder", "manageOrder", "followInitialDays", "postSetupTutorialDone",
+    "sidebarOrder", "manageOrder", "navigationOrders", "libraryOrder", "followInitialDays", "postSetupTutorialDone",
     "organizeTemplates", "feedHideGroupCompilations", "feedHideSoloCompilations",
     "feedHideExcerpts", "searchHistoryLimit", "codePatterns", "performerNameLanguage", "taskSpeedMode",
 })
@@ -71,6 +71,39 @@ class SettingsContract(Protocol):
 
 
 DEFAULT_MANAGE_ORDER = ('stats', 'taste', 'cleanup', 'follow', 'activity', 'configuration')
+NAVIGATION_ORDERS = {
+    'review': ('metadata_fields', 'creator_tags', 'code_creators', 'western_identity', 'performer_avatars',
+               'studio_logos', 'fc2_markings', 'fc2_similarity', 'video_endcards'),
+    'configuration': ('library', 'sources', 'downloads', 'network', 'maintenance', 'diagnostics'),
+    'favorites': ('all', 'filters', 'performer', 'creator', 'tag', 'series', 'studio', 'agency'),
+    'jav': ('library', 'wants', 'releases', 'discover'),
+    'follow': ('list', 'add', 'tags'),
+    'tags': ('local', 'online'),
+    'preferences': ('appearance', 'browsing', 'jav', 'search', 'content'),
+}
+
+
+def normalise_navigation_orders(raw):
+    """按组归一化已存顺序，新入口追加至个人顺序末尾。"""
+    if not isinstance(raw, dict):
+        return {}
+    result = {}
+    for group, defaults in NAVIGATION_ORDERS.items():
+        entries = raw.get(group)
+        if isinstance(entries, list):
+            fixed = ['all'] if group == 'favorites' else []
+            result[group] = list(dict.fromkeys(fixed + [key for key in entries if isinstance(key, str) and key in defaults]
+                                              + list(defaults)))
+    return result
+
+
+def navigation_orders_patch(raw):
+    if not isinstance(raw, dict) or set(raw) - NAVIGATION_ORDERS.keys():
+        raise ValueError('导航排序需要已知分组与顺序数组')
+    if any(not isinstance(entries, list) or any(not isinstance(key, str) or key not in NAVIGATION_ORDERS[group]
+                                               for key in entries) for group, entries in raw.items()):
+        raise ValueError('导航顺序包含无效项目')
+    return normalise_navigation_orders(raw)
 
 
 def normalise_manage_order(raw):
@@ -210,6 +243,8 @@ def q_settings(contract: SettingsContract, _args=None) -> dict:
     return {
         "sidebarOrder": normalise_sidebar_order(payload.get("sidebarOrder")),
         **({"manageOrder": normalise_manage_order(payload["manageOrder"])} if "manageOrder" in payload else {}),
+        **({"navigationOrders": normalise_navigation_orders(payload["navigationOrders"])} if "navigationOrders" in payload else {}),
+        **({"libraryOrder": payload["libraryOrder"]} if isinstance(payload.get("libraryOrder"), list) else {}),
         "avatarRefreshDays": AVATAR_REFRESH_SECONDS // 86400,
         "faviconRefreshDays": FAVICON_REFRESH_SECONDS // 86400,
         "followInitialDays": normalise_follow_initial_days(payload.get("followInitialDays")),
@@ -221,6 +256,20 @@ def q_settings(contract: SettingsContract, _args=None) -> dict:
         "performerNameLanguage": "ja" if payload.get("performerNameLanguage") == "ja" else "zh-CN",
         "taskSpeedMode": payload.get("taskSpeedMode", "standard"),
     }
+
+
+def _navigation_patch(body):
+    patch = {}
+    if "navigationOrders" in body:
+        patch["navigationOrders"] = navigation_orders_patch(body["navigationOrders"])
+    if "libraryOrder" in body:
+        order = body["libraryOrder"]
+        if (not isinstance(order, list) or len(order) > 1000
+                or any(not isinstance(key, str) or not key or len(key) > 120 for key in order)
+                or len(set(order)) != len(order)):
+            raise ValueError("媒体库顺序须使用不重复的媒体库 ID")
+        patch["libraryOrder"] = order
+    return patch
 
 
 def w_settings(contract: SettingsContract, body) -> dict:
@@ -238,6 +287,7 @@ def w_settings(contract: SettingsContract, body) -> dict:
         raise ValueError("没有要写入的设置")
 
     merged = _stored(contract)
+    merged.update(_navigation_patch(body))
     if "taskSpeedMode" in body:
         from .processing_control import valid_mode
         merged["taskSpeedMode"] = valid_mode(body["taskSpeedMode"])
@@ -276,7 +326,11 @@ def w_settings(contract: SettingsContract, body) -> dict:
         except (TypeError, ValueError):
             current = {}
         current = current if isinstance(current, dict) else {}
-        current.update({key: merged[key] for key in body})
+        patch = {key: merged[key] for key in body}
+        if "navigationOrders" in patch:
+            patch["navigationOrders"] = {**normalise_navigation_orders(current.get("navigationOrders")),
+                                         **patch["navigationOrders"]}
+        current.update(patch)
         updated = connection.execute(
             "UPDATE profile SET settings_json=?, updated_at=? WHERE id=?",
             (json.dumps(current, ensure_ascii=False), stamp, DEFAULT_PROFILE_ID),

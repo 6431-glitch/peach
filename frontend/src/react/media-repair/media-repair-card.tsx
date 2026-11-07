@@ -14,6 +14,7 @@ import { REPAIR_CARD_TEXT } from '../../management';
 import { useBackgroundJob } from '../background-job';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
 import { Note } from '../components/note';
+import { useOrderedLibraries } from '../components/library-tint';
 import { Progress } from '../components/progress';
 import { queryClient } from '../query';
 import { SourceMark } from '../settings/section';
@@ -42,7 +43,7 @@ export function MediaRepairCard({ toast = () => {} }: { toast?(message: string):
   const [chosen, setChosen] = useState('');
   const action = useAction();
   const state = repair.job ?? IDLE_REPAIR;
-  const libraries = choices.data ?? [];
+  const libraries = useOrderedLibraries(choices.data ?? [], row => row.id);
   const running = state.status === 'running';
 
   // 跑着的那一轮握着下拉框；空闲时是人选的那个，没选过就是上一轮修的库，再没有就是第一个。
