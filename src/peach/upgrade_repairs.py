@@ -537,6 +537,25 @@ class UpgradeRepairs:
         except Exception:
             LOGGER.exception('放行旧的「官网未取得」重试失败')
 
+    def _prune_task_controls(self) -> None:
+        """旧版每轮任务留下的 `state/task-controls` 即时状态文件一次清掉（`task_control.prune_controls`）。
+
+        之后每轮任务结算后的 `prune` 照同一判据清；这里只是不等下一轮任务结束。回执记删掉的个数。
+        """
+        from .task_control import prune_controls
+        key = 'task-controls-runtime-files-1'
+        try:
+            with self.contract.database.read_connection() as connection:
+                if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?', (key,)).fetchone():
+                    return
+            removed = prune_controls(self.contract.task_runs)
+            with self.contract.database.write_transaction() as connection:
+                connection.execute('INSERT OR IGNORE INTO ledger_upgrade_repair(id,applied_at,result_json) '
+                                   'VALUES(?,?,?)', (key, str(time.time()), json.dumps({'removed': removed})))
+            LOGGER.info('已结束任务的控制文件：清掉 %s 个', removed)
+        except Exception:
+            LOGGER.exception('清退已结束任务的控制文件失败')
+
     def _settle_verification(self) -> None:
         """核查差异的结算规则（ADR-0139）对存量候选跑一遍，规则版本变了才再跑。
 
@@ -864,6 +883,7 @@ class UpgradeRepairs:
             self.scheduler.add_job(self._settle_verification, max_instances=1)
             self.scheduler.add_job(self._release_studio_misses, max_instances=1)
             self.scheduler.add_job(self._clear_stale_codes, max_instances=1)
+            self.scheduler.add_job(self._prune_task_controls, max_instances=1)
             self.scheduler.start()
 
     def stop(self) -> None:

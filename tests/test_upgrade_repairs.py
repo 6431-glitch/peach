@@ -915,6 +915,28 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service._release_studio_misses()
         self.assertNotIn('retry_until', json.loads((root / 'studio-mark-7.json').read_text(encoding='utf-8')))
 
+    def test_runtime_files_left_by_finished_runs_are_cleared_on_upgrade(self):
+        from peach import update_tasks
+        root = update_tasks.state_for(self.db).parent / 'task-controls'
+        finished = self.store.start('probe', trigger='manual')
+        self.store.finish(finished.id, 'succeeded')
+        running = self.store.start('probe', trigger='manual')
+        # 旧版每轮都留下即时状态，结束和清退历史行后都不删。
+        for identity in (finished.id, running.id, 999999):
+            for kind in ('observed', 'resources'):
+                (root / f'{identity}.{kind}.json').write_text('{}', encoding='utf-8')
+        self.service._prune_task_controls()
+        self.assertEqual(sorted(path.name for path in root.iterdir()),
+                         sorted([f'{finished.id}.speed.json', f'{running.id}.speed.json',
+                                 f'{running.id}.observed.json', f'{running.id}.resources.json']))
+        with self.database.read_connection() as connection:
+            receipt = connection.execute("SELECT result_json FROM ledger_upgrade_repair "
+                                         "WHERE id='task-controls-runtime-files-1'").fetchone()
+        self.assertEqual(json.loads(receipt[0]), {'removed': 4})
+        (root / '999999.observed.json').write_text('{}', encoding='utf-8')
+        self.service._prune_task_controls()
+        self.assertTrue((root / '999999.observed.json').exists())
+
     def test_local_repairs_are_atomic_idempotent_and_preserve_manual_codes(self):
         self.asset(1)
         self.asset(2, owner='user:manual')

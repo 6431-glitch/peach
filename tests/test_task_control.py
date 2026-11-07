@@ -304,6 +304,34 @@ class TaskControlTests(unittest.TestCase):
         self.assertEqual(self.state(active.id)['speed_mode'], 'standard')
         self.assertIsNone(task_control.speed_mode(self.db, active.id, default=None))
 
+    def test_finished_runs_leave_no_runtime_files_while_live_families_keep_their_intent(self):
+        root = update_tasks.state_for(self.db).parent / 'task-controls'
+
+        def files(run_id):
+            return sorted(path.name.split('.')[1] for path in root.glob(f'{run_id}.*.json'))
+
+        with self.store.track('probe', trigger='manual') as handle:
+            self.assertEqual(files(handle.run_id), ['observed', 'resources', 'speed'])
+        self.assertEqual(files(handle.run_id), ['speed'])
+        parent = self.store.start('chain', trigger='manual')
+        with task_control.bind(self.store, parent.id):
+            child = self.store.enqueue_followups(parent.id, [('leaf:1', 'leaf', '')])['queued'][0]
+            task_control.request(self.store, parent.id, 'pause')
+        self.store.finish(parent.id, 'succeeded')
+        running = self.store.start('other', trigger='manual')
+        orphan = '999999'
+        for kind in ('observed', 'resources', 'request', 'speed'):
+            (root / f'{orphan}.{kind}.json').write_text('{}', encoding='utf-8')
+        with task_control.bind(self.store, running.id):
+            self.store.prune('probe')
+            self.assertEqual(files(running.id), ['observed', 'resources', 'speed'])
+        # 已结束的父任务还有在排的后继：后继沿用它的暂停与速度，即时状态没有读者了。
+        self.assertEqual(files(parent.id), ['request', 'speed'])
+        self.assertEqual(files(child), ['request', 'speed'])
+        self.assertEqual(self.state(child)['state'], 'paused')
+        self.assertEqual(files(orphan), [])
+        self.assertEqual(task_control.prune_controls(self.store), 0)
+
     def test_pause_and_resume_keep_the_same_job_and_run_without_progress_while_paused(self):
         finish = self.event()
         progress = []
