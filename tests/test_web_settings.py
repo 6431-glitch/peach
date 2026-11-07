@@ -99,6 +99,31 @@ class SettingsRoundTripTests(unittest.TestCase):
         self.assertEqual(w_settings(self.contract, {'manageOrder': []})['manageOrder'],
                          list(web_settings.DEFAULT_MANAGE_ORDER))
 
+    def test_navigation_groups_keep_independent_orders_and_fixed_first_item(self):
+        w_settings(self.contract, {'navigationOrders': {'review': ['studio_logos', 'metadata_fields']}})
+        saved = w_settings(self.contract, {'navigationOrders': {'favorites': ['tag', 'all', 'filters']}})
+        self.assertEqual(saved['navigationOrders']['review'][:2], ['studio_logos', 'metadata_fields'])
+        self.assertEqual(saved['navigationOrders']['favorites'][:3], ['all', 'tag', 'filters'])
+        self.assertEqual(q_settings(self.contract)['navigationOrders'], saved['navigationOrders'])
+        reset = w_settings(self.contract, {'navigationOrders': {'review': []}})
+        self.assertEqual(reset['navigationOrders']['review'], list(web_settings.NAVIGATION_ORDERS['review']))
+        self.assertEqual(reset['navigationOrders']['favorites'], saved['navigationOrders']['favorites'])
+
+    def test_navigation_order_rejects_unknown_groups_and_entries(self):
+        for value in ([], {'unknown': []}, {'review': ['unknown']}, {'review': [1]}, {'review': 'metadata_fields'}):
+            with self.subTest(value=value), self.assertRaises(ValueError):
+                w_settings(self.contract, {'navigationOrders': value})
+        self.assertNotIn('navigationOrders', self._stored_json())
+
+    def test_library_order_preserves_stable_ids_and_rejects_invalid_values(self):
+        saved = w_settings(self.contract, {'libraryOrder': ['lib-b', 'lib-a']})
+        self.assertEqual(saved['libraryOrder'], ['lib-b', 'lib-a'])
+        for order in ([1], ['same', 'same'], [''], {}, None):
+            with self.subTest(order=order), self.assertRaises(ValueError):
+                w_settings(self.contract, {'libraryOrder': order})
+        self.assertEqual(q_settings(self.contract)['libraryOrder'], ['lib-b', 'lib-a'])
+        self.assertEqual(w_settings(self.contract, {'libraryOrder': []})['libraryOrder'], [])
+
     def test_an_unset_profile_reads_the_default_order(self):
         self.assertEqual(q_settings(self.contract),
                          {"sidebarOrder": list(DEFAULT_SIDEBAR_ORDER),

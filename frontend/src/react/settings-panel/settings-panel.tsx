@@ -14,10 +14,11 @@
  * 焦点先交给关闭钮，Tab 在面板里转圈，关掉后还给打开前那一枚。 */
 import {
   useLayoutEffect, useRef, useState, useSyncExternalStore,
-  type KeyboardEvent, type ReactNode,
+  type CSSProperties, type KeyboardEvent, type ReactNode,
 } from 'react';
 import { flushSync } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
+import { VisuallyHidden } from 'react-aria-components';
 import { ButtonLink } from '@/components/base/buttons/button';
 import {
   attachOverlayScrollbar, closeAnchoredMenu, iconSwapHtml, moveGlidePane, revealTexts,
@@ -35,13 +36,18 @@ import { fetchSettings, refreshPanelData, SETTINGS_KEY, useSaveSettings } from '
 import { Note } from '../components/note';
 import { ShortcutSetting } from './shortcut-setting';
 import { SidebarOrder } from './sidebar-order';
+import { NavigationDropLine, NavigationOrderMenu, NavigationOrderPreferences, useNavigationOrder } from '../components/navigation-order';
+import { useSidebarReorder } from '../sidebar/use-sidebar-reorder';
 import { SettingsDialogClose } from '../components/settings-dialog-close';
 
 /* 左栏的分区，顺序即右边各组的顺序。字形按条目自己的名字取：整列取自 Remix，一家画的笔画
    才一样粗。 */
 const SECTIONS = [
-  ['外观与导航', 'ri-palette-line'], ['浏览与播放', 'ri-play-circle-line'],
-  ['JAV 与新作', 'jav'], ['搜索与推荐', 'ri-search-line'], ['内容显示', 'ri-shield-check-line'],
+  { id: 'appearance', title: '外观与导航', icon: 'ri-palette-line' },
+  { id: 'browsing', title: '浏览与播放', icon: 'ri-play-circle-line' },
+  { id: 'jav', title: 'JAV 与新作', icon: 'jav' },
+  { id: 'search', title: '搜索与推荐', icon: 'ri-search-line' },
+  { id: 'content', title: '内容显示', icon: 'ri-shield-check-line' },
 ] as const;
 
 const SORT_OPTIONS: readonly Choice[] = [
@@ -95,7 +101,7 @@ async function checkMachine(current: SettingsPanelHost): Promise<void> {
 function open(section = ''): void {
   const current = host;
   if (!current) return;
-  const requested = SECTIONS.findIndex(([title]) => title === section);
+  const requested = SECTIONS.findIndex(({ title }) => title === section);
   if (view.open && !view.closing) {
     if (requested >= 0 && requested !== view.tab) update({ tab: requested });
     return;
@@ -176,6 +182,18 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
   tab: number; epoch: number; configurable: boolean | null; openConfiguration(): void; onSelect(index: number): void;
 }) {
   const nav = useRef<HTMLDivElement | null>(null);
+  const order = useNavigationOrder('preferences');
+  const items = order.keys.map(key => {
+    const index = SECTIONS.findIndex(section => section.id === key);
+    return { ...SECTIONS[index]!, index };
+  });
+  const [narrow, setNarrow] = useState(() => matchMedia('(max-width:760px)').matches);
+  useLayoutEffect(() => {
+    const media = matchMedia('(max-width:760px)');
+    const changed = () => setNarrow(media.matches);
+    media.addEventListener('change', changed);
+    return () => media.removeEventListener('change', changed);
+  }, []);
   const glide = useRef<HTMLSpanElement | null>(null);
   const box = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
   const shown = useRef(tab);
@@ -193,6 +211,8 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
   };
   const placeRef = useRef(place);
   placeRef.current = place;
+  const reorder = useSidebarReorder(nav, order.keys, order.commit,
+    () => requestAnimationFrame(() => placeRef.current(buttons.current[shown.current], false)), narrow ? 'x' : 'y', 'tab');
 
   useLayoutEffect(() => {
     const node = nav.current;
@@ -207,36 +227,50 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
     const moved = shown.current !== tab;
     shown.current = tab;
     placeRef.current(buttons.current[tab], moved);
-  }, [tab, epoch]);
+  }, [tab, epoch, order.keys.join(',')]);
 
   const keys = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    const count = SECTIONS.length;
-    let next = index;
-    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (index + 1) % count;
-    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (index + count - 1) % count;
+    if (event.altKey) return;
+    const count = items.length;
+    const position = items.findIndex(item => item.index === index);
+    let next = position;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') next = (position + 1) % count;
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') next = (position + count - 1) % count;
     else if (event.key === 'Home') next = 0;
     else if (event.key === 'End') next = count - 1;
     else return;
     event.preventDefault();
-    onSelect(next);
-    buttons.current[next]?.focus();
+    onSelect(items[next].index);
+    buttons.current[items[next].index]?.focus();
   };
 
   /* 整块是一个 tablist：小标题写成 presentation，不占 tab 的位置，方向键从头走到尾。 */
   return (
     <div data-settings-nav="" data-glass-pane="" role="tablist" aria-label="设置分区" ref={nav}
+      data-navigation-order="preferences" data-navigation-axis={narrow ? 'x' : 'y'} data-reordering={reorder.picked ? '' : undefined}
+      onClickCapture={reorder.clickCapture}
       onPointerLeave={(event) => { if (event.pointerType !== 'touch') place(buttons.current[shown.current], true) }}>
       <span data-settings-glide="" aria-hidden="true" hidden ref={glide} />
       <p data-settings-nav-caption="" role="presentation">设置</p>
-      {SECTIONS.map(([title, icon], index) => (
+      {items.map(({ id, title, icon, index }) => (
         <button type="button" role="tab" key={title} id={tabId(index)} aria-controls={groupId(index)}
+          data-tab={id} data-dragging={reorder.picked?.key === id ? '' : undefined}
+          style={{ '--navigation-picked-left': `${reorder.picked?.bounds.left || 0}px`,
+            '--navigation-picked-top': `${reorder.picked?.bounds.top || 0}px`,
+            '--navigation-picked-width': `${reorder.picked?.bounds.width || 0}px`,
+            '--navigation-picked-offset': `${reorder.picked?.offset || 0}px`,
+            '--sidebar-nudge': `${reorder.nudge(id).distance}px`, '--sidebar-delay': `${reorder.nudge(id).delay}ms` } as CSSProperties}
+          {...reorder.bindings(id)} aria-keyshortcuts={narrow ? 'Alt+ArrowLeft Alt+ArrowRight' : 'Alt+ArrowUp Alt+ArrowDown'}
           aria-selected={index === tab} tabIndex={index === tab ? 0 : -1}
           ref={(node) => { buttons.current[index] = node }}
-          onClick={() => onSelect(index)} onKeyDown={(event) => keys(event, index)}
+          onClick={() => onSelect(index)} onKeyDown={(event) => { reorder.bindings(id).onKeyDown(event); keys(event, index) }}
           onPointerEnter={(event) => { if (event.pointerType !== 'touch') place(event.currentTarget, true) }}>
           {icon === 'jav' ? <Icon name={icon} /> : <RemixIcon name={icon} />}{title}
         </button>
       ))}
+      <NavigationDropLine reorder={reorder} />
+      <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
+      <NavigationOrderMenu order={order} />
       <div data-settings-service="" role="presentation">
         <button type="button" disabled={configurable !== true} onClick={openConfiguration}
           title={configurable === false ? '请在运行 Peach 的设备上打开 Peach 配置' : undefined}>
@@ -251,7 +285,7 @@ function Group({ index, tab, children, cards = false }: { index: number; tab: nu
   return (
     <section data-setting-group="" data-setting-layout={cards ? 'cards' : undefined}
       id={groupId(index)} role="tabpanel" aria-labelledby={tabId(index)} hidden={index !== tab}>
-      <h3>{SECTIONS[index][0]}</h3>
+      <h3>{SECTIONS[index].title}</h3>
       {children}
     </section>
   );
@@ -326,7 +360,7 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
   useLayoutEffect(() => { resync.current?.() });
 
   const epoch = shown.epoch;
-  const select = (index: number) => { if (index !== view.tab) { update({ tab: index }); current.selectSection?.(SECTIONS[index][0]) } };
+  const select = (index: number) => { if (index !== view.tab) { update({ tab: index }); current.selectSection?.(SECTIONS[index].title) } };
   const save = () => current.store.save();
 
   return (
@@ -335,7 +369,7 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
       onClick={(event) => { if (event.target === event.currentTarget) close() }}>
       <div data-settings-card="" ref={card}>
         <div data-settings-head="" ref={head}>
-          <h2 id="settingsTitle">{SECTIONS[shown.tab][0]}</h2>
+          <h2 id="settingsTitle">{SECTIONS[shown.tab].title}</h2>
             <SettingsDialogClose id="settingsClose" label="关闭设置" onPress={() => close()} />
         </div>
         <SettingsNav tab={shown.tab} epoch={epoch} configurable={shown.configurable} onSelect={select}
@@ -364,6 +398,7 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
               <div data-setting-card="">
                 <section data-sidebar-setting=""><SidebarOrder host={current} /></section>
               </div>
+              <div data-setting-card=""><NavigationOrderPreferences /></div>
             </section>
           </Group>
           <BrowseGroup host={current} tab={shown.tab} epoch={epoch} />

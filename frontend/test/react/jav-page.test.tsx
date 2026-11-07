@@ -46,19 +46,19 @@ it('想要已有清单立即返回，陈旧数据在后台更新', async () => {
   expect(fetcher).toHaveBeenCalledOnce();
 });
 
-it('JAV 分区导航有馆藏、新作、发现、想要四个入口，馆藏使用目录搜索', async () => {
+it('JAV 分区导航依次显示馆藏、想要、新作、发现，馆藏使用目录搜索', async () => {
   const navigate = vi.fn(), find = vi.fn();
   const host = await mount(<JavHeader tab="library" navigate={navigate} find={find} />);
   const tabs = [...host.querySelectorAll('[role="tab"]')];
-  expect(tabs.map(tab => tab.textContent?.trim())).toEqual(['馆藏', '新作', '发现', '想要']);
+  expect(tabs.map(tab => tab.textContent?.trim())).toEqual(['馆藏', '想要', '新作', '发现']);
   expect(tabs[0]?.getAttribute('aria-selected')).toBe('true');
   expect(host.querySelector('input')).toBeNull();
   await click(tabs[1]);
-  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=releases');
-  await click(tabs[2]);
-  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=discover');
-  await click(tabs[3]);
   expect(navigate).toHaveBeenLastCalledWith('/jav?tab=wants');
+  await click(tabs[2]);
+  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=releases');
+  await click(tabs[3]);
+  expect(navigate).toHaveBeenLastCalledWith('/jav?tab=discover');
   await click(buttonNamed('查找资源', host));
   expect(find).toHaveBeenCalledOnce();
 });

@@ -41,6 +41,7 @@ import { downloadIssueList, exportProcessingIssues } from './issue-export';
 import { busyProps, useAction } from '../settings/use-action';
 import { SourceMark } from '../settings/section';
 import { useLibraryTints, type LibraryTint } from '../components/library-tint';
+import { useOrderedLibraries } from '../components/library-order';
 
 const ALL_LIBRARIES = { id: '', name: '所有媒体库', icon: 'database' };
 
@@ -188,7 +189,7 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
   const { toast, onComplete } = props;
   const [libraryId, setLibraryId] = useState('');
   const tints = useLibraryTints({ names: true });
-  const libraries = [...tints.values()].filter(library => library.name);
+  const libraries = useOrderedLibraries([...tints.values()].filter(library => library.name), library => library.id);
   const selectedLibrary = libraryId
     ? tints.get(libraryId) || { id: libraryId, name: '媒体库已不存在', icon: 'database' }
     : ALL_LIBRARIES;

@@ -14,6 +14,7 @@ import { useMutation, type QueryClient } from '@tanstack/react-query';
 
 import { apiGet, apiSend } from '../../api';
 import { queryClient } from '../query';
+import type { NavigationOrders } from '../../navigation-order';
 
 export const SETTINGS_URL = '/api/settings';
 export const FOLLOW_SCHEDULE_URL = '/api/follow/schedule';
@@ -42,6 +43,8 @@ export interface SyncedSettings {
   performerNameLanguage?: 'zh-CN' | 'ja';
   sidebarOrder?: string[];
   manageOrder?: string[];
+  navigationOrders?: NavigationOrders;
+  libraryOrder?: string[];
   followInitialDays?: number;
   postSetupTutorialDone?: boolean;
   feedHideGroupCompilations?: boolean;
@@ -88,11 +91,12 @@ export function refreshPanelData(client: QueryClient = queryClient): Promise<Syn
 }
 
 /** 写跟数据库走的那几项。回来的是合并之后的整份，写回 `['settings']`。 */
-export function useSaveSettings() {
+export function useSaveSettings(scope?: string) {
   return useMutation({
+    scope: scope ? { id: scope } : undefined,
     mutationFn: (patch: SyncedSettings) => apiSend<SyncedSettings>(SETTINGS_URL, patch),
     onSuccess: (saved) => queryClient.setQueryData(SETTINGS_KEY, saved),
-  });
+  }, queryClient);
 }
 
 export function useSaveFollowSchedule() {
