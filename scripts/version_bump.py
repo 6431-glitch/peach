@@ -17,9 +17,10 @@ from pathlib import Path
 VERSION_FILE = "src/peach/__init__.py"
 VERSION_PATTERN = re.compile(r'(__version__\s*=\s*")(\d+)\.(\d+)\.(\d+)(")')
 
-#: README 的下载直链带着版本号，定版时随版本文件一起改写；靠人记得改，曾在 v0.50.0 停了六个版本。
+#: README 的下载直链带着版本号；靠人记得改，曾在 v0.50.0 停了六个版本。`--ship` 在 Release
+#: 制品齐了以后才把它们换到新版本，发布前后读者都拿得到能下载的链接。
 README_FILES = ("README.md", "README.zh-CN.md")
-DOWNLOAD_LINK = re.compile(r"releases/download/v(\d+\.\d+\.\d+)/Peach-(\d+\.\d+\.\d+)-")
+DOWNLOAD_LINK = re.compile(r"releases/download/v(\d+\.\d+\.\d+)/Peach-(\d+\.\d+\.\d+)-([^)\s]+)")
 
 #: 版本标签的形状。`--match` 用它排除别的标签，免得把某个临时标签当成上一个发布点。
 TAG_GLOB = "v[0-9]*.[0-9]*.[0-9]*"
@@ -172,24 +173,36 @@ def read_version(root: Path) -> str:
 
 def point_downloads_at(text: str, version: str) -> str:
     """把正文里每条 Release 下载直链换到 `version`，其余字节不动。"""
-    return DOWNLOAD_LINK.sub(f"releases/download/v{version}/Peach-{version}-", text)
+    return DOWNLOAD_LINK.sub(
+        lambda match: f"releases/download/v{version}/Peach-{version}-{match.group(3)}", text)
 
 
-def write_version(root: Path, part: str) -> str:
-    """把新版本号写进版本文件，并把 README 下载直链指向它，返回新版本号。
+def readme_assets(root: Path, version: str) -> list[str]:
+    """README 直链要下载的制品文件名，按 `version` 拼出。"""
+    names = set()
+    for name in README_FILES:
+        text = (root / name).read_bytes().decode("utf-8")
+        names.update(f"Peach-{version}-{suffix}" for *_, suffix in DOWNLOAD_LINK.findall(text))
+    return sorted(names)
 
-    不提交——发布提交由调用方连同变更日志一起做。
-    """
-    path = root / VERSION_FILE
-    updated, version = bump_version(path.read_bytes().decode("utf-8"), part)
-    path.write_bytes(updated.encode("utf-8"))
+
+def point_readmes(root: Path, version: str) -> list[str]:
+    """把两份 README 的下载直链换到 `version`，返回实际改动的文件。不提交。"""
+    changed = []
     for name in README_FILES:
         readme = root / name
-        if not readme.exists():
-            continue
         text = readme.read_bytes().decode("utf-8")
         if (pointed := point_downloads_at(text, version)) != text:
             readme.write_bytes(pointed.encode("utf-8"))
+            changed.append(name)
+    return changed
+
+
+def write_version(root: Path, part: str) -> str:
+    """把新版本号写进版本文件并返回它。不提交——发布提交由调用方连同变更日志一起做。"""
+    path = root / VERSION_FILE
+    updated, version = bump_version(path.read_bytes().decode("utf-8"), part)
+    path.write_bytes(updated.encode("utf-8"))
     return version
 
 
