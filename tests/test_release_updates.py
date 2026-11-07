@@ -340,3 +340,94 @@ class DockerUpdateTests(unittest.TestCase):
         self.assertEqual(requests, [], "换不到新版本时不打扰 Watchtower")
         with self.assertRaisesRegex(ValueError, "watchtower profile"):
             docker_update.trigger(transport=self.watchtower(202, reachable=False)[0])
+
+
+class ReleaseNoticeTests(unittest.TestCase):
+    """更新公告：新安装不弹，上一版升级弹当前版，跳版补列错过的要点，按平台与本机数据挑条目。"""
+
+    def setUp(self):
+        import sqlite3
+        temporary = tempfile.TemporaryDirectory()
+        self.addCleanup(temporary.cleanup)
+        self.connection = sqlite3.connect(Path(temporary.name) / 'ledger.db')
+        self.addCleanup(self.connection.close)
+        self.connection.executescript("""
+            CREATE TABLE profile(id TEXT PRIMARY KEY,settings_json TEXT,updated_at TEXT);
+            INSERT INTO profile VALUES('local-default','{"sidebarOrder":["tags"]}','');
+            CREATE TABLE schema_migration(version TEXT PRIMARY KEY,name TEXT,checksum TEXT,applied_at TEXT);
+        """)
+
+    def migrations(self, *rows):
+        self.connection.executemany("INSERT INTO schema_migration VALUES(?,?,?,?)",
+                                    [(version, 'm', 'c', stamp) for version, stamp in rows])
+
+    def snapshot(self, **options):
+        from peach import release_notice
+        options.setdefault('tokens', {'windows', 'standalone'})
+        options.setdefault('current', '0.57.0')
+        return release_notice.snapshot(self.connection, **options)
+
+    def seen(self, version):
+        self.connection.execute("UPDATE profile SET settings_json=?",
+                                (json.dumps({'sidebarOrder': ['tags'], 'release_notice': {'seen': version}}),))
+
+    def test_a_fresh_install_is_not_shown_an_update_notice(self):
+        self.migrations(('0001', '2026-11-07T01:00:00+00:00'), ('0052', '2026-11-07T01:00:05+00:00'))
+        result = self.snapshot()
+        self.assertEqual(result['kind'], 'new-install')
+        self.assertFalse(result['show'])
+
+    def test_an_upgrade_from_the_previous_release_shows_the_current_notice_only(self):
+        self.seen('0.56.0')
+        result = self.snapshot()
+        self.assertEqual((result['kind'], result['show'], result['missed']), ('upgrade', True, []))
+        self.assertIn('容量保护', [item['title'] for item in result['notice']['features']])
+
+    def test_skipping_releases_lists_what_was_missed_newest_first_and_skips_quiet_ones(self):
+        self.seen('0.53.0')
+        result = self.snapshot()
+        self.assertEqual(result['kind'], 'skipped')
+        self.assertEqual([row['version'] for row in result['missed']], ['0.56.0', '0.55.0', '0.54.0'])
+
+    def test_a_ledger_without_a_record_estimates_the_previous_release_from_its_migrations(self):
+        self.migrations(('0001', '2026-08-01T00:00:00+00:00'), ('0050', '2026-10-27T00:00:00+00:00'),
+                        ('0052', '2026-11-08T00:00:00+00:00'))
+        result = self.snapshot()
+        self.assertEqual((result['kind'], result['previous'], result['estimated']), ('upgrade', '0.51.0', True))
+        self.assertTrue(result['show'])
+        self.assertEqual(result['missed'][0]['version'], '0.56.0')
+
+    def test_items_follow_the_platform_and_the_data_on_this_machine(self):
+        self.seen('0.53.0')
+        windows = self.snapshot()
+        docker = self.snapshot(tokens={'linux', 'docker'}, facts={'system_files': {'count': 12}})
+        titles = lambda result, version: [row['title'] for row in result['missed']
+                                          if row['version'] == version for row in row['features']]
+        self.assertNotIn('Docker 首次设置', titles(windows, '0.56.0'))
+        self.assertIn('Docker 首次设置', titles(docker, '0.56.0'))
+        self.assertNotIn('macOS 应用内更新', titles(windows, '0.54.0'))
+        self.assertEqual(windows['notice']['automatic'], [])
+        self.assertEqual(docker['notice']['automatic'],
+                         [{'id': 'system-files', 'icon': 'server', 'title': '移出 NAS 系统文件',
+                           'progress': {'count': 12}, 'body': docker['notice']['automatic'][0]['body']}])
+
+    def test_acknowledging_only_moves_forward_and_hides_the_notice(self):
+        from peach import release_notice
+        self.seen('0.56.0')
+        release_notice.acknowledge(self.connection, '0.57.0')
+        release_notice.acknowledge(self.connection, '0.56.0')
+        stored = json.loads(self.connection.execute('SELECT settings_json FROM profile').fetchone()[0])
+        self.assertEqual(stored['release_notice']['seen'], '0.57.0')
+        self.assertEqual(stored['sidebarOrder'], ['tags'])
+        self.assertEqual((self.snapshot()['kind'], self.snapshot()['show']), ('seen', False))
+
+    def test_every_notice_uses_known_platforms_conditions_and_levels(self):
+        from peach import release_notice
+        from peach.release_notices import NOTICES
+        for version, notice in NOTICES.items():
+            self.assertIn(notice['level'], {'notice', 'quiet'}, version)
+            for section in ('features', 'automatic', 'attention'):
+                for item in notice.get(section, []):
+                    tokens = {part for token in item.get('platforms', []) for part in token.split('+')}
+                    self.assertLessEqual(tokens, release_notice.PLATFORM_TOKENS, (version, item['title']))
+                    self.assertIn(item.get('when', 'display_reprobe'), release_notice.FACTS, (version, item['title']))
