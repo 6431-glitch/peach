@@ -6066,6 +6066,21 @@ class ShipTests(unittest.TestCase):
             self.release.ship("owner/repo", apply=True)
         self.assertEqual(self._writes(command), [])
 
+    def test_readme_download_links_ride_along_in_the_release_commit(self):
+        """`--bump` 顺带改写两份 README 的下载直链，发布提交连它们一起带上；缺了变更日志仍拒收。"""
+        bumped = {("git", "status", "--porcelain"):
+                  " M CHANGELOG.md\n M README.md\n M README.zh-CN.md\n M src/peach/__init__.py"}
+        with self._shell(bumped) as command, self._api(remote="abc"), self._version(), \
+                self._document(), mock.patch.object(self.release, "GITLAB", None):
+            self.release.ship("owner/repo", apply=True)
+        self.assertIn(("git", "add", "src/peach/__init__.py", "CHANGELOG.md", "README.md",
+                       "README.zh-CN.md"), self._writes(command))
+        partial = {("git", "status", "--porcelain"): " M README.md\n M src/peach/__init__.py"}
+        with self._shell(partial) as command, self._api(), self._version(), self._document(), \
+                self.assertRaisesRegex(ValueError, "README.md"):
+            self.release.ship("owner/repo", apply=True)
+        self.assertEqual(self._writes(command), [])
+
     def test_a_version_without_its_changelog_section_cannot_ship(self):
         with self._shell(), self._api(), self._version(), \
                 self._document("# 变更日志\n\n## [未发布]\n"), \

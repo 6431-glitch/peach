@@ -37,8 +37,9 @@ GITLAB = None
 #: 标签推上去也发不出东西。
 MASTER_WRITER = "peach.masterWriter"
 
-#: 定版只该改这两份：版本号一行，变更日志一节。`--ship` 拒绝夹带别的文件。
-RELEASE_FILES = (version_bump.VERSION_FILE, changelog.CHANGELOG)
+#: 定版必改这两份：版本号一行，变更日志一节；README 只随之改下载直链。`--ship` 拒绝夹带别的文件。
+REQUIRED_RELEASE_FILES = (version_bump.VERSION_FILE, changelog.CHANGELOG)
+RELEASE_FILES = (*REQUIRED_RELEASE_FILES, *version_bump.README_FILES)
 
 #: `--ship` 等 Test 工作流的默认秒数上限，以及两次查询之间的间隔。版本提交的流水线里还有发布
 #: 演练（macOS 两个架构从源码编译，作业时限 2 小时），所以按整条演练定。
@@ -336,8 +337,9 @@ def _staged_release(repo: str) -> tuple[str, str, list[str]]:
     if command("git", "tag", "--list", tag):
         raise ValueError(f"本地 {tag} 已存在，请先检查它的归属")
     pending = _pending_files()
-    if pending and pending != sorted(RELEASE_FILES):
-        raise ValueError("工作区除了版本号与变更日志还有别的改动：" + "、".join(pending))
+    if pending and not set(REQUIRED_RELEASE_FILES) <= set(pending) <= set(RELEASE_FILES):
+        raise ValueError("工作区不是版本号、变更日志与 README 下载链接这一组定版改动："
+                         + "、".join(pending))
     return version, tag, pending
 
 
@@ -355,7 +357,7 @@ def ship(repo: str, *, apply: bool, timeout: float = TEST_TIMEOUT) -> dict:
     if not apply:
         return result
     if pending:
-        command("git", "add", *RELEASE_FILES)
+        command("git", "add", *(name for name in RELEASE_FILES if name in pending))
         command("git", "-c", f"{MASTER_WRITER}=release", "commit",
                 "-m", f"chore(release): 版本 {version}")
     sha = command("git", "rev-parse", "HEAD")

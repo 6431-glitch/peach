@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from scripts.check_readme_impact import READMES, installation_contracts
+from scripts.version_bump import DOWNLOAD_LINK, README_FILES, read_version
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -11,6 +12,16 @@ ROOT = Path(__file__).resolve().parents[1]
 class ReadmeContractsTests(unittest.TestCase):
     def test_repository_readmes_satisfy_installation_contracts(self):
         self.assertEqual(installation_contracts(ROOT), [])
+
+    def test_download_links_point_at_the_current_version(self):
+        """定版脚本改写的就是这些直链；漏改一条，读者就停在旧版本。"""
+        self.assertEqual(set(README_FILES), READMES)
+        version = read_version(ROOT)
+        for name in sorted(READMES):
+            links = DOWNLOAD_LINK.findall((ROOT / name).read_text(encoding='utf-8'))
+            with self.subTest(readme=name):
+                self.assertTrue(links)
+                self.assertEqual(set(links), {(version, version)})
 
     def test_installation_check_accepts_equivalent_floor_notation_and_reports_missing_links(self):
         with tempfile.TemporaryDirectory() as directory:
