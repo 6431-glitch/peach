@@ -161,7 +161,8 @@ def require_metadata(worker: Path, target_branch: str) -> str:
 def require_verified(worker: Path, target_branch: str, paths: Iterable[str], *,
                      ci_run: int | None = None) -> dict:
     head = require_metadata(worker, target_branch)
-    scopes, _ = test_runner.scopes_for_changes(paths, contents=test_runner.changed_contents(worker, target_branch, paths))
+    scopes, _ = test_runner.scopes_for_changes(paths, contents=test_runner.changed_contents(worker, target_branch, paths),
+                                              root=worker)
     from . import ci_test_evidence
     proof, ci_error = None, None
     try:

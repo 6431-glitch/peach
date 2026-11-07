@@ -188,3 +188,46 @@ class GitHubTestEvidenceTests(unittest.TestCase):
                 patch.object(agent_worktree.test_evidence, 'read', return_value={'passed': ['checks']}):
             receipt = agent_worktree.require_verified(self.root, 'master', {'README.md'})
         self.assertEqual(receipt['source'], 'local')
+
+
+class WorktreePlanEvidenceTests(unittest.TestCase):
+    def setUp(self):
+        folder = self.enterContext(tempfile.TemporaryDirectory())
+        self.root = seed_repository(Path(folder).resolve() / 'worker', {
+            '.gitignore': 'build/\n',
+            'frontend/e2e/old.test.ts': '// fixture\n',
+            'scripts/ci-browser-timings.json': json.dumps({'seconds': {'frontend/e2e/old.test.ts': 7}}),
+            'tests/test_follow.py': 'import peach.ci_scope_fixture\n',
+            'src/peach/ci_scope_fixture.py': 'VALUE = 1\n',
+        }, 'fixture worker')
+        self.base = evidence.test_evidence.git(self.root, 'rev-parse', 'HEAD')
+        evidence.test_evidence.git(self.root, 'checkout', '-b', 'agent/codex/worker')
+
+    def commit(self, name, content):
+        (self.root / name).write_text(content, encoding='utf8')
+        evidence.test_evidence.git(self.root, 'add', '--', name)
+        evidence.test_evidence.git(self.root, 'commit', '-m', 'test: worker content')
+
+    def test_main_imported_planner_uses_the_worker_browser_files_for_auto_and_full(self):
+        self.commit('frontend/e2e/new.test.ts', '// worker fixture\n')
+        for full in (False, True):
+            with self.subTest(full=full):
+                plan, scopes = evidence.selected_plan(self.root, 'pull_request', self.base, full=full)
+                files = {name for row in plan['browser_matrix']['include'] for name in json.loads(row['files'])}
+                self.assertEqual(files, {'frontend/e2e/old.test.ts', 'frontend/e2e/new.test.ts'})
+                if full:
+                    self.assertEqual(scopes, ('full',))
+                else:
+                    self.assertEqual(len(plan['matrix']['include']), 2)
+
+    def test_main_imported_coordinator_requires_the_worker_consumer_scope(self):
+        self.commit('src/peach/ci_scope_fixture.py', 'VALUE = 2\n')
+        head = evidence.test_evidence.git(self.root, 'rev-parse', 'HEAD')
+        observed = []
+        def verified(root, run_id, scopes, target):
+            observed.append(scopes)
+            return {'source': 'github', 'run_id': run_id, 'head': head}
+        with patch.object(agent_worktree, 'require_metadata', return_value=head), \
+                patch.object(evidence, 'verify', side_effect=verified):
+            agent_worktree.require_verified(self.root, 'master', ['src/peach/ci_scope_fixture.py'], ci_run=123)
+        self.assertEqual(observed, [('follow',)])

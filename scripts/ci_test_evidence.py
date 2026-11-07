@@ -40,11 +40,11 @@ def repository(root: Path) -> str:
 
 def selected_plan(root: Path, event: str, base: str, *, full: bool = False) -> tuple[dict, tuple[str, ...]]:
     if full:
-        return ci_plan.plan('workflow_dispatch', []), ('full',)
+        return ci_plan.plan('workflow_dispatch', [], root=root), ('full',)
     paths = test_runner.changed_files(root, base)
     contents = test_runner.changed_contents(root, base, paths)
-    scopes, _ = test_runner.scopes_for_changes(paths, contents=contents)
-    plan = ci_plan.plan(event, paths, contents)
+    scopes, _ = test_runner.scopes_for_changes(paths, contents=contents, root=root)
+    plan = ci_plan.plan(event, paths, contents, root=root)
     return plan, ('full',) if plan['wide'] else scopes
 
 
