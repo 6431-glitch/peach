@@ -16,7 +16,7 @@ import { overlayMatch } from './overlay';
 import { entityLinkName } from '../core/entity-links';
 import { entityDisplayName } from '../core/entity-names';
 import { CLEANUP_CRUMB_PAGES, type CleanupToolPath } from '../cleanup-tools';
-import { PREFERENCE_SECTIONS, CONFIGURATION_SECTIONS } from './settings-route';
+import { PREFERENCE_SECTIONS, CONFIGURATION_SECTIONS, REPAIR_CENTER_PATH } from './settings-route';
 
 export interface RouteMeta {
   readonly title?: string;
@@ -30,6 +30,7 @@ const ROUTE_ENTRIES = {
   '/settings': { title: '设置', refresh: 'skip' },
   ...Object.fromEntries(Object.entries(PREFERENCE_SECTIONS).map(([key, title]) => [`/settings/${key}`, { title, refresh: 'skip' }])),
   ...Object.fromEntries(Object.entries(CONFIGURATION_SECTIONS).map(([key, title]) => [`/settings/${key}`, { title, section: 'configuration', refresh: 'reopen' }])),
+  [REPAIR_CENTER_PATH]: { title: '修复与迁移', section: 'configuration', refresh: 'reopen' },
   '/jav': { nav: 'jav', title: 'JAV', refresh: 'reopen' },
   '/stats': { section: 'stats', title: '统计' },
   '/taste': { section: 'taste', title: '口味', refresh: 'reopen' },

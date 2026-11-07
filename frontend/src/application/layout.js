@@ -218,7 +218,7 @@ export function mountManageHeader(){
     }
     if(event.target.closest?.('[data-empty-trash]'))emptyTrash();
   });
-  loadManageHeader({root,store:preferencesState.settingsStore,openManage,openDataCleanup:()=>navigationState.navigatePath('/data-cleanup'),emptyTrash})
+  loadManageHeader({root,store:preferencesState.settingsStore,openManage,openPath:path=>navigationState.navigatePath(path),emptyTrash})
     .then(()=>paintManageHeader()).catch(()=>{});
 }
 
