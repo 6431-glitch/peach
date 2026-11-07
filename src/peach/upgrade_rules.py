@@ -7,7 +7,8 @@ PROCESSING = "processing-v2"
 FC2_METADATA = 'fc2-javdb-first-v1'
 PUBLIC_SNAPSHOTS = 2
 PROVIDER_EVIDENCE = 2
-PROVIDER_TEXT = 3
+#: 文字补修规则。4：刮削挂上的乱码人物关联自动解除并重采（#478）；已有旧回执的库只重跑文字补修。
+PROVIDER_TEXT = 4
 OFFICIAL_COVER_CATALOG_MISSES = 1
 #: 核查差异按确定判据结算（ADR-0139）。判据改了就加一，升级时对存量候选再结算一遍。
 VERIFICATION_SETTLEMENT = 1
