@@ -90,6 +90,127 @@ def _archive_pages(url):
 
 
 class LibraryNfoTests(unittest.TestCase):
+    def _fc2_metadata_session(self, name, *, known=False, mirror=True, catalog='r18dev'):
+        from peach.entities import normalize_entity_name
+        from peach.library_processing import _MissCache, _RemoteSession
+        db = LedgerDatabase(fresh_ledger(self.root))
+        with db.write_transaction() as connection:
+            connection.execute("INSERT INTO asset(id,location,path,name,code,medium) VALUES(1,?,?,?,?,'video')",
+                               ('local', 'B:\\a.mp4', 'FC2-PPV-1234567.mp4', 'FC2-PPV-1234567'))
+        if known:
+            with db.write_transaction() as connection:
+                identity = connection.execute(
+                    "INSERT INTO entity(kind,canonical_name,normalized_name,created_at,updated_at) "
+                    "VALUES('performer',?,?,?,?)", ('春野あや', normalize_entity_name('春野あや'), '2024', '2024')).lastrowid
+                connection.execute('INSERT INTO entity_alias(entity_id,alias,normalized_alias,source,confidence) VALUES(?,?,?,?,1)',
+                                   (identity, name, normalize_entity_name(name), 'user:manual'))
+                connection.execute('INSERT INTO entity_external_ref(entity_id,provider,external_kind,external_id,last_synced_at) VALUES(?,?,?,?,?)',
+                                   (identity, catalog, 'performer', '101', '2024'))
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True)
+        provider = stub_provider()
+        payload = dict(id='FC2-PPV-1234567', title='作品标题', maker='', release_date='2024-01-01',
+                       actresses=[{'japanese_name': name}] if name else [], genres=['素人'],
+                       javdb_rule=2, source_id='Example')
+        provider.community.side_effect = None
+        provider.community.return_value = [('javdb', payload)]
+        provider.fc2.return_value = ([('fc2cmadb', dict(payload, actresses=[{'japanese_name': '春野あや'}]))]
+                                     if mirror else [])
+        session = _RemoteSession(config, lambda: provider, _MissCache(self.root / 'misses.json'),
+                                 retrying=True, database=db)
+        return session, provider, payload, db
+
+    def test_fc2_uses_complete_javdb_metadata_for_a_confirmed_performer(self):
+        session, provider, _payload, _db = self._fc2_metadata_session('春野あや', known=True)
+        found = session._metadata({'id': 1, 'name': 'FC2-PPV-1234567.mp4', 'path': 'B:\\a.mp4'},
+                                  'FC2-PPV-1234567', ['title','studio','performers','release_date'],
+                                  update=lambda **_: None, issue=Mock())
+        self.assertEqual([source for source, _, _ in found], ['javdb'])
+        provider.fc2.assert_not_called()
+
+    def test_fc2_resolves_a_confirmed_alias_before_deciding_to_stop(self):
+        session, provider, _payload, _db = self._fc2_metadata_session('あやちゃん', known=True)
+        session._metadata({'id': 1, 'name': 'FC2-PPV-1234567.mp4', 'path': 'B:\\a.mp4'},
+                          'FC2-PPV-1234567', ['performers'], update=lambda **_: None, issue=Mock())
+        provider.fc2.assert_not_called()
+
+    def test_fc2_missing_or_unconfirmed_javdb_names_continue_to_specialists(self):
+        for name in ('', 'Chisa', 'みおちゃん'):
+            with self.subTest(name=name), tempfile.TemporaryDirectory() as folder:
+                previous = self.root
+                self.root = Path(folder).resolve()
+                try:
+                    session, provider, _payload, _db = self._fc2_metadata_session(name)
+                    found = session._metadata({'id': 1, 'name': 'FC2-PPV-1234567.mp4', 'path': 'B:\\a.mp4'},
+                                              'FC2-PPV-1234567', ['performers'],
+                                              update=lambda **_: None, issue=Mock())
+                    self.assertEqual([source for source, _, _ in found], ['javdb', 'fc2cmadb'])
+                    provider.fc2.assert_called_once()
+                finally:
+                    self.root = previous
+
+    def test_an_unconfirmed_fc2_javdb_name_stays_a_review_candidate(self):
+        session, _provider, payload, database = self._fc2_metadata_session('Chisa', mirror=False)
+        groups = {}
+        row = dict(id=1, name='FC2-PPV-1234567.mp4', path='B:\\a.mp4', size=8)
+        library_processing._merge_candidates(groups, row, 'FC2-PPV-1234567', 'javdb', payload,
+                                             self.root / 'source.json', {}, database=database)
+        candidate = json.loads(groups['asset:1:performers']['candidates_json'])[0]
+        self.assertTrue(candidate['requires_review'])
+        from peach.metadata_auto_apply import metadata_auto_apply_candidate
+        group = {**groups['asset:1:performers'], 'candidates': [candidate]}
+        with database.read_connection() as connection:
+            self.assertIsNone(metadata_auto_apply_candidate(connection, group))
+        specialist = dict(payload, actresses=[{'japanese_name': '春野あや'}])
+        library_processing._merge_candidates(groups, row, 'FC2-PPV-1234567', 'fc2cmadb', specialist,
+                                             self.root / 'specialist.json', {}, database=database)
+        group = {**groups['asset:1:performers'],
+                 'candidates': json.loads(groups['asset:1:performers']['candidates_json'])}
+        with database.read_connection() as connection:
+            chosen = metadata_auto_apply_candidate(connection, group)
+        self.assertEqual(chosen['source'], 'fc2cmadb')
+
+    def test_a_javdb_actor_id_alone_does_not_confirm_an_fc2_name(self):
+        session, provider, _payload, _database = self._fc2_metadata_session('Chisa', known=True, catalog='javdb')
+        session._metadata({'id': 1, 'name': 'FC2-PPV-1234567.mp4', 'path': 'B:\\a.mp4'},
+                          'FC2-PPV-1234567', ['performers'], update=lambda **_: None, issue=Mock())
+        provider.fc2.assert_called_once()
+
+    def test_a_confirmed_fc2_alias_keeps_the_existing_automatic_candidate(self):
+        _session, _provider, payload, database = self._fc2_metadata_session('あやちゃん', known=True)
+        groups = {}
+        row = dict(id=1, name='FC2-PPV-1234567.mp4', path='B:\\a.mp4', size=8)
+        library_processing._merge_candidates(groups, row, 'FC2-PPV-1234567', 'javdb', payload,
+                                             self.root / 'source.json', {}, database=database)
+        candidate = json.loads(groups['asset:1:performers']['candidates_json'])[0]
+        self.assertFalse(candidate.get('requires_review', False))
+        from peach.metadata_auto_apply import metadata_auto_apply_candidate
+        with database.read_connection() as connection:
+            chosen = metadata_auto_apply_candidate(connection, {
+                **groups['asset:1:performers'], 'candidates': [candidate]})
+        self.assertEqual(chosen['source'], 'javdb')
+
+    def test_old_completed_receipts_retry_only_fc2_rows_without_cast(self):
+        from peach.entities import normalize_entity_name
+        from peach.library_processing import _LibraryCheckpoints
+        database = LedgerDatabase(fresh_ledger(self.root))
+        rows = [{'id': value, 'path': f'R:\\{value}.mp4'} for value in (1, 2, 3)]
+        with database.write_transaction() as connection:
+            for row, code in zip(rows, ('FC2-PPV-1234567','ABW-123','FC2-PPV-1234568')):
+                connection.execute('INSERT INTO asset(id,location,path,name,code) VALUES(?,?,?,?,?)',
+                                   (row['id'], 'local', row['path'], f"{row['id']}.mp4", code))
+            identity = connection.execute(
+                "INSERT INTO entity(kind,canonical_name,normalized_name,created_at,updated_at) "
+                "VALUES('performer',?,?,?,?)", ('春野あや', normalize_entity_name('春野あや'), '2024', '2024')).lastrowid
+            connection.execute('INSERT INTO asset_entity(asset_id,entity_id,role,source,confidence) VALUES(?,?,?,?,1)',
+                               (3, identity, 'performer', 'user:manual'))
+        keys = [library_processing._checkpoint_key(row) for row in rows]
+        previous = dict(processing_rule=upgrade_rules.PROCESSING, completed_metadata=keys, completed_previews=keys)
+        current = {}
+        checkpoints = _LibraryCheckpoints(current, previous, database, database.db_path)
+        self.assertEqual([row['id'] for _, row in checkpoints.remaining_metadata(rows)], [1])
+        self.assertEqual(set(current['completed_previews']), set(keys))
+        self.assertEqual(set(current['completed_metadata']), set(keys[1:]))
+
     def test_javdb_candidate_keeps_its_verified_rule_and_source_identity(self):
         from peach.library_processing import _merge_candidates
         from peach.javdb_identity import current_candidate
@@ -1668,6 +1789,18 @@ class LibraryNfoTests(unittest.TestCase):
                                      route=('fc2cmadb', 'javarchive'), known=known)
                 self.assertEqual([source for source, _ in found], sources)
                 self.assertFalse([url for url in asked if 'fc2cmadb.com' not in url], '官方页与 JavArchive 都不再问')
+
+    def test_a_cached_answer_skips_non_cast_sources_and_reaches_the_mirror(self):
+        from peach import metadata_routes
+        known = [{'id': 'FC2-PPV-3232110', 'title': '缓存标题', 'actresses': []}]
+        asked = []
+        provider, pages = self._live_fc2_provider(asked)
+        with patch('peach.jav_cover_fetch._fetch', side_effect=pages):
+            found = provider.fc2('FC2-PPV-3232110', required=('performers',),
+                                 route=metadata_routes.FC2_STAGE, known=known)
+        self.assertEqual([source for source, _ in found], ['fc2cmadb'])
+        self.assertTrue(asked)
+        self.assertTrue(all('fc2cmadb.com' in url for url in asked))
 
     def test_the_cover_step_asks_the_rest_of_the_chain_for_more_image_sources(self):
         """答上的那一档给的地址下不下得来图，这一层判不出来，所以图源要凑齐再挑。"""

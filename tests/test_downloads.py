@@ -454,6 +454,24 @@ class LandingTests(_Deployment):
         self.assertEqual(paths, [self.ledger("云下载", "ABC-123", "ABC-123.mp4")])
         self.assertEqual(task.asset_id is not None, True)
 
+    def test_a_remote_refresh_exposes_the_folder_before_ingesting(self):
+        task_id = self.finish()
+        refreshed = []
+
+        def landed(task):
+            refreshed.append(task.id)
+            folder = self.cloud / '云下载' / 'ABC-123'
+            folder.mkdir()
+            (folder / 'ABC-123.mp4').write_bytes(b'main')
+            return True
+
+        self.provider.landed = landed
+        self.tick(dl.LANDING_GRACE)
+        task = self.service.store.get(task_id)
+        self.assertEqual(refreshed, [task_id])
+        self.assertEqual(task.state, dl.INGESTED)
+        self.assertIsNotNone(task.asset_id)
+
     def test_the_main_video_is_bound_instead_of_the_first_promo_file(self):
         task_id = self.submit(code="ABC-123")["task"]["id"]
         self.provider.statuses = [dl.RemoteStatus(dl.DONE, "r1", "ABC-123", 1.0)]

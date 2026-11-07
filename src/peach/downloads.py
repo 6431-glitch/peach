@@ -1110,6 +1110,10 @@ class DownloadService:
         if asset_id is None and self.landing.ingest(location, ledger_path):
             task.state = LANDED
             asset_id = self.store.asset_under(location, ledger_path, task.code)
+        if asset_id is None and self.providers(task.provider).landed(task):
+            if self.landing.ingest(location, ledger_path):
+                task.state = LANDED
+                asset_id = self.store.asset_under(location, ledger_path, task.code)
         if asset_id is not None:
             task.state = INGESTED
             task.asset_id = asset_id
