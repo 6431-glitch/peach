@@ -652,6 +652,18 @@ class ErrorReportingTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertTrue(any('line' in path.read_text(encoding="utf-8") for path in self.logs.glob("crash-*.log")))
 
+    def test_a_process_that_exits_cleanly_leaves_no_empty_logs_behind(self):
+        result = self.probe("from peach import error_reporting as e; e.install()")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(sorted(path.name for path in self.logs.glob("*-*.log")), [])
+
+    def test_a_process_that_logged_a_problem_keeps_its_event_log(self):
+        result = self.probe("import logging; from peach import error_reporting as e; e.install(); "
+                            "logging.getLogger('probe').warning('磁盘读不到')")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len(list(self.logs.glob("errors-*.log"))), 1)
+        self.assertEqual(list(self.logs.glob("crash-*.log")), [])
+
     def test_exception_records_keep_codes_and_frames_without_source_lines_or_credentials(self):
         try:
             raise OSError(5, 'password=private-password https://example.com/?token=private-token')
