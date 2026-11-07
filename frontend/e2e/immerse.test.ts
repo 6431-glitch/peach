@@ -247,7 +247,8 @@ describe('沉浸模式', () => {
       await page.evaluate((selector) => document.querySelector<HTMLVideoElement>(selector)!.pause(), currentVideo);
       const y = DESKTOP.height - 4, ratio = .65;
       await page.mouse.move(DESKTOP.width * ratio, y);
-      await page.waitForFunction(() => document.querySelector<HTMLImageElement>('[data-immerse-bar] [data-player-seek-preview] img')?.complete);
+      // 没设 src 的 img 的 `complete` 也是 true，所以等预览自己显出来：它只在拼图那一格加载好之后显示。
+      await page.waitForFunction(() => document.querySelector<HTMLElement>('[data-immerse-bar] [data-player-seek-preview]')?.hidden === false);
       const middle = await seekPreview(page);
       assert.equal(middle?.hidden, false, JSON.stringify(middle));
       assert.equal(middle.src, `/timeline?id=${wide.id}&s=0&source=peach`);

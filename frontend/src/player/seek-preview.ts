@@ -66,7 +66,7 @@ export function createSeekPreview(host: HTMLElement, item: SeekPreviewItem | nul
   const aspect = (width: number, height: number) => { frame?.style.setProperty('--seek-aspect', String(width / height)) };
   if (item?.width && item.height) aspect(item.width, item.height);
   let sheets: TimelineSheets | null = null, shown = '', indexedImage = false, cell = -1, primed = false, disposed = false;
-  let active = false, pointer = 0;
+  let active = false, pointer = 0, span = 0;
   const paint = () => {
     preview.hidden = disposed || !active || !frame || frame.hidden || !image?.complete || !image.naturalWidth;
     if (preview.hidden) return;
@@ -93,6 +93,8 @@ export function createSeekPreview(host: HTMLElement, item: SeekPreviewItem | nul
     (api(`/api/timeline?id=${id}`) as Promise<TimelineSheets | null>).then((meta) => {
       if (disposed || !meta || !(meta.frames > 0) || !(meta.interval > 0 || meta.cues?.length)) return;
       sheets = meta; preload();
+      // 指针先停在进度条上、索引后到：按停着的位置换成拼图那一格，不等下一次移动。
+      if (active) show(pointer, span);
     }).catch(() => {});
   }
   const showSheetFrame = (seconds: number, sheet: TimelineSheets) => {
@@ -130,19 +132,20 @@ export function createSeekPreview(host: HTMLElement, item: SeekPreviewItem | nul
       paint();
     };
   }
+  const show = (ratio: number, duration: number) => {
+    if (!duration || disposed) { active = false; paint(); return }
+    const clamped = Math.min(1, Math.max(0, ratio)), seconds = duration * clamped;
+    active = true; pointer = clamped; span = duration;
+    label.textContent = fmtClock(seconds);
+    if (frame && !(sheets && showSheetFrame(seconds, sheets)) && !(sheets?.fallback && showSheetFrame(seconds, sheets.fallback))) {
+      showPoster(clamped);
+    }
+    // 宽度按显出来之后的实测值夹边：框宽由样式按片源比例和视口定，这里不另算一套。
+    paint();
+  };
   return {
     prime() { if (!primed) { primed = true; preload() } },
-    show(ratio, duration) {
-      if (!duration || disposed) { active = false; paint(); return }
-      const clamped = Math.min(1, Math.max(0, ratio)), seconds = duration * clamped;
-      active = true; pointer = clamped;
-      label.textContent = fmtClock(seconds);
-      if (frame && !(sheets && showSheetFrame(seconds, sheets)) && !(sheets?.fallback && showSheetFrame(seconds, sheets.fallback))) {
-        showPoster(clamped);
-      }
-      // 宽度按显出来之后的实测值夹边：框宽由样式按片源比例和视口定，这里不另算一套。
-      paint();
-    },
+    show,
     hide() { active = false; preview.hidden = true },
     dispose() { disposed = true; warm.length = 0; preview.remove() },
   };

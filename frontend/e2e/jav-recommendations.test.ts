@@ -33,6 +33,8 @@ describe('JAV 推荐与加载结构', () => {
       await search.fill('PCH');
       await section.evaluate(node => { (node as HTMLElement).dataset.returnProbe = 'kept' });
       const count = reads.length;
+      const drawer = () => page.evaluate(() => document.body.classList.contains('drawer-open'));
+      const drawerOpen = await drawer();
       for (const exit of ['close', 'escape', 'back']) {
         const link = section.locator('[data-jav-card]').nth(8).locator('[data-jav-cover-box]');
         await link.scrollIntoViewIfNeeded();
@@ -44,6 +46,7 @@ describe('JAV 推荐与加载结构', () => {
         else if (exit === 'escape') await page.keyboard.press('Escape');
         else await page.goBack();
         await page.waitForFunction(() => location.pathname === '/jav' && !document.querySelector('#stage[open]'));
+        assert.equal(await drawer(), drawerOpen, `${exit} 关闭详情时侧栏不能跟着收起`);
         assert.equal(await search.inputValue(), 'PCH');
         assert.equal(await section.locator('[data-entity-tag="library"]').getAttribute('aria-pressed'), 'true');
         assert.equal(await section.locator('[data-catalog-tag="恋足"]').getAttribute('aria-pressed'), 'true');

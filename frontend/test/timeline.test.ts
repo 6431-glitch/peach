@@ -202,6 +202,33 @@ describe('Video.js 进度条接线', () => {
   });
 });
 
+describe('索引晚于悬停到达', () => {
+  it('指针停着不动也换成拼图那一格，图到了就显示；已离开则不显示', async () => {
+    stubTimeline({ source: 'peach', frames: 20, interval: 1, columns: 10, rows: 10 });
+    const { host, measured } = seekHost(900, 160);
+    const preview = createSeekPreview(host, { id: 7, width: 1920, height: 1080, has_thumb: false });
+    const element = measured(), image = host.querySelector('img')!;
+    preview.show(.65, 20);
+    expect(image.hasAttribute('src')).toBe(false);
+    expect(element.hidden).toBe(true);
+    await settle();
+    expect(image.getAttribute('src')).toBe('/timeline?id=7&s=0&source=peach');
+    expect([image.style.left, image.style.top]).toEqual(['-300%', '-100%']);
+    loadPreviewImage(host);
+    expect(element.hidden).toBe(false);
+
+    stubTimeline({ source: 'peach', frames: 20, interval: 1, columns: 10, rows: 10 });
+    const late = seekHost(900, 160);
+    const left = createSeekPreview(late.host, { id: 8, has_thumb: false });
+    const leftElement = late.measured();
+    left.show(.65, 20);
+    left.hide();
+    await settle();
+    expect(late.host.querySelector('img')!.hasAttribute('src')).toBe(false);
+    expect(leftElement.hidden).toBe(true);
+  });
+});
+
 describe('时间轴索引', () => {
   it('按预览自身的非均匀时间选择帧，并保留未覆盖区间', () => {
     const source = { frames: 3, interval: 0, cues: [[0, 3.5], [3.5, 7], [10, 15]] as [number, number][] };
