@@ -34,6 +34,9 @@ async function freshTutorial(page: Page) {
   });
 }
 
+// 监视器只保留框架异步收尾异常的调用栈，错误仍由 Node 判为失败。
+process.on('uncaughtExceptionMonitor', error => console.error(error.stack));
+
 describe('设计决定：作品卡、管理页与复核', () => {
   let browser: Browser;
   installDesignBrowser((next) => { browser = next; });
@@ -171,6 +174,14 @@ describe('设计决定：作品卡、管理页与复核', () => {
     try {
       await page.locator('#grid [data-shorts-strip]').first().waitFor({ timeout: 10_000 });
       await page.locator('#grid [data-media-grid] > [data-media-card] [data-media-progress]').first().waitFor({ timeout: 10_000 });
+      // Mix 在累计八张作品后才出现；渐进首批不足时正常续载到对应卡片，再量它的样式。
+      while (!await page.locator('#grid [data-mix-card]').count() && await page.locator('#grid [data-load-more]').count()) {
+        const before = await page.locator('#grid [data-media-card]').count();
+        await page.evaluate(() => document.querySelector('#grid [data-load-more]')?.scrollIntoView());
+        await page.waitForFunction(before => document.querySelectorAll('#grid [data-media-card]').length > before
+          || !document.querySelector('#grid [data-load-more]'), before);
+      }
+      await page.locator('#grid [data-mix-glyph]').first().waitFor({ state: 'attached' });
       const catalog = await readStyles({
         card: '[data-media-grid] > [data-media-card]',
         badge: '[data-media-grid] > [data-media-card] [data-media-badge]',
