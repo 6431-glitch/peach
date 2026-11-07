@@ -1151,6 +1151,11 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         bundled = await self.client.get('/source-icon?t=secret&provider=f95zone')
         self.assertEqual(bundled.status_code, 200)
         self.assertTrue(bundled.headers['content-type'].startswith('image/png'))
+        # Iwara 官方只有透明底白字形，浅色主题下看不见；内置图优先于缓存里那张白图。
+        from peach.config import PROJECT_ROOT
+        iwara = await self.client.get('/source-icon?t=secret&provider=iwara')
+        self.assertEqual(iwara.status_code, 200)
+        self.assertEqual(iwara.content, (PROJECT_ROOT / 'resources/site-marks/iwara.png').read_bytes())
         self.assertEqual(len(hits), 1)
         blocked = await self.client.get("/source-icon?t=secret&provider=simpcity")
         self.assertEqual(blocked.status_code, 404)
