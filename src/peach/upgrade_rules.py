@@ -4,6 +4,7 @@ CATALOG = "catalog-v4"
 PREVIEWS = "previews-v2"
 LOCAL_POSTERS = PREVIEWS + ':local'
 PROCESSING = "processing-v2"
+FC2_METADATA = 'fc2-javdb-first-v1'
 PUBLIC_SNAPSHOTS = 2
 PROVIDER_EVIDENCE = 2
 PROVIDER_TEXT = 3

@@ -593,7 +593,7 @@ class LibraryMetadataProvider:
             answered = [*known, *(payload for _, payload in state['found'])]
             if answered and not covers and not (name in metadata_routes.FC2_CAST_SITES
                                                 and _lacks_performers(required, answered)):
-                break
+                continue
             state['asked'].add(name)
             started = time.monotonic()
             additions = []
@@ -1233,15 +1233,35 @@ def _previous_order(group, source, value):
             'display_value': '、'.join(str(person.get('name') or '') for person in previous if isinstance(person, dict))}
 
 
+def _source_candidate(source, document, value, evidence_path, mode):
+    """来源值及其可回溯身份，使用同一份归属和复核标记构造。"""
+    local = source == 'local_nfo'
+    spec = SOURCE_SPECS.get(source)
+    official = bool(spec and spec.official)
+    candidate = dict(candidate_key=_candidate_identity(source, value['value']), source=source,
+                     provider=PROVIDER_NAMES.get(source, source), value=value['value'],
+                     display_value=value.get('display_value', str(value['value'])), warnings=value.get('warnings', []),
+                     confidence=0.9 if local else 0.75 if official else 0.5 if source.startswith('custom-') else 0.6,
+                     source_url=document.get('source_url', ''), raw_snapshot=str(evidence_path),
+                     provider_id=str(document.get('id') or ''), content_id=str(document.get('content_id') or ''),
+                     source_kind='local' if local else spec.kind if spec else 'community', official=official,
+                     catalog_evidence=extract_catalog_evidence(document))
+    if source == 'javdb':
+        candidate.update(javdb_rule=document.get('javdb_rule'), source_id=document.get('source_id'))
+    if mode == 'review':
+        candidate['requires_review'] = True
+    if value.get('unmapped_genres'):
+        candidate['unmapped_genres'] = value['unmapped_genres']
+    return candidate
+
+
 def _merge_candidates(groups, row, code, source, document, evidence_path, genre_decisions, local_fields=(),
-                      *, verify_existing=False):
+                      *, verify_existing=False, database=None):
     """把 `document` 里认得出的字段并进 `groups`：同来源的旧候选换掉，别的来源保留。
 
     NFO 核查保留不同来源的取值；已有值的差异标记为覆盖复核。相同取值不重复生成候选。
     """
     local = source == 'local_nfo'
-    spec = SOURCE_SPECS.get(source)
-    official = bool(spec and spec.official)
     for field, value in _fields(document, genre_decisions).items():
         key = f"asset:{row['id']}:{field}"
         if field == 'performers':
@@ -1251,23 +1271,10 @@ def _merge_candidates(groups, row, code, source, document, evidence_path, genre_
         mode = _candidate_review_mode(groups, row, field, source, value, local_fields, verify_existing)
         if mode is None:
             continue
-        identity = _candidate_identity(source, value['value'])
-        # 来源自报的番号跟着候选走：落库前要再核一次身份，javdb 的详情页地址里没有番号。
-        candidate = dict(candidate_key=identity, source=source, provider=PROVIDER_NAMES.get(source, source),
-                         value=value['value'], display_value=value.get('display_value', str(value['value'])),
-                         warnings=value.get('warnings', []),
-                         confidence=0.9 if local else 0.75 if official else 0.5 if source.startswith('custom-') else 0.6,
-                         source_url=document.get('source_url', ''), raw_snapshot=str(evidence_path),
-                         provider_id=str(document.get('id') or ''), content_id=str(document.get('content_id') or ''),
-                         source_kind='local' if local else spec.kind if spec else 'community', official=official,
-                         catalog_evidence=extract_catalog_evidence(document))
-        if source == 'javdb':
-            candidate.update(javdb_rule=document.get('javdb_rule'), source_id=document.get('source_id'))
-        if mode == 'review':
-            candidate['requires_review'] = True
-        # 只有 tags 字段有未收录原文；别的字段挂一个空列表只是让每条候选都胖一圈。
-        if value.get('unmapped_genres'):
-            candidate['unmapped_genres'] = value['unmapped_genres']
+        if (field == 'performers' and source == 'javdb' and code and code.upper().startswith('FC2')
+                and not _confirmed_cast(database, value['value'])):
+            mode = 'review'
+        candidate = _source_candidate(source, document, value, evidence_path, mode)
         group = groups.get(key, dict(item_key=key, code=code or '', query=code or row['name'],
             asset_id=row['id'], asset_path=row['path'], field=field,
             field_label=LABELS[field], current_value=row.get(COLUMN_OF.get(field, field)) or '',
@@ -1354,6 +1361,14 @@ def _given_fields(entries):
     """这些证据条目一共给出了哪几个非空 Peach 字段。链上何时停手按它判。"""
     return {field for _, payload, _ in entries
             for field, value in extract_peach_fields(payload).items() if value}
+
+
+def _confirmed_cast(database, people):
+    from .metadata_alias_resolve import confirmed_performers
+    if database is None:
+        return False
+    with database.read_connection() as connection:
+        return confirmed_performers(connection, people)
 
 
 def _asks_cover(code, *evidence):
@@ -1552,13 +1567,15 @@ class _MetadataResults:
 class _RemoteSession:
     """一个任务共用的外部来源连接，加上来源说过「没有」的记忆。"""
 
-    def __init__(self, config, provider_factory, misses, *, retrying, recheck_existing=False, routes=None):
+    def __init__(self, config, provider_factory, misses, *, retrying, recheck_existing=False, routes=None,
+                 database=None):
         self._config = config
         self._factory = provider_factory
         self._provider = None
         self.misses = misses
         #: 用户对每种内容类型的来源链覆盖，形状见 `metadata_routes.parse_route_overrides`。
         self._routes = routes or None
+        self.database = database
         # 定向重试或明确重采不看旧记忆；本次答复仍照记。
         self._consult = not (retrying or recheck_existing)
         self._task_evidence = {}
@@ -1773,8 +1790,8 @@ class _RemoteSession:
         """按内容类型的来源链逐档问，必填标量字段够了就不问下一档。
 
         链在 `metadata_routes`：有码先问片商官网、素人先问 MGStage（经 amane 桥，ADR-0048），
-        再问 r18.dev；无码问一本道官网（本机证据指着它时），FC2 问发行方商品页与下架镜像，
-        问不着才落到 AVBase、JavBus 与 javdb 那一档。
+        再问 r18.dev；无码问一本道官网（本机证据指着它时），FC2 优先匿名 JavDB，
+        缺字段或演员身份未确认时再问发行方商品页与专站（ADR-0150）。
 
         有码缺标签时另取 JavDB 类别；标量已经齐全时只补这一家，不扩展其他社区查询。
 
@@ -1798,7 +1815,7 @@ class _RemoteSession:
         mark = _excused(self._provider)
         evidence = _studio_evidence(row)
         chain = self._chain(code, *evidence)
-        required = list(metadata_routes.required_scalars(missing))
+        required = metadata_routes.required_scalars(missing, code=code)
         wants_tags = 'tags' in missing
         # 素人缺演员：MGStage 给的是素人名义，直到有一个认人 Wiki 给出演员才算问到（ADR-0145）。
         wants_cast = 'performers' in missing and any(name in metadata_routes.WIKI_STAGE for name in chain)
@@ -1817,7 +1834,7 @@ class _RemoteSession:
                 results.cached(cached)
                 if source in metadata_routes.WIKI_STAGE and any(entry[1].get('actresses') for entry in cached):
                     wants_cast = False
-                if metadata_routes.settles(required, _given_fields(entries),
+                if metadata_routes.settles(required, self._provided(code, entries),
                                            wants_tags=wants_tags, wants_cast=wants_cast, then=then):
                     break
                 # FC2 那一档缓存里只有官方那页时，缺的演员还得去镜像站问（见 `fc2()`）。
@@ -1850,7 +1867,7 @@ class _RemoteSession:
                     held.append(source_paused(error))
                 # 认人 Wiki 没给出演员时，MGStage 给的字段够停手就停，不为它落到综合索引那条 3 秒的队。
                 if source in metadata_routes.WIKI_STAGE and metadata_routes.settles(
-                        required, _given_fields(entries), wants_tags=wants_tags,
+                        required, self._provided(code, entries), wants_tags=wants_tags,
                         wants_cast=wants_cast, then=then):
                     break
                 continue
@@ -1859,7 +1876,7 @@ class _RemoteSession:
             # 来源快照的演员栏键名是 `actresses`（`SiteRecord.payload`）。
             if source in metadata_routes.WIKI_STAGE and any(payload.get('actresses') for _, payload in found):
                 wants_cast = False
-            if metadata_routes.settles(required, _given_fields(entries),
+            if metadata_routes.settles(required, self._provided(code, entries),
                                        wants_tags=wants_tags, wants_cast=wants_cast, then=then):
                 break
         tag_entries = self._preferred_tags(row, code, missing, chain, entries, attempted,
@@ -1874,6 +1891,18 @@ class _RemoteSession:
               action=action, retryable=True, paused=paused,
               **({'diagnostics': {'failures': failures}} if failures else {}))
         return []
+
+    def _provided(self, code, entries):
+        from .metadata_alias_resolve import stage_name
+        given = _given_fields(entries)
+        if metadata_routes.classify(code) != 'fc2' or 'performers' not in given:
+            return given
+        for source, payload, _path in entries:
+            performers = extract_peach_fields(payload).get('performers', {}).get('value')
+            if performers and (_confirmed_cast(self.database, performers) or (
+                    source != 'javdb' and all(stage_name(person['name']) for person in performers))):
+                return given
+        return given - {'performers'}
 
     def _preferred_tags(self, row, code, missing, chain, entries, answered, *, update, issue, deadline):
         """缺标签的有码作品补取 JavDB；已取证、路由排除或缺失记忆命中时直接返回。"""
@@ -2616,6 +2645,18 @@ class _LibraryCheckpoints:
         self.state = state
         self.completed = {phase: set(previous.get(phase) or [])
                           for phase in ('completed_previews', 'completed_metadata')}
+        if (previous.get('fc2_metadata_rule') != upgrade_rules.FC2_METADATA
+                and self.completed['completed_metadata']):
+            from .repository import LedgerDatabase
+            ledger = database if database is not None else LedgerDatabase(db_path)
+            with ledger.read_connection() as connection:
+                missing = {str(row[0]) for row in connection.execute(
+                    "SELECT a.id FROM asset a WHERE (upper(a.code) LIKE 'FC2%' OR upper(a.code) LIKE 'FC-%') "
+                    "AND NOT EXISTS(SELECT 1 FROM asset_entity ae JOIN entity e ON e.id=ae.entity_id "
+                    "WHERE ae.asset_id=a.id AND e.kind='performer')")}
+            self.completed['completed_metadata'] = {
+                key for key in self.completed['completed_metadata'] if key.partition(':')[0] not in missing}
+        state['fc2_metadata_rule'] = upgrade_rules.FC2_METADATA
         self.pending_metadata = set()
         self.entity_watermark = previous.get('entity_watermark')
         if self.entity_watermark is None:
@@ -3023,7 +3064,8 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
 
         update()
         remote = _RemoteSession(config, provider_factory, _MissCache(misses_path(config)),
-                                retrying=retrying, recheck_existing=recheck_existing, routes=routes)
+                                retrying=retrying, recheck_existing=recheck_existing, routes=routes,
+                                database=judgement_database)
         flush_candidates = lambda force=False: None
 
         try:
@@ -3102,7 +3144,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                 row = _candidate_baseline(database, row, code, verify_existing)
                 for source, document, evidence_path in entries:
                     _merge_candidates(groups, row, code, source, document, evidence_path, genre_decisions,
-                                      local_fields, verify_existing=verify_existing)
+                                      local_fields, verify_existing=verify_existing, database=judgement_database)
                 csv_dirty = True
                 selected = [groups[key] for field in LABELS
                             if (key := f"asset:{row['id']}:{field}") in groups]
