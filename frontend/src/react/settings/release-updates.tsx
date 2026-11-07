@@ -13,6 +13,7 @@ import { Note } from '../components/note';
 import { Progress } from '../components/progress';
 import { StatusLabel } from '../components/status-label';
 import { DockerUpdateProgress, useDockerUpdate } from './docker-update';
+import { RELEASE_NOTICE_EVENT } from '../release-notice';
 import { CommandSteps, ErrorText, ExternalLink, Fact, FactList, Footer, Help, Section, Stack } from './section';
 import { busyProps, useAction } from './use-action';
 
@@ -139,6 +140,7 @@ export function ReleaseUpdates({ initial, initialJob }: { initial: ReleaseState;
         ) : null}
       </Stack>}
       <Footer status={<div className="flex flex-wrap items-center gap-3">
+        <Button size="small" variant="ghost" onClick={() => document.dispatchEvent(new Event(RELEASE_NOTICE_EVENT))}>本版更新说明</Button>
         <ExternalLink href="https://peach.video/#download">官网</ExternalLink>
         <ExternalLink href="https://github.com/peach-mitao/peach">GitHub</ExternalLink>
         <ExternalLink href={data.release_url || RELEASES_URL}>查看发布页</ExternalLink>

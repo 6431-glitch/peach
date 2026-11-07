@@ -827,6 +827,62 @@ def client_updates(request: Request, _args=Depends(require_auth)):
     return result
 
 
+def _release_notice_facts(request: Request, connection) -> dict:
+    """公告条目的显示条件：只看本机回执与设置，不发外部请求。读不到的一项按不显示处理。"""
+    from . import storage_budget, system_file_repair
+    from .display_dimensions_repair import RECEIPT_KEY
+    from .downloads import DownloadSettings
+    from .upgrade_repairs import _read
+    facts: dict[str, Any] = {}
+    service = request.app.state.upgrade_repairs
+    try:
+        display = _read(service.receipt).get(RECEIPT_KEY, {}) if service.available else {}
+    except (OSError, ValueError, TypeError):
+        display = {}
+    if display.get('dimensions'):
+        facts['display_reprobe'] = {'done': len(display.get('completed', {})), 'total': len(display['dimensions'])}
+    row = connection.execute(
+        'SELECT result_json FROM ledger_upgrade_repair WHERE json_type(result_json,?) IS NOT NULL '
+        'ORDER BY applied_at DESC LIMIT 1', (f'$."{system_file_repair.RULE}"',)).fetchone()
+    isolated = json.loads(row[0])[system_file_repair.RULE].get('isolated') if row else None
+    if isolated:
+        facts['system_files'] = {'count': len(isolated) if isinstance(isolated, list) else int(isolated)}
+    # 乱码人物补修（`metadata_text_repair.RECEIPT_KEY`）把解除的关联逐行记在升级回执顶层。
+    row = connection.execute(
+        "SELECT result_json FROM ledger_upgrade_repair WHERE json_type(result_json,'$.garbled_people') IS NOT NULL "
+        'ORDER BY applied_at DESC LIMIT 1').fetchone()
+    unlinked = json.loads(row[0])['garbled_people'].get('links') if row else None
+    if unlinked:
+        facts['garbled_performers'] = {'count': len(unlinked)}
+    try:
+        config = settings_file.load_config()
+        if (config.present and DownloadSettings(config.directory('state')).load().clouddrive_address
+                and not storage_budget.load_policy(config).external_cache_max_gib):
+            facts['clouddrive_unlimited'] = True
+    except (OSError, ValueError):
+        pass
+    return facts
+
+
+@router.get('/api/release-notice')
+def read_release_notice(request: Request, _args=Depends(require_auth)):
+    from . import release_notice
+    with request.app.state.web_contract.read_connection() as connection:
+        return release_notice.snapshot(connection, facts=_release_notice_facts(request, connection))
+
+
+@router.post('/api/release-notice')
+def acknowledge_release_notice(request: Request, body: dict[str, Any] = Body(default_factory=dict),
+                               _args=Depends(require_auth)):
+    from . import __version__, release_notice
+    same_origin(request)
+    if body.get('version') != __version__:
+        raise HTTPException(409, '已更新到新版本，请刷新页面')
+    with request.app.state.web_contract.write_transaction() as connection:
+        release_notice.acknowledge(connection, __version__)
+    return {'ok': True, 'seen': __version__}
+
+
 @router.post('/api/configuration/upgrade-repairs/retry')
 async def retry_upgrade_repairs(request: Request, _args=Depends(require_auth)):
     import asyncio
