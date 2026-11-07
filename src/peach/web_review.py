@@ -46,6 +46,7 @@ from .metadata_auto_apply import (
     _offers_another_stage_name,
     _only_mib_official,
     _parsed_candidates,
+    _pinned_asset_id,
     _row_candidates,
     _split_multi,
     genres_still_pending,
@@ -323,6 +324,39 @@ def _queue_rows(contract: ReviewContract, category: str,
     return [row for row in rows if _needs_review(category, row)], source, skipped
 
 
+def _empty_tags(row: dict, candidate: dict) -> bool:
+    """标签候选按现在的词表读完是空的：落库那一步会拒绝它。"""
+    if str(row.get("field") or "").strip() != "tags":
+        return False
+    value = candidate.get("value")
+    return isinstance(value, list) and not current_tags(str(tag) for tag in value)
+
+
+def _repin_file_rows(connection, rows: list[dict]) -> list[dict]:
+    """按文件出的行改挂到那个文件现在的编号；文件已不在库的行不摆出来（#486）。
+
+    永久删除后同一个文件被扫描重新登记，编号就换了。按路径对得上的改挂（`_pinned_asset_id`），
+    卡片上的「通过」与「打开原视频」都指向现在那一条；新编号自己已有同字段的行时，旧行让位。
+    对不上的那些不论点哪个都写不进账本，留在队列里只是一张点了就报错的卡。
+    """
+    keys = {row["item_key"] for row in rows}
+    kept = []
+    for row in rows:
+        raw = str(row.get("asset_id") or "").strip()
+        if not row.get("asset_path") or not raw.isdigit():
+            kept.append(row)
+            continue
+        pinned = _pinned_asset_id(connection, row)
+        if pinned is None:
+            continue
+        if pinned != int(raw):
+            if f"asset:{pinned}:{str(row.get('field') or '').strip()}" in keys:
+                continue
+            row["asset_id"] = str(pinned)
+        kept.append(row)
+    return kept
+
+
 def _metadata_queue_rows(connection, rows: list[dict],
                          decisions: dict) -> tuple[list[dict], dict[str, str | None]]:
     """元数据字段队列真正该摆在人面前的那些行，以及用到的 genre 决定。
@@ -338,10 +372,14 @@ def _metadata_queue_rows(connection, rows: list[dict],
         return identifies(code, *(str(candidate.get(key) or '') for key in
                                   ('source', 'provider_id', 'content_id', 'source_url')))
     for row in rows:
-        row["candidates"] = _row_candidates(row, genre_decisions, identifies=identifies_candidate)
+        # 折掉已收录的 genre 后一个标签也不剩的候选批不了（「标签候选为空」，#486），不摆出来。
+        row["candidates"] = [candidate for candidate in _row_candidates(
+                                 row, genre_decisions, identifies=identifies_candidate)
+                             if not _empty_tags(row, candidate)]
     # 候选全是错配时整行消失：剔完一条不剩，就没有可判的东西了。本来就没有候选
     # 的行照旧留着，它讲的是另一件事（这个番号问过、谁都没给值）。
     rows = [row for row in rows if row["candidates"] or not _parsed_candidates(row)]
+    rows = _repin_file_rows(connection, rows)
     refresh_current_values(connection, rows)
     identity_key = cache(partial(_entity_identity_key, connection))
     # 和账本已有的值比一遍，只把真差异留在队列里。实测 43 条候选里 24 条

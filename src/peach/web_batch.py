@@ -8,8 +8,10 @@
 """
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
+import logging
 import os
 import re
 import stat
@@ -33,7 +35,7 @@ from .task_runs import TaskRunHandle
 from .web_activity import DEFAULT_PROFILE_ID
 from .web_catalog import attach_card_performers
 from .media_sources import cost_for
-from .web_resource_sync import clean_resource_orphans
+from .web_resource_sync import _managed_cache_root, clean_resource_orphans
 from .web_state import WebContract
 
 from .junk import (
@@ -56,6 +58,8 @@ from .junk import (
     has_sibling_original as has_sibling_original,
     promo_residue as promo_residue,
 )
+
+LOGGER = logging.getLogger(__name__)
 
 #: 垃圾评分读的账本表。不声明时任何一次提交（关注检查、任务记录）都让下一次打开当场重评
 #: 十万行；声明后后台任务的提交先回上一份、后台重算（ADR-0146），前台写入照旧当场重算。
@@ -322,11 +326,24 @@ def purge_vanished_rows(contract: WebContract, rows) -> dict:
         if outcome is not None:
             _restore_staged_media(outcome["_staged"])
         raise
-    return _finish_purge(outcome)
+    return _finish_purge(outcome, contract)
 
 
-def _finish_purge(outcome):
-    """Delete committed quarantine files; report any residue for explicit cleanup."""
+def _finish_purge(outcome, contract=None):
+    """Delete committed quarantine files; report any residue for explicit cleanup.
+
+    同时撤下钉着这些资产的资料候选（#486）。撤不成不影响删除结果：复核页按路径改挂或剔掉
+    悬空行；处理任务正拿着候选表时，它下一次写表也可能把这几行写回去。
+    """
+    ids = outcome.pop("_ids", [])
+    candidate_root = getattr(contract, "candidate_root", None)
+    # 只改这本账自己数据目录里的候选件：临时账本配上默认目录时，那是本机真实的候选表。
+    if ids and candidate_root is not None and _managed_cache_root(contract, candidate_root):
+        from .stale_candidates import withdraw_purged_rows
+        try:
+            withdraw_purged_rows(candidate_root, ids)
+        except (OSError, ValueError, csv.Error):
+            LOGGER.exception("撤下已删除资产的资料候选失败")
     cleanup_pending = []
     for _original, quarantine in outcome.pop("_staged"):
         try:
@@ -457,13 +474,17 @@ def purge_assets(connection, rows, *, missing_only: bool = False):
             connection.execute(f"UPDATE follow_item SET asset_id=NULL WHERE asset_id IN ({marks})", purged)
             for table in ASSET_REFERENCE_TABLES:
                 connection.execute(f"DELETE FROM {table} WHERE asset_id IN ({marks})", purged)
+            # 按文件出的资料候选键是 `asset:<编号>:<字段>`；资产删了，这些决定就没有可指的东西（#486）。
+            connection.executemany(
+                "DELETE FROM review_decision WHERE category='metadata_fields' AND item_key GLOB ?",
+                [(f"asset:{asset_id}:*",) for asset_id in purged])
             connection.execute(f"DELETE FROM asset WHERE id IN ({marks})", purged)
     except BaseException:
         _restore_staged_media(staged)
         raise
     return {
         "purged": len(purged), "blocked": blocked,
-        "_staged": staged, "_snapshots": snapshots, "_parents": parents,
+        "_staged": staged, "_snapshots": snapshots, "_parents": parents, "_ids": purged,
     }
 
 
@@ -481,7 +502,7 @@ def w_empty_trash(contract: WebContract):
         if outcome is not None:
             _restore_staged_media(outcome["_staged"])
         raise
-    result = {"ok": True, "operation": "empty-trash", **_finish_purge(outcome)}
+    result = {"ok": True, "operation": "empty-trash", **_finish_purge(outcome, contract)}
     result.update(clean_resource_orphans(contract))
     return result
 
@@ -645,7 +666,7 @@ def w_batch(contract: WebContract, body):
                               error="" if isinstance(error, Cancelled) else f"{type(error).__name__}: {error}")
                 raise
             if purge_outcome is not None:
-                result = {"ok": True, "operation": operation, **_finish_purge(purge_outcome)}
+                result = {"ok": True, "operation": operation, **_finish_purge(purge_outcome, contract)}
                 result.update(clean_resource_orphans(contract))
                 handle.finish("succeeded", summary={"operation": operation,
                                                     "changed": len(valid_ids)})

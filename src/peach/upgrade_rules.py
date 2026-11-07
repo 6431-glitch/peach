@@ -14,3 +14,5 @@ VERIFICATION_SETTLEMENT = 1
 # 旧队列保持撤下状态；新规则单独记录已取得的 SAR 测量。
 DISPLAY_DIMENSIONS = 'display-dimensions-1'
 DISPLAY_DIMENSIONS_SAR = 'display-dimensions-2'
+#: 永久删除后悬空的资料候选与复核决定（#486）按路径改挂或撤下。判据改了就加一，升级时再对存量做一遍。
+DANGLING_CANDIDATES = 1

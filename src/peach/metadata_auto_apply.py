@@ -1203,6 +1203,9 @@ def _pinned_asset_id(connection, group: dict) -> int | None:
     的文件改指回原行（ADR-0131），编号不变，候选件里记的还是旧路径——处理任务重出这一
     行时沿用旧行，路径也不跟着换。2026-11-04 真实账本里 697 行是这样，按路径认的话谁批准
     都写不进去。番号也对不上，就当是别的片占了这个编号。
+
+    编号认不到时按记下的路径找：永久删除后同一个文件被扫描重新登记，拿到的是新编号（#486）。
+    路径恰好对上一条在库视频的才是它；候选件不记 `location`，对上多条就不认。
     """
     asset_id = str(group.get("asset_id") or "").strip()
     if not asset_id.isdigit():
@@ -1210,12 +1213,23 @@ def _pinned_asset_id(connection, group: dict) -> int | None:
     found = connection.execute(
         "SELECT path,code FROM asset WHERE id=? AND medium='video' AND disposal IS NULL",
         (int(asset_id),)).fetchone()
-    if found is None:
+    if found is not None:
+        if found[0] == group.get("asset_path"):
+            return int(asset_id)
+        code = normalise_code_key(str(group.get("code") or ""))
+        if code and normalise_code_key(str(found[1] or "")) == code:
+            return int(asset_id)
+    return asset_at_path(connection, group.get("asset_path"))
+
+
+def asset_at_path(connection, path) -> int | None:
+    """这个路径现在是哪一条在库视频；没有或不止一条时返回 None。"""
+    if not path:
         return None
-    if found[0] == group.get("asset_path"):
-        return int(asset_id)
-    code = normalise_code_key(str(group.get("code") or ""))
-    return int(asset_id) if code and normalise_code_key(str(found[1] or "")) == code else None
+    found = connection.execute(
+        "SELECT id FROM asset WHERE path=? AND medium='video' AND disposal IS NULL LIMIT 2",
+        (str(path),)).fetchall()
+    return int(found[0][0]) if len(found) == 1 else None
 
 
 def verification_outcome(connection, row: dict, *, assets=None) -> Verification | None:
