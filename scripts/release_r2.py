@@ -48,14 +48,15 @@ def describe(path: Path) -> dict:
         return {"name": path.name, "size": path.stat().st_size, "sha256": hashlib.file_digest(source, "sha256").hexdigest()}
 
 
-def signed_sums(root: Path, items: list[dict]) -> list[Path]:
-    """GitHub 发布作业生成并签名过的摘要与签名，原样转存：`.sig` 签的是这份字节（ADR-0137）。
-
-    目录里没有摘要时返回空表，由调用方按制品清单生成；有摘要就必须与制品逐项一致。
+def release_sums(root: Path, items: list[dict], scratch: Path) -> list[Path]:
+    """随版本上传的摘要文件。GitHub 发布作业生成并签过名的摘要与签名原样转存：`.sig` 签的是
+    这份字节（ADR-0137），且必须与制品逐项一致；目录里没有摘要时按制品清单在 `scratch` 生成一份。
     """
     sums = root / release_signing.SUMS
     if not sums.is_file():
-        return []
+        generated = scratch / release_signing.SUMS
+        generated.write_text("".join(f"{item['sha256']}  {item['name']}\n" for item in items), encoding="utf-8")
+        return [generated]
     if release_signing.parse(sums.read_bytes()) != {item["name"]: item["sha256"] for item in items}:
         raise ValueError("发布摘要与制品不一致")
     signature = root / release_signing.SIGNATURE
@@ -102,9 +103,16 @@ def _version(tag: object) -> tuple[int, ...] | None:
     return tuple(map(int, tag[1:].split(".")))
 
 
-def retained(tags: list[str], tag: str) -> list[str]:
-    """发布后镜像保留的版本：连同本次在内按版本号取最新 `KEEP` 个，新版在前。"""
-    return sorted({*tags, tag}, key=_version, reverse=True)[:KEEP]
+def retention(existing: list[dict], releases: object, tag: str) -> tuple[list[str], list[str]]:
+    """本次发布后保留的版本（连同本次按版本号取最新 `KEEP` 个，新版在前）与要删除的版本目录。"""
+    if not isinstance(releases, list) or not all(isinstance(item, dict) and _version(item.get("tag_name"))
+                                                  for item in releases):
+        raise ValueError("公开版本索引格式无效")
+    kept = sorted({*(item["tag_name"] for item in releases), tag}, key=_version, reverse=True)[:KEEP]
+    if tag not in kept:
+        raise ValueError(f"{tag} 比镜像保留的 {KEEP} 个版本都旧，不上传")
+    folders = {item["Path"].split("/", 1)[0] for item in existing if "/" in item["Path"]}
+    return kept, sorted({name for name in folders if _version(name)} - set(kept), key=_version)
 
 
 def require_capacity(existing: list[dict], items: list[dict], tag: str, limit: int) -> int:
@@ -156,22 +164,11 @@ def publish(root: Path, version: str, *, apply: bool = False) -> dict:
             releases = json.loads(subprocess.check_output(
                 [executable, "cat", f"peach:{environment['PEACH_R2_BUCKET']}/releases.json",
                  "--config", str(configuration)], env=environment, text=True, encoding="utf-8"))
-        if not isinstance(releases, list) or not all(isinstance(item, dict) and _version(item.get("tag_name"))
-                                                      for item in releases):
-            raise ValueError("公开版本索引格式无效")
-        kept = retained([item["tag_name"] for item in releases], tag)
-        if tag not in kept:
-            raise ValueError(f"{tag} 比镜像保留的 {KEEP} 个版本都旧，不上传")
-        stale = sorted({path.split("/", 1)[0] for path in (item["Path"] for item in existing)
-                        if "/" in path and _version(path.split("/", 1)[0])} - set(kept), key=_version)
+        kept, stale = retention(existing, releases, tag)
         result["projected_bucket_bytes"] = require_capacity(
             [item for item in existing if item["Path"].split("/", 1)[0] not in stale], items, tag,
             int(environment.get("PEACH_R2_MAX_BYTES", "8000000000")))
-        manifests = signed_sums(root, items)
-        if not manifests:
-            sums = temporary / release_signing.SUMS
-            sums.write_text("".join(f"{item['sha256']}  {item['name']}\n" for item in items), encoding="utf-8")
-            manifests = [sums]
+        manifests = release_sums(root, items, temporary)
         sources = {item["name"]: root / item["name"] for item in items}
         sources.update((path.name, path) for path in manifests)
         assets = [*items, *(describe(path) for path in manifests)]

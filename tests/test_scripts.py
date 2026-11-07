@@ -5320,7 +5320,7 @@ class R2ReleaseTests(unittest.TestCase):
             self.assertEqual(objects, {"releases.json": index})
             (root / "SHA256SUMS.txt").write_text("0" * 64 + "  Peach-1.0.0-windows-x64.zip\n", encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "摘要与制品不一致"):
-                module.signed_sums(root, module.inventory(root, "1.0.0"))
+                module.release_sums(root, module.inventory(root, "1.0.0"), root)
 
     def test_every_github_release_runs_the_mirror_publication(self):
         """镜像索引断过档：GitHub 发版后没有作业调 `release_r2.py`，`releases.json` 停在旧版。
