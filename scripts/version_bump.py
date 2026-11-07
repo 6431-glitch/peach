@@ -186,6 +186,27 @@ def readme_assets(root: Path, version: str) -> list[str]:
     return sorted(names)
 
 
+def readme_link_problems(root: Path) -> list[str]:
+    """README 直链须指向当前版本或变更日志里紧挨着的上一版；更旧就是发布后漏换了。
+
+    `--ship` 等 Release 制品齐了才换，所以定版之后、换链之前指向上一版是正常状态。
+    """
+    current = read_version(root)
+    released = re.findall(r"^## \[(\d+\.\d+\.\d+)\]",
+                          (root / "CHANGELOG.md").read_bytes().decode("utf-8"), re.M)
+    allowed = released[released.index(current):][:2] if current in released else [current]
+    problems = []
+    for name in README_FILES:
+        links = DOWNLOAD_LINK.findall((root / name).read_bytes().decode("utf-8"))
+        versions = {version for tag, asset, _ in links for version in (tag, asset)}
+        if not links:
+            problems.append(f"{name}: 没有 Release 下载直链")
+        elif len(versions) != 1 or not versions <= set(allowed):
+            problems.append(f"{name}: 下载直链版本 {'、'.join(sorted(versions))} 不是 "
+                            f"{' 或 '.join(allowed)}；用 release_tag.py --point-readme --apply 换到当前版本")
+    return problems
+
+
 def point_readmes(root: Path, version: str) -> list[str]:
     """把两份 README 的下载直链换到 `version`，返回实际改动的文件。不提交。"""
     changed = []
