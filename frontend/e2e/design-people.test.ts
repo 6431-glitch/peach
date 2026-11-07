@@ -13,6 +13,35 @@ describe('设计决定：人物与厂牌资料页', () => {
   let browser: Browser;
   installDesignBrowser((next) => { browser = next; });
 
+  it('取景前的懒加载头像保留可见性，加载后显示人像', { timeout: 60_000 }, async () => {
+    const opened = await openProfiledPerformer(browser, DESKTOP);
+    try {
+      const page = opened.page;
+      let release!: () => void;
+      const pending = new Promise<void>(resolve => { release = resolve; });
+      await page.route('**/avatar-loading-probe', async route => {
+        await pending;
+        await route.fulfill({ contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" fill="green"/></svg>' });
+      });
+      const state = await page.evaluate(() => {
+        const ring = document.createElement('span');
+        ring.style.cssText = 'position:fixed;top:20px;left:20px;width:80px;height:80px';
+        ring.innerHTML = '<img id="avatar-loading-probe" loading="lazy" width="128" height="128" data-facebox="0.5 0.5 60 128 128" src="/avatar-loading-probe">';
+        document.body.append(ring);
+        const image = ring.querySelector('img')!;
+        return { visibility: getComputedStyle(image).visibility, opacity: getComputedStyle(image).opacity };
+      });
+      release();
+      assert.deepEqual(state, { visibility: 'visible', opacity: '0' });
+      await page.waitForFunction(() => {
+        const image = document.querySelector<HTMLImageElement>('#avatar-loading-probe')!;
+        return image.naturalWidth > 0 && getComputedStyle(image).opacity === '1';
+      });
+    } finally {
+      await opened.close();
+    }
+  });
+
   for (const [viewport, split] of [[WIDE, true], [MOBILE, false]] as const) {
     it(`搜索下拉按种类分页签；宽屏分两栏、人名带头像与近作、视频排成封面格，窄屏一栏（${viewport.name}）`, { timeout: 60_000 }, async () => {
       const opened = await visit(browser, '/', viewport);

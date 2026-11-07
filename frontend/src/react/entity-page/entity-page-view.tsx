@@ -265,6 +265,7 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
       void refreshEntity().then(() => {
         if (alive.current) setAvatarEpoch((epoch) => epoch + 1);
       });
+      void queryClient.invalidateQueries({ queryKey: feedNewKey(entityId) });
     },
     /* 资料卡那句「N 项更新」：这位名下的就在这一页的在线视图里，不离开；别的作者键才去关注页。 */
     openFollowAuthor: (key) => {
