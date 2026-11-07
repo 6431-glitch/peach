@@ -373,6 +373,21 @@ class ErrorReportingTests(unittest.TestCase):
                 zipfile.ZipFile(io.BytesIO(support_bundle.bundle_bytes())) as archive:
             self.assertEqual(json.loads(archive.read('processing/library-processing.json'))['status'], 'paused')
 
+    def test_processing_export_carries_interrupted_jobs_and_update_pause_markers(self):
+        """恢复服务卡住时要看的两处：启动时接回的中断任务与更新暂停标记。"""
+        state = self.root / 'state'
+        (state / 'job-recovery').mkdir(parents=True)
+        (state / 'update-tasks' / 'active').mkdir(parents=True)
+        (state / 'job-recovery' / 'library-processing.json').write_text(json.dumps({
+            'body': {'stage': 'all', 'asset_ids': [60, 952]}, 'path': r'D:\private\movie.mp4'}), encoding='utf-8')
+        (state / 'update-tasks' / 'active' / 'abc.json').write_text('{"kind": "scan"}', encoding='utf-8')
+        with mock.patch.object(error_reporting, 'log_directories', return_value=[]), \
+                zipfile.ZipFile(io.BytesIO(support_bundle.bundle_bytes())) as archive:
+            recovery = json.loads(archive.read('processing/job-recovery/library-processing.json'))
+            self.assertEqual(recovery['body']['asset_ids'], [60, 952])
+            self.assertEqual(recovery['path'], '<path>')
+            self.assertEqual(json.loads(archive.read('processing/update-tasks/active/abc.json')), {'kind': 'scan'})
+
     def test_processing_export_reports_invalid_empty_and_over_limit_json_without_empty_members(self):
         state = self.root / 'state'
         state.mkdir()
