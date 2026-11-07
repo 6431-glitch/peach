@@ -63,7 +63,7 @@ export function StorageBudgetSettings({ initial, after, receipt }: {
           value={policy[key] ? String(policy[key]) : ''} onChange={value => update(key, Number(value))}
           isDisabled={Boolean(action.busy)} />
       </SettingsRow>)}
-      <SettingsRow label="自动清理缓存" description="先清理可重建缩略图，仍超限则暂停">
+      <SettingsRow label="自动清理缓存" description="从最旧的开始清理播放缓存与缩略图，仍超限则暂停">
         <Switch aria-label="自动清理缓存" isSelected={policy.auto_clean} isDisabled={Boolean(action.busy)}
           onChange={value => update('auto_clean', value)} />
       </SettingsRow>

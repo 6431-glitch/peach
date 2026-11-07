@@ -660,7 +660,7 @@ class CapacityProtectionTests(unittest.TestCase):
         self.policy(enabled=False, minimum_free_gib=8, data_max_gib=80, cache_max_gib=20)
         with patch.object(self.budget, '_disks', side_effect=AssertionError('保护已关闭')), \
                 patch.object(self.budget, '_measure', side_effect=AssertionError('保护已关闭')), \
-                patch.object(self.budget, '_clean_thumbnails', side_effect=AssertionError('保护已关闭')):
+                patch.object(self.budget, '_clean_rebuildable', side_effect=AssertionError('保护已关闭')):
             result = self.budget.CapacityGuard(self.config).check(force=True, required_bytes=999999)
         self.assertFalse(result['paused'])
         policy = self.budget.load_policy(self.config)
@@ -721,6 +721,7 @@ class CapacityProtectionTests(unittest.TestCase):
         guard = self.budget.CapacityGuard(self.config)
         with patch.object(self.budget, 'GIB', 1024), \
                 patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            self.budget.refresh_usage(self.config)
             with self.assertRaises(DiskSpaceDenied):
                 guard.check(force=True)
             data_storage.clean(self.config, 'playback')
@@ -735,8 +736,13 @@ class CapacityProtectionTests(unittest.TestCase):
         self.root = Path(temporary.name).resolve()
         self.config = settings_file.PeachConfig(self.root, self.root / 'config.toml')
         self.root.joinpath('state').mkdir()
-        self.budget._SCANS.clear()
-        self.addCleanup(self.budget._SCANS.clear)
+        self.budget.invalidate_measurements()
+        self.addCleanup(self.budget.invalidate_measurements)
+        # 请求只排后台统计；用例需要读数时显式调用 refresh_usage，避免后台线程与补丁交错。
+        self.real_refresh = storage_budget._refresh_in_background
+        refresh = patch.object(self.budget, '_refresh_in_background')
+        self.background = refresh.start()
+        self.addCleanup(refresh.stop)
         free = 100 * self.budget.GIB
         self.disks = patch.object(self.budget, '_disks', return_value=[('system', free, free * 2), ('data', free, free * 2)])
         self.disks.start()
@@ -762,10 +768,12 @@ class CapacityProtectionTests(unittest.TestCase):
         (self.root / 'state' / self.budget.POLICY_NAME).write_text('{broken', encoding='utf-8')
         with self.assertRaisesRegex(DiskSpaceDenied, '设置未取得'):
             self.budget.CapacityGuard(self.config).check(force=True)
-        (self.root / 'state' / self.budget.POLICY_NAME).unlink()
-        with patch.object(self.budget, '_measure', side_effect=PermissionError('denied')), \
-                self.assertRaisesRegex(DiskSpaceDenied, 'denied'):
-            self.budget.CapacityGuard(self.config).check(force=True)
+        self.policy(data_max_gib=1)
+        with patch.object(self.budget, '_measure', side_effect=PermissionError('denied')):
+            with self.assertRaises(PermissionError):
+                self.budget.refresh_usage(self.config)
+            with self.assertRaisesRegex(DiskSpaceDenied, 'denied'):
+                self.budget.CapacityGuard(self.config).check(force=True)
 
     def test_either_system_or_data_disk_low_space_refuses_work(self):
         from peach.jobs import DiskSpaceDenied
@@ -783,12 +791,14 @@ class CapacityProtectionTests(unittest.TestCase):
         video = write(cache / 'cache', 1024 * 1024)
         self.policy(external_cache_path=str(cache), external_cache_max_gib=1)
         with patch.object(self.budget, 'allocated_bytes', return_value=32):
+            self.budget.refresh_usage(self.config)
             result = self.budget.CapacityGuard(self.config).check(force=True)
         self.assertEqual(result['external_cache_bytes'], 32)
-        self.budget._SCANS.clear()
-        with patch.object(self.budget, 'allocated_bytes', return_value=2 * self.budget.GIB), \
-                self.assertRaisesRegex(DiskSpaceDenied, '外部缓存'):
-            self.budget.CapacityGuard(self.config).check(force=True)
+        self.budget.invalidate_measurements()
+        with patch.object(self.budget, 'allocated_bytes', return_value=2 * self.budget.GIB):
+            self.budget.refresh_usage(self.config)
+            with self.assertRaisesRegex(DiskSpaceDenied, '外部缓存'):
+                self.budget.CapacityGuard(self.config).check(force=True)
         self.assertTrue(video.is_file())
 
     def test_cleanup_removes_signed_local_derivatives_and_preserves_every_other_category(self):
@@ -804,24 +814,98 @@ class CapacityProtectionTests(unittest.TestCase):
         # 小文件按同一单位缩放触发预算，避免测试写入 GiB 级样本。
         with patch.object(self.budget, 'GIB', 1024), \
                 patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            self.budget.refresh_usage(self.config)
             result = self.budget.CapacityGuard(self.config).check(force=True)
         self.assertFalse(result['paused'])
         self.assertFalse(thumbnail.exists())
         self.assertFalse(Path(str(thumbnail) + '.rule').exists())
         self.assertTrue(all(path.is_file() for path in protected))
 
+    def test_over_limit_cleans_the_oldest_playback_cache_first_and_keeps_writes_in_progress(self):
+        def aged(path, mtime):
+            os.utime(path, (mtime, mtime))
+            return path
+        writing = aged(write(self.root / 'generated/transcodes/1-old.0123abcd.tmp.mp4', 2048), 100)
+        oldest = aged(write(self.root / 'generated/transcodes/1-old.mp4', 2048), 200)
+        segment = aged(write(self.root / 'generated/stream-segments/2/key/0.ts', 2048), 300)
+        newest = aged(write(self.root / 'generated/transcodes/3-new.mp4', 2048), 400)
+        download = aged(write(self.root / 'generated/covers/source.jpg', 2048), 50)
+        # 共 8 KB、上限 7 KB：只差 1 KB，删最旧的一个就够。
+        self.policy(cache_max_gib=7)
+        with patch.object(self.budget, 'GIB', 1024), \
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            self.budget.refresh_usage(self.config)
+            result = self.budget.CapacityGuard(self.config).check(force=True)
+            again = self.budget.CapacityGuard(self.config).check(force=True)
+        self.assertFalse(result['paused'])
+        self.assertEqual(result['freed_bytes'], 2048)
+        self.assertFalse(oldest.exists())
+        self.assertTrue(all(path.is_file() for path in (writing, segment, newest, download)))
+        # 清理量记进最近读数，下一次后台统计前不会再清一轮。
+        self.assertEqual(again['freed_bytes'], 0)
+        self.assertFalse(again['paused'])
+
     def test_unreclaimable_usage_pauses_and_saved_limit_change_applies_without_restart(self):
         from peach.jobs import DiskSpaceDenied
-        cached = write(self.root / 'generated/transcodes/1-fingerprint.mp4', 2048)
-        self.policy(cache_max_gib=1)
+        ledger = write(self.root / 'database/ledger.db', 2048)
+        self.policy(data_max_gib=1)
         guard = self.budget.CapacityGuard(self.config)
         with patch.object(self.budget, 'GIB', 1024), \
                 patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
-            with self.assertRaisesRegex(DiskSpaceDenied, 'Peach 缓存'):
+            self.budget.refresh_usage(self.config)
+            with self.assertRaisesRegex(DiskSpaceDenied, 'Peach 数据'):
                 guard.check(force=True)
-            self.policy(cache_max_gib=3)
+            self.policy(data_max_gib=3)
             self.assertFalse(guard.check(force=True)['paused'])
-        self.assertTrue(cached.exists())
+        self.assertTrue(ledger.exists())
+
+    def test_requests_read_the_last_background_count_and_never_walk_directories(self):
+        from peach.jobs import DiskSpaceDenied
+        write(self.root / 'database/ledger.db', 2048)
+        self.policy(data_max_gib=1, auto_clean=False)
+        guard = self.budget.CapacityGuard(self.config)
+        with patch.object(self.budget, 'GIB', 1024), \
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            with patch.object(self.budget, '_files', side_effect=AssertionError('请求不能展开目录')):
+                first = guard.check(force=True)
+                guard.check(force=True)
+            # 还没有读数时放行并排一次后台统计，同一间隔内不重复排。
+            self.assertFalse(first['paused'])
+            self.assertIsNone(first['data_bytes'])
+            self.assertEqual(self.background.call_count, 1)
+            self.budget.refresh_usage(self.config)
+            with patch.object(self.budget, '_files', side_effect=AssertionError('请求不能展开目录')), \
+                    self.assertRaisesRegex(DiskSpaceDenied, 'Peach 数据'):
+                guard.check(force=True)
+
+    def test_background_count_publishes_a_reading_and_reruns_after_the_interval(self):
+        write(self.root / 'database/ledger.db', 7)
+        policy = self.policy(data_max_gib=1)
+        clock = [1000.0]
+        with patch.object(self.budget.time, 'monotonic', side_effect=lambda: clock[0]), \
+                patch.object(self.budget, 'data_roots', return_value=[self.root / 'database']), \
+                patch.object(self.budget, 'allocated_bytes', return_value=7):
+            self.assertIsNone(self.budget.latest_usage(self.config, policy)['data_bytes'])
+            key = self.background.call_args.args[2]
+            self.real_refresh(self.config, policy, key)
+            for thread in threading.enumerate():
+                if thread.name == 'PeachCapacityMeasure':
+                    thread.join(10)
+            self.assertEqual(self.budget.latest_usage(self.config, policy)['data_bytes'], 7)
+            self.assertEqual(self.background.call_count, 1)
+            clock[0] += self.budget.REFRESH_SECONDS
+            self.budget.latest_usage(self.config, policy)
+        self.assertEqual(self.background.call_count, 2)
+
+    def test_a_count_finished_after_settings_changed_is_not_published(self):
+        policy = self.policy(data_max_gib=1)
+        measure = self.budget._measure
+        def changed_midway(*args, **kwargs):
+            self.budget.invalidate_measurements()
+            return measure(*args, **kwargs)
+        with patch.object(self.budget, '_measure', side_effect=changed_midway):
+            self.budget.refresh_usage(self.config)
+        self.assertIsNone(self.budget.latest_usage(self.config, policy)['data_bytes'])
 
     def test_disabling_cleanup_preserves_signed_cache_when_limit_is_reached(self):
         from peach import artifact_rules
@@ -831,9 +915,10 @@ class CapacityProtectionTests(unittest.TestCase):
         artifact_rules.remember(thumbnail, source=source)
         self.policy(cache_max_gib=1, auto_clean=False)
         with patch.object(self.budget, 'GIB', 1024), \
-                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size), \
-                self.assertRaises(DiskSpaceDenied):
-            self.budget.CapacityGuard(self.config).check(force=True)
+                patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
+            self.budget.refresh_usage(self.config)
+            with self.assertRaises(DiskSpaceDenied):
+                self.budget.CapacityGuard(self.config).check(force=True)
         self.assertTrue(thumbnail.is_file())
 
     def test_automatic_reserve_handles_small_disks_and_large_storage_volumes(self):
@@ -943,14 +1028,12 @@ class CapacityProtectionTests(unittest.TestCase):
         with patch.object(self.budget.time, 'monotonic', side_effect=lambda: clock[0]), \
                 patch.object(self.budget, '_files', side_effect=scan), \
                 patch.object(self.budget, 'allocated_bytes', return_value=1) as allocated, \
-                patch.object(self.budget, '_disks', side_effect=[high, high, low]), \
-                patch.object(self.budget, '_clean_thumbnails') as cleanup, \
+                patch.object(self.budget, '_disks', side_effect=[high, low]), \
                 self.assertRaisesRegex(DiskSpaceDenied, '扫描期间磁盘余量触线'):
-            self.budget.CapacityGuard(self.config).check(force=True)
+            self.budget.refresh_usage(self.config)
         self.assertEqual(allocated.call_count, 1)
-        cleanup.assert_not_called()
 
-    def test_low_space_at_start_cleans_before_a_required_data_scan(self):
+    def test_low_space_at_start_cleans_without_walking_data_in_the_request(self):
         self.policy(data_max_gib=100, minimum_free_gib=1)
         cleared = [False]
         high = [('system', 100 * self.budget.GIB, 200 * self.budget.GIB)]
@@ -960,15 +1043,12 @@ class CapacityProtectionTests(unittest.TestCase):
             cleared[0] = True
             events.append('clean')
             return 16
-        def measure(_config, *, check):
-            events.append('scan')
-            return 0
         with patch.object(self.budget, '_disks', side_effect=lambda *_args: high if cleared[0] else low), \
                 patch.object(self.budget.shutil, 'disk_usage', return_value=SimpleNamespace(free=1, total=200 * self.budget.GIB)), \
-                patch.object(self.budget, '_clean_thumbnails', side_effect=cleanup), \
-                patch.object(self.budget, 'data_usage', side_effect=measure):
+                patch.object(self.budget, '_clean_rebuildable', side_effect=cleanup), \
+                patch.object(self.budget, 'data_usage', side_effect=AssertionError('请求不能展开数据目录')):
             result = self.budget.CapacityGuard(self.config).check(force=True)
-        self.assertEqual(events, ['clean', 'scan'])
+        self.assertEqual(events, ['clean'])
         self.assertFalse(result['paused'])
         self.assertEqual(result['freed_bytes'], 16)
 

@@ -1,4 +1,8 @@
-"""按真实磁盘余量和本机容量设置保护媒体任务，只自动清理本地派生缩略图。"""
+"""按真实磁盘余量和本机容量设置保护媒体任务。
+
+磁盘余量每次实时查；数据与缓存总量要逐文件统计，只在后台线程里做，请求读最近一次读数。
+超限时按修改时间从旧到新清理可重建的播放缓存与缩略图，清完仍超限才暂停写入。
+"""
 from __future__ import annotations
 
 from dataclasses import asdict, dataclass
@@ -23,8 +27,17 @@ GIB = 1024 ** 3
 POLICY_NAME = 'storage-policy.json'
 STATUS_NAME = 'storage-budget-status.json'
 SCAN_SECONDS = 30
+#: 后台总量统计的间隔。数据目录可达几十万个文件，统计一遍要分钟级，不能放进播放请求。
+REFRESH_SECONDS = 300
 _LOCK = threading.RLock()
 _SCANS: dict[tuple, tuple[float, dict]] = {}
+#: 后台统计的最近读数、开始时间与失败；键是目录布局加容量设置，迁移或改设置后旧读数不复用。
+_READINGS: dict[tuple, tuple[float, dict]] = {}
+_STARTED: dict[tuple, float] = {}
+_FAILURES: dict[tuple, Exception] = {}
+_REFRESH_GUARD = threading.Lock()
+_GENERATION = [0]
+_UNKNOWN = {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None}
 
 
 @dataclass(frozen=True)
@@ -90,8 +103,90 @@ def save_policy(config, raw) -> StoragePolicy:
 
 
 def invalidate_measurements():
-    with _LOCK:
+    with _REFRESH_GUARD:
+        _GENERATION[0] += 1
         _SCANS.clear()
+        _READINGS.clear()
+        _STARTED.clear()
+        _FAILURES.clear()
+
+
+def _limited(policy) -> bool:
+    return bool(policy.data_max_gib or policy.cache_max_gib or policy.external_cache_max_gib)
+
+
+def _reading_key(config, policy):
+    return json.dumps(layout(config, policy), sort_keys=True), policy
+
+
+def refresh_usage(config, policy=None) -> dict:
+    """同步统计一次总量并记为最新读数；后台线程与需要即时读数的调用方共用。"""
+    policy = policy or load_policy(config)
+    key = _reading_key(config, policy)
+    generation = _GENERATION[0]
+    try:
+        usage = _measure(config, policy)
+    except (OSError, ValueError) as error:
+        with _REFRESH_GUARD:
+            if generation == _GENERATION[0]:
+                _FAILURES[key] = error
+        raise
+    with _REFRESH_GUARD:
+        # 统计期间改了设置或手动清理过，这份读数已过时，不发布。
+        if generation == _GENERATION[0]:
+            _READINGS[key] = (time.monotonic(), usage)
+            _FAILURES.pop(key, None)
+    return dict(usage)
+
+
+def _refresh_in_background(config, policy, key):
+    def run():
+        try:
+            refresh_usage(config, policy)
+        except DiskSpaceDenied:
+            # 统计途中余量触线，请求侧的实时余量检查会拦下写入。
+            pass
+        except (OSError, ValueError) as error:
+            logging.getLogger(__name__).warning('容量统计未取得（%s）', type(error).__name__)
+    threading.Thread(target=run, name='PeachCapacityMeasure', daemon=True).start()
+
+
+def latest_usage(config, policy) -> dict:
+    """请求只读后台最近一次总量读数，不展开目录。
+
+    没有读数或已到统计间隔就交后台重算，同一布局同时只跑一份；还没有读数时按未知处理，
+    这段时间只由实时磁盘余量把关。最近一次统计失败则如实报出，不把未知当成零。
+    """
+    if not _limited(policy):
+        return {**_UNKNOWN, 'measured_at': None}
+    key = _reading_key(config, policy)
+    now = time.monotonic()
+    with _REFRESH_GUARD:
+        reading, failure, started = _READINGS.get(key), _FAILURES.get(key), _STARTED.get(key)
+        due = started is None or now - started >= REFRESH_SECONDS
+        if due:
+            _STARTED[key] = now
+    if due:
+        _refresh_in_background(config, policy, key)
+    if failure is not None:
+        raise OSError(f'容量统计未取得：{failure}') from failure
+    if reading is None:
+        return {**_UNKNOWN, 'measured_at': None}
+    return dict(reading[1])
+
+
+def _remember_cleanup(config, policy, freed):
+    """自动清理后从最近读数里扣掉释放量，下一次后台统计前不重复清理同一缺口。"""
+    key = _reading_key(config, policy)
+    with _REFRESH_GUARD:
+        reading = _READINGS.get(key)
+        if reading is None:
+            return
+        usage = dict(reading[1])
+        for name in ('cache_bytes', 'data_bytes'):
+            if usage[name] is not None:
+                usage[name] = max(0, usage[name] - freed)
+        _READINGS[key] = (reading[0], usage)
 
 
 def snapshot(config, *, usage=None) -> dict:
@@ -360,32 +455,51 @@ def _existing(path):
     return target
 
 
-def _clean_thumbnails(config, needed):
-    """只删本机原图可重建的已完成派生图；生成中的文件与锁、其他缓存均保留。"""
+def _rebuildable(config):
+    """可自动清理的已完成产物：转码副本、HLS 分段、本机原图可重算的缩略图。
+
+    转码与分段写入时用 `.tmp.` 临时名，完成后才改名，临时文件不在清理之列。
+    预览图、下载的封面与资料重建代价高或取不回来，不自动清理。
+    """
     from . import artifact_rules
-    from .previews import _generate_lock, cover_thumb_root, entity_thumb_root
+    from .data_storage import _TRANSCODE
+    from .previews import cover_thumb_root, entity_thumb_root
     generated = config.directory('generated')
-    freed = 0
-    files = []
+    for path, info in _files(generated / 'transcodes'):
+        if _TRANSCODE.match(path.name) and not path.name.endswith('.tmp.mp4'):
+            yield path, info, False
+    for path, info in _files(generated / 'stream-segments'):
+        if path.suffix == '.ts' and not path.name.endswith('.tmp.ts'):
+            yield path, info, False
     for root in (cover_thumb_root(generated / 'covers'), entity_thumb_root(generated / 'avatars')):
-        files.extend((info.st_mtime, path, info) for path, info in _files(root)
-                     if path.suffix.lower() == '.webp' and artifact_rules.current(path, source_required=True))
-    for _, path, info in sorted(files):
+        for path, info in _files(root):
+            if path.suffix.lower() == '.webp' and artifact_rules.current(path, source_required=True):
+                yield path, info, True
+
+
+def _clean_rebuildable(config, needed):
+    """按修改时间从旧到新删可重建产物，凑够 `needed` 字节为止；删不掉的（正在播放）跳过。"""
+    from .previews import _generate_lock
+    freed = 0
+    for _, path, thumbnail in sorted((info.st_mtime, path, thumbnail)
+                                     for path, info, thumbnail in _rebuildable(config)):
         if freed >= needed:
             break
-        lock = _generate_lock(path)
-        if not lock.acquire(blocking=False):
+        lock = _generate_lock(path) if thumbnail else None
+        if lock is not None and not lock.acquire(blocking=False):
             continue
         try:
             current = path.stat(follow_symlinks=False)
             amount = allocated_bytes(path, current) if current.st_nlink == 1 else 0
             path.unlink()
             freed += amount
-            Path(str(path) + '.rule').unlink(missing_ok=True)
+            if thumbnail:
+                Path(str(path) + '.rule').unlink(missing_ok=True)
         except OSError:
             continue
         finally:
-            lock.release()
+            if lock is not None:
+                lock.release()
     return freed
 
 
@@ -422,6 +536,29 @@ class CapacityGuard:
                 needed = max(needed, usage[key] + extra - limit * GIB + 1)
         return needed
 
+    def _usage(self, policy, disks, required_bytes):
+        """余量已触线就不统计；预估写入要即时读数；其余请求只读后台最近一次读数。"""
+        unknown = {**_UNKNOWN, 'measured_at': time.time()}
+        if _exceeded(policy, unknown, disks):
+            return unknown
+        if required_bytes:
+            return _measure(self.config, policy, interval_secs=self.interval_secs)
+        return latest_usage(self.config, policy)
+
+    def _after_cleanup(self, policy, usage, disks, freed, required_bytes):
+        if not required_bytes:
+            _remember_cleanup(self.config, policy, freed)
+            return {**usage, **{name: None if usage[name] is None else max(0, usage[name] - freed)
+                                for name in ('cache_bytes', 'data_bytes')}}
+        _SCANS.clear()
+        refreshed = (usage if _exceeded(policy, dict(_UNKNOWN), disks) else
+                     _measure(self.config, policy, interval_secs=self.interval_secs))
+        if self._reserved_data is not None and usage['data_bytes'] is not None and refreshed['data_bytes'] is not None:
+            self._reserved_data -= max(0, usage['data_bytes'] - refreshed['data_bytes'])
+        elif refreshed['data_bytes'] is None:
+            self._reserved_data = None
+        return refreshed
+
     def check(self, force=False, *, required_bytes=0, destination=None):
         from .update_tasks import check_pause, current_db
         check_pause(current_db.get())
@@ -432,53 +569,43 @@ class CapacityGuard:
             return None
         self.next_check = now + self.interval_secs
         try:
-            with _LOCK:
-                policy = load_policy(self.config)
-                if not policy.enabled:
-                    self._denied = None
-                    return {'enabled': False, 'paused': False, 'reasons': [], 'freed_bytes': 0,
-                            'data_bytes': None, 'cache_bytes': None, 'external_cache_bytes': None,
-                            'checked_at': time.time()}
+            policy = load_policy(self.config)
+            if not policy.enabled:
+                self._denied = None
+                return {'enabled': False, 'paused': False, 'reasons': [], 'freed_bytes': 0,
+                        'data_bytes': None, 'cache_bytes': None, 'external_cache_bytes': None,
+                        'checked_at': time.time()}
+            disks = _disks(self.config, policy)
+            if required_bytes and not self._reservation_started:
+                _SCANS.clear()
+                self._reservation_started = True
+            # 统计不持锁：一个调用方在统计时，其他请求照常放行或拦截。
+            usage = self._usage(policy, disks, required_bytes)
+            reasons = self._projected_reasons(policy, usage, disks, required_bytes, destination)
+            freed = 0
+            needed = self._cleanup_target(policy, usage, required_bytes, destination)
+            if reasons and policy.auto_clean and needed > 0:
+                self.config.directory('state').mkdir(parents=True, exist_ok=True)
+                with _LOCK, FileLock(str(self.config.directory('state') / 'storage-auto-clean.lock')):
+                    # 多清 1 MiB 余量，免得每次只差几个字节就再清一轮。
+                    freed = _clean_rebuildable(self.config, needed + GIB // 1024)
                 disks = _disks(self.config, policy)
-                if required_bytes and not self._reservation_started:
-                    _SCANS.clear()
-                    self._reservation_started = True
-                usage = {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None,
-                         'measured_at': time.time()}
-                if not _exceeded(policy, usage, disks):
-                    usage = _measure(self.config, policy, interval_secs=self.interval_secs)
-
+                usage = self._after_cleanup(policy, usage, disks, freed, required_bytes)
                 reasons = self._projected_reasons(policy, usage, disks, required_bytes, destination)
-                freed = 0
-                needed = self._cleanup_target(policy, usage, required_bytes, destination)
-                if reasons and policy.auto_clean and needed > 0:
-                    self.config.directory('state').mkdir(parents=True, exist_ok=True)
-                    with FileLock(str(self.config.directory('state') / 'storage-auto-clean.lock')):
-                        freed = _clean_thumbnails(self.config, needed + 1024 ** 2)
-                    _SCANS.clear()
-                    disks = _disks(self.config, policy)
-                    free_only = {'cache_bytes': None, 'data_bytes': None, 'external_cache_bytes': None}
-                    refreshed = (usage if _exceeded(policy, free_only, disks) else
-                                 _measure(self.config, policy, interval_secs=self.interval_secs))
-                    if self._reserved_data is not None and usage['data_bytes'] is not None and refreshed['data_bytes'] is not None:
-                        self._reserved_data -= max(0, usage['data_bytes'] - refreshed['data_bytes'])
-                    elif refreshed['data_bytes'] is None:
-                        self._reserved_data = None
-                    usage = refreshed
-                    reasons = self._projected_reasons(policy, usage, disks, required_bytes, destination)
-                    if freed:
-                        record_history(self.config, data_bytes=None, cache_bytes=None, cleaned_bytes=freed)
-                status = {**usage, 'checked_at': time.time(), 'reasons': reasons,
-                          'layout': layout(self.config, policy),
-                          'freed_bytes': freed, 'paused': bool(reasons), 'required_bytes': required_bytes,
-                          'volumes': [{'path':path,'free_bytes':free,'reserve_bytes':reserve_bytes(policy,total)}
-                                      for path, free, total in disks]}
+                if freed:
+                    record_history(self.config, data_bytes=None, cache_bytes=None, cleaned_bytes=freed)
+            status = {**usage, 'checked_at': time.time(), 'reasons': reasons,
+                      'layout': layout(self.config, policy),
+                      'freed_bytes': freed, 'paused': bool(reasons), 'required_bytes': required_bytes,
+                      'volumes': [{'path':path,'free_bytes':free,'reserve_bytes':reserve_bytes(policy,total)}
+                                  for path, free, total in disks]}
+            with _LOCK:
                 atomic_write_text(self.config.directory('state') / STATUS_NAME,
                                   json.dumps(status, ensure_ascii=False))
-                if reasons:
-                    raise DiskSpaceDenied('；'.join(reasons) + '；已停止领取新项，请调整容量或清理后重试')
-                self._denied = None
-                return status
+            if reasons:
+                raise DiskSpaceDenied('；'.join(reasons) + '；已停止领取新项，请调整容量或清理后重试')
+            self._denied = None
+            return status
         except DiskSpaceDenied as error:
             self._denied = error
             raise
