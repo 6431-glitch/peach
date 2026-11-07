@@ -281,14 +281,17 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
       const selected = page.locator('#index [role="tab"][aria-selected="true"]');
       const look = await selected.evaluate((element) => {
         const style = getComputedStyle(element);
-        return { background: style.backgroundColor, border: style.borderBottomWidth, weight: style.fontWeight };
+        const thumb = element.closest('[data-pill-nav]')!.querySelector('[data-pill-thumb]')!;
+        return { background: style.backgroundColor, selectedSurface: getComputedStyle(thumb).backgroundColor,
+          border: style.borderBottomWidth, weight: style.fontWeight };
       });
-      assert.notEqual(look.background, 'rgba(0, 0, 0, 0)');
+      assert.equal(look.background, 'rgba(0, 0, 0, 0)');
+      assert.notEqual(look.selectedSurface, 'rgba(0, 0, 0, 0)');
       assert.equal(look.border, '0px');
       assert.equal(look.weight, '400');
       await selected.focus();
       await page.keyboard.press('ArrowRight');
-      await page.locator('#index [role="tab"][aria-selected="true"][data-tab="agencies"]').waitFor({ timeout: 5_000 });
+      await page.locator('#index [role="tab"][aria-selected="true"][data-tab="series"]').waitFor({ timeout: 5_000 });
       assert.deepEqual(opened.problems, []);
     } finally {
       await opened.close();

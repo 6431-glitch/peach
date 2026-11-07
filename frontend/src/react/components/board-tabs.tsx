@@ -76,9 +76,8 @@ export function BoardTabs<V extends string>(
     if (disabled || event.altKey || event.ctrlKey || event.metaKey) return;
     const focused = (event.target as HTMLElement).closest<HTMLElement>('[data-tab]')?.dataset.tab ?? value;
     const at = tabs.findIndex((tab) => tab.value === focused);
-    const forward = orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight';
-    const backward = orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft';
-    const next = event.key === forward ? at + 1 : event.key === backward ? at - 1
+    const next = ['ArrowDown', 'ArrowRight'].includes(event.key) ? at + 1
+      : ['ArrowUp', 'ArrowLeft'].includes(event.key) ? at - 1
       : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -2;
     if (next === -2) return;
     event.preventDefault();

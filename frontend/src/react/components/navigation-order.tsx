@@ -177,8 +177,8 @@ export function SortableBoardTabs<V extends string>({ group, ...props }: BoardTa
   const axis = props.orientation === 'vertical' ? 'y' : 'x';
   const { order, reorder } = useNavigationDrag(group, list, axis);
   const tabs = order.keys.flatMap(key => props.tabs.filter(tab => tab.value === key));
-  return <div data-navigation-frame="" data-navigation-axis={axis}>
-    <BoardTabs {...props} tabs={tabs} listRef={list} reorder={reorder} orderGroup={group} />
+  return <div data-navigation-frame="" data-navigation-axis={axis} className={props.className ?? 'mb-5.5'}>
+    <BoardTabs {...props} className="" tabs={tabs} listRef={list} reorder={reorder} orderGroup={group} />
     <NavigationOrderMenu order={order} />
     <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
   </div>;

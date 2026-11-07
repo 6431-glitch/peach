@@ -84,7 +84,7 @@ function ConfigurationGroups(
   useLayoutEffect(() => {
     if (previous.current === chosen) return;
     previous.current = chosen;
-    const nav = workspace.current?.querySelector<HTMLElement>('[role="tablist"]');
+    const nav = workspace.current?.querySelector<HTMLElement>('.ui-board-local-nav');
     const panel = workspace.current?.querySelector<HTMLElement>('.ui-board-group-active');
     if (!nav || !panel) return;
     const boundary = parseFloat(getComputedStyle(nav).top);
