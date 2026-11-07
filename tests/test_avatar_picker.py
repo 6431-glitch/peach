@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
 import io
 import json
 import os
@@ -1268,6 +1269,7 @@ class AvatarPickerRouteTests(unittest.TestCase):
                 " VALUES(7792,'social','X','https://x.com/Example','t','t')")
             ref = f"follow-link:{cursor.lastrowid}"
         record = {"provider": "social-web", "source_kind": "official_profile", "external_id": "x:Example",
+                  "sha256": hashlib.sha256(self.picture).hexdigest(),
                   "upstream_url": "https://pbs.twimg.com/profile_images/1/avatar.jpg",
                   "cached_at": "2026-09-05T18:14:39+00:00"}
         with mock.patch("peach.avatar_online.cached_profile_avatar", return_value=(self.picture, record)), \

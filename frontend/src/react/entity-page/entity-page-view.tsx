@@ -128,7 +128,7 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
   const itemsRevision = useRevision(JSON.stringify([itemsQuery.queryKey, avatarEpoch]));
   /* 直达或刷新资料页时 URL 没有 `jav=1`：以第一页作品的真实 `is_jav` 恢复女优／厂牌语境，版式开关
      不是只在从 JAV 首页点进来时才偶然存在。只看进页那一份，页内换筛选不改语境。 */
-  const [initialJav, setInitialJav] = useState<boolean | null>(() => props.jav ? true : null);
+  const [initialJav, setInitialJav] = useState<boolean | null>(() => props.jav || props.layout.active ? true : null);
   if (initialJav === null && items.data) setInitialJav((items.data.items || []).some((item) => item.is_jav));
   const javPage = (kind === 'performer' || kind === 'studio') && !!(initialJav ?? props.jav);
   useLayoutEffect(() => { actions.javContext(javPage) }, [actions, javPage]);

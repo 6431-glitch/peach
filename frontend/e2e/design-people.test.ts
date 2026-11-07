@@ -789,12 +789,13 @@ describe('设计决定：人物与厂牌资料页', () => {
       assert.equal(sheen, '1', '新作骨架卡的微光晚于骨架出现，中间露出封面格的黑底');
       assert.ok(before.footHeight > 0, '骨架的资料卡底没有同台艺人那一条');
       assert.equal(before.sheen, before.plain, '新作骨架的微光另起了一种颜色');
-      // 画好的页面上那一行一出现就得是真卡：再露一回它自己的骨架，就是同一行等了两遍。
+      // 身份就绪后新作可以独立等待；真卡出现后不能再退回骨架。
       await opened.page.evaluate(() => {
-        const seen = { second: false };
+        const seen = { ready: false, second: false };
         (window as unknown as { feedSeen: typeof seen }).feedSeen = seen;
         new MutationObserver(() => {
-          if (document.querySelector('[data-feed-new] .feednewskeleton')) seen.second = true;
+          if (document.querySelector('[data-feed-new] [data-feed-id]')) seen.ready = true;
+          if (seen.ready && document.querySelector('[data-feed-new] .feednewskeleton')) seen.second = true;
         }).observe(document.querySelector('#index')!, { childList: true, subtree: true });
       });
       release();

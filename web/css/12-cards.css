@@ -312,7 +312,7 @@ body[data-density="dense"] .card:not(.feednewcard) .meta .size{flex:none;white-s
 /* 番号整段不折行；比卡还宽的长串在卡边收成省略号，不被标题块的溢出裁成半个字。 */
 /* 出演名单与完整日期分行，窄卡中的姓名仍有自己的宽度。 */
 .feednewcard .meta .s{display:grid;grid-auto-rows:minmax(1.35em,auto);gap:2px;
-  line-height:1.35;white-space:nowrap;min-height:2lh}
+  line-height:1.35;white-space:nowrap;min-height:calc(2lh + 2px)}
 .feednewcard .meta .s>span{min-width:0}
 .feednewcard .meta .s>.feednewperformers{overflow:hidden;text-overflow:ellipsis}
 /* 占位卡直接套真卡的 `.t` 与 `.s`：标题块是两行 2.7em，下面那行放一个零宽字符，行高

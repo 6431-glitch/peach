@@ -81,8 +81,10 @@ describe('馆藏卡片与列表', () => {
         // 卡片首批只覆盖视口；列表的一页可能已经包含全部样本，先正常续载再比较同一集合。
         while (await page.locator('#grid [data-media-card]').count() < count) {
           const before = await page.locator('#grid [data-media-card]').count();
-          await page.locator('#grid [data-load-more]').scrollIntoViewIfNeeded();
-          await page.waitForFunction(before => document.querySelectorAll('#grid [data-media-card]').length > before, before);
+          if (!await page.locator('#grid [data-load-more]').count()) break;
+          await page.evaluate(() => document.querySelector('#grid [data-load-more]')?.scrollIntoView());
+          await page.waitForFunction(before => document.querySelectorAll('#grid [data-media-card]').length > before
+            || !document.querySelector('#grid [data-load-more]'), before);
         }
         assert.equal(await page.locator('#grid [data-media-card]').count(), count);
         assert.deepEqual(await page.locator('#grid [data-media-card]').evaluateAll(cards => cards.map(card => card.getAttribute('data-id')).sort()),

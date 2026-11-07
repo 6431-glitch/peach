@@ -1,6 +1,6 @@
 /* composition 域控制器：本域状态与动作，启动由 Application 的生命周期统一安装。 */
 import { loadingState, renderInitialSurfaceLoading } from './loading.js';
-import { clearHomeFeed, installEntityShapeBootstrap, isFeedNewPath, loadEntityShapes, prepareHomeFeed } from './feed.js';
+import { clearHomeFeed, feedState, installEntityShapeBootstrap, isFeedNewPath, loadEntityShapes, prepareHomeFeed } from './feed.js';
 import { buildManageBar, closeStats, enterManagementSurface, loadSyncedSettings, mountManageHeader, mountSidebar, openManage, openSettings, paintCatalogPageTitle, paintListTitle, scheduleStickySurfaces, showHomeSurfaces, showManagementBody, syncHeaderActions } from './layout.js';
 import { disposeStage, mediaState, openItem, openJavMovie, openPlaylist, openQueue, openTok } from './media.js';
 import { currentBarsContext, entityState, openEntity, revealForIsland, routeEntityPage, showEntityMissing } from './entity.js';
@@ -142,7 +142,10 @@ compositionState.shellActions = {
     /* 名单启动时就在取；深链直接落在资料页时它可能还在路上，稍等一下再画骨架，画出来就是最终的形状。等不到
        就先画，名单到了再补那两块。名单每进一页重取一遍，下一页用的就是服务端的现状。 */
     loading:(kind,name,current)=>entityState.application.loading(kind,name,current),
-    props:(kind,name,search)=>entityState.application.addressProps(kind,name,search),
+    props:(kind,name,search)=>{
+      writeShell({entityJavLayout:['performer','studio'].includes(kind)&&feedState.hasEntityPart(kind,name,'jav')});
+      return entityState.application.addressProps(kind,name,search);
+    },
     /* 后退前进落在同一位的另一份筛选上：这一页还画着就只把地址上的新筛选推过去。 */
     refresh:(kind,name,search)=>{
       const filters=entityState.parseEntityFilters(search);if(kind==='creator')filters.creator='';
