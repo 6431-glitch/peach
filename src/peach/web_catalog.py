@@ -448,11 +448,8 @@ def _catalog_totals(contract: WebContract, where, parameters, args):
         tables=CATALOG_TOTAL_TABLES, allow_stale=False)
 
 
-def q_items(contract: WebContract, args):
-    where, par = catalog_filter(contract, args)
-    if args.get('summary_only') == '1':
-        count, size, works = _catalog_totals(contract, where, par, args)
-        return {'total': count, 'bytes': size, 'work_total': works}
+def _catalog_order(args):
+    """排序列、固定种子与每日轮换共用确定的目录顺序。"""
     sort_key = str(args.get("sort") or "")
     direction = "ASC" if str(args.get("dir") or "").lower() == "asc" else "DESC"
     column = SORT_COLUMNS.get(sort_key)
@@ -467,6 +464,15 @@ def q_items(contract: WebContract, args):
             order = f"((a.id * {seed}) % 99991), a.id"
         else:
             order = "a.id DESC"
+    return order
+
+
+def q_items(contract: WebContract, args):
+    where, par = catalog_filter(contract, args)
+    if args.get('summary_only') == '1':
+        count, size, works = _catalog_totals(contract, where, par, args)
+        return {'total': count, 'bytes': size, 'work_total': works}
+    order = _catalog_order(args)
     lim = max(1, min(int(args.get("limit", 60)), 200))
     off = max(0, int(args.get("offset", 0)))
     include_total = args.get("count", "1") != "0"
