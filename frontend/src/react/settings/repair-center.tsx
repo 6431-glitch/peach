@@ -64,7 +64,9 @@ export function RepairCenterPage() {
     {error || action.error ? <Note tone="error">{action.error || error}</Note> : null}
     <section aria-labelledby="repair-items" className="flex flex-col gap-4">
       <SectionHeading id="repair-items">修复项目</SectionHeading>
-      <div className={RESULT_PANEL} aria-busy={!data || undefined}>
+      {data && !data.items.length
+        ? <p className="text-body-2-regular text-text-secondary">这台机器上没有要修复或迁移的内容。</p>
+        : <div className={RESULT_PANEL} aria-busy={!data || undefined}>
         {(data?.items || []).map(item => {
           const [label, tone] = STATES[item.state] || STATES.none;
           return (
@@ -76,7 +78,7 @@ export function RepairCenterPage() {
             </Row>
           );
         })}
-      </div>
+      </div>}
     </section>
     {data?.history.length ? <section aria-labelledby="repair-history" className="flex flex-col gap-4">
       <SectionHeading id="repair-history">历史记录</SectionHeading>

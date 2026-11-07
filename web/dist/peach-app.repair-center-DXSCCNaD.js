@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "1c159f52-72b0-4b2e-b32f-0f93d6388f6a", e._sentryDebugIdIdentifier = "sentry-dbid-1c159f52-72b0-4b2e-b32f-0f93d6388f6a");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "ef9eb6d9-926d-4a8d-9a06-51837602900c", e._sentryDebugIdIdentifier = "sentry-dbid-ef9eb6d9-926d-4a8d-9a06-51837602900c");
 	} catch {}
 })();
 import { Button as e, LinkButton as t, Note as n, RESULT_PANEL as r, RESULT_SECTION as i, SectionHeading as a, StatusLabel as o, __toESM as s, apiGet as c, apiSend as l, i2 as u, require_jsx_runtime as d, require_react as f, useAction as p } from "./peach-app.js";
@@ -73,7 +73,10 @@ function S() {
 			children: [/* @__PURE__ */ (0, g.jsx)(a, {
 				id: "repair-items",
 				children: "修复项目"
-			}), /* @__PURE__ */ (0, g.jsx)("div", {
+			}), i && !i.items.length ? /* @__PURE__ */ (0, g.jsx)("p", {
+				className: "text-body-2-regular text-text-secondary",
+				children: "这台机器上没有要修复或迁移的内容。"
+			}) : /* @__PURE__ */ (0, g.jsx)("div", {
 				className: r,
 				"aria-busy": !i || void 0,
 				children: (i?.items || []).map((t) => {
@@ -116,4 +119,4 @@ function S() {
 }
 export { S as RepairCenterPage };
 
-//# debugId=1c159f52-72b0-4b2e-b32f-0f93d6388f6a
+//# debugId=ef9eb6d9-926d-4a8d-9a06-51837602900c

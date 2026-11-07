@@ -3,6 +3,9 @@
 开销小、只改自动写入的值（用户手改的不动）的修复在升级后自动执行，这里只列结果；开销大或
 可能改错的（例如逐部读取网盘视频）不自动做，在这里等用户确认后才执行。
 数据只读本机升级回执（`upgrade-repairs/receipt.json`）与账本的 `ledger_upgrade_repair`。
+
+只列这台机器真碰到的项：馆藏里没有网盘视频、没有 NAS 系统目录、没有乱码人物的，对应那项不出现；
+历史里没改动的那几次也不列。平台、媒体来源与馆藏的差别都落在这些读数上，不另按系统判断。
 """
 from __future__ import annotations
 
@@ -47,6 +50,13 @@ def _latest(rows, key):
     return None
 
 
+def _touched(fact: dict) -> bool:
+    """这台机器上这一项有没有事：在跑、等确认、失败，或者确实改了、补测了东西。"""
+    if fact['state'] in ('running', 'waiting', 'failed', 'pending'):
+        return True
+    return bool(fact.get('changed') or fact.get('total') or fact.get('included'))
+
+
 def _backups(value, directories) -> list[dict]:
     """回执里记下的写入前备份（`backup` 字段，可能嵌在各项补修里），以及它还在不在。
 
@@ -79,14 +89,14 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
         'display-local': {'state': 'none' if not total else 'done' if done >= total else 'running',
                           'done': done, 'total': total},
         'display-cloud': {'state': 'waiting' if cloud_pending else 'done' if display.get('cloud_included_at') else 'none',
-                          'pending': cloud_pending},
+                          'pending': cloud_pending, 'included': bool(display.get('cloud_included_at'))},
         'system-files': {'state': 'done' if isolated else 'none', 'changed': _count(isolated.get('isolated'))},
         'garbled-people': {'state': 'done' if garbled else 'none', 'changed': _count(garbled.get('links'))},
         'dangling-candidates': {'state': 'done' if dangling else 'none',
                                 'changed': _count(dangling.get('repinned')) + _count(dangling.get('withdrawn'))},
     }
     items = [{'id': key, 'title': title, 'summary': summary, 'mode': mode, **facts[key]}
-             for key, title, summary, mode in ITEMS]
+             for key, title, summary, mode in ITEMS if _touched(facts[key])]
     history = []
     for row_id, applied_at, result in rows:
         rule = next((rule for rule in RULES if row_id.startswith(rule[0])), None)
@@ -97,6 +107,8 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
                               if key not in _NOT_CHANGES})
         else:
             changed = sum(_count(result.get(key)) for key in rule[2])
+        if not changed:
+            continue
         backups = list({row['name']: row for row in _backups(result, backup_directories)}.values())
         history.append({'id': row_id, 'title': rule[1], 'at': applied_at, 'changed': changed, 'backups': backups})
     return {'items': items, 'history': history}
