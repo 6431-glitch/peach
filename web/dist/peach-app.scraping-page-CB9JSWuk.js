@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "6fcfa524-490c-4c81-834d-09d1b05b276f", e._sentryDebugIdIdentifier = "sentry-dbid-6fcfa524-490c-4c81-834d-09d1b05b276f");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "94457b42-2cf5-4081-9796-f80a9e62283f", e._sentryDebugIdIdentifier = "sentry-dbid-94457b42-2cf5-4081-9796-f80a9e62283f");
 	} catch {}
 })();
 import { $fe21c36db05242bb$export$d7b12c4107be0d61 as e, AMANE_BRIDGE_CHECK_URL as t, AMANE_BRIDGE_KEY as n, AMANE_BRIDGE_REBUILD_URL as r, Button as i, CHECK_ALL_KEY as a, COVER_JOB_KEY as o, CUSTOM_SOURCES_KEY as s, CUSTOM_SOURCES_URL as c, Checkbox as l, Disclosure as u, ErrorText as d, ExternalLink as f, Fact as p, FactList as m, FieldLabel as h, Footer as g, Help as _, Input as v, IssueRow as y, LinkButton as ee, LoadingDots as b, Note as x, Progress as S, Rows as te, SCRAPING_CHECK_ALL_URL as C, SCRAPING_CHECK_URL as ne, SCRAPING_COVER_URL as w, SCRAPING_KEY as T, SCRAPING_SETTINGS_URL as re, SEGMENT as ie, SEGMENTED_TRACK as ae, Section as E, SegmentedRadioGroup as oe, Select$1 as se, SelectField as D, SelectItem as ce, SettingsRow as le, Stack as O, StatusLabel as k, __toESM as A, apiSend as j, busyProps as M, checkText as ue, composingKey as N, confirmModal as de, errorMessage as P, esc as F, fetchAmaneBridge as I, fetchCheckAllJob as L, fetchCoverJob as R, fetchCustomSources as z, fetchSources as fe, i2 as pe, momentText as me, queryClient as B, require_jsx_runtime as he, require_react as ge, spinnerHtml as _e, useAction as V, useBackgroundJob as H, useMutation as U, useQuery as W } from "./peach-app.js";
@@ -464,7 +464,7 @@ function Oe(e, t) {
 	return t.label === "来源页面" ? e.label : `${e.label} 高清图片`;
 }
 function ke({ toast: e }) {
-	let { job: t, running: n, start: r } = H({
+	let { job: t, running: n, start: r, query: o } = H({
 		queryKey: a,
 		queryFn: ({ signal: e }) => L(e),
 		start: () => j(C, {}),
@@ -474,21 +474,27 @@ function ke({ toast: e }) {
 				exact: !0
 			}), t.status === "complete" && e(t.failed ? `检查完成，${t.failed} 项未通过` : "检查完成，全部可连接");
 		}
-	}), o = (e) => {
-		e.preventDefault(), !(n || r.isPending) && r.mutate();
-	}, s = (t?.results ?? []).flatMap((e) => e.results.map((t) => ({
+	}), s = (e) => {
+		e.preventDefault(), !(!o.data || n || r.isPending) && r.mutate();
+	}, c = (t?.results ?? []).flatMap((e) => e.results.map((t) => ({
 		source: e.source,
 		name: Oe(e, t),
 		check: t
-	}))), c = (e, t) => /* @__PURE__ */ (0, J.jsxs)("span", {
+	}))), l = (e, t) => /* @__PURE__ */ (0, J.jsxs)("span", {
 		className: "inline-flex min-w-0 items-center gap-1.5",
 		children: [/* @__PURE__ */ (0, J.jsx)(K, { source: e }), t]
-	}), l = s.filter(({ check: e }) => e.outcome === "ok"), d = s.filter(({ check: e }) => e.outcome !== "ok").sort((e, t) => $.indexOf(e.check.outcome) - $.indexOf(t.check.outcome)), f = r.error ? P(r.error) : t?.status === "failed" ? t.error || "检查未完成" : "", h = t?.status === "complete" && t.completed_at ? [me((/* @__PURE__ */ new Date(t.completed_at * 1e3)).toISOString()), t.elapsed_s === void 0 ? "" : `用时 ${t.elapsed_s.toFixed(1)} 秒`].filter(Boolean).join(" · ") : "";
+	}), d = c.filter(({ check: e }) => e.outcome === "ok"), f = c.filter(({ check: e }) => e.outcome !== "ok").sort((e, t) => $.indexOf(e.check.outcome) - $.indexOf(t.check.outcome)), h = r.error ? P(r.error) : o.error ? P(o.error) : t?.status === "failed" ? t.error || "检查未完成" : "", v = t?.status === "complete" && t.completed_at ? [me((/* @__PURE__ */ new Date(t.completed_at * 1e3)).toISOString()), t.elapsed_s === void 0 ? "" : `用时 ${t.elapsed_s.toFixed(1)} 秒`].filter(Boolean).join(" · ") : "";
 	return /* @__PURE__ */ (0, J.jsxs)(E, {
 		id: "check-all",
 		title: "连接检查",
-		onSubmit: o,
+		onSubmit: s,
 		children: [/* @__PURE__ */ (0, J.jsxs)(O, { children: [
+			o.isPending ? /* @__PURE__ */ (0, J.jsx)("div", {
+				role: "status",
+				"aria-label": "正在读取连接检查状态",
+				"data-skeleton": "",
+				className: "skeleton-sheen h-6 rounded-md"
+			}) : null,
 			/* @__PURE__ */ (0, J.jsx)(_, { children: "检查各来源页面与 DMM 高清图片服务器，最多四个来源同时进行；正在冷却的来源不再请求。可连接只说明检查地址可达，不代表登录有效。" }),
 			n ? /* @__PURE__ */ (0, J.jsxs)("div", {
 				className: "flex flex-col gap-2",
@@ -507,28 +513,28 @@ function ke({ toast: e }) {
 					]
 				})]
 			}) : null,
-			f ? /* @__PURE__ */ (0, J.jsx)(x, {
+			h ? /* @__PURE__ */ (0, J.jsx)(x, {
 				tone: "error",
-				children: f
+				children: h
 			}) : null,
-			s.length ? /* @__PURE__ */ (0, J.jsx)("div", {
+			c.length ? /* @__PURE__ */ (0, J.jsx)("div", {
 				className: "flex flex-wrap gap-2",
 				children: $.map((e) => {
-					let t = s.filter(({ check: t }) => t.outcome === e).length;
+					let t = c.filter(({ check: t }) => t.outcome === e).length;
 					return t ? /* @__PURE__ */ (0, J.jsxs)(k, {
 						tone: De[e],
 						children: [
-							s.find(({ check: t }) => t.outcome === e)?.check.outcome_label,
+							c.find(({ check: t }) => t.outcome === e)?.check.outcome_label,
 							" ",
 							t
 						]
 					}, e) : null;
 				})
 			}) : null,
-			d.length ? /* @__PURE__ */ (0, J.jsx)("ul", {
+			f.length ? /* @__PURE__ */ (0, J.jsx)("ul", {
 				className: "flex min-w-0 flex-col",
-				children: d.map(({ source: e, name: t, check: n }) => /* @__PURE__ */ (0, J.jsx)(y, {
-					title: c(e, t),
+				children: f.map(({ source: e, name: t, check: n }) => /* @__PURE__ */ (0, J.jsx)(y, {
+					title: l(e, t),
 					children: /* @__PURE__ */ (0, J.jsxs)("span", {
 						className: "flex flex-wrap items-center gap-2",
 						children: [/* @__PURE__ */ (0, J.jsx)(k, {
@@ -541,17 +547,18 @@ function ke({ toast: e }) {
 					})
 				}, t))
 			}) : null,
-			l.length ? /* @__PURE__ */ (0, J.jsx)(u, {
-				summary: `可连接的 ${l.length} 项`,
-				children: /* @__PURE__ */ (0, J.jsx)(m, { children: l.map(({ source: e, name: t, check: n }) => /* @__PURE__ */ (0, J.jsx)(p, {
-					term: c(e, t),
+			d.length ? /* @__PURE__ */ (0, J.jsx)(u, {
+				summary: `可连接的 ${d.length} 项`,
+				children: /* @__PURE__ */ (0, J.jsx)(m, { children: d.map(({ source: e, name: t, check: n }) => /* @__PURE__ */ (0, J.jsx)(p, {
+					term: l(e, t),
 					children: [n.width ? `${n.width} × ${n.height}` : "", n.elapsed_s === void 0 ? "" : `${n.elapsed_s.toFixed(2)} 秒`].filter(Boolean).join(" · ")
 				}, t)) })
 			}) : null
 		] }), /* @__PURE__ */ (0, J.jsx)(g, {
-			status: h ? `上次检查 ${h}` : void 0,
+			status: v ? `上次检查 ${v}` : void 0,
 			children: /* @__PURE__ */ (0, J.jsx)(i, {
 				type: "submit",
+				disabled: !o.data,
 				...M(n || r.isPending),
 				children: "全部检查"
 			})
@@ -559,20 +566,26 @@ function ke({ toast: e }) {
 	});
 }
 function Ae({ toast: e }) {
-	let [t, n] = (0, q.useState)(""), { running: r, outcome: a, start: s } = H({
+	let [t, n] = (0, q.useState)(""), { running: r, outcome: a, start: s, query: c } = H({
 		queryKey: o,
 		queryFn: ({ signal: e }) => R(e),
 		start: () => j(w, { code: t }),
 		onFinish: (t) => {
 			t.status === "complete" && e(t.result || "封面采集完成");
 		}
-	}), c = (e) => {
-		e.preventDefault(), !(r || s.isPending || !t.trim()) && s.mutate();
-	}, l = s.error ? P(s.error) : a?.status === "failed" ? a.error || "采集未取得" : "";
+	}), l = (e) => {
+		e.preventDefault(), c.data && !r && !s.isPending && t.trim() && s.mutate();
+	}, u = s.error ? P(s.error) : c.error ? P(c.error) : a?.status === "failed" ? a.error || "采集未取得" : "";
 	return /* @__PURE__ */ (0, J.jsx)(E, {
 		title: "高清封面",
-		onSubmit: c,
+		onSubmit: l,
 		children: /* @__PURE__ */ (0, J.jsxs)(O, { children: [
+			c.isPending ? /* @__PURE__ */ (0, J.jsx)("div", {
+				role: "status",
+				"aria-label": "正在读取封面任务状态",
+				"data-skeleton": "",
+				className: "skeleton-sheen h-6 rounded-md"
+			}) : null,
 			/* @__PURE__ */ (0, J.jsxs)("div", {
 				className: "flex flex-wrap items-end gap-2",
 				children: [/* @__PURE__ */ (0, J.jsx)("div", {
@@ -587,15 +600,15 @@ function Ae({ toast: e }) {
 					})
 				}), /* @__PURE__ */ (0, J.jsx)(i, {
 					type: "submit",
-					disabled: !t.trim(),
+					disabled: !c.data || !t.trim(),
 					...M(r || s.isPending),
 					children: "抓取封面"
 				})]
 			}),
 			r ? /* @__PURE__ */ (0, J.jsx)(b, { label: "正在抓取封面" }) : null,
-			l ? /* @__PURE__ */ (0, J.jsx)(x, {
+			u ? /* @__PURE__ */ (0, J.jsx)(x, {
 				tone: "error",
-				children: l
+				children: u
 			}) : null,
 			a?.status === "complete" ? /* @__PURE__ */ (0, J.jsx)(x, {
 				tone: "success",
@@ -729,4 +742,4 @@ function Me({ toast: e }) {
 }
 export { Me as ScrapingPage, Z as linkHost, X as networkOptions };
 
-//# debugId=6fcfa524-490c-4c81-834d-09d1b05b276f
+//# debugId=94457b42-2cf5-4081-9796-f80a9e62283f

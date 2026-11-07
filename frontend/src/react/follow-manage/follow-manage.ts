@@ -577,16 +577,14 @@ export const followFeedEntity = (entityId: number, signal?: AbortSignal) =>
   apiSend<{ entity_id: number; following: boolean; sources: number[] }>(
     FEED_SOURCE_URL, { action: 'follow', entity_id: entityId, enabled: true }, 'POST', signal);
 
-/** 首屏：创作者来源、JAV 订阅与凭据状态取回来才画。
+/** 创作者来源、JAV 订阅与凭据分别读取，页面按各区域的状态显示。
  *
  * 两趟后台任务不在首屏里：它们的快照常年躺着上一趟的回执，等它们只会让首屏多等一个
  * 往返，而它们自己的键挂上去就会读。中止时 `fetchQuery` 把 `AbortError` 抛回挂载方。 */
 export async function prefetchFollowManage(signal: AbortSignal): Promise<void> {
-  await Promise.all([
-    queryClient.fetchQuery({ queryKey: FOLLOW_MANAGE_KEY, queryFn: () => fetchFollow(signal) }),
-    queryClient.fetchQuery({ queryKey: FOLLOW_CREDENTIALS_KEY, queryFn: () => fetchCredentials(signal) }),
-    queryClient.fetchQuery({ queryKey: FEEDS_KEY, queryFn: () => fetchFeeds(signal) }),
-  ]);
+  void queryClient.prefetchQuery({ queryKey: FOLLOW_CREDENTIALS_KEY, queryFn: () => fetchCredentials(signal) });
+  void queryClient.prefetchQuery({ queryKey: FEEDS_KEY, queryFn: () => fetchFeeds(signal) });
+  void queryClient.prefetchQuery({ queryKey: FOLLOW_MANAGE_KEY, queryFn: () => fetchFollow(signal) });
 }
 
 /** 把改动的那一条换进缓存。整页重取会把用户正在填的表单一起重画，也会让正在读这一屏的

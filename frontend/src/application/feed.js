@@ -6,6 +6,7 @@ import { $, api, esc, foldName, icon, isCatalogPath } from '../core';
 import { javTitleHtml } from '../core/jav-title';
 import { COVER_FRONT_RATIO } from './../appearance/layout';
 import { catalogState } from './catalog.js';
+import { feedNewSkeletonHtml } from '../feed-new-skeleton';
 import { managedTaken, openManagedRoute, updateManagedRoute } from './../history/managed';
 import { noteHtml, stopAutoScroll, wireAutoScroll } from '../ui-kit';
 import { preferencesState, wireDrag } from './preferences.js';
@@ -154,11 +155,7 @@ export function syncHeroWide([entry]){
 
 export function installFeed13() {
 feedState.FEED_SKELETON_CARDS = 8;
-feedState.feedNewSkeletonHtml = ()=>`<div class="feednewrow srow" data-skeleton="feed/new" aria-hidden="true">${
-  `<article class="card feednewcard feednewskeleton"><div class="pic imgwait" style="--card-ratio:${COVER_FRONT_RATIO}"></div>
-    <div class="meta"><div class="mtext"><span class="t"><span class="skeleton"></span></span>
-      <div class="s mono"><span class="skeleton">&#8203;</span></div></div></div></article>`
-    .repeat(feedState.FEED_SKELETON_CARDS)}</div>`;
+feedState.feedNewSkeletonHtml = ()=>feedNewSkeletonHtml(feedState.FEED_SKELETON_CARDS);
 feedState.entityShapes = null;
 feedState.entityShapesComplete = false;
 feedState.hasEntityShape = (kind,name)=>feedState.entityShapesComplete||!!feedState.entityShapes?.has(`${kind}/${foldName(name)}`);

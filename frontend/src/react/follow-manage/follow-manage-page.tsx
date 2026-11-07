@@ -19,7 +19,6 @@ import { useQuery } from '@tanstack/react-query';
 
 import { resolveFollowSort } from '../../follow-sort';
 import type { FollowManageProps } from '../bundle';
-import { cardClass } from '../components/card';
 import { Note } from '../components/note';
 import { Page } from '../components/page';
 import { TagManager } from '../index/tag-manager';
@@ -37,26 +36,12 @@ import {
   SORT_DEFAULT_DIR, type CredentialData, type FollowData, type Layout, type SortDir, type SortKey,
 } from './follow-manage';
 import { SourceList } from './source-list';
+import { MeasuredReading } from './measured-reading';
 import { FOLLOW_MANAGE_NAV as TABS } from './manage-route';
 
 type TabKey = (typeof TABS)[number][0];
 
 const isTab = (value: unknown): value is TabKey => TABS.some(([key]) => key === value);
-
-/** 一格读数：一个名字、一个大数、一句它的量词。旧 `.fmanageoverview>div` 的填充卡。 */
-function Reading({ term, figure, unit }: { term: string; figure: number; unit: string }) {
-  return (
-    <div className={cardClass({ padding: 'none', className: 'flex flex-col gap-3 px-6 py-5 max-sm:gap-2 max-sm:p-4' })}>
-      <span className="text-body-medium text-text-secondary">{term}</span>
-      {/* 六位数起小一号字、七位数起再小一号，六卡并排时读数和单位仍在一行；更长时单位落到下一行，不顶出卡片。 */}
-      <b data-follow-reading="" className={`flex min-w-0 flex-wrap items-baseline gap-x-1 tabular-nums text-text-primary ${
-        figure >= 1000000 ? 'text-headline-medium' : figure >= 100000 ? 'text-title-3-medium' : 'text-title-1-medium'}`}>
-        <span className="min-w-0 wrap-anywhere">{figure.toLocaleString()}</span>
-        <small className="whitespace-nowrap text-body-2-regular text-text-secondary">{` ${unit}`}</small>
-      </b>
-    </div>
-  );
-}
 
 export function FollowManagePage(props: FollowManageProps) {
   const {
@@ -128,12 +113,12 @@ export function FollowManagePage(props: FollowManageProps) {
 
       {/* 前四张是关注，后两张是 JAV 订阅源：订了几位、拉回来的新作还有几条没看。 */}
       <div className={STAT_STRIP_SIX} aria-label="关注概览">
-        <Reading term="关注创作者" figure={groups.length} unit="位" />
-        <Reading term="启用来源" figure={enabled} unit={`/ ${sources.length}`} />
-        <Reading term="检查失败" figure={broken} unit="个来源" />
-        <Reading term="未看更新" figure={data.counts?.new || 0} unit="条" />
-        <Reading term="JAV 订阅" figure={subscribed} unit="位" />
-        <Reading term="未看新作" figure={feeds.data?.unread || 0} unit="条" />
+        <MeasuredReading field="creators" figure={follow.data ? groups.length : undefined} failed={follow.isError} />
+        <MeasuredReading field="enabled" figure={follow.data ? enabled : undefined} total={sources.length} failed={follow.isError} />
+        <MeasuredReading field="failed" figure={follow.data ? broken : undefined} failed={follow.isError} />
+        <MeasuredReading field="updates" figure={follow.data ? data.counts?.new || 0 : undefined} failed={follow.isError} />
+        <MeasuredReading field="subscriptions" figure={feeds.data ? subscribed : undefined} failed={feeds.isError} />
+        <MeasuredReading field="releases" figure={feeds.data ? feeds.data.unread || 0 : undefined} failed={feeds.isError} />
       </div>
 
       <div className="flex flex-col gap-6">
@@ -149,7 +134,7 @@ export function FollowManagePage(props: FollowManageProps) {
           <FeedSources readOnly={readOnly} toast={toast}
             onAdd={() => { setTab('add'); go({ tab: 'add' }) }}
             selection={{ ids: feedSelected, onChange: setFeedSelected, onActivate: () => setSelected(new Set()) }} />
-          <SourceList data={data} sort={sort} dir={dir} page={page} layout={layout}
+          {follow.data ? <SourceList data={data} sort={sort} dir={dir} page={page} layout={layout}
             pageSize={pageSize} selected={selected} readOnly={readOnly} toast={toast}
             openFollow={openFollow}
             onAdd={() => { setTab('add'); go({ tab: 'add' }) }}
@@ -172,15 +157,18 @@ export function FollowManagePage(props: FollowManageProps) {
               setPage(1);
               savePreference({ pageSize: next });
               go({ page: 1 });
-            }} />
+            }} /> : follow.isError ? <Note tone="error">关注列表未取得</Note>
+            : <div role="status" aria-label="正在读取关注列表" data-skeleton="" className="skeleton-sheen h-32 rounded-lg" />}
         </div> : null}
 
         {tab === 'add' ? <div role="tabpanel" id="follow-panel-add" aria-labelledby="follow-tab-add" className="flex flex-col gap-8">
-          <AddSource data={data} credentials={creds} readOnly={readOnly} toast={toast} />
+          {credentials.data && follow.data ? <AddSource data={data} credentials={creds} readOnly={readOnly} toast={toast} />
+            : credentials.isError || follow.isError ? <Note tone="error">关注或凭据状态未取得</Note>
+            : <div role="status" aria-label="正在读取关注凭据" data-skeleton="" className="skeleton-sheen h-32 rounded-lg" />}
           <AddFeed readOnly={readOnly} toast={toast}
             onAdded={() => { void feeds.refetch(); setTab('list'); go({ tab: 'list' }) }} />
-          <AliasManager groups={data.author_aliases || []} readOnly={readOnly} toast={toast}
-            suggestions={data.alias_suggestions || []} sources={data.sources} />
+          {follow.data ? <AliasManager groups={data.author_aliases || []} readOnly={readOnly} toast={toast}
+            suggestions={data.alias_suggestions || []} sources={data.sources} /> : null}
         </div> : null}
 
         {tab === 'tags' ? <div role="tabpanel" id="follow-panel-tags" aria-labelledby="follow-tab-tags" className="flex flex-col gap-4">

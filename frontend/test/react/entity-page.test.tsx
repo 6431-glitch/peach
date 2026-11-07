@@ -11,7 +11,7 @@ import * as legacyUi from '@peach/legacy/ui';
 import { fetchItems, itemsParams, prefetchEntityPage, type EntityPageProps } from '../../src/react/entity-page/entity-page';
 import { EntityPage } from '../../src/react/entity-page/entity-page-view';
 import { queryClient } from '../../src/react/query';
-import { buttonNamed, click, mountRoot, settle } from './render';
+import { buttonNamed, click, mountRoot, pending, settle } from './render';
 
 afterEach(() => { queryClient.clear() });
 notifyManager.setScheduler((notify) => notify());
@@ -181,6 +181,17 @@ async function open(plan: Plan = {}, patch: Partial<EntityPageProps> = {}) {
 
 const cards = (props: EntityPageProps) =>
   [...props.hosts.body.querySelectorAll<HTMLElement>('[data-media-grid] > [data-media-card]')].map((card) => card.dataset.id);
+
+it('照片未返回时先显示人物身份并保留照片视图，响应后原位显示照片', async () => {
+  const delayed = pending<ReturnType<typeof photos>>();
+  const { host, props } = await open({ photos: () => delayed.answer }, { media: { media: 'photos', set: 0 } });
+  expect(host.textContent).toContain(NAME);
+  expect(props.hosts.body.querySelector('[data-photo-wall]')).not.toBeNull();
+  expect(props.hosts.body.querySelector('[data-media-card]')).toBeNull();
+  await delayed.release(photos(2));
+  await settle();
+  expect(props.hosts.body.querySelectorAll('[data-photo-cell]')).toHaveLength(2);
+});
 const pressedView = (props: EntityPageProps) =>
   props.hosts.filter.querySelector('[data-media-view][aria-pressed="true"]')?.getAttribute('data-media-view');
 const readout = (props: EntityPageProps) => props.hosts.filter.querySelector('[data-entity-readout]')?.textContent;

@@ -43,10 +43,8 @@ export const fetchRepairLibraries = async (signal?: AbortSignal) =>
   (await apiGet<{ libraries?: RepairLibrary[] }>('/api/libraries', signal)).libraries || [];
 
 export async function prefetchMediaRepair(signal: AbortSignal): Promise<void> {
-  await Promise.all([
-    queryClient.fetchQuery({ queryKey: MEDIA_REPAIR_KEY, queryFn: () => fetchMediaRepair(signal) }),
-    queryClient.fetchQuery({ queryKey: REPAIR_LIBRARIES_KEY, queryFn: () => fetchRepairLibraries(signal) }),
-  ]);
+  void queryClient.prefetchQuery({ queryKey: REPAIR_LIBRARIES_KEY, queryFn: () => fetchRepairLibraries(signal) });
+  await queryClient.fetchQuery({ queryKey: MEDIA_REPAIR_KEY, queryFn: () => fetchMediaRepair(signal) });
 }
 
 const count = (value: number) => Number(value).toLocaleString();

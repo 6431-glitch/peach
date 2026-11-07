@@ -439,7 +439,7 @@ def _catalog_totals(contract: WebContract, where, parameters, args):
                 + video_work_key(contract, connection) + ") FROM asset a WHERE "
                 + " AND ".join(where), parameters).fetchone())
     common = {'sort', 'seed', 'dir', 'limit', 'offset', 'count', 'state', 'jav',
-              'loc', 'len', 'orient', 'region', 'exclude_vertical', 'thumb', 'library', 'year'}
+              'loc', 'len', 'orient', 'region', 'exclude_vertical', 'thumb', 'library', 'year', 'summary_only'}
     if any(value and key not in common for key, value in args.items()):
         return read()
     return contract.cached_until_changed(
@@ -450,6 +450,9 @@ def _catalog_totals(contract: WebContract, where, parameters, args):
 
 def q_items(contract: WebContract, args):
     where, par = catalog_filter(contract, args)
+    if args.get('summary_only') == '1':
+        count, size, works = _catalog_totals(contract, where, par, args)
+        return {'total': count, 'bytes': size, 'work_total': works}
     sort_key = str(args.get("sort") or "")
     direction = "ASC" if str(args.get("dir") or "").lower() == "asc" else "DESC"
     column = SORT_COLUMNS.get(sort_key)

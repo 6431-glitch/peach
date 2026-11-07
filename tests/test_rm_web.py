@@ -25,6 +25,15 @@ from support.ledger import fresh_ledger
 
 
 class WebDataTests(unittest.TestCase):
+    def test_catalog_summary_preserves_filters_without_projecting_cards(self):
+        for filters in ({}, {'loc': '115'}, {'year': '2024'}, {'year': '1900'}):
+            with self.subTest(filters=filters):
+                cards = q_items(self.contract, {**filters, 'limit': '10'})
+                summary = q_items(self.contract, {**filters, 'summary_only': '1', 'count': '0',
+                                                  'offset': '500', 'limit': '1'})
+                self.assertEqual(summary, {key: cards[key] for key in ('total', 'bytes', 'work_total')})
+                self.assertNotIn('items', summary)
+
     def test_watch_later_rejects_an_asset_deleted_before_submission(self):
         with self.assertRaisesRegex(ValueError, 'asset not found'):
             rm_web.w_watch_later(self.contract, {'id': 999999})

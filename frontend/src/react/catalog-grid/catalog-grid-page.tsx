@@ -8,7 +8,7 @@
  * 下排。无限滚动见下面的 `LoadMore`：哨兵进入视口下方一屏
  * 内自动取下一页，点它等于手动取；失败在哨兵后面留一条可重试的 Note，之后只有手动才重试。 */
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
-import { useInfiniteQuery, type InfiniteData, type QueryKey } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery, type InfiniteData, type QueryKey } from '@tanstack/react-query';
 import { mixFace as mixArtwork, mixLabel, relayoutCovers, type Artwork } from '@peach/card-art';
 import { requestErrorMessage } from '@peach/legacy/core';
 import { LOAD_MORE_STATUS, loadingDotsHtml } from '@peach/legacy/ui';
@@ -19,7 +19,7 @@ import { SkeletonContent } from '../components/skeleton-content';
 import { cardRatio, MediaCard, type MediaCardVariant } from '../components/media-card';
 import { MIX_FLIP_FACES, MixCard } from '../components/mix-card';
 import {
-  SHORTS_BATCH, arrangeTiles, catalogParams, catalogQuery, collapseGroups, entityQuery, latestCatalogPages, mixHasPicture,
+  SHORTS_BATCH, arrangeTiles, catalogParams, catalogQuery, catalogSummary, collapseGroups, entityQuery, latestCatalogPages, mixHasPicture,
   shortsBoundaries, shortsParams, splitSections, type GridPage, type ShortsCut, type Tile,
 } from './catalog-grid';
 import type { CatalogGridProps, MediaCardLayout, MediaCardHelpers, MediaItem, MediaPage } from './types';
@@ -99,6 +99,13 @@ function GridBody(props: CatalogGridProps) {
     staleTime: entity || props.restoreNavigation ? Infinity : 0,
     refetchOnMount: entity && retained ? 'always' : false,
   });
+  const progressive = !entity && !trash && !props.wall;
+  const summaryParams = catalogParams(props.filters || {}, !!props.excludeVertical);
+  const summary = useQuery({
+    queryKey: ['catalog-summary', summaryParams, props.revision || 0],
+    queryFn: ({ signal }) => catalogSummary(summaryParams, signal),
+    enabled: progressive && !!result.data,
+  });
 
   /* 一次取数落定就告诉壳一次，成功、为空、失败都算：壳里 `await` 这次重读的调用方据此放行。 */
   const settledRevision = useRef<number | null>(null);
@@ -112,7 +119,7 @@ function GridBody(props: CatalogGridProps) {
     collapse: props.groupCollapse !== false, mix: !!props.mix && !trash, javImage: layout.javImage,
   }), [result.data, props.groupCollapse, props.mix, trash, layout.javImage]);
   const shown = tiles.reduce((count, tile) => count + (tile.kind === 'card' ? 1 : 0), 0);
-  const total = Number(result.data?.pages[0]?.total || 0);
+  const total = Number(result.data?.pages[0]?.total ?? summary.data?.total ?? shown);
   const finiteWall = entity || finiteWallFilters(props.filters);
   const wallAvailable = !trash && !props.selectMode && !!actions.wallPlayer && !!actions.wallDetails;
   const wallItems = tiles.flatMap(tile => tile.kind === 'card' && wallHasCover(tile.item) ? [tile.item] : []);
@@ -127,10 +134,12 @@ function GridBody(props: CatalogGridProps) {
      提交阶段里它画不出来。微任务在浏览器绘制前跑完；这一代已卸下就不报。 */
   useLayoutEffect(() => {
     if (!result.data || result.isPlaceholderData) return;
+    if (progressive && !summary.data) return;
     let live = true;
     queueMicrotask(() => { if (live) props.onCount?.(total, shown) });
     return () => { live = false };
-  }, [result.data, result.isPlaceholderData, total, shown]);
+  }, [result.data, result.isPlaceholderData, total, shown, progressive, summary.data]);
+  useEffect(() => { if (progressive && summary.isError) props.onCountFailed?.() }, [progressive, summary.isError]);
   const failed = !result.isPending && !result.data;
   useLayoutEffect(() => {
     if (!failed) return;

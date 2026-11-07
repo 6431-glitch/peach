@@ -108,6 +108,7 @@ export function ResourceSyncCard(
   const state = scan.job;
   const scanning = scan.running || scan.start.isPending;
   const cleaning = apply.running || apply.start.isPending;
+  const actionsReady = !!scan.job && !!apply.job;
   const scanned = state?.status === 'complete' || state?.status === 'failed';
   const label = scanning ? '扫描中' : scanned ? '重新扫描' : '检查文件';
 
@@ -163,7 +164,7 @@ export function ResourceSyncCard(
         <ScanResult scan={state} />
         {changes
           ? <Note tone="neutral" title="清理内容" action={
-              <Button variant="danger" {...busyProps(cleaning)} onClick={() => runApply(state)}>
+              <Button variant="danger" disabled={!actionsReady} {...busyProps(cleaning)} onClick={() => { if (actionsReady) runApply(state) }}>
                 {cleaning ? '正在复核并清理…' : APPLY_LABEL}
               </Button>
             }>{applyPlanText(state)}</Note>
@@ -180,10 +181,13 @@ export function ResourceSyncCard(
   return (
     <section id="resource-sync" aria-labelledby="resource-sync-title" className="flex scroll-mt-20 flex-col gap-4">
       <Fieldset layout="split" labelledBy="resource-sync-title" footer={
-        <Button data-resource-scan leadingIcon={scanned && !scanning ? AGAIN : COMPARE} {...busyProps(scanning)}
-          onClick={() => { if (!scanning) scan.start.mutate() }}>{label}</Button>
+        <Button data-resource-scan leadingIcon={scanned && !scanning ? AGAIN : COMPARE} disabled={!actionsReady} {...busyProps(scanning)}
+          onClick={() => { if (actionsReady && !scanning) scan.start.mutate() }}>{label}</Button>
       }>
         <FieldsetTitle id="resource-sync-title" gap="small">资源同步</FieldsetTitle>
+        {scan.query.isPending || apply.query.isPending ? <div role="status" aria-label="正在读取资源同步状态" data-skeleton="" className="skeleton-sheen h-6 rounded-md" /> : null}
+        {!scan.job && scan.query.isError ? <Note tone="error">检查状态未取得</Note> : null}
+        {!apply.job && apply.query.isError ? <Note tone="error">清理状态未取得</Note> : null}
         <p className="max-w-190 text-body-2-regular leading-5 text-text-secondary">
           {RESOURCE_SYNC_TEXT}
         </p>
