@@ -13,6 +13,22 @@
   ],
   "sources": [
     {
+      "id": "skullet-skeleton",
+      "cadence": "monthly",
+      "name": "Skullet 骨架与内容显示",
+      "url": "https://raw.githubusercontent.com/lochie/skullet/main/packages/skullet/README.md",
+      "snapshot": "docs/reference-snapshots/upstream/skullet-skeleton.md",
+      "checked_on": "2026-11-07",
+      "sha256": "c4eaf0d9b7eb8d7d322404fded6d4cb3d5421a5d59533beb2775cbc4142e4dde",
+      "git": {
+        "repository": "https://github.com/lochie/skullet.git",
+        "ref": "refs/heads/main",
+        "revision": "770cba428e6954977fd97938f0f06a7cade2fc2d"
+      },
+      "role": "只读概览采用自动测量和形状记忆；馆藏、表格与播放器保留专用骨架，内容就绪即显示。",
+      "consumers": ["docs/reference-snapshots/skullet-content-first.md", "docs/REUSE.md"]
+    },
+    {
       "id": "open-claude-ui-design-manual",
       "cadence": "monthly",
       "name": "Open Claude UI 完整设计手册",

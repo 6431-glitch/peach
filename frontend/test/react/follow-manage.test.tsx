@@ -22,7 +22,7 @@ import {
 import { FollowManagePage } from '../../src/react/follow-manage/follow-manage-page';
 import { Credentials } from '../../src/react/follow-manage/credentials';
 
-import { actionOrder, buttonNamed, choose, click, linkNamed, mountRoot, settle, type } from './render';
+import { actionOrder, buttonNamed, choose, click, linkNamed, mountRoot, pending, settle, type } from './render';
 
 // 客户端是模块级的单例（所有 React 根共用一个），用例之间不清就互相喂数据。
 afterEach(() => queryClient.clear());
@@ -94,7 +94,7 @@ interface Plan {
   /** 登记一条来源。回 `refuse(...)` 就是这一条被服务端挡回来。 */
   add?: (body: { url: string; label: string }) => unknown;
   /** 订阅源清单。 */
-  feeds?: FeedsData;
+  feeds?: FeedsData | Promise<FeedsData>;
   /** 订阅源的开关、移除与按名字登记。回 `refuse(...)` 就是这一次被服务端挡回来。 */
   feedWrite?: (body: { action: string; id?: number; name?: string; ids?: string[] }) => unknown;
   /** 按女优名到 JavDB 搜演员卡的结果。回 `refuse(...)` 就是这一趟被服务端挡回来。 */
@@ -107,7 +107,7 @@ function serve(plan: Plan = {}) {
   const fetcher = vi.fn(async (input: string, init?: RequestInit) => {
     const url = String(input);
     const body = init?.body ? JSON.parse(String(init.body)) : null;
-    if (url === FEEDS_URL) return ok(plan.feeds ?? { sources: [], unread: 0 });
+    if (url === FEEDS_URL) return ok(await (plan.feeds ?? { sources: [], unread: 0 }));
     if (url === FEED_SOURCE_URL && plan.feedWrite) return plan.feedWrite(body);
     if (url === FEED_SOURCE_URL || url === FEEDS_CHECK_URL) return ok({ ok: true });
     if (url.startsWith(`${FEEDS_LOOKUP_URL}?`)) {
@@ -182,6 +182,18 @@ async function open(plan: Plan = {}, over: Partial<Props> = {}) {
 }
 
 const tick = (ms: number) => act(async () => { await vi.advanceTimersByTimeAsync(ms) });
+
+it('订阅响应未完成时先显示关注读数与列表，订阅读数独立等待', async () => {
+  const delayed = pending<FeedsData>();
+  const { host } = await open({ feeds: delayed.answer });
+  expect(host.querySelector('[data-measured-reading="creators"] [aria-busy="true"]')).toBeNull();
+  expect(host.querySelector('[data-measured-reading="subscriptions"] [aria-busy="true"]')).not.toBeNull();
+  expect(host.querySelector('[data-follow-toolbar-actions]')).not.toBeNull();
+  await delayed.release({ sources: [], unread: 9 });
+  await settle();
+  expect(host.querySelector('[data-measured-reading="releases"] [aria-busy="true"]')).toBeNull();
+  expect(host.querySelector('[data-measured-reading="releases"] [data-follow-reading]')?.textContent).toBe('9 条');
+});
 
 const cards = (root: ParentNode) => [...root.querySelectorAll('section[aria-label$="的关注来源"]')];
 

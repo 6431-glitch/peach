@@ -454,8 +454,8 @@ it('候选回来之前网格里是同一种格子的骨架，回来之后换成�
   expect(cells()).toHaveLength(1);
 });
 
-it('一格的图到了才揭开，取不到时撤掉图、揭开空底', async () => {
-  server(listing([choice(), choice({ ref: 'sha256:abc', source: 'history', label: 'twitter' })]));
+it('候选图未取得时显示重试，重试成功后才进入框选', async () => {
+  const calls = server(listing([choice(), choice({ ref: 'sha256:abc', source: 'history', label: 'twitter' })]));
   await openPicker();
   const [first, second] = cells();
   const layers = (cell: HTMLElement | undefined) =>
@@ -468,6 +468,15 @@ it('一格的图到了才揭开，取不到时撤掉图、揭开空底', async (
   expect(second?.querySelector('[data-choice-lost]')).not.toBeNull();
   expect(second?.querySelector('.reveal-skeleton')?.hasAttribute('data-revealed')).toBe(true);
   expect(second?.textContent).toContain('twitter');
+  expect(second?.textContent).toContain('图片未取得，点击重试');
+  await click(second);
+  expect(calls).toHaveLength(1);
+  expect(second?.querySelector('img')).not.toBeNull();
+  expect(second?.querySelector('[data-choice-lost]')).toBeNull();
+  await act(async () => { second?.querySelector('img')?.dispatchEvent(new Event('load')) });
+  await click(second);
+  await settle();
+  expect(sent(calls, 1)[0]).toBe('/api/avatar-frame');
 });
 
 it('封面格子在取景区里取一块 3:4，图库人像照旧铺满', async () => {

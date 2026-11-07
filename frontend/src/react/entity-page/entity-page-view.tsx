@@ -97,7 +97,7 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
      视频键不出，进页就落在在线。 */
   const followKey = kind === 'creator' ? entity.follow?.key || '' : '';
   const onlineOnly = !!followKey && !entity.asset_count;
-  const mediaNow = media.media === 'photos' && photosAvailable ? media
+  const mediaNow = media.media === 'photos' && (base.isPending || base.isError || basePage?.error || photosAvailable) ? media
     : (media.media === 'online' || onlineOnly) && followKey ? { media: 'online' as const, set: 0 } : EMPTY_MEDIA;
 
   /* 名册与媒体不共用地址栏：地址栏只认 `media`，名册是事务所页与片商页的默认视图，进页就在那里。
@@ -128,8 +128,9 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
   const itemsRevision = useRevision(JSON.stringify([itemsQuery.queryKey, avatarEpoch]));
   /* 直达或刷新资料页时 URL 没有 `jav=1`：以第一页作品的真实 `is_jav` 恢复女优／厂牌语境，版式开关
      不是只在从 JAV 首页点进来时才偶然存在。只看进页那一份，页内换筛选不改语境。 */
-  const [javPage] = useState(() => (kind === 'performer' || kind === 'studio')
-    && (props.jav || (items.data?.items || []).some((item) => item.is_jav)));
+  const [initialJav, setInitialJav] = useState<boolean | null>(() => props.jav || props.layout.active ? true : null);
+  if (initialJav === null && items.data) setInitialJav((items.data.items || []).some((item) => item.is_jav));
+  const javPage = (kind === 'performer' || kind === 'studio') && !!(initialJav ?? props.jav);
   useLayoutEffect(() => { actions.javContext(javPage) }, [actions, javPage]);
   const layout = useMemo<MediaCardLayout>(() => (props.layout.active === javPage ? props.layout
     : { ...props.layout, active: javPage }), [props.layout, javPage]);
@@ -265,6 +266,7 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
       void refreshEntity().then(() => {
         if (alive.current) setAvatarEpoch((epoch) => epoch + 1);
       });
+      void queryClient.invalidateQueries({ queryKey: feedNewKey(entityId) });
     },
     /* 资料卡那句「N 项更新」：这位名下的就在这一页的在线视图里，不离开；别的作者键才去关注页。 */
     openFollowAuthor: (key) => {
@@ -369,11 +371,11 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
     readout = `在线 · ${(online.total ?? entity.follow?.n ?? 0).toLocaleString()} 项更新`;
   }
   else if (view === 'videos') {
-    busy = !items.data;
+    busy = items.isPending;
     /* 选了哪几枚标签由上面那条交集条一枚一枚列着，读数只报个数：标签名再列一遍，几枚长标签
        就能把这一行撑出页面。 */
     const picked = tagList(filters.tag).length;
-    readout = `视频 · ${(items.data?.work_total ?? items.data?.total ?? 0).toLocaleString()}${picked ? ` · 已选 ${picked.toLocaleString()} 个标签` : ''}`;
+    readout = items.data ? `视频 · ${(items.data.work_total ?? items.data.total ?? 0).toLocaleString()}${picked ? ` · 已选 ${picked.toLocaleString()} 个标签` : ''}` : '';
   } else if (wallPage && !wallPage.error) {
     readout = inSet ? `${wallPage.title} · ${(wallPage.total || 0).toLocaleString()} 张`
       : photoReadout(wallPage, codeSetsOf(wallPage).length);
@@ -395,6 +397,7 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
   return (
     <>
       <EntityHeroPage key={avatarEpoch} kind={kind} name={name} entity={entity} feedNew={feed.data ?? null}
+        feedError={!feed.data && feed.isError ? errorMessage(feed.error) : undefined} retryFeed={() => { void feed.refetch() }}
         feedHost={entityId ? hosts.feed : null} jav={javPage} actions={heroActions} helpers={heroHelpers} />
       {createPortal(
         <EntityFilterPage kind={kind} name={name} view={view} views={views} state={filters.state || ''}
@@ -410,6 +413,12 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
             actions={props.follow.actions} canLoadMore={props.canLoadMore} clearFilters={online.clearFilters} />
           : view === 'videos' && items.isError
           ? <RetryNote message={errorMessage(items.error)} onRetry={() => { void items.refetch() }} />
+          : view === 'photos' && (wall.isError || wallPage?.error)
+          ? <RetryNote message={wallPage?.error || errorMessage(wall.error)} onRetry={() => { void wall.refetch() }} />
+          : view === 'photos' && !photos
+          ? <div data-photo-wall="" data-size={props.photoSize} data-layout={props.photoLayout} role="status" aria-busy="true" aria-label="正在读取照片">
+              {Array.from({ length: 8 }, (_, index) => <button key={index} data-photo-cell="" disabled aria-hidden className="skeleton-sheen" />)}
+            </div>
           : worksEmpty ? <WorksEmpty filtered={filtered} onShowAll={showAll}
             onOnline={followKey ? () => filterActions.setView('online') : undefined} />
           : (

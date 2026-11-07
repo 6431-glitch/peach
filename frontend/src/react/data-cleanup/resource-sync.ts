@@ -89,14 +89,11 @@ export const hasResourceRoots = (data: MediaSourcesData | undefined) =>
   (data?.sources ?? []).some((source) => SCANNABLE_LOCATIONS.includes(source.location)
     && Array.isArray(source.roots) && source.roots.length > 0);
 
-/** 首屏：来源可达性落进缓存之后，有根目录才取两份任务状态，取完才画。直达地址
- *  `/resource-sync` 进来要滚到这一块，结果区在滚动之后才接上的话，落点就停在它上面一屏。 */
+/** 来源可达性落进缓存之后，有根目录才独立预取检查与清理状态。 */
 export async function prefetchResourceSync(signal: AbortSignal): Promise<void> {
   if (!hasResourceRoots(queryClient.getQueryData<MediaSourcesData>(MEDIA_SOURCES_KEY))) return;
-  await Promise.all([
-    queryClient.fetchQuery({ queryKey: RESOURCE_SCAN_KEY, queryFn: () => fetchResourceScan(signal) }),
-    queryClient.fetchQuery({ queryKey: RESOURCE_APPLY_KEY, queryFn: () => fetchResourceApply(signal) }),
-  ]);
+  void queryClient.prefetchQuery({ queryKey: RESOURCE_SCAN_KEY, queryFn: () => fetchResourceScan(signal) });
+  void queryClient.prefetchQuery({ queryKey: RESOURCE_APPLY_KEY, queryFn: () => fetchResourceApply(signal) });
 }
 
 /** 这一趟有没有要清的东西。都没有时底栏换成一句「没有待清理的记录、空文件夹或缓存」。 */

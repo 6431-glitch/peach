@@ -40,7 +40,7 @@ function costarImg(person: HeroCostar): string {
   });
 }
 
-export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions, helpers }: EntityHeroProps) {
+export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, feedError, retryFeed, actions, helpers }: EntityHeroProps) {
   useEntityNames();
   const displayName = entityDisplayName(kind, entity.canonical_name, Number(entity.id));
   const fallback = nameFallback(kind, entity.canonical_name, Number(entity.id));
@@ -132,7 +132,7 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, actions,
       </section>
       {/* 新作那一行摆在壳留好的 `section.feednew[data-feed-new]` 里，与首页那一行同一个组件。 */}
       {feedHost ? createPortal(<FeedNewRow feedNew={feedNew} host={feedHost} wire={helpers.wireFeedRow}
-        act={(feedId, action) => actions.feedAction(feedId, action)} />, feedHost) : null}
+        act={(feedId, action) => actions.feedAction(feedId, action)} error={feedError} retry={retryFeed} />, feedHost) : null}
     </>
   );
 }

@@ -16,11 +16,13 @@ import { Select, SelectItem } from '@/components/base/select/select';
 import { Chip } from '@/components/base/badges/chip';
 
 import { apiSend, errorMessage } from '../../api';
-import { SCAN_CARD_TEXT } from '../../management';
+import { SCAN_CARD_TEXT, scanCardSkeletonHtml } from '../../management';
 import type { LibraryProcessingProps } from '../bundle';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
 import { IssueRow } from '../components/issue-row';
 import { Note } from '../components/note';
+import { RetryNote } from '../components/grid-reveal';
+import { SkeletonContent } from '../components/skeleton-content';
 import { StatusLabel } from '../components/status-label';
 import { useOverlayScrollbar } from '../components/overlay-scrollbar';
 import { PathLine } from '../components/path-line';
@@ -224,6 +226,10 @@ export function LibraryProcessingCard(props: LibraryProcessingProps) {
     if (!state.job_id || !state.retryable_asset_ids?.length) return;
     void run({ job_id: state.job_id, retry: state.retryable_asset_ids }).catch(() => {});
   };
+
+  if (!job.data) return job.isError
+    ? <RetryNote message={errorMessage(job.error)} onRetry={() => { void job.refetch() }} />
+    : <SkeletonContent pending skeletonHtml={scanCardSkeletonHtml}>{null}</SkeletonContent>;
 
   return (
     <div className="flex flex-col gap-4">

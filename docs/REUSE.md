@@ -1,5 +1,13 @@
 # 复用清单
 
+## 内容与骨架的显示边界
+
+馆藏网格复用 `catalog-grid` 的视口测量和无限加载，首批条目不等待聚合统计；`summary_only=1` 独立读取同口径总数。人物资料先显示身份，作品、照片与新作分别加载；图片等待留在各自的图片格。关注凭据、订阅统计、任务状态与来源信息不阻挡已经取得的主内容，未取得的读数保留占位，操作仍等对应状态确认。
+
+馆藏网格、表格、播放舞台和表单继续复用 `fitSkeleton`、页面模板、`SkeletonContent`、`AsyncText` 与已有形状记忆。[Skullet](reference-snapshots/skullet-content-first.md) 固定为 `0.0.3`，仅在关注概览的六个只读读数中自动测量和记忆形状，随低频页面按需加载。数据就绪即显示，150 ms 仅用于抑制骨架闪现，不延迟真实内容；首次失败显示「未取得」，后台重读保留已有值。
+
+`MeasuredReading` 只接收固定字段、数值与总数；隐藏样本不含请求、Portal、媒体或操作控件。上游持久化填充不替换中文，因此不传入作品名、路径、自由文本或用户资料。微光通过 Shadow DOM 的构造样式表复用 Peach 配色和节奏，减少动效时静止；外层隐藏规则兼顾不支持 `@scope` 的浏览器。原位编辑在骨架之外，形状调试沿用上游 `skullet-debug` 参数；不在大列表的每行创建测量边界。
+
 数据管理的复核计数与完整复核页共用按候选文件版本和账本依赖表失效的精确成员快照。计数不加载卡片旁证、图片和预览；完整卡片先深复制成员，再补展示字段，不能改写共享快照。来源番号身份判断只在同一次投影中复用，来源标识不同仍分别核验；批准仍重新读取原始候选与最新账本。
 
 ## 账本一致性与运行状态恢复
@@ -251,7 +259,9 @@ npm 安装沿用 Node.js 24 LTS 附带的官方 [`npm ci`](https://docs.npmjs.co
 
 ## 作品卡片与推荐理由
 
-目录、实体作品区、竖屏条与接着看复用 `MediaCard`。多列网格统一卡片高度，`MediaGrid` 沿用现有 `ResizeObserver` 和 `gridTemplateColumns` 测量方式，单列按实际内容定高。元信息保持一行，容器查询按扣除头像后的文字区宽度决定日期、共演人数与体积的显隐。普通卡片保留最多五枚共演头像，常态按实际紧叠宽度占位，在 45px 至 109px 之间随卡宽压缩。悬停与键盘聚焦时头像浮于文字上方展开并抬起对应头像，不预留展开空间，标题列位置保持稳定；占位文字始终居中，图片沿用原有头像取景。接着看和竖屏条保留两枚头像，新作卡片复用同一几何。稍后看复用已有动作回调、撤销回执与中性填充 token，同步按钮和卡片底色，不渲染状态色块及观看次数。
+目录、实体作品区、竖屏条与接着看复用 `MediaCard`。多列网格统一卡片高度，`MediaGrid` 沿用现有 `ResizeObserver` 和 `gridTemplateColumns` 测量方式，单列按实际内容定高。元信息保持一行，容器查询按扣除头像后的文字区宽度决定日期、共演人数与体积的显隐。普通卡片保留最多五枚共演头像，常态按实际紧叠宽度占位，在 45px 至 109px 之间随卡宽压缩。小于 320px 的卡片使用紧凑头像；首页、实体资料页的旧模板新作横排与 React 卡片共用 `--media-avatar-tight`、`-step`、`-max` 几何变量。悬停与键盘聚焦时头像浮于文字上方展开并抬起对应头像，不预留展开空间，标题列位置保持稳定；占位文字始终居中，图片沿用原有头像取景。接着看和竖屏条保留两枚头像。稍后看复用已有动作回调、撤销回执与中性填充 token，同步按钮和卡片底色，不渲染状态色块及观看次数。
+
+新作横排使用 `feedNewCardHtml`／`feedIdentity`，同时影响首页、女优与厂牌详情；JAV 新作、发现使用 `DiscoveryCard`。新作卡的标题、姓名、日期按独立行排列，不使用馆藏虚拟列表的密集行高估计。JAV 卡片页的顶部密度与多选入口由壳路由判定，选择集留在 `JavSelectionProvider`，按番号跨页保留，不混入馆藏资产 ID；卡片、列表共用本页全选及 `SelectionDock`。批量加入想要复用 `/api/wants`，成功项移出选择，失败与未提交项保留；批量查找复用 `WantMagnets` 和既有作品资源接口，查询不自动提交下载。
 
 接着看的推荐理由独占两行，完整内容使用已安装的 React Aria Components 1.22.1（Apache-2.0）`Popover`／`Dialog` 与现有 BoardUI 浮层样式展示，触屏、键盘与鼠标共用同一入口。没有新增依赖、API、迁移或 ledger 写入。
 
@@ -980,7 +990,7 @@ A 盘垃圾隔离使用短名称 `peach-purge-<32 位 UUID>.peach-quarantine`，
 | 媒体探测/转码 | Windows 独立包从固定源码交叉编译 FFmpeg 9.0.2、x264、dav1d、nv-codec-headers、AMF 头文件与 libvpl，按 GPL-3.0-or-later 分发；版本、来源和哈希见 `scripts/ffmpeg-sources.json`。工具与完整对应源码一起构建，安装包和免安装 ZIP 共用经校验的 `tools/ffmpeg`。源码与 CI 媒体测试仍可使用 PATH 工具（[取证](SOURCING.md#依赖与工具实测)） | 容器与编码分别检查：MP4/M4V 的 H.264 8-bit 加兼容音轨直出，其余容器里的 H.264 8-bit 只换 MP4 封装；重编码按[硬件转码后端](#硬件转码后端)及本机播放加速偏好选择 |
 | HTML5/HLS/DASH 播放 | Video.js 10.3.0 的 `@videojs/html`、`@videojs/hlsjs-video` 与 `@videojs/dash-video`，通过官方 `@videojs/cdn` 本地固定模块分发（Apache-2.0） | 流方案、授权、稳定时长、回退顺序和统计面板；详情不兼容片源复用 HlsSegmentService 与 FFmpeg 按六秒编码 H.264/AAC，独立缓存、绝对时间轴及会话取消，无整片预转码 |
 | 播放器设置与影院布局 | Video.js 10.3.0 的播放器状态、原生媒体事件、播放／静音／全屏／画中画按钮与进度／音量滑条；YouTube `e937390a` 实际 DOM／CSS／JS 给几何、状态、动画和图形证据 | Peach 皮肤组合氛围模式、倍速、真实清晰度和影院模式：59 px 两排控制栏、40→111 px 横向音量、4→6 px 进度、右侧共享胶囊、整行悬停的 274 px 设置菜单、视口级全屏；普通视图 `contain`，全屏 `cover`。播放会话与同一枚原生视频经过舞台和小窗整体搬移，状态、字幕与上报保留；设置、时间、预览、统计、字幕菜单、中央提示和错误反馈属于 Peach。皮肤沿用本地 SVG 与 spinner，不复制上游按钮、滑条或媒体引擎的控制逻辑 |
-| 播放器时刻预览 | Video.js 原生进度控件、统一时间索引与 `/timeline?id=&s=`；取不到时退回 `/poster?id=&c=0…8` 九宫格 | `timeline_sources` 读取 Jellyfin Trickplay、Emby／Roku／Plex 导出的 BIF、WebVTT 图片 cue、HLS／DASH 图片轨，复用现有 Pillow、标准库与 `m3u8==6.0.0`，无新增依赖；配对、格式边界及取证见[已有时间轴预览](VIDEO_PREVIEWS.md)。`timeline_sheets` 只对本机缺少可用产物的视频按每 10／30 秒预铺。网盘读取已有图片不触发视频抽帧；原视频抽帧的[流量判据](SOURCING.md#媒体与关注实测)保留。前端专用 VTT／sprite 插件不能承担磁盘索引和 BIF，不引入 |
+| 播放器时刻预览 | Video.js 原生进度控件、统一时间索引与 `/timeline?id=&s=`；取不到时退回 `/poster?id=&c=0…8` 九宫格；没有可用图或图片尚未加载成功时不显示浮层 | `timeline_sources` 读取 Jellyfin Trickplay、Emby／Roku／Plex 导出的 BIF、WebVTT 图片 cue、HLS／DASH 图片轨，复用现有 Pillow、标准库与 `m3u8==6.0.0`，无新增依赖；配对、格式边界及取证见[已有时间轴预览](VIDEO_PREVIEWS.md)。`timeline_sheets` 只对本机缺少可用产物的视频按每 10／30 秒预铺。网盘读取已有图片不触发视频抽帧；原视频抽帧的[流量判据](SOURCING.md#媒体与关注实测)保留。前端专用 VTT／sprite 插件不能承担磁盘索引和 BIF，不引入 |
 | 外挂字幕 sidecar | 浏览器原生 `TextTrack` 与 [WebVTT 规范](https://www.w3.org/TR/webvtt1/)；配对复用 `catalog_rules` 的 `VERSION_TAIL_TOKENS` 与 `release_code_from_filename`。行为证据：sakuramediabe `import_service.py`／`movie_numbers.py` 的 `subtitle_matches_movie_number`（同目录、纯番号、不回退同名），NeoAVDC `organizeMedia.ts`／`parseNumber.ts` 的 `isSubtitleFile`（`.srt .ass .sub .vtt .ssa`，按视频主名前缀）；Peach 的判据是两者的并集加顺序 | `subtitles.py` 只做同目录配对（exact／suffix／code／orphan）、`asset_subtitle` 幂等登记、srt/ass/ssa → WebVTT。不用 `pysubs2`（为几十行加运行时依赖）和 FFmpeg（每次起子进程、报不出「编码认不出来」），编码要认 GBK／Big5／Shift_JIS，不用几乎吞下任何字节的 `gb18030`。内封字幕轨不在此列，`media_probe.py` 只取 `v:0`，流信息不落库 |
 | 播放偏好与字幕记忆 | 原生 `TextTrack.id`；现有 `filelock==4.2.0` 与 `fsutil.atomic_write_text`，沿用本机状态文件的并发锁与原子替换 | `playerMemory` 与 `SubtitleSession` 供详情、小窗与沉浸播放复用；服务端 `state/player-subtitles/` 按资产、关注条目及帖子内视频分别保留 WebVTT，`subtitles.json` 同存旋转、倍速、字幕外观、轨道身份与最后选择，`null` 表示关闭。偏好以字段补丁在同一文件锁内合并，客户端同身份写入串行，用户操作不受迟到的读取覆盖。旁挂字幕按目录内文件名生成稳定身份，登记与载入顺序不参与身份；已保存的登记 ID 通过轨道别名恢复。同目录发现复用现有配对、转码与读取上限，只读授权目录并与已登记路径去重。内容保存先于成功回执，重复导入按轨道键覆盖；重新播放直接读保存内容。保留转换器与 SubtitleCat 接口，不新增解析器、浏览器数据库依赖或 ledger 迁移 |
 | 分卷文件命名 | [Plex 官方命名](https://support.plex.tv/articles/naming-and-organizing-your-movie-media-files/)的 `cd/disc/disk/dvd/part/pt + 数字` 与 [Kodi 官方 File Stacking](https://kodi.wiki/view/File_stacking)只作行为证据；运行时复用当前树的 `part_marker`，不新增扫描器依赖 | 兼容裸数字、紧接番号的 A–H 与 cd 序号、fhd 序号及圈号标题，共有版次尾缀先剥离再取卷标。FC2 的明确数字合集允许缺集和零起始；本篇与唯一 SP、gift、特典可合卡，完整版与数字分卷混合、重复标签不自动合并。每个 asset 与播放会话保留，不拼接或改写媒体 |

@@ -102,12 +102,12 @@ const LAZY_QUERIES: [QueryKey, (context: { signal: AbortSignal }) => Promise<unk
   [DUPLICATES_KEY, ({ signal }) => fetchDuplicates(signal)],
 ];
 
-/** 首页等待日常扫描状态；维护工具的表单、任务和清单进入二级页后再读取。 */
+/** 首页各份摘要和扫描状态独立读取，不阻挡已就绪的卡片与维护入口。 */
 export async function prefetchDataCleanup(signal: AbortSignal): Promise<void> {
   for (const [queryKey, queryFn] of LAZY_QUERIES) {
     void queryClient.prefetchQuery({ queryKey, queryFn: () => queryFn({ signal }) });
   }
-  await prefetchLibraryProcessing(signal);
+  void prefetchLibraryProcessing(signal).catch(() => {});
 }
 
 /** 进入维护工具时才读取它的状态、配置与结果。 */
@@ -121,10 +121,8 @@ export async function prefetchDataCleanupTool(tool: CleanupToolKey, signal: Abor
     case 'batch-delete':
       await queryClient.prefetchQuery({ queryKey: PERFORMER_DELETE_KEY, queryFn: () => fetchDeletePerformers(signal) }); break;
     case 'links':
-      await Promise.all([
-        queryClient.prefetchQuery({ queryKey: LINKS_KEY, queryFn: () => fetchLinkStats(signal) }),
-        queryClient.prefetchQuery({ queryKey: LINK_CHECK_KEY, queryFn: () => fetchLinkCheck(signal) }),
-        queryClient.prefetchQuery({ queryKey: LINK_PRUNE_KEY, queryFn: () => fetchLinkPrune(signal) }),
-      ]); break;
+      void queryClient.prefetchQuery({ queryKey: LINK_CHECK_KEY, queryFn: () => fetchLinkCheck(signal) });
+      void queryClient.prefetchQuery({ queryKey: LINK_PRUNE_KEY, queryFn: () => fetchLinkPrune(signal) });
+      await queryClient.prefetchQuery({ queryKey: LINKS_KEY, queryFn: () => fetchLinkStats(signal) }); break;
   }
 }
