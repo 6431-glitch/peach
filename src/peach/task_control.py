@@ -96,11 +96,13 @@ def prune_speeds(store):
                     logging.getLogger(__name__).warning('任务速度文件清退失败：%s', path, exc_info=True)
 
 
-def projection(store, run):
+def projection(store, run, *, descendants_active=None):
+    """`descendants_active` 是调用方已经查齐的「有没有后代还在排在跑」；不传就当场问。"""
     if not store.enabled or run.host != store.host:
         return None
     # 自己已结束的父任务，有后代还在排或在跑才算可控；这里只问有没有。
-    if not run.active and not store.active_descendants(run.id, limit=1):
+    if not run.active and not (store.active_descendants(run.id, limit=1)
+                               if descendants_active is None else descendants_active):
         return None
     command = intent(store.database.db_path, run.id, (run.parent_run_id, run.root_run_id))
     action = command.get('action', 'resume')

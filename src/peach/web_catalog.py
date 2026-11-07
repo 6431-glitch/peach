@@ -424,6 +424,30 @@ def seeded_order(seed) -> str:
     return f"((a.id * {sd}) % 99991), a.id"
 
 
+CATALOG_TOTAL_TABLES = GROUP_TABLES + (
+    'asset_tag', 'asset_tag_preference', 'asset_preference', 'watch_queue',
+    'entity_classification', 'entity_external_ref', 'entity_identity_link', 'profile',
+)
+
+
+def _catalog_totals(contract: WebContract, where, parameters, args):
+    """同一集合的总数、体积与作品数不随排序、种子和分页改变。"""
+    def read():
+        with contract.read_connection() as connection:
+            return tuple(connection.execute(
+                "SELECT count(*),COALESCE(sum(a.size),0),count(DISTINCT "
+                + video_work_key(contract, connection) + ") FROM asset a WHERE "
+                + " AND ".join(where), parameters).fetchone())
+    common = {'sort', 'seed', 'dir', 'limit', 'offset', 'count', 'state', 'jav',
+              'loc', 'len', 'orient', 'region', 'exclude_vertical', 'thumb', 'library', 'year'}
+    if any(value and key not in common for key, value in args.items()):
+        return read()
+    return contract.cached_until_changed(
+        repr(('catalog-totals', tuple(where), tuple(parameters))), read,
+        tuple(contract.database.media_roots), *group_inputs(contract),
+        tables=CATALOG_TOTAL_TABLES, allow_stale=False)
+
+
 def q_items(contract: WebContract, args):
     where, par = catalog_filter(contract, args)
     sort_key = str(args.get("sort") or "")
@@ -460,10 +484,7 @@ def q_items(contract: WebContract, args):
         # 条数和体积同一次聚合出来：回收站卡片要说的是「清空能腾出多少」，
         # 为它单独再发一次请求只是把同一条 WHERE 又跑一遍。
         cnt, total_bytes, work_total = (
-            c.execute("SELECT count(*),COALESCE(sum(a.size),0),count(DISTINCT "
-                      + video_work_key(contract, c) + ") FROM asset a WHERE "
-                      + " AND ".join(where), par).fetchone()
-            if include_total else (None, None, None))
+            _catalog_totals(contract, where, par, args) if include_total else (None, None, None))
     # 卡片要显示出镜者和高权重标签，不能只有番号 —— 一次批量取，别 N+1
     if rows:
         ids = [r["id"] for r in rows]

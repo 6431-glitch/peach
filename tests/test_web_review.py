@@ -110,6 +110,56 @@ class ReviewQueueTests(unittest.TestCase):
                                "VALUES(900,'Example Alias','example alias','manual',1)")
         self.assertEqual(self.queue_keys('metadata_fields'), [])
 
+    def test_candidate_code_checks_share_only_matching_provider_evidence_within_request(self):
+        rows = []
+        for index, provider_id in enumerate(('EXM-001', 'EXM-001', 'EXM-002')):
+            candidate = {'candidate_key': 'javdb:title', 'source': 'javdb',
+                         'provider_id': provider_id, 'value': f'Title {index}'}
+            rows.append({'item_key': f'EXM-001:title:{index}', 'status': 'candidate',
+                         'code': 'EXM-001', 'field': 'title', 'current_value': '',
+                         'candidates_json': json.dumps([candidate])})
+        self.write_metadata_candidates(rows)
+        with mock.patch.object(rm_review, '_candidate_identifies_code',
+                               wraps=rm_review._candidate_identifies_code) as identifies:
+            first, _, _ = rm_review._review_rows(self.contract, 'metadata_fields')
+            self.assertEqual({row['item_key'] for row in first},
+                             {'EXM-001:title:0', 'EXM-001:title:1'})
+            self.assertEqual(identifies.call_count, 2)
+            self.write_metadata_candidates(rows)
+            rm_review._review_rows(self.contract, 'metadata_fields')
+            self.assertEqual(identifies.call_count, 4)
+
+    def test_counts_share_exact_members_without_loading_card_evidence(self):
+        self.write_metadata_rows([{'item_key': 'EXM-001:title', 'code': 'EXM-001',
+                                   'field': 'title', 'current': '', 'candidates': ['New title']}])
+        with mock.patch.object(rm_review, '_attach_review_asset_context',
+                               side_effect=AssertionError('计数不需要卡片旁证')), \
+                mock.patch.object(self.contract, 'cover_path',
+                                  side_effect=AssertionError('计数不需要图片')):
+            counts = rm_review.q_review_counts(self.contract)
+        full = rm_review.q_review(self.contract)
+        self.assertEqual(counts['counts'], full['counts'])
+        self.assertEqual(counts['sources'], full['sources'])
+        self.assertEqual(counts['skipped_rows'], full['skipped_rows'])
+        self.assertNotIn('sections', counts)
+
+    def test_member_snapshot_is_not_mutated_by_cards_and_ledger_changes_rebuild_it(self):
+        self.write_metadata_rows([{'item_key': 'EXM-001:title', 'code': 'EXM-001',
+                                   'field': 'title', 'current': '', 'candidates': ['New title']}])
+        with mock.patch.object(rm_review, '_metadata_queue_rows',
+                               wraps=rm_review._metadata_queue_rows) as project:
+            first = rm_review.q_review(self.contract)
+            first['sections']['metadata_fields'][0]['candidates'][0]['value'] = 'client mutation'
+            again = rm_review.q_review(self.contract)
+            self.assertEqual(again['sections']['metadata_fields'][0]['candidates'][0]['value'], 'New title')
+            self.assertEqual(project.call_count, 1)
+            rm_review.q_review_counts(self.contract)
+            self.assertEqual(project.call_count, 1)
+            with self.contract.write_transaction() as connection:
+                connection.execute("UPDATE asset SET catalog_title='Changed' WHERE id=1")
+            rm_review.q_review_counts(self.contract)
+            self.assertEqual(project.call_count, 2)
+
     def test_settled_creator_rows_do_not_load_asset_previews(self):
         self.write_candidates('creator-tags-candidate-20260818.csv', [
             {'board': str(index), 'creator': 'ukiru', 'tags': 'x', 'status': 'candidate'}
@@ -359,6 +409,65 @@ class ReviewQueueTests(unittest.TestCase):
         rows, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
 
         self.assertEqual([row["item_key"] for row in rows], ["FALENO"])
+
+    def test_reread_candidates_follow_the_file_and_stay_private_to_each_reader(self):
+        batch = self.candidates / "studio-logo-candidate-20260923.csv"
+        batch.write_text("studio,saved\nFALENO,FALENO.jpg\n", encoding="utf-8")
+        os.utime(batch, (2000, 2000))
+
+        first, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
+        first[0]["saved"] = "改过.jpg"
+        again, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
+        self.assertEqual(again[0]["saved"], "FALENO.jpg")
+
+        # 处理任务写完新一批：同名文件原地换内容，读到的必须是新那份。
+        batch.write_text("studio,saved\nFALENO,FALENO-v2.jpg\nSOD,SOD.jpg\n", encoding="utf-8")
+        os.utime(batch, (3000, 3000))
+        rows, _source, _skipped = rm_candidates.read_candidates("studio_logos", self.candidates)
+        self.assertEqual([(row["item_key"], row["saved"]) for row in rows],
+                         [("FALENO", "FALENO-v2.jpg"), ("SOD", "SOD.jpg")])
+
+    def test_a_rewrite_by_the_writer_is_read_back_without_parsing_the_file_again(self):
+        batch = self.candidates / "library-metadata-field-candidates.csv"
+        batch.write_text("item_key,field,candidates_json\nA:title,title,[]\n", encoding="utf-8")
+        rm_candidates.read_candidates("metadata_fields", self.candidates)
+
+        # 处理任务写回的是未转成字符串的值：数字、None、带换行的文本。
+        rm_candidates.write_rows(batch, ["item_key", "field", "candidates_json"], [
+            {"item_key": "A:title", "field": "title", "candidates_json": None},
+            {"item_key": "B:release_date", "field": 7, "candidates_json": '[{"value": "一\r\n二"}]'},
+        ], atomic=True)
+        with mock.patch.object(rm_candidates, "read_rows", side_effect=AssertionError("又整份解析了")):
+            cached, _source, _skipped = rm_candidates.read_candidates("metadata_fields", self.candidates)
+            shared = rm_candidates.read_rows_shared(batch)
+        fresh = rm_candidates.read_rows(batch)
+        self.assertEqual(shared, fresh)
+        self.assertEqual(cached, [{**row, "item_key": row["item_key"]} for row in fresh])
+        self.assertEqual(fresh[1]["candidates_json"], '[{"value": "一\r\n二"}]')
+
+        shared[0]["field"] = "改过"
+        self.assertEqual(rm_candidates.read_rows_shared(batch)[0]["field"], "title")
+
+    def test_non_atomic_rewrite_does_not_cache_rows_under_another_writers_file_stamp(self):
+        from contextlib import contextmanager
+
+        batch = self.candidates / "studio-logo-candidate-20260923.csv"
+        batch.write_text("studio,saved\nFALENO,initial.jpg\n", encoding="utf-8")
+        rm_candidates.read_candidates("studio_logos", self.candidates)
+        real_open = Path.open
+
+        @contextmanager
+        def intervening_write(path, *args, **kwargs):
+            with real_open(path, *args, **kwargs) as handle:
+                yield handle
+            if path == batch and args and args[0] == "w":
+                with real_open(path, "w", encoding="utf-8", newline="") as handle:
+                    handle.write("studio,saved\nFALENO,external.jpg\n")
+
+        with mock.patch.object(Path, "open", intervening_write):
+            rm_candidates.write_rows(batch, ["studio", "saved"],
+                                     [{"studio": "FALENO", "saved": "first.jpg"}])
+        self.assertEqual(rm_candidates.read_rows_shared(batch)[0]["saved"], "external.jpg")
 
     def test_older_batches_keep_their_undecided_rows_in_the_queue(self):
         """跑了新批次不该让上一批未复核的行消失。

@@ -149,17 +149,20 @@ def _payload_reader(contract):
             if not hasattr(contract, 'task_resource_monitor'):
                 contract.task_resource_monitor = Monitor(contract.task_runs)
     # 控制状态与资源占用只对自己或后代还在排在跑的那几条有内容；其余的不逐条再问。
-    live = contract.task_runs.live_ids()
+    # 族里谁还活着一条查询取齐：排着几千条后继时，逐条递归查询要好几秒。
+    families = contract.task_runs.active_families()
 
     def payload(row):
         result = row.payload()
-        if row.id not in live:
+        if row.id not in families:
             return _with_checkpoint(row, result)
         from .task_control import projection
-        control = projection(contract.task_runs, row)
+        family = [{'id': run_id, 'status': status} for run_id, status in families[row.id]]
+        control = projection(contract.task_runs, row,
+                             descendants_active=any(member['id'] != row.id for member in family))
         if control is not None:
             result['control'] = control
-        resources = contract.task_resource_monitor.for_run(row)
+        resources = contract.task_resource_monitor.for_run(row, family)
         if resources is not None:
             result['resources'] = resources
         return _with_checkpoint(row, result)

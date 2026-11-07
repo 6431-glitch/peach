@@ -347,6 +347,53 @@ class WebDataTests(unittest.TestCase):
         self.assertEqual(next(row["n"] for row in actual["tagperformers"]
                               if row["k"] == "Demo performer 0"), 20)
 
+    def test_entity_shapes_bound_asset_predicate_work_with_inaccurate_statistics(self):
+        asset_count, people_count = 400, 80
+        with self.contract.write_transaction() as connection:
+            connection.executemany(
+                "INSERT INTO asset(id,location,path,name,medium,size) VALUES(?,'local',?,?,'video',1)",
+                [(1000 + i, f'R:/Media/shape-{i}.mp4', f'shape-{i}.mp4') for i in range(asset_count)])
+            connection.executemany(
+                "INSERT INTO entity(id,kind,canonical_name,normalized_name,created_at,updated_at) "
+                "VALUES(?,'performer',?,?,'2026-01-01','2026-01-01')",
+                [(2000 + i, f'Shape person {i}', f'shape person {i}') for i in range(people_count)])
+            connection.executemany(
+                "INSERT INTO asset_entity(asset_id,entity_id,role,source) VALUES(?,?,'performer','test')",
+                [(1000 + i, 2000 + (i + offset) % people_count)
+                 for i in range(asset_count) for offset in (0, 1)])
+            connection.execute('ANALYZE')
+        with self.contract.read_connection() as connection:
+            expected = web_entity._entity_shape_parts(self.contract, connection)
+        with self.contract.write_transaction() as connection:
+            if connection.execute("SELECT 1 FROM sqlite_schema WHERE name='sqlite_stat4'").fetchone():
+                connection.execute('DELETE FROM sqlite_stat4')
+            connection.executemany('UPDATE sqlite_stat1 SET stat=? WHERE idx=?', [
+                ('30000 1500', 'idx_asset_location'),
+                ('30000 1500 1', 'sqlite_autoindex_asset_1'),
+                ('0 0', 'idx_asset_region'),
+                ('1 1 1', 'idx_asset_disposal_id'),
+                ('30000 1', 'idx_asset_name'),
+                ('30000 2', 'idx_asset_size'),
+                ('30000 1500 1500', 'idx_asset_hash'),
+                ('90000 250 250', 'idx_asset_entity_entity_role'),
+                ('90000 10 1 1 1', 'sqlite_autoindex_asset_entity_1'),
+                ('2500 400 1', 'sqlite_autoindex_entity_1'),
+            ])
+        calls = 0
+        def counted_extra(name, path, roots):
+            nonlocal calls
+            calls += 1
+            return catalog_rules.sql_is_local_extra(name, path, roots)
+        with mock.patch('peach.repository.sql_is_local_extra', counted_extra):
+            with self.contract.read_connection() as connection:
+                actual = web_entity._entity_shape_parts(self.contract, connection)
+                self.assertEqual(actual, expected)
+                self.assertLess(calls, asset_count * 10, f'asset predicate calls: {calls}')
+                calls = 0
+                single = web_entity._entity_shape_parts(self.contract, connection, 2000)
+                self.assertEqual(single, {2000: expected[2000]})
+                self.assertLess(calls, 50, f'single-entity predicate calls: {calls}')
+
     def test_facets_ignore_unused_tag_match_and_keep_revision_invalidation(self):
         args = {"loc": "local,115", "thumb": "0", "tag_match": "all"}
         with mock.patch("peach.web_state.time.monotonic", return_value=100):

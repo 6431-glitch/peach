@@ -12,13 +12,8 @@ from . import timeline_sheets, timeline_sources
 from .config import FFMPEG_DIR, STATE_DIR
 from .ffmpeg import FFmpegResolver
 from .fsutil import atomic_path
-from .jobs import DiskGuard
+from .storage_budget import CapacityGuard
 from .media_processing_policy import metadata_only
-from .platform import system_volume
-
-#: 采集期间系统盘至少留这么多 GiB。数字和抽帧脚本的默认值同一个：真正会把系统盘写满的
-#: 是网盘缓存那一类第三方消耗方，与产物落在哪块盘无关。
-MIN_FREE_GB = 40.0
 
 MODE_PATH = STATE_DIR / 'timeline-thumbnails.json'
 
@@ -147,7 +142,9 @@ def w_thumbnail_jobs(contract, body):
     root = contract.timeline_root
 
     def work(job_id):
-        guard = DiskGuard(system_volume(), MIN_FREE_GB)
+        from .settings_file import load_config
+        config = getattr(contract, 'upgrade_config', None) or load_config()
+        guard = CapacityGuard(config)
         result = timeline_sheets.generate_library(
             contract.db_path, root, interval, ffmpeg=str(choice.path),
             active=lambda: ((contract.thumbnail_job.snapshot() or {}).get('job_id') == job_id

@@ -133,4 +133,18 @@ describe('数据库那一份落进本地缓存', () => {
     applySyncedSettings(null, changed, store);
     expect(save).not.toHaveBeenCalled();
   });
+
+  it('新客户端与已有缓存都采用实例保存的导航和媒体库顺序', () => {
+    const fresh = stage();
+    const cached = stage({ navigationOrders: { tags: ['local', 'online'] }, libraryOrder: ['a', 'b'] });
+    const instance = { navigationOrders: { tags: ['online', 'local'] }, libraryOrder: ['b', 'a'] };
+    for (const client of [fresh, cached]) {
+      applySyncedSettings(instance, client.changed, client.store);
+      expect(client.store.value.navigationOrders.tags).toEqual(['online', 'local']);
+      expect(client.store.value.libraryOrder).toEqual(['b', 'a']);
+      applySyncedSettings({ navigationOrders: { tags: ['local', 'online'] }, libraryOrder: [] }, client.changed, client.store);
+      expect(client.store.value.navigationOrders.tags).toEqual(['local', 'online']);
+      expect(client.store.value.libraryOrder).toEqual([]);
+    }
+  });
 });

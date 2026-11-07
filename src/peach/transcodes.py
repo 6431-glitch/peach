@@ -55,6 +55,10 @@ class TranscodeCancelled(TranscodeUnavailable):
     pass
 
 
+class TranscodeCapacityDenied(TranscodeUnavailable):
+    """容量暂停不进入编码器回退。"""
+
+
 class TranscodeNeedsSession(TranscodeUnavailable):
     """片源要整片转码，但请求没带可取消的流会话，也没有现成缓存。"""
 
@@ -73,6 +77,7 @@ class TranscodeService:
     ):
         self.resolver = resolver
         self.cache_root = cache_root
+        self.capacity_guard = None
         self.prefer_hardware = prefer_hardware is not False
         self.hardware = HardwareTranscoder(enabled=self.prefer_hardware, state_root=state_root)
         self._locks: dict[int, list] = {}
@@ -203,7 +208,7 @@ class TranscodeService:
                                 deadline=deadline,
                                 label=attempt.name,
                             )
-                        except TranscodeCancelled:
+                        except (TranscodeCancelled, TranscodeCapacityDenied):
                             raise
                         except (OSError, TranscodeUnavailable) as exc:
                             last_detail = f"{attempt.name}: {exc}"
@@ -267,7 +272,7 @@ class TranscodeService:
                 label="ffprobe",
                 capture_stdout=True,
             )
-        except TranscodeCancelled:
+        except (TranscodeCancelled, TranscodeCapacityDenied):
             raise
         except (OSError, TranscodeUnavailable):
             return None
@@ -390,6 +395,12 @@ class TranscodeService:
         label: str,
         capture_stdout: bool = False,
     ) -> tuple[int, bytes, bytes]:
+        from .jobs import DiskSpaceDenied
+        try:
+            if self.capacity_guard is not None:
+                self.capacity_guard.check(force=True)
+        except DiskSpaceDenied as error:
+            raise TranscodeCapacityDenied(str(error)) from error
         creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         process = subprocess.Popen(
             command,
@@ -411,6 +422,13 @@ class TranscodeService:
                     stdout, stderr = process.communicate(timeout=0.5)
                     break
                 except subprocess.TimeoutExpired:
+                    if self.capacity_guard is not None:
+                        try:
+                            self.capacity_guard.check()
+                        except DiskSpaceDenied as error:
+                            process.kill()
+                            process.communicate()
+                            raise TranscodeCapacityDenied(str(error)) from error
                     if registry is not None and session and registry.is_cancelled(session):
                         process.kill()
                         process.communicate()
