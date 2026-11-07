@@ -2786,15 +2786,28 @@ class ReviewQueueTests(unittest.TestCase):
         finally:
             con.close()
 
-    def test_a_tag_candidate_with_no_tag_left_stays_out_of_the_queue(self):
-        """#486：折完 genre 一个标签也不剩的候选，点通过只会报「标签候选为空」。"""
+    def test_an_empty_tag_candidate_shows_only_while_a_genre_waits_to_be_mapped(self):
+        """#486：折完 genre 一个标签也不剩的候选，原来点通过报「标签候选为空」。
+
+        还带着未收录 genre 的照常出卡，卡上的「收录」是它唯一的入口，点通过直接结案；
+        什么都不剩的不摆出来。"""
         self._asset(108, "FC2-PPV-3083211", "FC2-PPV-3083211.mp4")
         self._asset(109, "ABW-251", "ABW-251.mp4")
+        self._asset(110, "FC2-PPV-1000001", "FC2-PPV-1000001.mp4")
         self.write_metadata_rows([
             {"item_key": "FC2-PPV-3083211:tags", "code": "FC2-PPV-3083211", "field": "tags", "current": "",
              "candidates": [{"value": [], "display": "", "unmapped_genres": ["まだ知らない分類"]}]},
+            {"item_key": "FC2-PPV-1000001:tags", "code": "FC2-PPV-1000001", "field": "tags", "current": "",
+             "candidates": [{"value": [], "display": ""}]},
             self._tag_row("ABW-251:tags", "ABW-251", ["Shaved Pussy", "まだ知らない分類"]),
         ])
+        self.assertEqual(sorted(self.queue_keys("metadata_fields")), ["ABW-251:tags", "FC2-PPV-3083211:tags"])
+        row = self.queue_row("metadata_fields", "FC2-PPV-3083211:tags")
+        result = rm_review.w_review_decision(self.contract, {
+            "category": "metadata_fields", "item_key": "FC2-PPV-3083211:tags", "status": "approved",
+            "candidate_key": row["candidates"][0]["candidate_key"],
+            "expected_revision": row["asset_mutation_revision"]})
+        self.assertEqual(result["applied_assets"], 0)
         self.assertEqual(self.queue_keys("metadata_fields"), ["ABW-251:tags"])
 
     def test_a_code_the_ledger_never_heard_of_keeps_the_snapshot_value(self):

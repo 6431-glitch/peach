@@ -324,12 +324,19 @@ def _queue_rows(contract: ReviewContract, category: str,
     return [row for row in rows if _needs_review(category, row)], source, skipped
 
 
-def _empty_tags(row: dict, candidate: dict) -> bool:
-    """标签候选按现在的词表读完是空的：落库那一步会拒绝它。"""
+def _no_tags_left(row: dict, candidate: dict) -> bool:
+    """标签候选按现在的词表读完一个标签也不剩。"""
     if str(row.get("field") or "").strip() != "tags":
         return False
     value = candidate.get("value")
     return isinstance(value, list) and not current_tags(str(tag) for tag in value)
+
+
+def _empty_tags(row: dict, candidate: dict) -> bool:
+    """既没有可写的标签、也没有待收录 genre 的候选不摆出来。
+
+    还带着未收录 genre 的照常出卡：卡上的「收录」是这些 genre 唯一的入口（#486）。"""
+    return _no_tags_left(row, candidate) and not candidate.get("unmapped_genres")
 
 
 def _repin_file_rows(connection, rows: list[dict]) -> list[dict]:
@@ -1002,7 +1009,8 @@ def _approve_metadata_with_receipt(connection, group, candidate, now, note, expe
     marks = ",".join("?" * len(asset_ids))
     before = {str(row["id"]): int(row["mutation_revision"]) for row in connection.execute(
         f"SELECT id,mutation_revision FROM asset WHERE id IN ({marks})", asset_ids)}
-    applied = _apply_metadata_candidate(
+    # 只剩待收录 genre 的标签卡：没有可写的标签，「通过」就是结案，不报「标签候选为空」（#486）。
+    applied = 0 if _no_tags_left(group, candidate) else _apply_metadata_candidate(
         connection, group, candidate, now, review_owner(str(candidate.get("source") or "")),
         expected_revision=expected_revision)
     revisions = {
