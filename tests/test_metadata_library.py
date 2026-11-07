@@ -4061,6 +4061,7 @@ class ProcessingLockTests(unittest.TestCase):
     def test_a_running_background_collection_yields_to_a_user_run_at_its_next_checkpoint(self):
         config, db, database = self.config, self.db, self.database
         entered, proceed = threading.Event(), threading.Event()
+        stopping = threading.Event()
 
         def query(*_args, **_kwargs):
             if not entered.is_set():
@@ -4075,7 +4076,8 @@ class ProcessingLockTests(unittest.TestCase):
         def run(sink, **options):
             try:
                 sink.append(process_library(config, db, self.root / 'generated', self.root / 'covers',
-                                            provider_factory=lambda: provider, database=database, **options))
+                                            provider_factory=lambda: provider, database=database,
+                                            active=lambda: not stopping.is_set(), **options))
             except Exception as error:
                 sink.append(error)
 
@@ -4084,16 +4086,26 @@ class ProcessingLockTests(unittest.TestCase):
                       return_value={'aliases': 0, 'avatars': 0, 'conflicts': 0, 'failed': 0}):
             first = threading.Thread(target=run, args=(background,), kwargs=dict(
                 asset_ids=[1, 2], stage='collect', state_file=self.root / 'state/upgrade-repairs/1.json'))
+            threads = [first]
             first.start()
-            self.assertTrue(entered.wait(10))
-            second = threading.Thread(target=run, args=(user,))
-            second.start()
-            deadline = time.monotonic() + 10
-            while not library_processing._foreground_waiting() and time.monotonic() < deadline:
-                time.sleep(0.01)
-            proceed.set()
-            first.join(30)
-            second.join(30)
+            try:
+                self.assertTrue(entered.wait(10))
+                second = threading.Thread(target=run, args=(user,))
+                second.start()
+                threads.append(second)
+                deadline = time.monotonic() + 10
+                while not library_processing._foreground_waiting() and time.monotonic() < deadline:
+                    time.sleep(0.01)
+                self.assertTrue(library_processing._foreground_waiting())
+                proceed.set()
+                for thread in threads:
+                    thread.join(30)
+                    self.assertFalse(thread.is_alive())
+            finally:
+                stopping.set()
+                proceed.set()
+                for thread in threads:
+                    thread.join()
         self.assertIsInstance(background[0], ProcessingBusy)
         self.assertIsInstance(user[0], dict)
         self.assertNotEqual(user[0].get('outcome'), 'interrupted')

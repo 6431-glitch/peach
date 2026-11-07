@@ -112,7 +112,7 @@ SCOPES: dict[str, tuple[str, ...]] = {
                  "test_seed_pack.py", "test_seed_followup.py", "test_seed_corrections.py"),
     "tooling": ("test_scripts.py", "test_trash_junk.py", "test_auth.py", "test_access.py", "test_cli.py", "test_server.py", "test_diagnostics.py", "test_error_reporting.py", "test_remote_reporting.py", "test_reporting_*.py", "test_library_sharing.py", "test_library_diagnostics.py", "test_script_policy.py",
                 "test_scan.py", "test_record_rehome.py", "test_wants.py", "test_push_discovery.py", "test_media_probe.py", "test_subtitles.py", "test_onboarding.py", "test_configuration_sources.py", "test_clouddrive_proxy.py", "test_folder_picker.py", "test_ledger_backups.py", "test_clear_camera_filename_codes.py",
-                "test_agent_worktree.py", "test_check_public_text.py", "test_issue_intake.py", "test_star_history.py", "test_test_evidence.py", "test_test_history.py", "test_test_environment.py", "test_dependency_policy.py",
+                "test_agent_worktree.py", "test_ci_test_evidence.py", "test_check_public_text.py", "test_issue_intake.py", "test_star_history.py", "test_test_evidence.py", "test_test_history.py", "test_test_environment.py", "test_dependency_policy.py",
                 "test_version_bump.py", "test_changelog.py", "test_release_due.py", "test_release_candidate.py", "test_media_build_cache.py", "test_runner_launcher.py",
                 "test_restart_windows_tray.py", "test_deploy_windows_tray.py", "test_runtime_prepare.py",
                 "test_buildinfo.py", "test_versioning.py", "test_macos_standalone.py",
@@ -405,7 +405,7 @@ AUTO_SCOPE_PREFIXES: tuple[tuple[str, str | tuple[str, ...]], ...] = (
 FULL_ONLY_PREFIXES: tuple[str, ...] = (
     'frontend/node_modules/',
     "pyproject.toml",
-    "scripts/test_runner.py", "scripts/test_evidence.py", "scripts/test.ps1", "scripts/test.sh",
+    "scripts/test_runner.py", "scripts/test_evidence.py", "scripts/ci_test_evidence.py", "scripts/test.ps1", "scripts/test.sh",
     "scripts/ci_plan.py", "scripts/test_environment.py", "scripts/change_impact.py", "scripts/test_focus.py",
     "scripts/test_history.py", "uv.lock",
     "scripts/test_resume.py", "scripts/test_run_progress.py", "scripts/test_environment_identity.py",
@@ -937,7 +937,7 @@ def run_shards(scopes: tuple[str, ...], *, jobs: int, shard_count: int,
         plan_path.write_text(json.dumps(plan), encoding="utf-8")
     pending = list(range(shard_count))
     running = {}
-    completed_at = {}
+    completed_at, forced = {}, set()
     passed, count, timings = True, 0, []
     try:
         while pending or running:
@@ -952,7 +952,8 @@ def run_shards(scopes: tuple[str, ...], *, jobs: int, shard_count: int,
                     log.close()
                     raise
                 running[index] = (process, log)
-            finished = test_shard_results.completed_processes(running, folder, completed_at, now=time.monotonic())
+            finished = test_shard_results.completed_processes(running, folder, completed_at,
+                                                               now=time.monotonic(), forced=forced)
             if not finished:
                 time.sleep(0.2)
                 continue
@@ -965,9 +966,10 @@ def run_shards(scopes: tuple[str, ...], *, jobs: int, shard_count: int,
                 report_path = folder / f"{index}.json"
                 report = test_shard_results.read_report(report_path)
                 ok = process.returncode == 0 and bool(report.get("success"))
+                assigned = plan[index] if plan is not None else sorted({path.name for scope in scopes
+                           for path in selected_files(scope)})[index::shard_count]
+                complete = None
                 if checkpoint is not None:
-                    assigned = plan[index] if plan is not None else sorted({path.name for scope in scopes
-                               for path in selected_files(scope)})[index::shard_count]
                     complete = checkpoint(assigned, report, process.returncode == (0 if report.get('success') else 1))
                     ok = ok and complete
                 passed = passed and ok
@@ -978,7 +980,15 @@ def run_shards(scopes: tuple[str, ...], *, jobs: int, shard_count: int,
                 if outcomes is not None:
                     outcomes.extend(report.get("results", []))
                 print(f"分片 {index + 1}/{shard_count} {'通过' if ok else '失败'}"
-                      f"（{report.get('count', 0)} 个用例）", flush=True)
+                      f"（{report.get('count', 0)} 个用例；退出码 {process.returncode}；"
+                      f"完成报告 {'有' if report.get('complete') else '无'}；"
+                      f"补验覆盖 {'完整' if complete else '未完整' if complete is False else '未请求'}）", flush=True)
+                if not ok:
+                    details = {'files': assigned, 'exit_code': process.returncode,
+                               'forced_cleanup': index in forced, 'report_error': report.get('report_error'),
+                               'reported_success': report.get('success'), 'coverage_complete': complete,
+                               'reported_results': len(report.get('results', []))}
+                    print('分片失败明细：' + json.dumps(details, ensure_ascii=False), flush=True)
     finally:
         for process, log in running.values():
             if process.poll() is None:
