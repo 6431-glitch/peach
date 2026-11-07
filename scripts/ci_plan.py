@@ -80,7 +80,7 @@ def plan(event: str, paths: list[str], contents: dict | None = None) -> dict:
     for system in ("macos-latest", "windows-latest"):
         scope = "full" if wide else "auto"
         # 独立 runner 承担分片，避免共享文件、端口和全量证据锁。
-        split = wide or (system == "windows-latest" and selected_count >= AUTO_SHARD_FILES)
+        split = wide or selected_count >= AUTO_SHARD_FILES
         shards = (4 if system == "windows-latest" else 2) if split else 1
         for index in range(shards):
             rows.append({"os": system, "python": "3.14", "scope": scope,

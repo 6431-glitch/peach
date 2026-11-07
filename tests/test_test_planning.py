@@ -320,30 +320,33 @@ class TestPlanningTests(unittest.TestCase):
             with self.subTest(paths=paths):
                 scopes, _ = runner.scopes_for_changes(paths)
                 plan = ci_plan.plan('push', paths)
-                windows = [row for row in plan['matrix']['include'] if row['os'] == 'windows-latest']
                 self.assertFalse(plan['wide'])
-                self.assertEqual(len(windows), 4)
-                self.assertEqual(len([row for row in plan['matrix']['include']
-                                      if row['os'] == 'macos-latest']), 1)
-                self.assertTrue(all(row['scope'] == 'auto' for row in windows))
-                with patch.dict(os.environ, CIFrontendOwnershipTests.CI):
-                    serial = list(CIFrontendOwnershipTests.ids(runner.build_suite(*scopes)))
-                    collected = [name for row in windows for name in CIFrontendOwnershipTests.ids(
-                        runner.build_suite(*scopes, shard_index=row['shard_index'],
-                                           shard_count=row['shard_count']))]
-                self.assertTrue(serial)
-                self.assertEqual(len(serial), len(set(serial)))
-                self.assertCountEqual(serial, collected)
+                for system, count, runner_os in (('windows-latest', 4, 'Windows'),
+                                                 ('macos-latest', 2, 'macOS')):
+                    with self.subTest(system=system):
+                        rows = [row for row in plan['matrix']['include'] if row['os'] == system]
+                        self.assertEqual(len(rows), count)
+                        self.assertTrue(all(row['scope'] == 'auto' for row in rows))
+                        with patch.dict(os.environ, {**CIFrontendOwnershipTests.CI, 'RUNNER_OS': runner_os}):
+                            serial = list(CIFrontendOwnershipTests.ids(runner.build_suite(*scopes)))
+                            collected = [name for row in rows for name in CIFrontendOwnershipTests.ids(
+                                runner.build_suite(*scopes, shard_index=row['shard_index'],
+                                                   shard_count=row['shard_count']))]
+                        self.assertTrue(serial)
+                        self.assertEqual(len(serial), len(set(serial)))
+                        self.assertCountEqual(serial, collected)
 
     def test_auto_partition_threshold_counts_unique_selected_files(self):
-        for count, expected in ((149, 1), (150, 4)):
+        for count, windows_count, macos_count in ((149, 1, 1), (150, 4, 2)):
             with self.subTest(count=count), patch.object(runner, 'selected_files', return_value=tuple(
                     runner.TESTS / f'test_selected_{index}.py' for index in range(count))):
                 plan = ci_plan.plan('pull_request', ['src/peach/web_catalog.py'])
-                windows = [row for row in plan['matrix']['include'] if row['os'] == 'windows-latest']
                 self.assertFalse(plan['wide'])
-                self.assertEqual(len(windows), expected)
-                self.assertTrue(all(row['scope'] == 'auto' for row in windows))
+                for system, expected in (('windows-latest', windows_count), ('macos-latest', macos_count)):
+                    with self.subTest(system=system):
+                        rows = [row for row in plan['matrix']['include'] if row['os'] == system]
+                        self.assertEqual(len(rows), expected)
+                        self.assertTrue(all(row['scope'] == 'auto' for row in rows))
 
     def test_document_changes_avoid_optional_jobs_and_unknown_changes_require_them(self):
         documents = ci_plan.plan('pull_request', ['docs/TESTING.md'])
