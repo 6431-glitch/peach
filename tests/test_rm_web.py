@@ -2112,6 +2112,41 @@ class WebDataTests(unittest.TestCase):
         self.assertTrue(kept.exists(), "不在回收站的媒体一个都不能碰")
         self.assertIsNotNone(self.row(2))
 
+    def test_empty_trash_withdraws_candidates_and_decisions_pinned_to_purged_assets(self):
+        # #486：删掉的资产留下的候选与决定，之后同一路径重新登记拿到新编号时就悬空了。
+        from peach.library_processing import FIELDS
+        from peach.review_csv import read_rows, write_rows
+        binned = self.stage_media(1, "binned.mp4")
+        candidates = Path(self.tmp.name).resolve() / "generated"
+        output = candidates / "library-metadata-field-candidates.csv"
+
+        def row(asset_id, field, path):
+            return {"item_key": f"asset:{asset_id}:{field}", "code": "ABC-001", "query": "ABC-001",
+                    "asset_id": asset_id, "asset_path": path, "field": field, "status": "candidate",
+                    "candidates_json": "[]"}
+        write_rows(output, FIELDS, [row(1, "title", str(binned)), row(1, "studio", str(binned)),
+                                    row(2, "title", r"B:\two.mp4"),
+                                    {**row("", "series", ""), "item_key": "code:ABC-001:series"}],
+                   fill_missing=True)
+        with self.contract.write_transaction() as connection:
+            connection.executemany(
+                "INSERT INTO review_decision(category,item_key,status,updated_at) VALUES(?,?,'skipped','now')",
+                [("metadata_fields", "asset:1:title"), ("metadata_fields", "asset:2:title"),
+                 ("metadata_fields", "asset:11:title"), ("creator_tags", "asset:1:title")])
+        contract = rm_web.WebContract(Path(self.db_path), avatar_root=self.avatars, logo_root=self.logos,
+                                      candidate_root=candidates)
+        rm_web.w_feedback(contract, {"id": 1, "kind": "dispose"})
+
+        self.assertEqual(rm_web.w_empty_trash(contract)["purged"], 1)
+
+        self.assertEqual([candidate["item_key"] for candidate in read_rows(output)],
+                         ["asset:2:title", "code:ABC-001:series"])
+        with closing(sqlite3.connect(self.db_path)) as connection:
+            self.assertEqual(connection.execute(
+                "SELECT category,item_key FROM review_decision ORDER BY category,item_key").fetchall(),
+                [("creator_tags", "asset:1:title"), ("metadata_fields", "asset:11:title"),
+                 ("metadata_fields", "asset:2:title")])
+
     def test_rclone_mount_detection_uses_the_most_specific_mountpoint(self):
         mountinfo = Path(self.tmp.name) / "mountinfo"
         mountinfo.write_text(

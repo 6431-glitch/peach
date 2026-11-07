@@ -734,7 +734,9 @@ class UpgradeRepairTests(unittest.TestCase):
             row=connection.execute('SELECT catalog_title,field_owners FROM asset WHERE id=1').fetchone()
             self.assertEqual(row[0], '元の題名')
             self.assertEqual(json.loads(row[1])['catalog_title'], 'auto:dmm')
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 2)
+            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
+                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 2)
             self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
         self.assertEqual(upgrade_repairs._read(self.service.receipt)['text_media_ids'], [1])
@@ -1076,7 +1078,9 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code,duration FROM asset ORDER BY id').fetchall()
             self.assertEqual([tuple(row) for row in rows], [(1, 'SSIS-123', None), (2, 'BAD-001', None)])
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 1)
+            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
+                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 1)
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 1)
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(receipt['local']['before'], receipt['local']['after'])
@@ -1229,6 +1233,89 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service.prepare()
         self.assertEqual(output.read_bytes(), stored)
         self.assertEqual(upgrade_repairs._read(self.service.receipt), receipt)
+
+    def dangling_fixture(self):
+        """#486 的现场：77 永久删除后同一个文件重新登记成 759，220 的文件已不在库。"""
+        from peach.library_processing import FIELDS
+        from peach.review_csv import write_rows
+        moved, gone, live = r'R:\media\DASD-321.mp4', r'R:\media\SSIS-220.mp4', r'R:\media\MIAA-337.mp4'
+        with self.database.write_transaction() as connection:
+            for key, path, code in ((759, moved, 'DASD-321'), (760, live, 'MIAA-337')):
+                connection.execute('INSERT INTO asset(id,location,path,name,medium,code,duration) '
+                                   "VALUES(?,'local',?,?,'video',?,60)", (key, path, path.rsplit('\\', 1)[1], code))
+            connection.executemany(
+                "INSERT INTO review_decision(category,item_key,status,note,updated_at) "
+                "VALUES('metadata_fields',?,?,?,'2026-10-29T00:00:00Z')",
+                [('asset:77:title', 'skipped', ''), ('asset:77:studio', 'approved', '{"auto_applied": true}'),
+                 ('asset:220:title', 'approved', '{"auto_applied": true}'),
+                 ('asset:80:title', 'skipped', ''), ('asset:760:title', 'skipped', '')])
+
+        def row(asset_id, field, code, path):
+            choice = {'candidate_key': f'{code}-{field}', 'source': 'javbus', 'provider_id': code,
+                      'value': f'{code} の{field}', 'display_value': f'{code} の{field}'}
+            return {'item_key': f'asset:{asset_id}:{field}', 'code': code, 'query': code, 'asset_id': asset_id,
+                    'asset_path': path, 'field': field, 'field_label': field, 'current_value': '',
+                    'candidates_json': json.dumps([choice], ensure_ascii=False), 'source_count': 1,
+                    'source_profile': 'library', 'policy_version': 'library-v1', 'status': 'candidate'}
+
+        rows = [row(77, 'title', 'DASD-321', moved),
+                # 新编号已有同字段的行：旧行让位。
+                row(77, 'studio', 'DASD-321', moved), row(759, 'studio', 'DASD-321', moved),
+                row(220, 'title', 'SSIS-220', gone), row(760, 'title', 'MIAA-337', live),
+                # 按番号出的行不钉编号，不归这条补修管。
+                {**row('', 'series', 'ABP-001', ''), 'item_key': 'code:ABP-001:series'}]
+        output = self.contract.candidate_root / upgrade_repairs.CANDIDATE_FILE
+        output.parent.mkdir(parents=True, exist_ok=True)
+        write_rows(output, FIELDS, rows, fill_missing=True)
+        return output
+
+    def decisions(self):
+        with self.database.read_connection() as connection:
+            return {row[0]: tuple(row[1:]) for row in connection.execute(
+                'SELECT item_key,status,note,updated_at FROM review_decision ORDER BY item_key')}
+
+    def test_dangling_candidates_are_repinned_or_withdrawn_once_and_can_be_restored(self):
+        output = self.dangling_fixture()
+        with self.database.write_transaction() as connection:
+            connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
+                               (upgrade_repairs.REVISION, '1', json.dumps({
+                                   'revision': upgrade_repairs.REVISION, 'media_ids': [], 'deferred': [],
+                                   'queued': {}, 'dispatch_complete': True, 'code_evidence': {}})))
+        before, decided = self.candidate_rows(output), self.decisions()
+        self.service.prepare()
+        after = self.candidate_rows(output)
+        self.assertEqual(sorted(after), ['asset:759:studio', 'asset:759:title', 'asset:760:title',
+                                         'code:ABP-001:series'])
+        self.assertEqual(after['asset:759:title'], {**before['asset:77:title'], 'item_key': 'asset:759:title',
+                                                    'asset_id': '759'})
+        for key in ('asset:759:studio', 'asset:760:title', 'code:ABP-001:series'):
+            self.assertEqual(after[key], before[key])
+        # 跳过的决定跟着改挂，仍在「稍后处理」；挂不上的决定清掉；在库资产的不动。
+        self.assertEqual(self.decisions(), {'asset:759:title': decided['asset:77:title'],
+                                            'asset:760:title': decided['asset:760:title']})
+        with self.database.read_connection() as connection:
+            receipt = json.loads(connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
+                                                    (upgrade_repairs.DANGLING_KEY,)).fetchone()[0])
+        self.assertEqual(receipt['rule'], upgrade_rules.DANGLING_CANDIDATES)
+        self.assertEqual(receipt['repinned'], [{'file': upgrade_repairs.CANDIDATE_FILE, 'item_key': 'asset:77:title',
+                                                'asset_id': 77, 'new_item_key': 'asset:759:title',
+                                                'new_asset_id': 759}])
+        self.assertEqual([entry['row'] for entry in receipt['withdrawn']],
+                         [before['asset:77:studio'], before['asset:220:title']])
+        self.assertEqual({entry['item_key']: entry['moved_to'] for entry in receipt['decisions']},
+                         {'asset:77:title': 'asset:759:title', 'asset:77:studio': None,
+                          'asset:220:title': None, 'asset:80:title': None})
+        # 只做一次：再启动不重读、不重写。
+        stored = output.read_bytes()
+        self.service.prepare()
+        self.assertEqual(output.read_bytes(), stored)
+        # 按回执整批还原：行与决定回到补修之前，补修也不再重做。
+        result = upgrade_repairs.restore_dangling_candidates(self.database, self.contract.candidate_root)
+        self.assertEqual(result, {'rows': 3, 'decisions': 4, 'skipped': 0})
+        self.assertEqual(self.candidate_rows(output), before)
+        self.assertEqual(self.decisions(), decided)
+        self.service.prepare()
+        self.assertEqual(self.candidate_rows(output), before)
 
     def test_old_code_snapshot_stays_while_another_video_is_that_release(self):
         from peach import artifact_rules
