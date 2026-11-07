@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from contextvars import copy_context
+from contextlib import contextmanager
 from pathlib import Path
 import subprocess
 import sys
@@ -44,10 +45,12 @@ class TaskControlTests(unittest.TestCase):
         self.assertEqual(len(result.stdout.splitlines()), 8)
 
     def test_a_stalled_process_is_reaped_and_retains_its_output(self):
+        ready = self.root / 'stalled-ready'
         command = [sys.executable, '-u', '-c',
-                   "import subprocess,sys,time; child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(30)']); "
-                   "print('started',child.pid,flush=True); time.sleep(30)"]
-        with self.record_child():
+                   "import subprocess,sys,time; from pathlib import Path; "
+                   "child=subprocess.Popen([sys.executable,'-c','import time; time.sleep(30)']); "
+                   "print('started',child.pid,flush=True); Path(sys.argv[1]).touch(); time.sleep(30)", str(ready)]
+        with self.record_child(), self.process_output_started(ready):
             with self.assertRaises(subprocess.TimeoutExpired) as caught:
                 task_control.run(command, capture_output=True, idle_timeout=.8)
         self.assertIn(b'started', caught.exception.output)
@@ -75,6 +78,7 @@ class TaskControlTests(unittest.TestCase):
 
     def test_a_pause_requested_inside_progress_projection_suspends_the_owned_child(self):
         path = self.root / 'heartbeat-progress'
+        ready = self.root / 'progress-ready'
         chunks = []
         def work(job, identity):
             def progress(chunk):
@@ -83,14 +87,24 @@ class TaskControlTests(unittest.TestCase):
                     task_control.request(self.store, job.snapshot()['run_id'], 'pause')
                 job.update(identity, checked=len(chunks))
             command = [sys.executable, '-u', '-c',
-                       "import sys,time; from pathlib import Path; p=Path(sys.argv[1]); "
-                       "[(p.write_bytes(str(i).encode()), print(i, flush=True), time.sleep(.15)) for i in range(200)]",
-                       str(path)]
+                       "import sys,time\nfrom pathlib import Path\n"
+                       "p, ready = map(Path, sys.argv[1:])\n"
+                       "for i in range(200):\n"
+                       "    p.write_bytes(str(i).encode())\n"
+                       "    print(i, flush=True)\n"
+                       "    if i == 0: ready.touch()\n"
+                       "    time.sleep(.15)\n", str(path), str(ready)]
             task_control.run(command, capture_output=True, idle_timeout=.8, on_stdout=progress)
-        with self.record_child():
+        with self.record_child(), self.process_output_started(ready):
             job, original = self.start(work)
             run_id = original['run_id']
-            self.wait_until(lambda: self.state(run_id)['state'] == 'paused')
+
+            def paused():
+                state = self.state(run_id)
+                self.assertIsNotNone(state, f'暂停前任务已结束：{job.snapshot()!r}')
+                return state['state'] == 'paused'
+
+            self.wait_until(paused)
             before = path.read_bytes()
             time.sleep(1)
             self.assertEqual(path.read_bytes(), before)
@@ -188,6 +202,17 @@ class TaskControlTests(unittest.TestCase):
             return child
 
         return patch('peach.task_control.subprocess.Popen', side_effect=create)
+
+    @contextmanager
+    def process_output_started(self, ready):
+        wait_process = task_control._wait_process
+
+        def wait(process, *args, **kwargs):
+            self.wait_until(ready.is_file, '真实子进程尚未完成首个输出')
+            return wait_process(process, *args, **kwargs)
+
+        with patch('peach.task_control._wait_process', wait):
+            yield
 
     @staticmethod
     def child_command(path, count):
@@ -566,10 +591,12 @@ class TaskControlTests(unittest.TestCase):
 
     def test_timeout_keeps_partial_output_and_reaps_the_owned_child(self):
         run = self.store.start('timeout-output', trigger='manual')
+        ready = self.root / 'timeout-ready'
         command = [sys.executable, '-u', '-c',
-                   "import sys,time; print('partial-output',flush=True); "
-                   "print('partial-error',file=sys.stderr,flush=True); time.sleep(10)"]
-        with self.record_child(), task_control.bind(self.store, run.id):
+                   "import sys,time; from pathlib import Path; print('partial-output',flush=True); "
+                   "print('partial-error',file=sys.stderr,flush=True); Path(sys.argv[1]).touch(); time.sleep(10)",
+                   str(ready)]
+        with self.record_child(), self.process_output_started(ready), task_control.bind(self.store, run.id):
             with self.assertRaises(subprocess.TimeoutExpired) as caught:
                 task_control.run(command, capture_output=True, timeout=1,
                                  creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0))
