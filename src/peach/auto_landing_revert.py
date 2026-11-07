@@ -42,6 +42,10 @@ id 或路径已被别的行占用时那一批拒绝撤回。登记时自动接�
 关注作者建档（ADR-0096）建下的创作者在 `entity.metadata_json` 里记 `source` 与 `batch`。撤回先删
 这一批的链接与别名，再解绑关注来源；实体还被别的行引用（人挂上的作品、链接）就留着，没有才删。
 
+升级补修解除的乱码人物关联（#478）按 `upgrade:garbled-performers` 认，批次是那份升级回执的 id。
+回执 `garbled_people` 存着删掉的关联、`演员:` 标签与实体子表行的原样快照，撤回把账本里还没有的
+那几行插回；实体的 id 或名字已被占用时整批拒绝。
+
 `plan` 只读，`apply` 只写账本、在调用方的事务里跑，`remove_files` 等事务提交之后再删盘上文件。
 """
 from __future__ import annotations
@@ -49,8 +53,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from . import (company_profiles, fc2_sellers, follow_creators, jav_poster_crop, record_rehome,
-               sample_images, seed_pack, wants, western_artwork)
+from . import (company_profiles, fc2_sellers, follow_creators, jav_poster_crop, metadata_text_repair,
+               record_rehome, sample_images, seed_pack, wants, western_artwork)
 from .metadata_auto_apply import UNION_TAGS_SOURCE, planned_verified_revert, revert_verified
 
 SIDECARS = (".ct", ".provenance.json")
@@ -273,6 +277,7 @@ def plan(connection, source: str, batch: str = "", *, logo_root: Path, cover_roo
         "rehomes": record_rehome.planned_revert(connection, source, batch),
         "acquired": wants.planned_revert(connection, source, batch),
         "verified": planned_verified_revert(connection, source, batch, item_keys),
+        "garbled": metadata_text_repair.planned_revert(connection, source, batch),
     }
 
 
@@ -287,7 +292,8 @@ def counts(planned: dict) -> dict:
             "样张": sum(sample["count"] for sample in planned["samples"]),
             "否决": len(planned["rejections"]), "标签": len(planned["tags"]),
             "接回": len(planned["rehomes"]), "想要入库": len(planned["acquired"]),
-            "中文名": len(planned["names"]), "核查结算": len(planned["verified"])}
+            "中文名": len(planned["names"]), "核查结算": len(planned["verified"]),
+            "乱码人物": len(planned["garbled"])}
 
 
 def apply(connection, planned: dict) -> dict:
@@ -337,6 +343,7 @@ def apply(connection, planned: dict) -> dict:
     # 链接与别名已在上面按批次删掉，剩下没有别的引用的实体才删得掉。
     creator_revert = follow_creators.revert(connection, planned["creators"])
     verified_revert = revert_verified(connection, planned["verified"])
+    restored_garbled = metadata_text_repair.revert(connection, planned.get("garbled", []))
     return {"删除链接": len(links), "删除别名": len(aliases), "删除资料": len(profiles),
             "删除断言": len(claims), "删除编号": len(refs), "删除归属": len(memberships),
             "删除片商": len(makers), "删除样张": removed_samples, "删除否决": len(rejections),
@@ -345,7 +352,7 @@ def apply(connection, planned: dict) -> dict:
             "解绑关注来源": creator_revert["unbound"], "删除建档实体": creator_revert["removed"],
             "还原中文名": restored_names, "还原核查覆盖": verified_revert["restored"],
             "删除核查并集标签": verified_revert["removed_tags"],
-            "删除核查决定": verified_revert["decisions"]}
+            "删除核查决定": verified_revert["decisions"], "插回乱码人物行": restored_garbled}
 
 
 def remove_files(planned: dict) -> int:

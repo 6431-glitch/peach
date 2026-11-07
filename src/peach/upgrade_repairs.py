@@ -356,10 +356,13 @@ class UpgradeRepairs:
                          and row['action'] not in ('replace', 'rename') for row in plan['fields'] + plan['names'])
             review += sum(row['verdict'] == 'review' for row in plan['aliases'])
             review += sum(row['action'] == 'review' for row in plan['text']['rows'])
-            review += previous.get('local', {}).get('review_count', 0)
+            # 上一份回执的文字复核本轮已重新收集，只继承它的其余复核数。
+            carried = previous.get('local', {})
+            review += max(0, carried.get('review_count', 0) - carried.get('changed', {}).get('text_review', 0))
             with contract.database.write_transaction() as connection:
                 violations = {tuple(row) for row in connection.execute('PRAGMA foreign_key_check')}
                 changed = _catalog_apply(connection, plan)
+                garbled = changed.pop(metadata_text_repair.RECEIPT_KEY)
                 if connection.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
                     raise RuntimeError('更新已有资料时账本完整性校验失败')
                 if any(tuple(row) not in violations for row in connection.execute('PRAGMA foreign_key_check')):
@@ -368,6 +371,7 @@ class UpgradeRepairs:
                 receipt = {'revision': REVISION, 'local': {'state': 'succeeded', 'changed': changed,
                            'review_count': review, 'before': before, 'after': after, 'backup': str(backup)},
                            'text_media_ids': plan['text']['asset_ids'],
+                           metadata_text_repair.RECEIPT_KEY: garbled,
                            'media_ids': sorted(set(failed + [row['id'] for row in plan['codes']]
                                                    + previous.get('media_ids', [])
                                                    + plan['text']['asset_ids'])),
