@@ -21,6 +21,7 @@ service CloudDriveFileSrv {
   rpc SetCloudAPIConfig(SetCloudAPIConfigRequest) returns (google.protobuf.Empty) {}
   rpc GetMountPoints(google.protobuf.Empty) returns (GetMountPointsResult) {}
   rpc FindFileByPath(FindFileByPathRequest) returns (CloudDriveFile) {}
+  rpc GetSubFiles(FileRequest) returns (stream SubFilesReply) {}
   rpc CreateFolder(CreateFolderRequest) returns (CreateFolderResult) {}
   rpc AddOfflineFiles(AddOfflineFileRequest) returns (FileOperationResult) {}
   rpc RemoveOfflineFiles(RemoveOfflineFilesRequest) returns (FileOperationResult) {}
@@ -143,6 +144,10 @@ message RemoveOfflineFilesRequest {
   bool deleteFiles = 3;
   repeated string infoHashes = 4;
   optional string path = 5;
+}
+
+message SubFilesReply {
+  repeated CloudDriveFile subFiles = 1;
 }
 
 message FileRequest {

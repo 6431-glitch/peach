@@ -851,11 +851,13 @@ def _evidence_candidates(row: dict, field: str = "") -> list[dict]:
 
     黑名单（ADR-0038）排在最前面，和 amane 的 `field_blacklist` 同一个位置：被拉黑的
     来源在这个字段上连候选都不算，所以也不会因为「只剩它一家」而被采信。
+    身份尚未确认的候选保留供人工处理，不参与自动补空（ADR-0150）。
     """
     return [c for c in row.get("candidates") or []
             if (str(c.get("source") or "").strip() in SOURCE_SPECS
                 or str(c.get("source") or "").strip() == LOCAL_NFO_SOURCE)
             and not blacklisted(field, str(c.get("source") or "").strip())
+            and not c.get('requires_identity_review')
             and (str(c.get('source') or '').strip() != 'javdb' or current_javdb_candidate(c))
             and candidate_text_is_valid(c)
             and _original_title_candidate(field, c, str(row.get('code') or ''))]

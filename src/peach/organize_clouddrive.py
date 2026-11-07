@@ -24,6 +24,7 @@ from .downloads_clouddrive import CloudDriveClient, SERVICE, discover
 from .downloads import CLOUDDRIVE_CREDENTIAL, DownloadSettings
 from .follow_secrets import CredentialStore
 from .config import DATABASE_PATH, SECRETS_DIR, STATE_DIR
+from . import downloads_clouddrive_pb2 as pb
 from .peach_proxy import http_client
 from .scripting import open_readonly
 from .push_discovery import CloudPrefix, PushDiscoverySettings, map_cloud_path, normalise_prefix
@@ -70,12 +71,6 @@ def _messages():
     entry.field.add(name='value', number=2, type=9, label=1)
     reply.field.add(name='additionalHeaders', number=5, type=11, label=3,
                     type_name='.peach_organize_cloud.DownloadReply.HeadersEntry')
-    listing = proto.message_type.add(name='ListRequest')
-    listing.field.add(name='path', number=1, type=9, label=1)
-    listing.field.add(name='forceRefresh', number=2, type=8, label=1)
-    result = proto.message_type.add(name='ListReply')
-    result.field.add(name='subFiles', number=1, type=11, label=3,
-                     type_name='.clouddrive.CloudDriveFile')
     rename = proto.message_type.add(name='RenameRequest')
     rename.field.add(name='path', number=1, type=9, label=1)
     rename.field.add(name='newName', number=2, type=9, label=1)
@@ -96,10 +91,11 @@ def _messages():
     pool.AddSerializedFile(pb.DESCRIPTOR.serialized_pb)
     pool.Add(proto)
     return tuple(message_factory.GetMessageClass(pool.FindMessageTypeByName('peach_organize_cloud.' + name))
-                 for name in ('DownloadRequest', 'DownloadReply', 'ListRequest', 'ListReply', 'RenameRequest', 'MoveRequest'))
+                 for name in ('DownloadRequest', 'DownloadReply', 'RenameRequest', 'MoveRequest'))
 
 
-DownloadRequest, DownloadReply, ListRequest, ListReply, RenameRequest, MoveRequest = _messages()
+DownloadRequest, DownloadReply, RenameRequest, MoveRequest = _messages()
+ListRequest, ListReply = pb.FileRequest, pb.SubFilesReply
 
 
 @dataclass(frozen=True)

@@ -2,25 +2,39 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { after, before, describe, it } from 'node:test';
-import type { Browser, Page } from 'playwright-core';
+import type { Browser, Page, Route } from 'playwright-core';
 import { configurationBody, expectBody, launch, layout, requiredEnv, settle, visit, VIEWPORTS, type Visit } from './harness.ts';
 
-async function forwardHttp(page: Page, origin: string, service: string, signal: AbortSignal): Promise<void> {
+function forwardingState() {
+  const active = new Map<Route, { url: string; phase: string }>();
+  const errors: string[] = [];
+  return { active, errors, snapshot: () => ({ active: [...active.values()], errors }) };
+}
+
+async function forwardHttp(page: Page, origin: string, service: string, signal: AbortSignal,
+  state = forwardingState()): Promise<void> {
   await page.route(`${origin}/**`, async route => {
     const request = route.request();
     const url = new URL(request.url());
+    const pending = { url: url.pathname + url.search, phase: 'fetch' };
+    state.active.set(route, pending);
     try {
       const response = await route.fetch({ url: service + url.pathname + url.search, maxRedirects: 0, signal,
         headers: { ...request.headers(), host: new URL(service).host, origin: service } });
+      pending.phase = 'fulfill';
       await route.fulfill({ response });
     } catch (error) {
+      state.errors.push(`${pending.phase} ${pending.url}: ${String(error)}`);
       if (signal.aborted && error instanceof Error && error.name === 'AbortError' && error.cause === signal.reason) {
+        pending.phase = 'abort';
         await route.abort().catch(error => {
           if (!/already handled|disposed|closed/i.test(String(error))) throw error;
         });
         return;
       }
       if (!/already handled|disposed|closed/i.test(String(error))) throw error;
+    } finally {
+      state.active.delete(route);
     }
   });
 }
@@ -31,16 +45,11 @@ async function closeHttp(opened: Pick<Visit, 'page' | 'close'>, forwards: AbortC
     phase('离开播放器页面');
     await opened.page.goto('about:blank');
   } finally {
-    // route.fetch 使用独立的 API 请求；先取消它，再等待路由回调结束。
+    // 独立转发先取消，再由上下文释放浏览器路由；关闭前等待 Route 会与失效目标形成互等。
     phase('取消请求转发');
     forwards.abort();
-    try {
-      phase('等待请求转发结束');
-      await opened.page.unrouteAll({ behavior: 'wait' });
-    } finally {
-      phase('关闭浏览器上下文');
-      await opened.close();
-    }
+    phase('关闭浏览器上下文');
+    await opened.close();
   }
 }
 
@@ -98,17 +107,31 @@ describe('普通 HTTP 的配置与播放', () => {
     });
   });
 
+  it('路由等待依赖上下文释放时仍能关闭拥有者', { timeout: 2_000 }, async () => {
+    let closed = false;
+    let release!: () => void;
+    const untilClosed = new Promise<void>(resolve => { release = resolve; });
+    const page = { goto: async () => {}, unrouteAll: async () => untilClosed } as unknown as Page;
+    const forwards = new AbortController();
+    await closeHttp({ page, close: async () => { closed = true; release(); } }, forwards);
+    assert.equal(closed, true);
+    assert.equal(forwards.signal.aborted, true);
+  });
+
   for (const viewport of VIEWPORTS) {
     it(`${viewport.name}：非安全来源打开配置、编辑索引器并挂载播放器`, { timeout: 60_000 }, async t => {
       let phase = '准备演示服务';
-      t.after(() => { if (t.signal.aborted) t.diagnostic(`HTTP 配置用例超时阶段：${phase}`); });
+      const forwarding = forwardingState();
+      t.after(() => {
+        if (t.signal.aborted) t.diagnostic(`HTTP 配置用例超时阶段：${phase}；转发现场：${JSON.stringify(forwarding.snapshot())}`);
+      });
       const service = requiredEnv('PEACH_E2E_ORIGIN');
       const origin = 'http://peach-http.test';
       const forwards = new AbortController();
       const opened = await visit(browser, '/', viewport, async page => {
         // 只将临时演示服务映射到普通 HTTP 来源；浏览器自行决定 Web Crypto 的可用性。
-        // 跳转与关页会取消浏览器请求；独立转发请求由 closeHttp 在等待路由回调前取消。
-        await forwardHttp(page, origin, service, forwards.signal);
+        // 跳转与关页会取消浏览器请求；独立转发请求由 closeHttp 在释放上下文前取消。
+        await forwardHttp(page, origin, service, forwards.signal, forwarding);
       });
       const { page, problems } = opened;
       try {
