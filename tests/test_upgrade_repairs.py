@@ -14,6 +14,10 @@ from peach.repository import LedgerDatabase
 from peach.task_runs import TaskRunStore
 from support.ledger import fresh_ledger
 
+#: 0.51.0 之前采集桥按 GBK 输出、按 UTF-8 宽松读回的人物名（#478）。
+BAD = chr(0xFFFD)
+GARBLED = BAD * 2 + 'ľ' + BAD * 2
+
 
 class UpgradeRepairTests(unittest.TestCase):
     def display_key(self, asset_id=1):
@@ -43,6 +47,74 @@ class UpgradeRepairTests(unittest.TestCase):
                                (width, height, '竖屏', str(sheet)))
         self.service.prepare()
         return sheet
+
+    def test_cloud_videos_wait_for_the_user_before_their_display_size_is_measured(self):
+        """网盘里的旧视频不在升级时补测；用户在「修复与迁移」里确认才加进来，之后不再等确认。"""
+        from peach import media_probe, repair_center
+        with self.database.write_transaction() as connection:
+            connection.execute(
+                "INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration,width,height) "
+                "VALUES(2,'115','2.mp4','ABC-002.mp4','video','ABC-002','{}',60,720,1280)")
+        self.display_sample()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(receipt['display_dimensions_v2']['dimensions'], {'1': [720, 1280]})
+        self.assertEqual(self.service.cloud_display_videos(), 1)
+
+        def cloud_item():
+            with self.database.read_connection() as connection:
+                center = repair_center.snapshot(connection, upgrade_repairs._read(self.service.receipt),
+                                                cloud_pending=self.service.cloud_display_videos())
+            return next(item for item in center['items'] if item['id'] == 'display-cloud')
+
+        self.assertEqual((cloud_item()['mode'], cloud_item()['state'], cloud_item()['pending']), ('confirm', 'waiting', 1))
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch.object(upgrade_repairs, '_stale_previews', return_value=False), \
+                patch.object(media_probe, 'probe_file') as probe:
+            self.service.include_cloud_display_dimensions()
+        probe.assert_not_called()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(sorted(receipt['display_dimensions_v2']['dimensions']), ['1', '2'])
+        self.assertEqual(self.service.cloud_display_videos(), 0)
+        self.assertEqual((cloud_item()['state'], cloud_item()['pending']), ('done', 0))
+
+    def test_repair_history_shows_each_run_and_whether_its_backup_is_still_kept(self):
+        """历史与「账本备份」联动：修复前的备份还在就能去恢复，按保留规则清退了照实写。"""
+        from peach import repair_center
+        kept = self.root / 'ledger.pre-sar-1.db'
+        kept.write_bytes(b'')
+        with self.database.write_transaction() as connection:
+            connection.execute('DELETE FROM ledger_upgrade_repair')
+            connection.executemany('INSERT INTO ledger_upgrade_repair(id,result_json,applied_at) VALUES(?,?,?)', [
+                ('catalog-v4:x', json.dumps({'local': {'changed': {'codes': 2, 'probe_retry': 9,
+                                                                    'text_snapshots_invalidated': 40},
+                                                       'backup': str(self.root / 'ledger.pre-upgrade-1.db')},
+                                             'display_dimensions_v2': {'backup': str(kept)}}), '200'),
+                ('stale-filename-codes-1', json.dumps({'cleared': [1, 2, 3]}), '100'),
+                ('stale-filename-codes-0', json.dumps({'cleared': []}), '50'),
+            ])
+        with self.database.read_connection() as connection:
+            history = repair_center.snapshot(connection, {}, cloud_pending=0,
+                                             backup_directories=[self.root])['history']
+        self.assertEqual([(row['title'], row['changed']) for row in history],
+                         [('资料与番号整理', 2), ('清除误认的番号', 3)])
+        self.assertEqual(sorted((row['name'], row['exists']) for row in history[0]['backups']),
+                         [('ledger.pre-sar-1.db', True), ('ledger.pre-upgrade-1.db', False)])
+        self.assertEqual(history[1]['backups'], [])
+
+    def test_repair_page_lists_only_what_touched_this_library(self):
+        """没有网盘视频、NAS 系统目录与乱码人物的馆藏，这几项不出现；只改了资料的那项才列。"""
+        from peach import repair_center
+        with self.database.write_transaction() as connection:
+            connection.execute('DELETE FROM ledger_upgrade_repair')
+            connection.execute('INSERT INTO ledger_upgrade_repair(id,result_json,applied_at) VALUES(?,?,?)',
+                               ('garbled-people-1', json.dumps({'garbled_people': {'links': []}}), '10'))
+        receipt = {'local': {'state': 'done', 'changed': {'codes': 2}}}
+        with self.database.read_connection() as connection:
+            items = repair_center.snapshot(connection, receipt, cloud_pending=0)['items']
+            self.assertEqual([item['id'] for item in items], ['catalog'])
+            waiting = repair_center.snapshot(connection, {}, cloud_pending=3)['items']
+        self.assertEqual([(item['id'], item['state']) for item in waiting], [('display-cloud', 'waiting')])
 
     def test_upgrade_schedules_measured_videos_once_without_reading_media_during_planning(self):
         from peach import media_probe
@@ -730,26 +802,177 @@ class UpgradeRepairTests(unittest.TestCase):
             row=connection.execute('SELECT catalog_title,field_owners FROM asset WHERE id=1').fetchone()
             self.assertEqual(row[0], '元の題名')
             self.assertEqual(json.loads(row[1])['catalog_title'], 'auto:dmm')
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 2)
+            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
+                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 2)
             self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
         self.assertEqual(upgrade_repairs._read(self.service.receipt)['text_media_ids'], [1])
 
-    def test_damaged_manual_titles_and_entity_identities_are_not_renamed(self):
+    def test_damaged_manual_titles_are_kept_and_garbled_studios_still_count_for_review(self):
         self.damaged_asset(owner='user:manual')
         self.clean_snapshot()
         with self.database.write_transaction() as connection:
-            entity=upsert_asset_entity(connection,kind='performer',name='名前\ufffd',asset_id=1,
-                role='performer',source='javinizer:makers:performer',confidence=.75,now='now')
+            entity=upsert_asset_entity(connection,kind='studio',name='片商'+BAD,asset_id=1,
+                role='studio',source='javinizer:makers:studio',confidence=.75,now='now')
         self.service.prepare()
         with self.database.read_connection() as connection:
             self.assertEqual(connection.execute('SELECT catalog_title FROM asset WHERE id=1').fetchone()[0],
-                             '壊\ufffdれた題名')
+                             '壊'+BAD+'れた題名')
             self.assertEqual(connection.execute('SELECT canonical_name FROM entity WHERE id=?', (entity,)).fetchone()[0],
-                             '名前\ufffd')
+                             '片商'+BAD)
         receipt=upgrade_repairs._read(self.service.receipt)
-        self.assertGreater(receipt['local']['review_count'],0)
+        self.assertEqual(receipt['local']['review_count'],1)
         self.assertEqual(receipt['text_media_ids'],[1])
+
+    def garbled_people(self):
+        """报告者的现场（#478）：乱码名挂着刮削关联，正确名的人物另有作品。"""
+        for key in (1, 2, 3):
+            self.asset(key, code=f'EXM-00{key}', duration=1)
+        with self.database.write_transaction() as connection:
+            def link(asset_id, name, source, external_id=None):
+                return upsert_asset_entity(connection, kind='performer', name=name, asset_id=asset_id,
+                    role='performer', source=source, confidence=.75, now='now',
+                    external_provider='dmm' if external_id else None, external_id=external_id)
+            garbled = link(1, GARBLED, 'javinizer:dmm:performer', '1')
+            correct = link(2, '桃乃木かな', 'javinizer:dmm:performer')
+            link(1, '他の女優', 'javinizer:dmm:performer')
+            # 另一位乱码人物用户手动挂过一部：实体留着，只解刮削关联、摘站上编号。
+            manual = link(3, BAD + '名前', 'javinizer:dmm:performer', '3')
+            link(3, BAD + '名前', 'user:manual')
+            connection.execute("INSERT INTO entity_alias(entity_id,alias,normalized_alias,source,confidence) "
+                               "VALUES(?,?,?,'javinizer:alias',.9)", (garbled, 'ǰ' + BAD, 'ǰ' + BAD))
+            connection.executemany('INSERT INTO asset_tag(asset_id,tag,confidence,source) VALUES(?,?,?,?)', [
+                (1, '演员:' + GARBLED, .75, 'javinizer:dmm:performer'),
+                (1, '演员:他の女優', .75, 'javinizer:dmm:performer'),
+                (2, '演员:桃乃木かな', .75, 'javinizer:dmm:performer'),
+                (3, '演员:' + BAD + '名前', 1, 'user:manual')])
+        return {'garbled': garbled, 'correct': correct, 'manual': manual}
+
+    def performer_links(self):
+        with self.database.read_connection() as connection:
+            return sorted(tuple(row) for row in connection.execute(
+                "SELECT asset_id,entity_id,source FROM asset_entity WHERE role='performer'"))
+
+    def asset_tags(self):
+        with self.database.read_connection() as connection:
+            return sorted(tuple(row) for row in connection.execute('SELECT asset_id,tag,source FROM asset_tag'))
+
+    def upgrade_garbled_people_from(self, old_revision):
+        from peach.metadata_text_repair import RECEIPT_KEY
+        from peach.settings_file import load_config
+        with patch.object(upgrade_repairs, 'REVISION', old_revision):
+            self.service.prepare()
+            receipt = upgrade_repairs._read(self.service.receipt)
+            local = receipt['local']
+            # 旧规则把乱码人物只记成复核：三条计进了 `text_review` 与 `review_count`。
+            local.update(review_count=local['review_count'] + 3,
+                         changed={**local['changed'], 'text_review': local['changed'].get('text_review', 0) + 3})
+            receipt.update(queued={'upgrade-library:processing-v2:text-3:1': 99}, dispatch_complete=True)
+            self.service._save_receipt(receipt)
+        fixture = self.garbled_people()
+        before = self.performer_links()
+        self.service.prepare()
+        after = self.performer_links()
+        # 乱码人物的刮削关联解除；正确名的作品、别的女优与人手挂的关联不动。
+        self.assertEqual(sorted(set(before) - set(after)),
+                         [(1, fixture['garbled'], 'javinizer:dmm:performer'),
+                          (3, fixture['manual'], 'javinizer:dmm:performer')])
+        self.assertIn((3, fixture['manual'], 'user:manual'), after)
+        self.assertIn((2, fixture['correct'], 'javinizer:dmm:performer'), after)
+        self.assertEqual(self.asset_tags(), [(1, '演员:他の女優', 'javinizer:dmm:performer'),
+                                             (2, '演员:桃乃木かな', 'javinizer:dmm:performer'),
+                                             (3, '演员:' + BAD + '名前', 'user:manual')])
+        with self.database.read_connection() as connection:
+            names = dict(connection.execute("SELECT id,canonical_name FROM entity WHERE kind='performer'").fetchall())
+            refs = connection.execute('SELECT count(*) FROM entity_external_ref').fetchone()[0]
+            aliases = connection.execute('SELECT count(*) FROM entity_alias WHERE entity_id=?',
+                                         (fixture['garbled'],)).fetchone()[0]
+            self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
+            self.assertEqual(connection.execute('PRAGMA foreign_key_check').fetchall(), [])
+        # 失去全部关联的乱码实体连同别名、编号删掉；用户挂过的那位留着，只摘编号。
+        self.assertNotIn(fixture['garbled'], names)
+        self.assertEqual(names[fixture['manual']], BAD + '名前')
+        self.assertEqual((refs, aliases), (0, 0))
+        receipt = upgrade_repairs._read(self.service.receipt)
+        self.assertEqual(receipt['revision'], upgrade_repairs.REVISION)
+        self.assertEqual(receipt['local']['review_count'], 0)
+        self.assertEqual(receipt['local']['changed']['text_unlinked'], 2)
+        self.assertEqual(receipt['local']['changed']['text_entities_removed'], 1)
+        self.assertEqual(receipt['text_media_ids'], [1, 3])
+        self.assertEqual(len(receipt[RECEIPT_KEY]['links']), 2)
+        self.assertFalse(receipt['dispatch_complete'])
+        # 上一轮按 `text-3` 派过的片子换规则段重新排采。
+        self.service.config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
+        with patch('peach.library_processing._people_allowed', return_value=False), patch(
+                'peach.seed_followup.plan', return_value=[]), patch('peach.media_sources.cost_for', return_value='free'):
+            planned = self.service._plan(receipt)
+        self.assertEqual([row.key for row in planned],
+                         [f'upgrade-library:processing-v2:text-{upgrade_rules.PROVIDER_TEXT}:{asset_id}'
+                          for asset_id in (1, 3)])
+        # 重采按站上编号认人：乱码实体的编号已摘掉，正确名字落到正确的那一位。
+        with self.database.write_transaction() as connection:
+            for external_id in ('1', '3'):
+                landed = upsert_asset_entity(connection, kind='performer', name='桃乃木かな', asset_id=1,
+                    role='performer', source='javinizer:dmm:performer', confidence=.75, now='later',
+                    external_provider='dmm', external_id=external_id)
+                self.assertEqual(landed, fixture['correct'])
+                connection.execute('DELETE FROM entity_external_ref')
+            connection.execute('DELETE FROM asset_entity WHERE asset_id=1 AND entity_id=?', (fixture['correct'],))
+        # 只做一次：再启动不重放、不再备份。
+        backups = len(list(self.root.glob('ledger.pre-upgrade-*.db')))
+        with patch('peach.metadata_text_repair._unlink_garbled', side_effect=AssertionError('不能重放')):
+            self.service.prepare()
+        self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), backups)
+
+    def test_garbled_scraped_performers_are_unlinked_and_requeued_once_after_a_text_receipt(self):
+        self.upgrade_garbled_people_from(f'{upgrade_repairs.CATALOG_REVISION}:text-3')
+
+    def test_garbled_scraped_performers_are_unlinked_after_skipping_text_revisions(self):
+        self.upgrade_garbled_people_from(upgrade_repairs.CATALOG_REVISION)
+
+    def revert_garbled_people(self, batch=''):
+        from peach import auto_landing_revert, metadata_text_repair
+        with self.database.write_transaction() as connection:
+            planned = auto_landing_revert.plan(connection, metadata_text_repair.GARBLED_PEOPLE_SOURCE, batch,
+                                               logo_root=self.root / 'logos', cover_root=self.root / 'covers')
+            return planned, auto_landing_revert.apply(connection, planned)
+
+    def test_garbled_people_revert_restores_every_removed_row_once(self):
+        from peach import auto_landing_revert
+        with patch.object(upgrade_repairs, 'REVISION', f'{upgrade_repairs.CATALOG_REVISION}:text-3'):
+            self.service.prepare()
+        fixture = self.garbled_people()
+        links, tags = self.performer_links(), self.asset_tags()
+        with self.database.read_connection() as connection:
+            refs = [tuple(row) for row in connection.execute('SELECT * FROM entity_external_ref ORDER BY external_id')]
+            entity = tuple(connection.execute('SELECT * FROM entity WHERE id=?', (fixture['garbled'],)).fetchone())
+        self.service.prepare()
+        planned, result = self.revert_garbled_people(upgrade_repairs.REVISION)
+        # 实体行、它的别名与编号、另一位被摘的编号、两条关联、一个标签。
+        self.assertEqual(auto_landing_revert.counts(planned)['乱码人物'], 7)
+        self.assertEqual(result['插回乱码人物行'], 7)
+        self.assertEqual((self.performer_links(), self.asset_tags()), (links, tags))
+        with self.database.read_connection() as connection:
+            self.assertEqual([tuple(row) for row in connection.execute(
+                'SELECT * FROM entity_external_ref ORDER BY external_id')], refs)
+            self.assertEqual(tuple(connection.execute('SELECT * FROM entity WHERE id=?', (fixture['garbled'],)).fetchone()),
+                             entity)
+            self.assertEqual(connection.execute('PRAGMA foreign_key_check').fetchall(), [])
+        planned, result = self.revert_garbled_people()
+        self.assertEqual((planned['garbled'], result['插回乱码人物行']), ([], 0))
+
+    def test_garbled_people_revert_refuses_when_the_entity_name_is_taken(self):
+        with patch.object(upgrade_repairs, 'REVISION', f'{upgrade_repairs.CATALOG_REVISION}:text-3'):
+            self.service.prepare()
+        fixture = self.garbled_people()
+        self.service.prepare()
+        with self.database.write_transaction() as connection:
+            upsert_asset_entity(connection, kind='performer', name=GARBLED, asset_id=2,
+                                role='performer', source='user:manual', now='later')
+        with self.assertRaisesRegex(ValueError, '整批拒绝'):
+            self.revert_garbled_people()
+        self.assertNotIn((1, fixture['garbled'], 'javinizer:dmm:performer'), self.performer_links())
 
     def test_missing_alternative_keeps_the_original_and_records_review(self):
         self.damaged_asset()
@@ -770,7 +993,7 @@ class UpgradeRepairTests(unittest.TestCase):
         with patch('peach.library_processing._people_allowed',return_value=False), patch(
                 'peach.seed_followup.plan',return_value=[]), patch('peach.media_sources.cost_for',return_value='free'):
             planned=self.service._plan(receipt)
-        self.assertEqual([row.key for row in planned],['upgrade-library:processing-v2:text-3:1'])
+        self.assertEqual([row.key for row in planned],[f'upgrade-library:processing-v2:text-{upgrade_rules.PROVIDER_TEXT}:1'])
         # 任务中心那一行写的是哪部片，不是一句笼统的「更新影片资料」。
         with self.service.contract.database.read_connection() as connection:
             code, name = connection.execute('SELECT code,name FROM asset WHERE id=1').fetchone()
@@ -785,7 +1008,7 @@ class UpgradeRepairTests(unittest.TestCase):
                 'peach.seed_followup.plan',return_value=[]), patch('peach.media_sources.cost_for',return_value='free'), patch(
                 'peach.performer_alias_followup.stock',side_effect=AssertionError('不能重放人物补修')):
             planned=self.service._plan(receipt)
-        self.assertEqual([row.key for row in planned],['upgrade-library:processing-v2:text-3:1'])
+        self.assertEqual([row.key for row in planned],[f'upgrade-library:processing-v2:text-{upgrade_rules.PROVIDER_TEXT}:1'])
 
     def test_completed_catalog_dispatch_preserves_deferred_work_across_text_revision(self):
         with patch.object(upgrade_repairs,'REVISION',upgrade_repairs.CATALOG_REVISION):
@@ -923,7 +1146,9 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code,duration FROM asset ORDER BY id').fetchall()
             self.assertEqual([tuple(row) for row in rows], [(1, 'SSIS-123', None), (2, 'BAD-001', None)])
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair').fetchone()[0], 1)
+            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
+                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 1)
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 1)
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(receipt['local']['before'], receipt['local']['after'])
@@ -1076,6 +1301,89 @@ class UpgradeRepairTests(unittest.TestCase):
         self.service.prepare()
         self.assertEqual(output.read_bytes(), stored)
         self.assertEqual(upgrade_repairs._read(self.service.receipt), receipt)
+
+    def dangling_fixture(self):
+        """#486 的现场：77 永久删除后同一个文件重新登记成 759，220 的文件已不在库。"""
+        from peach.library_processing import FIELDS
+        from peach.review_csv import write_rows
+        moved, gone, live = r'R:\media\DASD-321.mp4', r'R:\media\SSIS-220.mp4', r'R:\media\MIAA-337.mp4'
+        with self.database.write_transaction() as connection:
+            for key, path, code in ((759, moved, 'DASD-321'), (760, live, 'MIAA-337')):
+                connection.execute('INSERT INTO asset(id,location,path,name,medium,code,duration) '
+                                   "VALUES(?,'local',?,?,'video',?,60)", (key, path, path.rsplit('\\', 1)[1], code))
+            connection.executemany(
+                "INSERT INTO review_decision(category,item_key,status,note,updated_at) "
+                "VALUES('metadata_fields',?,?,?,'2026-10-29T00:00:00Z')",
+                [('asset:77:title', 'skipped', ''), ('asset:77:studio', 'approved', '{"auto_applied": true}'),
+                 ('asset:220:title', 'approved', '{"auto_applied": true}'),
+                 ('asset:80:title', 'skipped', ''), ('asset:760:title', 'skipped', '')])
+
+        def row(asset_id, field, code, path):
+            choice = {'candidate_key': f'{code}-{field}', 'source': 'javbus', 'provider_id': code,
+                      'value': f'{code} の{field}', 'display_value': f'{code} の{field}'}
+            return {'item_key': f'asset:{asset_id}:{field}', 'code': code, 'query': code, 'asset_id': asset_id,
+                    'asset_path': path, 'field': field, 'field_label': field, 'current_value': '',
+                    'candidates_json': json.dumps([choice], ensure_ascii=False), 'source_count': 1,
+                    'source_profile': 'library', 'policy_version': 'library-v1', 'status': 'candidate'}
+
+        rows = [row(77, 'title', 'DASD-321', moved),
+                # 新编号已有同字段的行：旧行让位。
+                row(77, 'studio', 'DASD-321', moved), row(759, 'studio', 'DASD-321', moved),
+                row(220, 'title', 'SSIS-220', gone), row(760, 'title', 'MIAA-337', live),
+                # 按番号出的行不钉编号，不归这条补修管。
+                {**row('', 'series', 'ABP-001', ''), 'item_key': 'code:ABP-001:series'}]
+        output = self.contract.candidate_root / upgrade_repairs.CANDIDATE_FILE
+        output.parent.mkdir(parents=True, exist_ok=True)
+        write_rows(output, FIELDS, rows, fill_missing=True)
+        return output
+
+    def decisions(self):
+        with self.database.read_connection() as connection:
+            return {row[0]: tuple(row[1:]) for row in connection.execute(
+                'SELECT item_key,status,note,updated_at FROM review_decision ORDER BY item_key')}
+
+    def test_dangling_candidates_are_repinned_or_withdrawn_once_and_can_be_restored(self):
+        output = self.dangling_fixture()
+        with self.database.write_transaction() as connection:
+            connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
+                               (upgrade_repairs.REVISION, '1', json.dumps({
+                                   'revision': upgrade_repairs.REVISION, 'media_ids': [], 'deferred': [],
+                                   'queued': {}, 'dispatch_complete': True, 'code_evidence': {}})))
+        before, decided = self.candidate_rows(output), self.decisions()
+        self.service.prepare()
+        after = self.candidate_rows(output)
+        self.assertEqual(sorted(after), ['asset:759:studio', 'asset:759:title', 'asset:760:title',
+                                         'code:ABP-001:series'])
+        self.assertEqual(after['asset:759:title'], {**before['asset:77:title'], 'item_key': 'asset:759:title',
+                                                    'asset_id': '759'})
+        for key in ('asset:759:studio', 'asset:760:title', 'code:ABP-001:series'):
+            self.assertEqual(after[key], before[key])
+        # 跳过的决定跟着改挂，仍在「稍后处理」；挂不上的决定清掉；在库资产的不动。
+        self.assertEqual(self.decisions(), {'asset:759:title': decided['asset:77:title'],
+                                            'asset:760:title': decided['asset:760:title']})
+        with self.database.read_connection() as connection:
+            receipt = json.loads(connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
+                                                    (upgrade_repairs.DANGLING_KEY,)).fetchone()[0])
+        self.assertEqual(receipt['rule'], upgrade_rules.DANGLING_CANDIDATES)
+        self.assertEqual(receipt['repinned'], [{'file': upgrade_repairs.CANDIDATE_FILE, 'item_key': 'asset:77:title',
+                                                'asset_id': 77, 'new_item_key': 'asset:759:title',
+                                                'new_asset_id': 759}])
+        self.assertEqual([entry['row'] for entry in receipt['withdrawn']],
+                         [before['asset:77:studio'], before['asset:220:title']])
+        self.assertEqual({entry['item_key']: entry['moved_to'] for entry in receipt['decisions']},
+                         {'asset:77:title': 'asset:759:title', 'asset:77:studio': None,
+                          'asset:220:title': None, 'asset:80:title': None})
+        # 只做一次：再启动不重读、不重写。
+        stored = output.read_bytes()
+        self.service.prepare()
+        self.assertEqual(output.read_bytes(), stored)
+        # 按回执整批还原：行与决定回到补修之前，补修也不再重做。
+        result = upgrade_repairs.restore_dangling_candidates(self.database, self.contract.candidate_root)
+        self.assertEqual(result, {'rows': 3, 'decisions': 4, 'skipped': 0})
+        self.assertEqual(self.candidate_rows(output), before)
+        self.assertEqual(self.decisions(), decided)
+        self.service.prepare()
+        self.assertEqual(self.candidate_rows(output), before)
 
     def test_old_code_snapshot_stays_while_another_video_is_that_release(self):
         from peach import artifact_rules

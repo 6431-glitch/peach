@@ -46,6 +46,7 @@ from .metadata_auto_apply import (
     _offers_another_stage_name,
     _only_mib_official,
     _parsed_candidates,
+    pinned_asset_ids,
     _row_candidates,
     _split_multi,
     genres_still_pending,
@@ -323,6 +324,48 @@ def _queue_rows(contract: ReviewContract, category: str,
     return [row for row in rows if _needs_review(category, row)], source, skipped
 
 
+def _no_tags_left(row: dict, candidate: dict) -> bool:
+    """标签候选按现在的词表读完一个标签也不剩。"""
+    if str(row.get("field") or "").strip() != "tags":
+        return False
+    value = candidate.get("value")
+    return isinstance(value, list) and not current_tags(str(tag) for tag in value)
+
+
+def _empty_tags(row: dict, candidate: dict) -> bool:
+    """既没有可写的标签、也没有待收录 genre 的候选不摆出来。
+
+    还带着未收录 genre 的照常出卡：卡上的「收录」是这些 genre 唯一的入口（#486）。"""
+    return _no_tags_left(row, candidate) and not candidate.get("unmapped_genres")
+
+
+def _repin_file_rows(connection, rows: list[dict]) -> list[dict]:
+    """按文件出的行改挂到那个文件现在的编号；文件已不在库的行不摆出来（#486）。
+
+    永久删除后同一个文件被扫描重新登记，编号就换了。按路径对得上的改挂（`_pinned_asset_id`），
+    卡片上的「通过」与「打开原视频」都指向现在那一条；新编号自己已有同字段的行时，旧行让位。
+    对不上的那些不论点哪个都写不进账本，留在队列里只是一张点了就报错的卡。
+    """
+    keys = {row["item_key"] for row in rows}
+    pinned_rows = [row for row in rows
+                   if row.get("asset_path") and str(row.get("asset_id") or "").strip().isdigit()]
+    pins = dict(zip(map(id, pinned_rows), pinned_asset_ids(connection, pinned_rows)))
+    kept = []
+    for row in rows:
+        if id(row) not in pins:
+            kept.append(row)
+            continue
+        raw, pinned = str(row["asset_id"]).strip(), pins[id(row)]
+        if pinned is None:
+            continue
+        if pinned != int(raw):
+            if f"asset:{pinned}:{str(row.get('field') or '').strip()}" in keys:
+                continue
+            row["asset_id"] = str(pinned)
+        kept.append(row)
+    return kept
+
+
 def _metadata_queue_rows(connection, rows: list[dict],
                          decisions: dict) -> tuple[list[dict], dict[str, str | None]]:
     """元数据字段队列真正该摆在人面前的那些行，以及用到的 genre 决定。
@@ -338,10 +381,14 @@ def _metadata_queue_rows(connection, rows: list[dict],
         return identifies(code, *(str(candidate.get(key) or '') for key in
                                   ('source', 'provider_id', 'content_id', 'source_url')))
     for row in rows:
-        row["candidates"] = _row_candidates(row, genre_decisions, identifies=identifies_candidate)
+        # 折掉已收录的 genre 后一个标签也不剩的候选批不了（「标签候选为空」，#486），不摆出来。
+        row["candidates"] = [candidate for candidate in _row_candidates(
+                                 row, genre_decisions, identifies=identifies_candidate)
+                             if not _empty_tags(row, candidate)]
     # 候选全是错配时整行消失：剔完一条不剩，就没有可判的东西了。本来就没有候选
     # 的行照旧留着，它讲的是另一件事（这个番号问过、谁都没给值）。
     rows = [row for row in rows if row["candidates"] or not _parsed_candidates(row)]
+    rows = _repin_file_rows(connection, rows)
     refresh_current_values(connection, rows)
     identity_key = cache(partial(_entity_identity_key, connection))
     # 和账本已有的值比一遍，只把真差异留在队列里。实测 43 条候选里 24 条
@@ -962,7 +1009,8 @@ def _approve_metadata_with_receipt(connection, group, candidate, now, note, expe
     marks = ",".join("?" * len(asset_ids))
     before = {str(row["id"]): int(row["mutation_revision"]) for row in connection.execute(
         f"SELECT id,mutation_revision FROM asset WHERE id IN ({marks})", asset_ids)}
-    applied = _apply_metadata_candidate(
+    # 只剩待收录 genre 的标签卡：没有可写的标签，「通过」就是结案，不报「标签候选为空」（#486）。
+    applied = 0 if _no_tags_left(group, candidate) else _apply_metadata_candidate(
         connection, group, candidate, now, review_owner(str(candidate.get("source") or "")),
         expected_revision=expected_revision)
     revisions = {

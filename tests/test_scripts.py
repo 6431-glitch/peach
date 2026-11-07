@@ -5793,6 +5793,10 @@ class ReleaseTagTests(unittest.TestCase):
         audit = mock.patch.object(self.release, "require_clean_dependencies")
         audit.start()
         self.addCleanup(audit.stop)
+        # 这组用例模拟的版本号不在真实仓库的公告里；公告门槛另有用例（test_version_bump）。
+        notice = mock.patch.object(self.release, "require_release_notice")
+        notice.start()
+        self.addCleanup(notice.stop)
 
     def test_dependency_audit_covers_both_npm_projects_and_names_the_failing_one(self):
         """标签流水线第一步就是这两份 npm 审计；有一份不干净就不能定版或打标签。"""

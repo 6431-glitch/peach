@@ -214,3 +214,21 @@ class ReleasePlanTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ReleaseNoticeGateTests(unittest.TestCase):
+    def test_a_minor_release_without_a_notice_is_refused_and_a_patch_is_not(self):
+        from scripts.release_tag import require_release_notice
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "src/peach").mkdir(parents=True)
+            (root / "src/peach/release_notices.py").write_text(
+                'NOTICES: dict[str, dict] = {"0.57.0": {"level": "notice"}}\n', encoding="utf-8")
+            require_release_notice(root, "0.57.0", "minor")
+            require_release_notice(root, "0.57.1", "patch")
+            with self.assertRaisesRegex(version_bump.VersionError, "0.58.0 还没有更新公告"):
+                require_release_notice(root, "0.58.0", "minor")
+
+    def test_the_repository_notices_parse_without_importing_the_package(self):
+        from scripts.release_tag import ROOT, require_release_notice
+        require_release_notice(ROOT, "0.57.0", "minor")

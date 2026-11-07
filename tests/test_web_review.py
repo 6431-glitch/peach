@@ -2747,6 +2747,69 @@ class ReviewQueueTests(unittest.TestCase):
         self.assertEqual(
             self.queue_row("metadata_fields", "asset:125:title")["current_value"], "")
 
+    def _pinned_row(self, asset_id, field, code, path, value):
+        return {"item_key": f"asset:{asset_id}:{field}", "code": code, "query": code,
+                "asset_id": str(asset_id), "asset_path": path, "field": field, "field_label": field,
+                "current_value": "", "candidates_json": json.dumps([{
+                    "candidate_key": f"{code}:{field}:dmm", "source": "dmm", "display_value": value,
+                    "value": value, "confidence": 0.9, "provider_id": code, "source_url": "",
+                    "raw_snapshot": ""}], ensure_ascii=False),
+                "source_count": "1", "source_profile": "", "status": "candidate",
+                "size_gb": "", "videos": "1", "fetched_at": ""}
+
+    def test_a_row_left_on_a_purged_asset_follows_its_file_to_the_new_id(self):
+        """#486：77 永久删除后同一个文件重新登记成 759，卡片的通过与打开原视频都指向 759。"""
+        self._asset(759, "DASD-321", "DASD-321.mp4")
+        self.write_metadata_candidates([
+            self._pinned_row(77, "title", "DASD-321", "/x/DASD-321.mp4", "新しい題名"),
+            # 759 自己已有同字段的行：旧行让位，不出两张卡。
+            self._pinned_row(77, "studio", "DASD-321", "/x/DASD-321.mp4", "旧スタジオ"),
+            self._pinned_row(759, "studio", "DASD-321", "/x/DASD-321.mp4", "新スタジオ"),
+            # 文件也不在库了：哪个按钮都写不进去，不出现在任何队列里。
+            self._pinned_row(220, "title", "SSIS-220", "/x/SSIS-220.mp4", "消えた題名"),
+        ])
+        self.decide("metadata_fields", "asset:77:title", "skipped")
+        self.assertEqual(self.queue_keys("metadata_fields"), ["asset:759:studio"])
+        rows, _source, _skipped = rm_review._review_rows(self.contract, "metadata_fields", queue=None)
+        self.assertEqual({row["item_key"]: str(row["asset_id"]) for row in rows},
+                         {"asset:77:title": "759", "asset:759:studio": "759"})
+        later = next(row for row in rows if row["item_key"] == "asset:77:title")
+        result = rm_review.w_review_decision(self.contract, {
+            "category": "metadata_fields", "item_key": "asset:77:title", "status": "approved",
+            "candidate_key": later["candidates"][0]["candidate_key"],
+            "expected_revision": later["asset_mutation_revision"]})
+        self.assertEqual(result["applied_assets"], 1)
+        con = sqlite3.connect(self.db_path)
+        try:
+            self.assertEqual(con.execute("SELECT catalog_title FROM asset WHERE id=759").fetchone()[0],
+                             "新しい題名")
+        finally:
+            con.close()
+
+    def test_an_empty_tag_candidate_shows_only_while_a_genre_waits_to_be_mapped(self):
+        """#486：折完 genre 一个标签也不剩的候选，原来点通过报「标签候选为空」。
+
+        还带着未收录 genre 的照常出卡，卡上的「收录」是它唯一的入口，点通过直接结案；
+        什么都不剩的不摆出来。"""
+        self._asset(108, "FC2-PPV-3083211", "FC2-PPV-3083211.mp4")
+        self._asset(109, "ABW-251", "ABW-251.mp4")
+        self._asset(110, "FC2-PPV-1000001", "FC2-PPV-1000001.mp4")
+        self.write_metadata_rows([
+            {"item_key": "FC2-PPV-3083211:tags", "code": "FC2-PPV-3083211", "field": "tags", "current": "",
+             "candidates": [{"value": [], "display": "", "unmapped_genres": ["まだ知らない分類"]}]},
+            {"item_key": "FC2-PPV-1000001:tags", "code": "FC2-PPV-1000001", "field": "tags", "current": "",
+             "candidates": [{"value": [], "display": ""}]},
+            self._tag_row("ABW-251:tags", "ABW-251", ["Shaved Pussy", "まだ知らない分類"]),
+        ])
+        self.assertEqual(sorted(self.queue_keys("metadata_fields")), ["ABW-251:tags", "FC2-PPV-3083211:tags"])
+        row = self.queue_row("metadata_fields", "FC2-PPV-3083211:tags")
+        result = rm_review.w_review_decision(self.contract, {
+            "category": "metadata_fields", "item_key": "FC2-PPV-3083211:tags", "status": "approved",
+            "candidate_key": row["candidates"][0]["candidate_key"],
+            "expected_revision": row["asset_mutation_revision"]})
+        self.assertEqual(result["applied_assets"], 0)
+        self.assertEqual(self.queue_keys("metadata_fields"), ["ABW-251:tags"])
+
     def test_a_code_the_ledger_never_heard_of_keeps_the_snapshot_value(self):
         """账本里没有这个番号的资产，就没有「现值」可问，别把有值的改成空。"""
         self.write_metadata_rows([

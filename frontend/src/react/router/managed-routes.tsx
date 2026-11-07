@@ -109,6 +109,7 @@ const configurationPage = routeChunk(async () => {
 const activityPage = routeChunk(() => import('../activity/activity-page'));
 const followManagePage = routeChunk(() => import('../follow-manage/follow-manage-page'));
 const playlistsPage = routeChunk(() => import('../playlists/playlists-page'));
+const repairCenterPage = routeChunk(() => import('../settings/repair-center'));
 
 /* 数据管理页读数卡的去处里，只有重复文件不按管理区身份找：它报的是数据管理的身份。 */
 function openCleanupSection(section: DataCleanupSection, actions: ShellActions, go: (path: string) => void) {
@@ -232,6 +233,15 @@ export const MANAGED_ROUTES: ManagedRouteTable = {
   '/settings/network': configurationRoute('/settings/network'),
   '/settings/maintenance': configurationRoute('/settings/maintenance'),
   '/settings/diagnostics': configurationRoute('/settings/diagnostics'),
+  /* 「应用与维护」之下的子页，不在配置页签里：页头画面包屑回到「应用与维护」，数据由页面自己取。 */
+  '/settings/maintenance/repairs': {
+    element: <ManagedMatch path="/settings/maintenance/repairs" />,
+    prefetch: () => withPage(repairCenterPage, Promise.resolve()),
+    page: () => {
+      const { RepairCenterPage } = repairCenterPage.get();
+      return <RepairCenterPage />;
+    },
+  },
   '/tasks': {
     element: <ManagedMatch path="/tasks" />,
     prefetch: (_open, signal) => withPage(activityPage, prefetchTasks(signal)),

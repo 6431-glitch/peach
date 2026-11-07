@@ -261,6 +261,21 @@ def require_clean_dependencies(root: Path = None) -> None:
         raise ValueError("依赖审计发现高危漏洞（" + "、".join(failed) + "）；先升级依赖再发布")
 
 
+def require_release_notice(root: Path, version: str, part: str) -> None:
+    """minor 及以上的版本必须先写好更新公告（`src/peach/release_notices.py`），升级后的弹窗靠它。
+
+    补丁版可以不写：没有公告就不弹，只在设置页留记录。"""
+    if part not in ("minor", "major"):
+        return
+    import ast
+    tree = ast.parse((root / "src/peach/release_notices.py").read_text(encoding="utf-8"))
+    notices = next(ast.literal_eval(node.value) for node in tree.body
+                   if isinstance(node, ast.AnnAssign) and getattr(node.target, "id", "") == "NOTICES")
+    if version not in notices:
+        raise version_bump.VersionError(
+            f"{version} 还没有更新公告：先在 src/peach/release_notices.py 写好这一版的新入口与自动进行的事")
+
+
 def prepare(repo: str, part: str, *, apply: bool,
             reference_evidence: dict[str, Path] | None = None) -> dict:
     """为下一次发布推进版本号并起草变更日志。
@@ -272,6 +287,7 @@ def prepare(repo: str, part: str, *, apply: bool,
     version = str(planned["version"])
     tag = f"v{version}"
     _require_free_tag(repo, tag)
+    require_release_notice(ROOT, version, str(planned["bump"]))
     result = {**planned, "tag": tag, "repo": repo, "applied": apply}
     if not apply:
         return result

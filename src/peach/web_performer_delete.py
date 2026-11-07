@@ -99,7 +99,7 @@ def w_performer_delete(contract, body):
                     _restore_staged_media(outcome['_staged'])
                 raise
             contract.cache_bust()
-            result = {'ok': True, 'entity_ids': ids, **_finish_purge(outcome)}
+            result = {'ok': True, 'entity_ids': ids, **_finish_purge(outcome, contract)}
             result.update(clean_resource_orphans(contract))
     except Cancelled:
         handle.finish('cancelled', summary={'cancelled_by_user': True})

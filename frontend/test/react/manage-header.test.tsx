@@ -102,7 +102,7 @@ function headerHost(first: ManageHeaderProps): ManageHeaderHost {
   document.body.append(root);
   root.innerHTML = manageHeaderSkeletonHtml(first);
   return { root, store: createSettingsStore('test.manage-order', { manageOrder: ['stats', 'cleanup'] }),
-    openManage: vi.fn(), openDataCleanup: vi.fn(), emptyTrash: vi.fn() };
+    openManage: vi.fn(), openPath: vi.fn(), emptyTrash: vi.fn() };
 }
 
 /** 照壳的 `mountManageHeader` 接上：铺骨架、装载，拿到句柄就把手上那份推进去。 */
@@ -273,10 +273,10 @@ describe('管理条与面包屑', () => {
       return event.defaultPrevented;
     };
     expect(fire({})).toBe(true);
-    expect(host.openDataCleanup).toHaveBeenCalledTimes(1);
+    expect(host.openPath).toHaveBeenCalledWith('/data-cleanup');
     expect([fire({ ctrlKey: true }), fire({ metaKey: true }), fire({ shiftKey: true }), fire({ button: 1 })])
       .toEqual([false, false, false, false]);
-    expect(host.openDataCleanup).toHaveBeenCalledTimes(1);
+    expect(host.openPath).toHaveBeenCalledTimes(1);
   });
 });
 
