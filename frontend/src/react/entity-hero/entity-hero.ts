@@ -146,6 +146,8 @@ export interface EntityHeroProps {
   entity: EntityHeroData;
   /** 这一页的新作（`feed-new/feed-new.ts` 取回来的条目与壳拼好的整行 HTML）。 */
   feedNew: FeedNew | null;
+  feedError?: string;
+  retryFeed?(): void;
   /** 壳在 `#index` 里留给新作那一行的 `section.feednew[data-feed-new]`。 */
   feedHost: HTMLElement | null;
   /** 这一页是不是 JAV 语境（`entityJavLayout`）。 */

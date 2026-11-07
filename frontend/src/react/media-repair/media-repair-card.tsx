@@ -71,7 +71,7 @@ export function MediaRepairCard({ toast = () => {} }: { toast?(message: string):
       <Fieldset layout="split" label="媒体修复" footer={
         <>
           <Select aria-label="媒体库" prefix="媒体库" className="w-48" selectedKey={selected?.id ?? null}
-            isDisabled={running || !libraries.length}
+            isDisabled={running || !libraries.length} aria-busy={choices.isPending || undefined}
             onSelectionChange={(key) => { if (key !== null) setChosen(String(key)); }}>
             {libraries.map((row) => (
               <SelectItem key={row.id} id={row.id} textValue={row.name}>
@@ -97,6 +97,7 @@ export function MediaRepairCard({ toast = () => {} }: { toast?(message: string):
         {outcome?.status === 'complete' && outcome.missing_tool
           ? <Note tone="warning" title="缺少 untrunc" action={<Button variant="ghost" size="small" onClick={repair.dismiss}>关闭提示</Button>}>{missingToolText(outcome)}</Note>
           : null}
+        {choices.isError ? <Note tone="error">媒体库列表未取得</Note> : null}
         {problem ? <Note tone="error">{problem}</Note> : null}
       </div>
     </div>

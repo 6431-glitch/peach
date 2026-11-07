@@ -122,8 +122,10 @@ function openCleanupSection(section: DataCleanupSection, actions: ShellActions, 
  * 紧接着就读它画出来的结构（配置页按地址里的 `#peachProxy` 滚过去，那一刻选中的页签已经是「网络与访问」）。 */
 const configurationRoute = (path: ConfigurationPath): ManagedRoute<ManagedOpenProps['/settings/library']> => ({
   element: <ManagedMatch path={path} />,
-  prefetch: (_open, signal) => withPage(configurationPage, Promise.all([
-    prefetchConfiguration(signal), ...(path === '/settings/diagnostics' ? [prefetchDiagnostics(signal)] : [])]).then(() => {})),
+  prefetch: (_open, signal) => {
+    if (path === '/settings/diagnostics') void prefetchDiagnostics(signal).catch(() => {});
+    return withPage(configurationPage, prefetchConfiguration(signal));
+  },
   page: (open, actions) => {
     const { ConfigurationPage, DiagnosticsPage } = configurationPage.get();
     return <ConfigurationPage receipt={message => actions.receipt(message)}
@@ -306,8 +308,8 @@ export const INDEX_ROUTES: IndexRouteTable = {
 };
 
 /* 资料页：资料卡、筛选浮层、新作那一行与正文是同一页的四块。框架由元素排好（`openManagedRoute` 的
-   `place`），页面画进资料卡那一格，再经 portal 画进另外三块。首屏把资料（连同新作与头几张封面）、
-   作品第一页与照片取齐再画；换头像的候选不在首屏里，资料页每进一次就打一遍图库的话，多数时候没人
+   `place`），页面画进资料卡那一格，再经 portal 画进另外三块。身份资料先显示，作品、照片与新作各自加载；
+   换头像的候选不在首屏里，资料页每进一次就打一遍图库的话，多数时候没人
    点开它。壳交进来的筛选、视图与展示设置之后经 `updateManagedRoute` 推进来，页面按新键重取、不重挂。卡片与
    遗留层拼的 HTML（头像、新作那一行、源文件键）都是壳的那一份，跟着打开走。 */
 const entityRoute: ManagedRoute<EntityPageProps> = {
@@ -351,7 +353,7 @@ const LibraryProcessing = (props: LibraryProcessingProps) => (
 
 /* 页面里的页面内组件，按名字登记：壳每次打开交进来整份 props，之后经 `updateManagedRoute` 推补丁，页面就地
    重渲染。首页筛选条与搜索下拉不在打开前等数据（筛选条的读数与头像由壳推进来，搜索下拉的记录与推荐聚焦
-   时才取）；首页新作行连头几张封面一起等，再一次换掉骨架；任务面先取一份进度快照。 */
+   时才取）；首页新作条目先显示，封面各自加载；任务面先取一份进度快照。 */
 export const SURFACE_ROUTES: SurfaceRouteTable = {
   'catalog-filter': {
     prefetch: async () => {},

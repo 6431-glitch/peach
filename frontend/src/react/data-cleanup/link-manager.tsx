@@ -140,6 +140,7 @@ export function LinkManager() {
 
   const running = check.running || check.start.isPending;
   const removing = prune.running || prune.start.isPending;
+  const actionsReady = !!check.job && !!prune.job;
   const done = state?.status === 'complete';
   const gone = state?.gone ?? [];
   const unclear = state?.unclear ?? [];
@@ -150,11 +151,11 @@ export function LinkManager() {
   const hosts = (info?.top_hosts ?? []).slice(0, 3);
 
   const run = (retry?: readonly number[]) => {
-    if (running || (retry && !retry.length)) return;
+    if (!actionsReady || running || (retry && !retry.length)) return;
     check.start.mutate(retry ? { retry, checkId } : {});
   };
   const removeGone = (ids?: number[]) => {
-    if (removing || !gone.length) return;
+    if (!actionsReady || removing || !gone.length) return;
     void confirmModal({
       title: '删除失效链接',
       body: `将删除 ${ids?.length ?? gone.length} 条失效链接。删除前会再次检查，删除后无法恢复。`,
@@ -227,7 +228,7 @@ export function LinkManager() {
   return (
     <section id="link-manager" aria-labelledby="link-manager-title" className="flex scroll-mt-20 flex-col gap-4">
       <Fieldset layout="stack" labelledBy="link-manager-title" footer={
-        <Button data-link-check="" leadingIcon={LinkCheckIcon} {...busyProps(running)} onClick={() => run()}>
+        <Button data-link-check="" leadingIcon={LinkCheckIcon} disabled={!actionsReady} {...busyProps(running)} onClick={() => run()}>
           {running ? '检查中' : done ? '重新检查' : '检查死链'}
         </Button>
       }>

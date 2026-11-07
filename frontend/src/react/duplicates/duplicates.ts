@@ -83,13 +83,11 @@ export function sharedNamePrefix(names: readonly string[]): string {
 export const distinctName = (name: string, prefix: string) =>
   prefix && name.startsWith(prefix) && name.length > prefix.length ? `…${name.slice(prefix.length)}` : name;
 
-/** 首屏：重复分组与配了根目录的网盘（「留 115」那几颗键要它），取完才画。不给 `staleTime`，
+/** 首屏分组就绪后显示；来源独立读取，供「留 115」等可选规则使用。不给 `staleTime`，
  *  `/duplicates` 是 `refresh:'reopen'`，进来就重取。 */
 export async function prefetchDuplicates(signal: AbortSignal): Promise<void> {
-  await Promise.all([
-    queryClient.fetchQuery({ queryKey: DUPLICATES_KEY, queryFn: () => fetchDuplicates(signal) }),
-    prefetchMediaSources(signal),
-  ]);
+  void prefetchMediaSources(signal).catch(() => {});
+  await queryClient.fetchQuery({ queryKey: DUPLICATES_KEY, queryFn: () => fetchDuplicates(signal) });
 }
 
 /** 每组保留哪一个的口径。`all` 是一个不留——整组都是广告时才用得上。其余是网盘代号。 */
