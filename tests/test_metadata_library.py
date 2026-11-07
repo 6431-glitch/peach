@@ -94,6 +94,9 @@ class LibraryNfoTests(unittest.TestCase):
         from peach.entities import normalize_entity_name
         from peach.library_processing import _MissCache, _RemoteSession
         db = LedgerDatabase(fresh_ledger(self.root))
+        with db.write_transaction() as connection:
+            connection.execute("INSERT INTO asset(id,location,path,name,code,medium) VALUES(1,?,?,?,?,'video')",
+                               ('local', 'B:\\a.mp4', 'FC2-PPV-1234567.mp4', 'FC2-PPV-1234567'))
         if known:
             with db.write_transaction() as connection:
                 identity = connection.execute(
@@ -106,7 +109,8 @@ class LibraryNfoTests(unittest.TestCase):
         config = PeachConfig(self.root, self.root / 'config.toml', present=True)
         provider = stub_provider()
         payload = dict(id='FC2-PPV-1234567', title='作品标题', maker='', release_date='2024-01-01',
-                       actresses=[{'japanese_name': name}] if name else [], genres=['素人'])
+                       actresses=[{'japanese_name': name}] if name else [], genres=['素人'],
+                       javdb_rule=2, source_id='Example')
         provider.community.side_effect = None
         provider.community.return_value = [('javdb', payload)]
         provider.fc2.return_value = ([('fc2cmadb', dict(payload, actresses=[{'japanese_name': '春野あや'}]))]
@@ -152,6 +156,18 @@ class LibraryNfoTests(unittest.TestCase):
                                              self.root / 'source.json', {}, database=database)
         candidate = json.loads(groups['asset:1:performers']['candidates_json'])[0]
         self.assertTrue(candidate['requires_review'])
+        from peach.metadata_auto_apply import metadata_auto_apply_candidate
+        group = {**groups['asset:1:performers'], 'candidates': [candidate]}
+        with database.read_connection() as connection:
+            self.assertIsNone(metadata_auto_apply_candidate(connection, group))
+        specialist = dict(payload, actresses=[{'japanese_name': '春野あや'}])
+        library_processing._merge_candidates(groups, row, 'FC2-PPV-1234567', 'fc2cmadb', specialist,
+                                             self.root / 'specialist.json', {}, database=database)
+        group = {**groups['asset:1:performers'],
+                 'candidates': json.loads(groups['asset:1:performers']['candidates_json'])}
+        with database.read_connection() as connection:
+            chosen = metadata_auto_apply_candidate(connection, group)
+        self.assertEqual(chosen['source'], 'fc2cmadb')
 
     def test_a_javdb_actor_id_alone_does_not_confirm_an_fc2_name(self):
         session, provider, _payload, _database = self._fc2_metadata_session('Chisa', known=True, catalog='javdb')
@@ -167,6 +183,11 @@ class LibraryNfoTests(unittest.TestCase):
                                              self.root / 'source.json', {}, database=database)
         candidate = json.loads(groups['asset:1:performers']['candidates_json'])[0]
         self.assertFalse(candidate.get('requires_review', False))
+        from peach.metadata_auto_apply import metadata_auto_apply_candidate
+        with database.read_connection() as connection:
+            chosen = metadata_auto_apply_candidate(connection, {
+                **groups['asset:1:performers'], 'candidates': [candidate]})
+        self.assertEqual(chosen['source'], 'javdb')
 
     def test_old_completed_receipts_retry_only_fc2_rows_without_cast(self):
         from peach.entities import normalize_entity_name

@@ -1248,8 +1248,10 @@ def _source_candidate(source, document, value, evidence_path, mode):
                      catalog_evidence=extract_catalog_evidence(document))
     if source == 'javdb':
         candidate.update(javdb_rule=document.get('javdb_rule'), source_id=document.get('source_id'))
-    if mode == 'review':
+    if mode in ('review', 'identity-review'):
         candidate['requires_review'] = True
+    if mode == 'identity-review':
+        candidate['requires_identity_review'] = True
     if value.get('unmapped_genres'):
         candidate['unmapped_genres'] = value['unmapped_genres']
     return candidate
@@ -1273,7 +1275,7 @@ def _merge_candidates(groups, row, code, source, document, evidence_path, genre_
             continue
         if (field == 'performers' and source == 'javdb' and code and code.upper().startswith('FC2')
                 and not _confirmed_cast(database, value['value'])):
-            mode = 'review'
+            mode = 'identity-review'
         candidate = _source_candidate(source, document, value, evidence_path, mode)
         group = groups.get(key, dict(item_key=key, code=code or '', query=code or row['name'],
             asset_id=row['id'], asset_path=row['path'], field=field,
