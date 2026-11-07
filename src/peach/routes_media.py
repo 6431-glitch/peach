@@ -868,6 +868,7 @@ def follow_avatar(request: Request, service: str = "", id: str = "",
     state = request.app.state
     transport = state.http_transport
     client = transport.client
+    failures: list[str] = []
     if provider:
         target = follow_assets.mirror_avatar_url(provider, ref)
         if target is None:
@@ -888,7 +889,11 @@ def follow_avatar(request: Request, service: str = "", id: str = "",
             for name, handle in identities:
                 try:
                     tier_lists.append(profile_avatar_tiers(name, handle, transport=transport))
-                except (OSError, FollowSourceError):
+                except FollowSourceError as error:
+                    failures.append(str(error))
+                    continue
+                except OSError:
+                    failures.append("头像来源暂不可用")
                     continue
             return follow_assets.largest_image(client, tier_lists)
     else:
@@ -907,6 +912,10 @@ def follow_avatar(request: Request, service: str = "", id: str = "",
             return follow_assets.fetch_image(client, resolved)
     path = follow_assets.cached_image(_asset_root(state), "avatars", key,
                                       AVATAR_REFRESH_SECONDS, fetch)
+    if path is None and service == "profile":
+        reason = "；".join(failures) or "社媒头像未取得，来源暂不可用或仍在重试等待中"
+        return JSONResponse({"error": reason}, status_code=404,
+                            headers={"cache-control": "no-store"})
     return _asset_response(request, path, placeholder=False)
 
 
@@ -1593,6 +1602,7 @@ def _picker_online(request: Request, connection, entity_id: int):
     state = request.app.state
     providers_root, _ = _picker_roots(state.web_contract)
     cache = avatar_provider.AvatarCandidateCache(providers_root / "follow-content")
+    avatar_origin: dict = {}
 
     def media(item, index):
         target = state.follow_media_resolver.resolve(item, index)
@@ -1620,11 +1630,26 @@ def _picker_online(request: Request, connection, entity_id: int):
             raise avatar_picker.PickerError("封面地址不可用")
         return avatar_picker.fetch_image(state.http_transport, url)
 
-    def avatar(params):
+    def avatar(params, ref):
+        cached = avatar_online.cached_profile_avatar(providers_root, entity_id, params)
+        if cached is not None:
+            body, record = cached
+            avatar_origin.update({key: record[key] for key in (
+                "provider", "source_kind", "external_id", "upstream_url", "cached_at",
+                "matched_name", "name_source") if key in record})
+            return body
+        remembered = cache.lookup(f"peach:online/{entity_id}/{ref}")
+        if remembered is not None:
+            return remembered
         response = follow_avatar(request, args={}, **params)
-        return Path(response.path).read_bytes() if isinstance(response, FileResponse) else None
+        if isinstance(response, FileResponse):
+            return Path(response.path).read_bytes()
+        if isinstance(response, JSONResponse):
+            raise avatar_picker.PickerError(json.loads(response.body)["error"])
+        return None
 
     def resolve(ref):
+        avatar_origin.clear()
         def remembered(fetch):
             def wrapped(*args):
                 found = cache.lookup(f"peach:online/{entity_id}/{ref}")
@@ -1633,10 +1658,11 @@ def _picker_online(request: Request, connection, entity_id: int):
         try:
             body, origin = avatar_online.resolve(ref, connection, entity_id,
                 project=_picker_online_projection,
-                image=remembered(image), avatar=remembered(avatar), media=remembered(media))
+                image=remembered(image), avatar=lambda params: avatar(params, ref), media=remembered(media))
         except (OSError, httpx.HTTPError, FollowMediaUnavailable, FollowProxyError, FollowCoverUnavailable) as error:
             raise avatar_picker.PickerError("在线图片未取得") from error
         cache.store(f"peach:online/{entity_id}/{ref}", body, avatar_picker.accept_image(body))
+        origin.update(avatar_origin)
         return body, origin
     return resolve
 
@@ -1652,12 +1678,12 @@ def avatar_choices(request: Request, kind: str = "performer", id: int = 0,
     providers_root, avatar_root = _picker_roots(state)
     id = current_entity_id(state, id)
     with state.read_connection() as connection:
+        online = [choice for choice in avatar_online.choices(
+            connection, id, project=_picker_online_projection, providers_root=providers_root)
+            if kind == "creator" or choice.source == "social"]
         listing = avatar_picker.choices(
             connection, providers_root, avatar_root, _picker_kind(kind), id,
-            cover_root=state.cover_root)
-        if kind == "creator":
-            listing["choices"] += [choice.as_dict() for choice in avatar_online.choices(
-                connection, id, project=_picker_online_projection)]
+            cover_root=state.cover_root, online=online)
     refresher = _index_refresher(request.app)
     queued = refresher.request()
     listing["index_refreshing"] = bool(queued or refresher.refreshing or (

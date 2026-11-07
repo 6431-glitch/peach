@@ -24,6 +24,7 @@ export interface AvatarChoice {
   /** 这一格是按哪个名字从图库里找到的。只有一个名字命中时是空串。 */
   found_by: string;
   current: boolean;
+  user_cropped?: boolean;
   /** 这一格必须先框一块再装。作品画面是横图，整张装进圆框只剩一块背景。 */
   crop: boolean;
   /** 框选时可以换的底图，按 ref 给：封面加九宫格那九格。 */
@@ -169,7 +170,7 @@ export const sharedCast = (choice: AvatarChoice): boolean => choice.cast > 1;
 export const cropNote = (choice: AvatarChoice): string =>
   sharedCast(choice)
     ? `${choice.label}：${choice.cast.toLocaleString()} 人合演，先找到她自己的脸，再拖动方框选一块。`
-    : `${choice.label}：拖动方框选一块，滚轮或角上那枚方块改大小。`;
+    : `${choice.label}${choice.source === 'social' && choice.detail ? ` · ${choice.detail}` : ''}：拖动方框选一块，滚轮或角上那枚方块改大小。`;
 
 const SOURCE_LABELS: Record<string, string> = {
   gfriends: '图库', history: '用过的', asset: '作品画面', code: '番号封面',
@@ -196,4 +197,4 @@ export const choiceDetail = (choice: AvatarChoice): string =>
   + (choice.width ? ` · ${choice.width}×${choice.height}` : '')
   + (sharedCast(choice) ? ` · ${choice.cast.toLocaleString()} 人合演` : '')
   + (choice.found_by ? ` · 按「${choice.found_by}」找到` : '')
-  + (choice.source === 'asset' && choice.detail && choice.detail !== choice.label ? ` · ${choice.detail}` : '');
+  + (['asset', 'social', 'history'].includes(choice.source) && choice.detail && choice.detail !== choice.label ? ` · ${choice.detail}` : '');
