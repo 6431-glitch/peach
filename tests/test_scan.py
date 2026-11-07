@@ -395,6 +395,45 @@ class PosixShapeTests(_ScanCase):
         self.assertIn("挂载点", str(caught.exception))
 
 
+class CaseOnlyRenameTests(_ScanCase):
+    """只改大小写的文件与目录（#487）：扫描跟随磁盘上的实际写法，资产 id 与个人资料不变。"""
+
+    options = dict(declared_roots={'local': (r'R:\media',)}, windows=False)
+
+    def scan(self):
+        return self._scan(r'R:\media', **self.options, mounts={'local': (self.media,)})
+
+    def video(self):
+        with closing(sqlite3.connect(self.db)) as connection:
+            return connection.execute("SELECT id,path,name,rating FROM asset WHERE medium='video'").fetchall()
+
+    def test_a_file_renamed_only_in_case_keeps_its_id_and_follows_the_new_spelling(self):
+        self.scan()
+        with closing(sqlite3.connect(self.db)) as connection, connection:
+            asset_id = connection.execute("SELECT id FROM asset WHERE medium='video'").fetchone()[0]
+            connection.execute('UPDATE asset SET rating=4 WHERE id=?', (asset_id,))
+        sub = self.media / '创作者' / 'sub'
+        os.rename(sub / 'a.mp4', sub / 'A.mp4')
+        self.scan()
+        self.assertEqual(self.video(), [(asset_id, r'R:\media\创作者\sub\A.mp4', 'A.mp4', 4)])
+
+    def test_a_directory_renamed_only_in_case_moves_the_files_under_it(self):
+        self.scan()
+        asset_id = self.video()[0][0]
+        os.rename(self.media / '创作者' / 'sub', self.media / '创作者' / 'SUB')
+        self.scan()
+        self.assertEqual([row[:2] for row in self.video()], [(asset_id, r'R:\media\创作者\SUB\a.mp4')])
+
+    def test_both_spellings_present_on_a_case_sensitive_disk_are_left_alone(self):
+        sub = self.media / '创作者' / 'sub'
+        (sub / 'A.mp4').write_bytes(b'1' * 10)
+        if not (sub / 'a.mp4').exists() or (sub / 'A.mp4').samefile(sub / 'a.mp4'):
+            self.skipTest('文件系统不区分大小写，两种写法是同一个文件')
+        self.scan()
+        paths = sorted(row[1] for row in self.video())
+        self.assertIn(r'R:\media\创作者\sub\a.mp4', paths)
+
+
 class SidecarTests(_ScanCase):
     """刮削器与截图工具写在正片旁边的附属文件不登记，图集里同名的图照常登记。"""
 
