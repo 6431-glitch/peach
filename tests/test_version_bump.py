@@ -195,6 +195,18 @@ class ReleasePlanTests(unittest.TestCase):
         self.assertEqual((self.root / "src/peach/__init__.py").read_text(encoding="utf-8"),
                          VERSION_SEED.replace("0.7.14", "0.8.0"))
 
+    def test_writing_the_version_points_readme_downloads_at_it(self):
+        """两份 README 的 Release 直链随版本号一起走，链接以外的字节不动。"""
+        old = ("[Installer](https://github.com/o/p/releases/download/v0.7.14/Peach-0.7.14-windows-x64-setup.exe)"
+               " · [Releases](https://github.com/o/p/releases)\r\nPeach 0.7.14\n")
+        for name in version_bump.README_FILES:
+            (self.root / name).write_bytes(old.encode("utf-8"))
+        write_version(self.root, "patch")
+        for name in version_bump.README_FILES:
+            with self.subTest(readme=name):
+                self.assertEqual((self.root / name).read_bytes().decode("utf-8"),
+                                 old.replace("v0.7.14/Peach-0.7.14-", "v0.7.15/Peach-0.7.15-"))
+
 
 if __name__ == "__main__":
     unittest.main()
