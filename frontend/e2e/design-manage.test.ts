@@ -963,12 +963,19 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
         ],
       });
       try {
+        await opened.page.waitForFunction(() => {
+          const card = document.querySelector('[data-measured-reading="updates"]');
+          const value = card?.querySelector('[skullet-pane]:not([skullet-exiting]) [data-follow-reading]');
+          return !!card && !card.querySelector('[aria-busy="true"]') && value?.textContent?.includes('1,284,000');
+        });
         const spill = await opened.page.evaluate(() => {
           const out = (node: Element, frame: Element) => node.getBoundingClientRect().right > frame.getBoundingClientRect().right + 1;
-          const readings = [...document.querySelectorAll('[data-follow-reading]')]
+          const values = [...document.querySelectorAll('[data-measured-reading] [data-follow-reading]')]
+            .filter(node => !node.closest('[aria-hidden="true"], [inert], [skullet-exiting]'));
+          const readings = values
             .filter((node) => [...node.children].some((part) => out(part, node.parentElement!)))
             .map((node) => node.textContent);
-          const wrapped = [...document.querySelectorAll('[data-follow-reading]')].filter((node) => {
+          const wrapped = values.filter((node) => {
             const [figure, unit] = [...node.children].map((part) => part.getBoundingClientRect());
             return unit!.top >= figure!.bottom - 1;
           }).map((node) => node.textContent);
@@ -984,10 +991,11 @@ describe('设计决定：数据管理、索引页与资料页头', () => {
             const middle = (last.top + last.bottom) / 2;
             return middle < name.top - 1 || middle > name.bottom + 1;
           }).map((row) => row.textContent);
-          return { readings, wrapped, spilled, split, rows: rows.length,
-            text: document.querySelector('[data-follow-reading]')?.parentElement?.parentElement?.textContent };
+          return { readings, wrapped, spilled, split, rows: rows.length, values: values.length,
+            text: document.querySelector('[data-measured-reading="updates"] [skullet-pane]:not([skullet-exiting]) [data-follow-reading]')?.textContent };
         });
         assert.ok(spill.text?.includes('1,284,000'), `读数没有用上七位数：${spill.text}`);
+        assert.equal(spill.values, 6, '应测量六个已显示的真实读数，不包含隐藏样本');
         assert.equal(spill.rows, 5, '造的五条来源没有全部画出来');
         assert.deepEqual(spill.readings, [], '读数越出了卡片');
         assert.deepEqual(spill.wrapped, [], '七位数的读数把单位挤到了下一行');
