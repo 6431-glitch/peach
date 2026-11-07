@@ -23,10 +23,8 @@ from . import change_impact, ci_plan, test_evidence, test_runner
 WORKFLOW = '.github/workflows/test.yml'
 # 改动证明生成、选测和执行协议时，先经本机验证，再成为主线信任的协议。
 POLICY = (WORKFLOW, '.github/actions', 'scripts/ci_test_evidence.py', 'scripts/ci_plan.py',
-          'scripts/test_runner.py', 'scripts/test_evidence.py', 'scripts/test_resume.py',
-          'scripts/test_inputs.py', 'scripts/test_environment_identity.py',
-          'scripts/test_shard_results.py', 'scripts/test_run_progress.py', 'scripts/ci_scope.py',
-          'scripts/change_impact.py', 'scripts/agent_worktree.py', 'scripts/test.ps1', 'scripts/test.sh')
+          ':(glob)scripts/test*', 'scripts/ci_scope.py',
+          'scripts/change_impact.py', 'scripts/agent_worktree.py')
 
 
 def api(root: Path, endpoint: str, *, binary: bool = False):

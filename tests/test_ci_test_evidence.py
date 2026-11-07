@@ -19,8 +19,10 @@ class GitHubTestEvidenceTests(unittest.TestCase):
     def setUp(self):
         folder = self.enterContext(tempfile.TemporaryDirectory())
         self.root = seed_repository(Path(folder).resolve() / 'repo',
-                                    {name: '# policy\n' for name in evidence.POLICY if name != '.github/actions'}
-                                    | {'.gitignore': 'build/\n'},
+                                    {name: '# policy\n' for name in evidence.POLICY
+                                     if name != '.github/actions' and not name.startswith(':')}
+                                    | {'.gitignore': 'build/\n', 'scripts/test_focus.py': '# policy\n',
+                                       'scripts/test_environment.py': '# policy\n'},
                                     'fixture policy')
         self.base = self.git('rev-parse', 'HEAD')
         self.git('checkout', '-b', 'agent/codex/proof')
@@ -87,13 +89,16 @@ class GitHubTestEvidenceTests(unittest.TestCase):
             self.validate(jobs=[*self.jobs, self.jobs[0]])
 
     def test_protocol_changes_require_local_bootstrap(self):
-        path = self.root / 'scripts/ci_test_evidence.py'
-        path.write_text('changed policy\n', encoding='utf8')
-        self.git('add', '--', 'scripts/ci_test_evidence.py')
-        self.git('commit', '-m', 'test: protocol')
-        run = self.run | {'head_sha': self.git('rev-parse', 'HEAD')}
-        with self.assertRaisesRegex(ValueError, '本机正式验证'):
-            self.validate(run=run)
+        for name in ('scripts/ci_test_evidence.py', 'scripts/test_focus.py', 'scripts/test_environment.py'):
+            with self.subTest(name=name):
+                path = self.root / name
+                path.write_text('print("changed execution")\n', encoding='utf8')
+                self.git('add', '--', name)
+                self.git('commit', '-m', 'test: protocol')
+                run = self.run | {'head_sha': self.git('rev-parse', 'HEAD')}
+                with self.assertRaisesRegex(ValueError, '本机正式验证'):
+                    self.validate(run=run)
+                self.git('reset', '--hard', self.head)
 
     def test_python_policy_comments_keep_the_same_executable_contract(self):
         path = self.root / 'scripts/ci_test_evidence.py'
