@@ -16,11 +16,12 @@ import { flushSync } from 'react-dom';
 import { swapText } from '@peach/legacy/ui';
 
 import { manageHeaderView, TRASH_LEDE_SKELETON_HTML, type ManageHeaderProps, type ManageHeaderView } from '../../manage-header';
-import { normalizeManageOrder } from '../../application/navigation-items';
+import { MANAGE_MENU_SECTIONS, normalizeManageOrder } from '../../application/navigation-items';
 import { useSidebarReorder } from '../sidebar/use-sidebar-reorder';
 import { useCommitNavigationOrder } from '../sidebar/sidebar-order';
 import { Icon } from '../settings-panel/icon';
 import { PillTabList } from '../components/pill-tabs';
+import { NavigationOrderMenu } from '../components/navigation-order';
 import type { ManageHeaderApi, ManageHeaderHost } from './manage-header-api';
 import './manage-header.css';
 
@@ -112,6 +113,7 @@ function ManageBar({ host: at, pressed: key, menu }: Pick<ManageHeaderProps, 'me
         {reorder.hint ? <span data-manage-drop-line="" aria-hidden="true"
           style={{ '--manage-line-left': `${reorder.linePosition}px` } as CSSProperties}><span /></span> : null}
       </PillTabList>
+      <NavigationOrderMenu order={{ label: '管理顶部菜单', keys: order, defaults: MANAGE_MENU_SECTIONS, commit }} />
       <span data-manage-order-status="" role="status" aria-live="polite">{reorder.announcement}</span>
     </nav>
   );

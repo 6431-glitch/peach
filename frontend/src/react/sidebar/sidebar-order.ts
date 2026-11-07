@@ -11,7 +11,7 @@ import { useSaveSettings } from '../settings-panel/settings-data';
 
 export function useCommitNavigationOrder(store: SettingsStore<{ sidebarOrder?: string[]; manageOrder?: string[] }>,
   key: 'sidebarOrder' | 'manageOrder' = 'sidebarOrder') {
-  const save = useSaveSettings();
+  const save = useSaveSettings('navigation-order');
   const { mutate } = save;
   return useCallback((next: string[]) => {
     store.value[key] = next;
