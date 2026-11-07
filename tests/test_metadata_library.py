@@ -11,7 +11,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path, PureWindowsPath
 from types import SimpleNamespace
 from unittest.mock import DEFAULT, Mock, patch
-from contextlib import closing
+from contextlib import closing, contextmanager
 
 from filelock import FileLock
 from PIL import Image
@@ -4196,14 +4196,18 @@ class ProcessingLockTests(unittest.TestCase):
         entered, proceed = threading.Event(), threading.Event()
         stopping = threading.Event()
 
-        def query(*_args, **_kwargs):
-            if not entered.is_set():
-                entered.set()
-                proceed.wait(10)
-            return {}
+        processing_lock = library_processing._processing_lock
+
+        @contextmanager
+        def pause_background(config, *, background, active):
+            with processing_lock(config, background=background, active=active) as locked_active:
+                if background:
+                    entered.set()
+                    proceed.wait()
+                yield locked_active
 
         provider = stub_provider()
-        provider.query.side_effect = query
+        provider.query.return_value = {}
         background, user = [], []
 
         def run(sink, **options):
@@ -4215,6 +4219,7 @@ class ProcessingLockTests(unittest.TestCase):
                 sink.append(error)
 
         with patch('peach.library_processing.LOCK_RETRY_SECONDS', 0.01), \
+                patch('peach.library_processing._processing_lock', pause_background), \
                 patch('peach.library_processing._enrich_finished_performers',
                       return_value={'aliases': 0, 'avatars': 0, 'conflicts': 0, 'failed': 0}):
             first = threading.Thread(target=run, args=(background,), kwargs=dict(
@@ -4222,7 +4227,7 @@ class ProcessingLockTests(unittest.TestCase):
             threads = [first]
             first.start()
             try:
-                self.assertTrue(entered.wait(10))
+                self.assertTrue(entered.wait(10), f'后台处理尚未取得锁，实际结果：{background!r}')
                 second = threading.Thread(target=run, args=(user,))
                 second.start()
                 threads.append(second)
