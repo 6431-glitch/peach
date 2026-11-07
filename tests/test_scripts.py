@@ -6073,6 +6073,9 @@ class ShipTests(unittest.TestCase):
         audit = mock.patch.object(self.release, "require_clean_dependencies")
         self.audit = audit.start()
         self.addCleanup(audit.stop)
+        readme = mock.patch.object(self.release, "point_readme", return_value={"readme": ["README.md"]})
+        self.point_readme = readme.start()
+        self.addCleanup(readme.stop)
 
     def test_a_vulnerable_dependency_found_after_the_test_turns_green_stops_before_the_tag(self):
         """Test 绿了到打标签之间可能刚好公布了新漏洞：标签打出去就什么也发不了，所以标签前再查一次。"""
@@ -6172,20 +6175,15 @@ class ShipTests(unittest.TestCase):
             self.release.ship("owner/repo", apply=True)
         self.assertEqual(self._writes(command), [])
 
-    def test_readme_download_links_ride_along_in_the_release_commit(self):
-        """`--bump` 顺带改写两份 README 的下载直链，发布提交连它们一起带上；缺了变更日志仍拒收。"""
-        bumped = {("git", "status", "--porcelain"):
-                  " M CHANGELOG.md\n M README.md\n M README.zh-CN.md\n M src/peach/__init__.py"}
-        with self._shell(bumped) as command, self._api(remote="abc"), self._version(), \
-                self._document(), mock.patch.object(self.release, "GITLAB", None):
-            self.release.ship("owner/repo", apply=True)
-        self.assertIn(("git", "add", "src/peach/__init__.py", "CHANGELOG.md", "README.md",
-                       "README.zh-CN.md"), self._writes(command))
-        partial = {("git", "status", "--porcelain"): " M README.md\n M src/peach/__init__.py"}
-        with self._shell(partial) as command, self._api(), self._version(), self._document(), \
+    def test_readme_links_never_ride_along_in_the_release_commit(self):
+        """制品还没上传就换直链，读者点到的是 404；README 改动等 Release 齐了单独提交。"""
+        early = {("git", "status", "--porcelain"):
+                 " M CHANGELOG.md\n M README.md\n M src/peach/__init__.py"}
+        with self._shell(early) as command, self._api(), self._version(), self._document(), \
                 self.assertRaisesRegex(ValueError, "README.md"):
             self.release.ship("owner/repo", apply=True)
         self.assertEqual(self._writes(command), [])
+        self.point_readme.assert_not_called()
 
     def test_a_version_without_its_changelog_section_cannot_ship(self):
         with self._shell(), self._api(), self._version(), \
@@ -6220,6 +6218,9 @@ class ShipTests(unittest.TestCase):
             ("git", "push", "https://github.com/owner/repo.git", "refs/tags/v0.8.0"),
         ])
         self.assertEqual(result["test"], "test-url")
+        self.point_readme.assert_called_once_with("owner/repo", apply=True,
+                                                  timeout=self.release.TEST_TIMEOUT)
+        self.assertEqual(result["readme"], ["README.md"])
 
     def test_a_red_test_run_never_becomes_a_tag(self):
         red = {**self.SUCCESS, "conclusion": "failure"}
@@ -6230,6 +6231,7 @@ class ShipTests(unittest.TestCase):
         self.assertIn(("git", "-c", "peach.masterWriter=release", "commit",
                        "-m", "chore(release): 版本 0.8.0"), issued)
         self.assertFalse([args for args in issued if "refs/tags/v0.8.0" in args], issued)
+        self.point_readme.assert_not_called()
 
     def test_running_it_again_skips_what_is_already_done(self):
         """网络断在半路就再跑一次：已提交的不重提，已推送的不重推。"""
@@ -6241,6 +6243,104 @@ class ShipTests(unittest.TestCase):
             ("git", "tag", "-a", "v0.8.0", "abc", "-m", "Peach v0.8.0 Windows 测试版"),
             ("git", "push", "https://github.com/owner/repo.git", "refs/tags/v0.8.0"),
         ])
+
+
+class PointReadmeTests(unittest.TestCase):
+    """`--point-readme`：Release 制品齐了才把 README 直链换到新版本，空档里读者仍拿旧版。"""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.release = load_script("release_tag")
+
+    SUBJECT = "docs(readme): 下载直链指向 v0.8.0"
+    OLD = ("[Installer](https://github.com/o/p/releases/download/v0.7.9/Peach-0.7.9-windows-x64-setup.exe)"
+           " · [DMG](https://github.com/o/p/releases/download/v0.7.9/Peach-0.7.9-macos-arm64.dmg)\n")
+    ASSETS = ["Peach-0.8.0-macos-arm64.dmg", "Peach-0.8.0-windows-x64-setup.exe"]
+
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.root = Path(directory.name)
+        (self.root / "src/peach").mkdir(parents=True)
+        (self.root / "src/peach/__init__.py").write_text('__version__ = "0.8.0"\n', encoding="utf-8")
+        for name in self.release.version_bump.README_FILES:
+            (self.root / name).write_bytes(self.OLD.encode("utf-8"))
+        root = mock.patch.object(self.release, "ROOT", self.root)
+        root.start()
+        self.addCleanup(root.stop)
+
+    def _shell(self, *, status="", subject=SUBJECT):
+        answers = {("git", "branch", "--show-current"): "master",
+                   ("git", "status", "--porcelain"): status,
+                   ("git", "rev-parse", "HEAD"): "def",
+                   ("git", "log", "-1", "--format=%s", "def"): subject}
+        return mock.patch.object(self.release, "command",
+                                 side_effect=lambda *args, **_: answers.get(args, ""))
+
+    def _api(self, uploads, remote="abc"):
+        """`uploads` 依次是每次查询时已上传完的制品；用完后停在最后一份。"""
+        seen = iter(uploads)
+        last = [()]
+
+        def answer(_repo, endpoint):
+            if endpoint == "git/ref/heads/master":
+                return {"object": {"sha": remote}}
+            if endpoint == "releases/tags/v0.8.0":
+                last[0] = next(seen, last[0])
+                return {"draft": False, "assets": [{"name": name, "state": "uploaded"}
+                                                   for name in last[0]]}
+            raise AssertionError(f"没预料到的调用：{endpoint}")
+        return mock.patch.object(self.release, "api", side_effect=answer)
+
+    def _readmes(self):
+        return {name: (self.root / name).read_bytes().decode("utf-8")
+                for name in self.release.version_bump.README_FILES}
+
+    def test_links_move_only_after_every_linked_asset_is_uploaded(self):
+        sleeps = []
+        partial = self.ASSETS[:1]
+        with self._shell() as command, self._api([(), partial, self.ASSETS]):
+            result = self.release.point_readme("owner/repo", apply=True, sleep=sleeps.append)
+        self.assertEqual(len(sleeps), 2)
+        new = self.OLD.replace("v0.7.9/Peach-0.7.9-", "v0.8.0/Peach-0.8.0-")
+        self.assertEqual(self._readmes(), dict.fromkeys(self.release.version_bump.README_FILES, new))
+        self.assertEqual(result["readme"], list(self.release.version_bump.README_FILES))
+        self.assertEqual(ShipTests._writes(command), [
+            ("git", "add", *self.release.version_bump.README_FILES),
+            ("git", "-c", "peach.masterWriter=release", "commit", "-m", self.SUBJECT),
+            ("git", "push", "https://github.com/owner/repo.git", "refs/heads/master"),
+        ])
+
+    def test_a_release_that_never_completes_leaves_the_previous_links_in_place(self):
+        clock = iter(range(0, 10_000, 100))
+        with self._shell() as command, self._api([self.ASSETS[:1]]), \
+                self.assertRaisesRegex(ValueError, "仍缺 Peach-0.8.0-windows-x64-setup.exe.*--point-readme"):
+            self.release.point_readme("owner/repo", apply=True, timeout=300, sleep=lambda _: None,
+                                      clock=lambda: next(clock))
+        self.assertEqual(self._readmes(), dict.fromkeys(self.release.version_bump.README_FILES, self.OLD))
+        self.assertEqual(ShipTests._writes(command), [])
+
+    def test_rerunning_after_an_interrupted_push_only_pushes(self):
+        """README 已换、已提交，推送断了：再跑一次不重提交，只补推送。"""
+        for name in self.release.version_bump.README_FILES:
+            (self.root / name).write_text(self.OLD.replace("0.7.9", "0.8.0"), encoding="utf-8")
+        with self._shell() as command, self._api([self.ASSETS]):
+            self.release.point_readme("owner/repo", apply=True, sleep=lambda _: None)
+        self.assertEqual(ShipTests._writes(command), [
+            ("git", "push", "https://github.com/owner/repo.git", "refs/heads/master")])
+
+    def test_someone_elses_commit_on_top_is_not_pushed_on_their_behalf(self):
+        for name in self.release.version_bump.README_FILES:
+            (self.root / name).write_text(self.OLD.replace("0.7.9", "0.8.0"), encoding="utf-8")
+        with self._shell(subject="Merge branch 'agent/x'") as command, self._api([self.ASSETS]):
+            self.release.point_readme("owner/repo", apply=True, sleep=lambda _: None)
+        self.assertEqual(ShipTests._writes(command), [])
+
+    def test_unrelated_changes_block_the_readme_commit(self):
+        with self._shell(status=" M README.md\n M src/peach/api.py") as command, \
+                self._api([self.ASSETS]), self.assertRaisesRegex(ValueError, "src/peach/api.py"):
+            self.release.point_readme("owner/repo", apply=True, sleep=lambda _: None)
+        self.assertEqual(ShipTests._writes(command), [])
 
 
 class AwaitTestTests(unittest.TestCase):
