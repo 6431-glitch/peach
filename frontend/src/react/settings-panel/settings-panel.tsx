@@ -14,10 +14,11 @@
  * 焦点先交给关闭钮，Tab 在面板里转圈，关掉后还给打开前那一枚。 */
 import {
   useLayoutEffect, useRef, useState, useSyncExternalStore,
-  type KeyboardEvent, type ReactNode,
+  type CSSProperties, type KeyboardEvent, type ReactNode,
 } from 'react';
 import { flushSync } from 'react-dom';
 import { useQuery } from '@tanstack/react-query';
+import { VisuallyHidden } from 'react-aria-components';
 import { ButtonLink } from '@/components/base/buttons/button';
 import {
   attachOverlayScrollbar, closeAnchoredMenu, iconSwapHtml, moveGlidePane, revealTexts,
@@ -253,7 +254,12 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
       <p data-settings-nav-caption="" role="presentation">设置</p>
       {items.map(({ id, title, icon, index }) => (
         <button type="button" role="tab" key={title} id={tabId(index)} aria-controls={groupId(index)}
-          data-tab={id} data-dragging={reorder.picked?.key === id ? '' : undefined} style={reorder.style(id)}
+          data-tab={id} data-dragging={reorder.picked?.key === id ? '' : undefined}
+          style={{ '--navigation-picked-left': `${reorder.picked?.bounds.left || 0}px`,
+            '--navigation-picked-top': `${reorder.picked?.bounds.top || 0}px`,
+            '--navigation-picked-width': `${reorder.picked?.bounds.width || 0}px`,
+            '--navigation-picked-offset': `${reorder.picked?.offset || 0}px`,
+            '--sidebar-nudge': `${reorder.nudge(id).distance}px`, '--sidebar-delay': `${reorder.nudge(id).delay}ms` } as CSSProperties}
           {...reorder.bindings(id)} aria-keyshortcuts={narrow ? 'Alt+ArrowLeft Alt+ArrowRight' : 'Alt+ArrowUp Alt+ArrowDown'}
           aria-selected={index === tab} tabIndex={index === tab ? 0 : -1}
           ref={(node) => { buttons.current[index] = node }}
@@ -263,7 +269,7 @@ function SettingsNav({ tab, epoch, configurable, openConfiguration, onSelect }: 
         </button>
       ))}
       <NavigationDropLine reorder={reorder} />
-      <span className="sr-only" role="status" aria-live="polite">{reorder.announcement}</span>
+      <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
       <NavigationOrderMenu order={order} />
       <div data-settings-service="" role="presentation">
         <button type="button" disabled={configurable !== true} onClick={openConfiguration}

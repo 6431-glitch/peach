@@ -45,7 +45,7 @@ it('键盘调整导航保存稳定 ID，选中分区保留，重置后可撤销'
   restoreNavigationOrder({ label: 'JAV 分区', keys: ['wants', 'library', 'releases', 'discover'], defaults: navigationDefaults('jav'), commit });
   expect(commit).toHaveBeenLastCalledWith(navigationDefaults('jav'));
   const options = vi.mocked(showToast).mock.calls.at(-1)![1];
-  options.action?.run();
+  options.action?.run(document.createElement('button'));
   expect(commit).toHaveBeenLastCalledWith(['wants', 'library', 'releases', 'discover']);
 });
 

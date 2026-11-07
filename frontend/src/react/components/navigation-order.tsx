@@ -1,5 +1,5 @@
 import { useRef, useState, useSyncExternalStore, type CSSProperties, type RefObject } from 'react';
-import { Popover } from 'react-aria-components';
+import { Popover, VisuallyHidden } from 'react-aria-components';
 import { MENU_POPOVER_SURFACE } from '@/components/base/dropdown/menu-styles';
 import { Button } from '@/components/base/buttons/button';
 import { Select, SelectItem } from '@/components/base/select/select';
@@ -96,7 +96,13 @@ export function NavigationOrderRows({ order, labels, fixed = [], reset = true }:
       data-reordering={reorder.picked ? '' : undefined} onClickCapture={reorder.clickCapture}>
       {order.keys.map((key, index) => <div key={key} data-tab={key} role="group" tabIndex={0}
         aria-label={labels[key]} aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
-        data-dragging={reorder.picked?.key === key ? '' : undefined} style={reorder.style(key)} {...reorder.bindings(key)}>
+        data-dragging={reorder.picked?.key === key ? '' : undefined}
+        style={{ '--navigation-picked-left': `${reorder.picked?.bounds.left || 0}px`,
+          '--navigation-picked-top': `${reorder.picked?.bounds.top || 0}px`,
+          '--navigation-picked-width': `${reorder.picked?.bounds.width || 0}px`,
+          '--navigation-picked-offset': `${reorder.picked?.offset || 0}px`,
+          '--sidebar-nudge': `${reorder.nudge(key).distance}px`, '--sidebar-delay': `${reorder.nudge(key).delay}ms` } as CSSProperties}
+        {...reorder.bindings(key)}>
         <Grip aria-hidden="true" /><span>{labels[key]}</span>
         <button type="button" data-order-step="" aria-label={`上移 ${labels[key]}`}
           disabled={index === 0 || fixed.includes(key) || fixed.includes(order.keys[index - 1])}
@@ -109,7 +115,7 @@ export function NavigationOrderRows({ order, labels, fixed = [], reset = true }:
     </div>
     {reset && order.keys.join(',') !== order.defaults.join(',') ? <Button variant="secondary" size="small"
       onClick={() => restoreNavigationOrder(order)}>恢复本组默认顺序</Button> : null}
-    <span className="sr-only" role="status" aria-live="polite">{reorder.announcement}</span>
+    <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
   </div>;
 }
 
@@ -174,6 +180,6 @@ export function SortableBoardTabs<V extends string>({ group, ...props }: BoardTa
   return <div data-navigation-frame="" data-navigation-axis={axis}>
     <BoardTabs {...props} tabs={tabs} listRef={list} reorder={reorder} orderGroup={group} />
     <NavigationOrderMenu order={order} />
-    <span className="sr-only" role="status" aria-live="polite">{reorder.announcement}</span>
+    <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
   </div>;
 }

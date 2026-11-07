@@ -104,7 +104,12 @@ export function BoardTabs<V extends string>(
             aria-keyshortcuts={reorder ? orientation === 'vertical' ? 'Alt+ArrowUp Alt+ArrowDown' : 'Alt+ArrowLeft Alt+ArrowRight' : undefined}
             data-pill-selected={selected ? '' : undefined} data-pill-variant="gray"
             data-dragging={reorder?.picked?.key === tab.value ? '' : undefined}
-            style={reorder?.style(tab.value)}
+            style={{ '--navigation-picked-left': `${reorder?.picked?.bounds.left || 0}px`,
+              '--navigation-picked-top': `${reorder?.picked?.bounds.top || 0}px`,
+              '--navigation-picked-width': `${reorder?.picked?.bounds.width || 0}px`,
+              '--navigation-picked-offset': `${reorder?.picked?.offset || 0}px`,
+              '--sidebar-nudge': `${reorder?.nudge(tab.value)?.distance || 0}px`,
+              '--sidebar-delay': `${reorder?.nudge(tab.value)?.delay || 0}ms` } as CSSProperties}
             {...reorder?.bindings(tab.value)}
             tabIndex={selected ? 0 : -1} className={itemClassName}
             onClick={() => { if (!selected) onChange(tab.value) }}>

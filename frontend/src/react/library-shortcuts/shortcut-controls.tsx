@@ -1,4 +1,5 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ComponentProps, type FormEvent, type KeyboardEvent } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ComponentProps, type CSSProperties, type FormEvent, type KeyboardEvent } from 'react';
+import { VisuallyHidden } from 'react-aria-components';
 import { attachOverlayScrollbar, revealTexts, spinnerHtml, wireHorizontalScroller } from '@peach/legacy/ui';
 import { Button, ButtonLink } from '@/components/base/buttons/button';
 import { Input } from '@/components/base/input/input';
@@ -145,7 +146,12 @@ function ShortcutContents({ currentHref, kind, close }: { currentHref?: () => st
           const Glyph = GLYPHS[value as keyof typeof GLYPHS] || Star;
           const count = value === 'filters' ? data?.filters.length || 0 : (data?.favorites || []).filter(row => value === 'all' || row.kind === value).length;
           return <button key={value} type="button" role="tab" id={`${id}-${value}`} aria-controls={`${id}-content`}
-            data-tab={value} data-dragging={reorder.picked?.key === value ? '' : undefined} style={reorder.style(value)}
+            data-tab={value} data-dragging={reorder.picked?.key === value ? '' : undefined}
+            style={{ '--navigation-picked-left': `${reorder.picked?.bounds.left || 0}px`,
+              '--navigation-picked-top': `${reorder.picked?.bounds.top || 0}px`,
+              '--navigation-picked-width': `${reorder.picked?.bounds.width || 0}px`,
+              '--navigation-picked-offset': `${reorder.picked?.offset || 0}px`,
+              '--sidebar-nudge': `${reorder.nudge(value).distance}px`, '--sidebar-delay': `${reorder.nudge(value).delay}ms` } as CSSProperties}
             {...reorder.bindings(value)}
             aria-keyshortcuts={narrow ? 'Alt+ArrowLeft Alt+ArrowRight' : 'Alt+ArrowUp Alt+ArrowDown'}
             aria-label={label} aria-selected={scope === value} tabIndex={scope === value ? 0 : -1} onPointerEnter={glide.hover} onClick={() => setScope(value)}>
@@ -155,7 +161,7 @@ function ShortcutContents({ currentHref, kind, close }: { currentHref?: () => st
         <NavigationDropLine reorder={reorder} />
       </div>
       <NavigationOrderMenu order={order} />
-      <span className="sr-only" role="status" aria-live="polite">{reorder.announcement}</span>
+      <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
       <nav data-shortcuts-footer="" aria-label="收藏作品清单">
         <a href="/flagged" onClick={close}><Star aria-hidden />已标记<ChevronRight aria-hidden /></a>
         <a href="/watch-later" onClick={close}><Bookmark aria-hidden />稍后看<ChevronRight aria-hidden /></a>

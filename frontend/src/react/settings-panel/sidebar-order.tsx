@@ -2,7 +2,8 @@
  *
  * 写入与侧栏那一列的拖动共用 `sidebar/sidebar-order.ts`：先落本地那份（侧栏按 store 的通知当场
  * 重排），再写 `/api/settings`。 */
-import { useRef, useState, type KeyboardEvent } from 'react';
+import { useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
+import { VisuallyHidden } from 'react-aria-components';
 
 import { dismissMenu, presentMenu } from '@peach/legacy/ui';
 
@@ -70,7 +71,12 @@ export function SidebarOrder({ host }: { host: SettingsPanelHost }) {
       {visible.map(([key, label, glyph], index) => (
         <div key={optionKey(key)} data-sidebar-row={key} data-tab={key} {...reorder.bindings(key)}
           role="group" aria-label={label} tabIndex={0} aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
-          data-dragging={reorder.picked?.key === key ? '' : undefined} style={reorder.style(key)}>
+          data-dragging={reorder.picked?.key === key ? '' : undefined}
+          style={{ '--navigation-picked-left': `${reorder.picked?.bounds.left || 0}px`,
+            '--navigation-picked-top': `${reorder.picked?.bounds.top || 0}px`,
+            '--navigation-picked-width': `${reorder.picked?.bounds.width || 0}px`,
+            '--navigation-picked-offset': `${reorder.picked?.offset || 0}px`,
+            '--sidebar-nudge': `${reorder.nudge(key).distance}px`, '--sidebar-delay': `${reorder.nudge(key).delay}ms` } as CSSProperties}>
           <span data-sidebar-label=""><i data-sidebar-grip="" aria-hidden="true"><Icon name="grip-vertical" /></i>
             <Icon name={glyph ?? ''} /><b>{label}</b></span>
           <span data-sidebar-actions="">
@@ -86,7 +92,7 @@ export function SidebarOrder({ host }: { host: SettingsPanelHost }) {
       ))}
       <NavigationDropLine reorder={reorder} />
       </div>
-      <span className="sr-only" role="status" aria-live="polite">{reorder.announcement}</span>
+      <VisuallyHidden role="status" aria-live="polite">{reorder.announcement}</VisuallyHidden>
       <div data-sidebar-add-row="">
         <div data-sidebar-add-picker=""
           onBlur={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) closeMenu() }}>

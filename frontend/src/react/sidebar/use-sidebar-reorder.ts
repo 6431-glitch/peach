@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type RefObject } from 'react';
+import { useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent, type RefObject } from 'react';
 import { flushSync } from 'react-dom';
 import { moveSidebarKey } from './sidebar-order';
 import './navigation-reorder.css';
@@ -186,16 +186,6 @@ export function useSidebarReorder(column: RefObject<HTMLDivElement | null>, orde
   };
   return {
     picked, announcement, linePosition, hint, nudge,
-    style(key: string): CSSProperties {
-      const movement = nudge(key);
-      return {
-        '--navigation-picked-left': `${picked?.bounds.left || 0}px`,
-        '--navigation-picked-top': `${picked?.bounds.top || 0}px`,
-        '--navigation-picked-width': `${picked?.bounds.width || 0}px`,
-        '--navigation-picked-offset': `${picked?.offset || 0}px`,
-        '--sidebar-nudge': `${movement.distance}px`, '--sidebar-delay': `${movement.delay}ms`,
-      } as CSSProperties;
-    },
     bindings(key: string) {
       return { onPointerDown: (event: PointerEvent<HTMLElement>) => pointerDown(event, key),
         onPointerMove: pointerMove,
