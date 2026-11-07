@@ -303,10 +303,6 @@ class UpgradeRepairs:
                   'changed': local.get('changed', {}), 'review_count': review},
                  {'id': 'background', 'label': '后台更新进度', 'state': state,
                   'pending': active, 'failed': failed, 'queued': len(queued)}]
-        cloud = self.cloud_display_videos() if self.available else 0
-        if cloud:
-            items.append({'id': 'display-cloud', 'label': '网盘视频显示尺寸', 'state': 'available',
-                          'cloud_videos': cloud})
         return {'state': state, 'items': items, 'available': self.available,
                 'message': self.error or paused.get('message', '')}
 

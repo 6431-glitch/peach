@@ -231,6 +231,7 @@ export const MANAGED_ROUTES: ManagedRouteTable = {
   '/settings/downloads': configurationRoute('/settings/downloads'),
   '/settings/network': configurationRoute('/settings/network'),
   '/settings/maintenance': configurationRoute('/settings/maintenance'),
+  '/settings/repairs': configurationRoute('/settings/repairs'),
   '/settings/diagnostics': configurationRoute('/settings/diagnostics'),
   '/tasks': {
     element: <ManagedMatch path="/tasks" />,

@@ -7,7 +7,7 @@ export const NAVIGATION_GROUPS = {
   ] },
   configuration: { label: 'Peach 配置', items: [
     ['library', '媒体库与入库'], ['sources', '来源与订阅'], ['downloads', '下载渠道'],
-    ['network', '网络与访问'], ['maintenance', '应用与维护'], ['diagnostics', '系统诊断'],
+    ['network', '网络与访问'], ['maintenance', '应用与维护'], ['repairs', '修复与迁移'], ['diagnostics', '系统诊断'],
   ] },
   favorites: { label: '我的收藏', items: [
     ['all', '全部'], ['filters', '保存的筛选'], ['performer', '艺人'], ['creator', '创作者'],

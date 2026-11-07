@@ -27,6 +27,7 @@ import { SourceSettings } from './source-settings';
 import { groupRoot } from './configuration-panel';
 import { downloadsShape, maintenanceShape, networkShape } from './configuration-shape';
 import { rememberShape } from '../../configuration-skeleton';
+import { RepairCenter } from './repair-center';
 import { busyProps } from './use-action';
 
 export function ConfigurationPage({ receipt, reopenTutorial, section = '', diagnostics }: ConfigurationProps & { diagnostics?: ReactElement }) {
@@ -133,6 +134,7 @@ function ConfigurationGroups(
         <MaintenanceSettings {...group} reopenTutorial={reopenTutorial} />
       </div>,
     },
+    { id: 'repairs', title: '修复与迁移', body: panel => <div {...groupRoot(panel)}>{panel.active ? <RepairCenter /> : null}</div> },
     { id: 'diagnostics', title: '系统诊断', body: panel => <div {...groupRoot(panel)}>{panel.active ? diagnostics : null}</div> },
   ];
   const at = Math.max(0, groups.findIndex((item) => item.title === chosen));

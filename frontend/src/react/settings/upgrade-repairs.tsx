@@ -1,6 +1,8 @@
 /** 升级补修与程序安装分别显示；复核和重试都由用户明确发起。 */
 import { useEffect, useState } from 'react';
+import { RiArrowRightLine } from '@remixicon/react';
 import { Button } from '@/components/base/buttons/button';
+import { LinkButton } from '@/components/base/buttons/link-button';
 import { apiSend } from '../../api';
 import { useClientUpdates } from '../client-updates';
 import type { ClientUpdates } from '../client-updates';
@@ -22,14 +24,11 @@ export function UpgradeRepairs() {
   const pending = data?.items.reduce((count, row) => count + (row.pending || 0), 0) || 0;
   const failed = data?.items.reduce((count, row) => count + (row.failed || 0), 0) || 0;
   const review = data?.items.reduce((count, row) => count + (row.review_count || 0), 0) || 0;
-  const cloud = data?.items.find(row => row.id === 'display-cloud')?.cloud_videos || 0;
-  const send = (name: string, path: string) => void action.run(name, signal => apiSend<ClientUpdates['repairs']>(
-    path, {}, 'POST', signal), next => {
+  const retry = () => void action.run('retry', signal => apiSend<ClientUpdates['repairs']>(
+    '/api/configuration/upgrade-repairs/retry', {}, 'POST', signal), next => {
     setSaved(next);
     document.dispatchEvent(new Event('peach:client-updates'));
   });
-  const retry = () => send('retry', '/api/configuration/upgrade-repairs/retry');
-  const measureCloud = () => send('cloud', '/api/configuration/upgrade-repairs/display-cloud');
   return <Section id="upgradeRepairs" title="自动修复" aside={<StatusLabel
     tone={state === 'failed' ? 'error' : state === 'running' ? 'progress' : state === 'review' ? 'warning'
       : state === 'complete' ? 'success' : 'neutral'}><span key={state}
@@ -42,11 +41,12 @@ export function UpgradeRepairs() {
     </FactList>
     {data?.message || action.error ? <Stack><ErrorText>{action.error || data?.message}</ErrorText></Stack> : null}
     {state === 'running' ? <Stack><Help>资料与预览正在后台补全。</Help><TaskCenterLink /></Stack> : null}
-    {cloud ? <Stack><Help>网盘里有 {cloud.toLocaleString()} 部视频没有自动补测显示尺寸。补测要逐部读取文件头，网盘缓存和流量会增加。</Help></Stack> : null}
-    <Footer status={review ? <ExternalLink href="/api/configuration/upgrade-repairs/review">下载复核记录</ExternalLink> : undefined}>
+    <Footer status={<div className="flex flex-wrap items-center gap-3">
+      <LinkButton href="/settings/repairs" size="small" trailingIcon={RiArrowRightLine}>修复与迁移</LinkButton>
+      {review ? <ExternalLink href="/api/configuration/upgrade-repairs/review">下载复核记录</ExternalLink> : null}
+    </div>}>
       <Button size="small" variant="secondary" disabled={!data?.available || state === 'running' || !!action.busy || (!failed && state !== 'failed')}
         onClick={retry}>重试失败项</Button>
-      {cloud ? <Button size="small" disabled={!data?.available || !!action.busy} onClick={measureCloud}>补测网盘视频</Button> : null}
     </Footer>
   </Section>;
 }
