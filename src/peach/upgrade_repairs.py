@@ -1418,21 +1418,12 @@ def _batch_run(contract, key: str, handle) -> dict:
     结论与单部时一致：走完全程只剩片子自己的问题算完成，卡在来源冷却上的、所在目录读不到的
     延后；整轮没走完（不是部分完成）按这一批失败结算，由退避重派。
     """
-    import hashlib
     from .settings_file import load_config
     from .library_processing import process_library
     from .storage_budget import CapacityGuard
     rule, asset_ids = batch_members(key)
     config = getattr(contract, 'upgrade_config', None) or load_config()
-    digest = hashlib.sha1(key.encode('utf-8')).hexdigest()[:16]
-    job_id = f'{MEDIA_TASK}-batch-{digest}'
-    state_file = Path(contract.follow_state_root) / 'upgrade-repairs' / f'batch-{digest}.json'
-    previous = _read(state_file)
-    if previous.get('job_id', job_id) != job_id:
-        previous = {}
-    if previous:
-        previous.update(issue_count=0, paused_count=0, issue_preview=[], retryable_asset_ids=[],
-                        paused_asset_ids=[])
+    job_id, state_file, previous = _batch_checkpoint(contract, key)
     service = getattr(contract, 'upgrade_repairs', None)
     with contract.database.read_connection() as connection:
         found = {row['id']: row for row in connection.execute(
@@ -1467,6 +1458,26 @@ def _batch_run(contract, key: str, handle) -> dict:
     if result.get('status') not in ('complete', 'succeeded') and result.get('outcome') != 'partial':
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
     cooling = [asset_id for asset_id in targets if asset_id in set(result.get('paused_asset_ids', ()))]
+    return _settle_batch(contract, handle, rule, asset_ids, offline, cooling)
+
+
+def _batch_checkpoint(contract, key: str) -> tuple[str, Path, dict]:
+    """一批的任务号、断点文件与可续跑的断点；上一轮的问题计数清零，换了批次的断点不认。"""
+    import hashlib
+    digest = hashlib.sha1(key.encode('utf-8')).hexdigest()[:16]
+    job_id = f'{MEDIA_TASK}-batch-{digest}'
+    state_file = Path(contract.follow_state_root) / 'upgrade-repairs' / f'batch-{digest}.json'
+    previous = _read(state_file)
+    if previous.get('job_id', job_id) != job_id:
+        previous = {}
+    if previous:
+        previous.update(issue_count=0, paused_count=0, issue_preview=[], retryable_asset_ids=[],
+                        paused_asset_ids=[])
+    return job_id, state_file, previous
+
+
+def _settle_batch(contract, handle, rule: str, asset_ids, offline, cooling) -> dict:
+    """一批里每部片的结论写进状态表：目录读不到、来源冷却的延后，其余完成。"""
     done = [asset_id for asset_id in asset_ids if asset_id not in offline and asset_id not in cooling]
     now = time.time()
     item_rule = f'media:{rule}'

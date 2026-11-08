@@ -79,7 +79,6 @@ class UpgradeRepairTests(unittest.TestCase):
                 "INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration,width,height) "
                 "VALUES(2,'115','2.mp4','ABC-002.mp4','video','ABC-002','{}',60,720,1280)")
         self.display_sample()
-        receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(self.display_targets(), {'1': [720, 1280]})
         self.assertEqual(self.service.cloud_display_videos(), 1)
 
@@ -96,7 +95,6 @@ class UpgradeRepairTests(unittest.TestCase):
                 patch.object(media_probe, 'probe_file') as probe:
             self.service.include_cloud_display_dimensions()
         probe.assert_not_called()
-        receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(sorted(self.display_targets()), ['1', '2'])
         self.assertEqual(self.service.cloud_display_videos(), 0)
         self.assertEqual((cloud_item()['state'], cloud_item()['pending']), ('done', 0))
@@ -2019,7 +2017,8 @@ class UpgradeRepairTests(unittest.TestCase):
                 self.contract, 'upgrade-library:processing-v2:1', Mock())
         self.assertEqual(result['outcome'], '影片升级补全完成')
 
-    def test_media_handler_retries_later_when_a_source_was_cooling_down(self):
+    def test_cooldown_without_the_paused_film_list_is_settled_as_a_retryable_failure(self):
+        """旧版断点没有 `paused_asset_ids`，分不出哪部在等来源：按失败结算，由退避重派。"""
         from peach.settings_file import load_config
         self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
         with patch('peach.library_processing.process_library', return_value={
