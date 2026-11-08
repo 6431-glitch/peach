@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { cardArtwork } from '@peach/card-art';
+import { cardArtwork, frameArtwork } from '@peach/card-art';
 
 import { Button } from '@/components/base/buttons/button';
 import { LinkButton } from '@/components/base/buttons/link-button';
@@ -23,19 +23,27 @@ import { busyProps } from '../settings/use-action';
 type PreviewItem = Pick<MediaItem, 'id' | 'name' | 'medium' | 'disposal' | 'location' | 'cost' | 'code' | 'is_jav'
   | 'has_cover' | 'cover_key' | 'has_thumb' | 'has_local_poster' | 'follow_thumb_url'>;
 
-export function missingPreviewIds(items: PreviewItem[], javImage: string): number[] {
+/** 卡面画不画得出来。`frames` 是竖屏格（竖屏带与筛竖屏的网格）：那里番号作品也只用视频帧，
+ *  不借官方封面，判据同 `media-card.tsx` 的 `frameOnly`。 */
+const pictured = (item: PreviewItem, javImage: string, frames: boolean) =>
+  Boolean((frames && item.is_jav ? frameArtwork(item, false) : cardArtwork(item, 'small', false, javImage)).html);
+
+/** 同步能补上图的缺图影片。番号作品补得到发行封面，所以 STRM 与流量保护目录里的也算；竖屏格
+ *  要的是视频帧，封面画不进去，番号就不再替它们开脱。 */
+export function missingPreviewIds(items: PreviewItem[], javImage: string, frames = false): number[] {
+  const cover = (item: PreviewItem) => !frames && !!item.code;
   return [...new Set(items.filter(item => (!item.medium || item.medium === 'video')
-    && (!/\.(strm|iso)$/i.test(item.name || '') || !!item.code)
-    && !item.disposal && item.location !== 'online' && (item.cost !== 'metered' || !!item.code)
-    && !cardArtwork(item, 'small', false, javImage).html).map(item => item.id))];
+    && (!/\.(strm|iso)$/i.test(item.name || '') || cover(item))
+    && !item.disposal && item.location !== 'online' && (item.cost !== 'metered' || cover(item))
+    && !pictured(item, javImage, frames)).map(item => item.id))];
 }
 
 /** 这一屏里没有图、开了流量保护的影片：同步时不读，单独一批、确认后才补预览。 */
-export function meteredPreviewIds(items: PreviewItem[], javImage: string): number[] {
+export function meteredPreviewIds(items: PreviewItem[], javImage: string, frames = false): number[] {
   return [...new Set(items.filter(item => (!item.medium || item.medium === 'video')
     && !/\.(strm|iso)$/i.test(item.name || '')
     && !item.disposal && item.location !== 'online' && item.cost === 'metered'
-    && !cardArtwork(item, 'small', false, javImage).html).map(item => item.id))];
+    && !pictured(item, javImage, frames)).map(item => item.id))];
 }
 
 /** 单独一行；`className` 交给所在布局定外边距，列表页由父级间距负责。`meteredIds` 是开了流量保护、

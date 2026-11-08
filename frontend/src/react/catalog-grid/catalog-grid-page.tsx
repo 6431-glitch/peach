@@ -162,12 +162,18 @@ function GridBody(props: CatalogGridProps) {
   const wallAvailable = !trash && !props.selectMode && !!actions.wallPlayer && !!actions.wallDetails;
   const wallItems = tiles.flatMap(tile => tile.kind === 'card' && wallHasCover(tile.item) ? [tile.item] : []);
   const wallPool = wallItems;
-  const shownItems = tiles.flatMap(tile => tile.kind === 'card' ? [tile.item] : []);
-  const missing = trash ? [] : missingPreviewIds(shownItems, layout.javImage);
-  const metered = trash ? [] : meteredPreviewIds(shownItems, layout.javImage);
-
   const body = useRef<HTMLDivElement | null>(null);
   const cuts = useShortsStrips(props, result.isPlaceholderData ? undefined : result.data, tiles, pageStarts, body);
+  /* 状态条数的是这一页画出来的全部卡：主网格加上插在中间的竖屏带。竖屏格只用视频帧，
+     按帧图判断有没有图；筛竖屏时主网格本身也是竖屏格。 */
+  const shownItems = tiles.flatMap(tile => tile.kind === 'card' ? [tile.item] : []);
+  const shortItems = cuts.flatMap(cut => cut.items);
+  const portrait = !!layout.portrait;
+  const merge = (...lists: number[][]) => [...new Set(lists.flat())];
+  const missing = trash ? [] : merge(missingPreviewIds(shownItems, layout.javImage, portrait),
+    missingPreviewIds(shortItems, layout.javImage, true));
+  const metered = trash ? [] : merge(meteredPreviewIds(shownItems, layout.javImage, portrait),
+    meteredPreviewIds(shortItems, layout.javImage, true));
 
   /* 读数排到微任务里报：壳画读数会顺带重排页头与选中态，那一路可能走到批量条的 `flushSync`，
      提交阶段里它画不出来。微任务在浏览器绘制前跑完；这一代已卸下就不报。 */
