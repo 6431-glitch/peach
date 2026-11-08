@@ -581,16 +581,21 @@ class WebContract:
         「新近修改」的做法，目录时间距今不足 `SETTLE_SECONDS` 时扫出的结果只按
         `SETTLE_TTL` 缓存，版本里另记一档，目录静下来之后重扫一次才按 `ttl` 缓存。
         `ttl` 为无穷时这一份不随提交通知清掉。
+
+        同一个目录的重扫单飞：封面刮削期间目录一直在变，一屏卡片的几个并发请求同时没命中时，
+        后到的等先到的那一次扫完直接命中，不各扫一遍（重建要读两千多份边车）。
         """
         version = path_version(root)
-        if version is None:
-            return self.cached(key, scan, version=None)
-        if ttl == math.inf:
-            with self.cache_lock:
+        with self.cache_lock:
+            lock = self.aggregate_locks.setdefault(key, threading.RLock())
+            if version is not None and ttl == math.inf:
                 self.revision_cache_keys.add(key)
-        settling = time.time_ns() - version < SETTLE_SECONDS * 1_000_000_000
-        return self.cached(key, scan, ttl=SETTLE_TTL if settling else ttl,
-                           version=(version, settling))
+        with lock:
+            if version is None:
+                return self.cached(key, scan, version=None)
+            settling = time.time_ns() - version < SETTLE_SECONDS * 1_000_000_000
+            return self.cached(key, scan, ttl=SETTLE_TTL if settling else ttl,
+                               version=(version, settling))
 
     def _scan_cover_root(self) -> dict[str, dict]:
         """一次目录扫描同时收集封面存在性和两份 sidecar。目录不存在就是空索引。"""

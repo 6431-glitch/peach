@@ -12,6 +12,7 @@ import json
 import os
 import sqlite3
 import tempfile
+import threading
 import unittest
 from contextlib import closing
 from pathlib import Path
@@ -453,6 +454,34 @@ class CoverIndexTests(unittest.TestCase):
             os.utime(self.covers, ns=(0, self.covers.stat().st_mtime_ns + 1_000_000))
             self.assertTrue(self.contract.has_cover("GHI-005"))
             self.assertEqual(scans, [1])
+
+    def test_concurrent_misses_share_one_rescan(self):
+        """一屏卡片的几个请求同时没命中时，后到的等先到的那一次扫完，不各扫一遍。"""
+        (self.covers / "ABC-006.jpg").write_bytes(b"jpg")
+        original = self.contract._scan_cover_root
+        entered, release = threading.Event(), threading.Event()
+        scans = []
+
+        def slow():
+            scans.append(1)
+            entered.set()
+            release.wait(5)
+            return original()
+
+        results = []
+        with patch.object(self.contract, "_scan_cover_root", side_effect=slow):
+            first = threading.Thread(target=lambda: results.append(self.contract.has_cover("ABC-006")))
+            first.start()
+            self.assertTrue(entered.wait(5))
+            others = [threading.Thread(target=lambda: results.append(self.contract.has_cover("ABC-006")))
+                      for _ in range(3)]
+            for thread in others:
+                thread.start()
+            release.set()
+            for thread in (first, *others):
+                thread.join(5)
+        self.assertEqual(results, [True] * 4)
+        self.assertEqual(scans, [1])
 
 
 if __name__ == "__main__":
