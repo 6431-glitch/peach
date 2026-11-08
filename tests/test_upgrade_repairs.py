@@ -4,6 +4,7 @@ from pathlib import Path, PureWindowsPath
 import subprocess
 import tempfile
 import threading
+import time
 from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
@@ -1056,6 +1057,53 @@ class UpgradeRepairTests(unittest.TestCase):
             with self.subTest(status=status), patch('peach.library_processing._people_allowed',return_value=False), patch(
                     'peach.seed_followup.plan',return_value=[]), patch('peach.media_sources.cost_for',return_value='free'):
                 self.assertEqual(self.service._plan(receipt),[])
+
+    def test_planning_reads_queued_task_states_in_batches_and_skips_them_when_media_waits(self):
+        """回执里上千条旧任务按批 `IN` 查状态，不逐条 `get`；影片补全这轮不派时根本不查。"""
+        self.damaged_asset()
+        keys = [f'upgrade-library:processing-v2:{key}' for key in range(1, 1201)]
+        with self.database.write_transaction() as connection:
+            ids = [connection.execute(
+                "INSERT INTO task_run(task_key,trigger,status,followup_key,host,finished_at) "
+                "VALUES(?,'scheduled','succeeded',?,'upgrade-test','2026-11-08T00:00:00Z')",
+                (upgrade_repairs.MEDIA_TASK, key)).lastrowid for key in keys]
+        receipt = {'queued': dict(zip(keys, ids)), 'media_ids': [1]}
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch('peach.media_sources.cost_for', return_value='free'), \
+                patch.object(self.store, 'get', side_effect=AssertionError('逐条查询')), \
+                patch.object(self.service, '_run_states', wraps=self.service._run_states) as states:
+            self.assertEqual(self.service._plan(dict(receipt), media=False), [])
+            states.assert_not_called()
+            self.service._plan(dict(receipt))
+        states.assert_called_once()
+        self.assertEqual(set(self.service._run_states(ids).values()), {'succeeded'})
+
+    def test_start_returns_before_the_first_dispatch_round_finishes(self):
+        """首轮派发交给调度器立即执行；服务启动不等它，HTTPS 不因此晚一分钟监听。"""
+        entered, release, finished = threading.Event(), threading.Event(), threading.Event()
+
+        def slow_tick():
+            entered.set()
+            release.wait(5)
+            finished.set()
+
+        with patch.object(self.service, 'tick', side_effect=slow_tick), \
+                patch.object(self.service, '_settle_verification'), \
+                patch.object(self.service, '_release_studio_misses'), \
+                patch.object(self.service, '_clear_stale_codes'):
+            self.contract.followups.stop = Mock()
+            self.service.start()
+            try:
+                self.assertFalse(finished.is_set())
+                self.assertTrue(entered.wait(5))
+            finally:
+                release.set()
+                # 一次性作业跑完才关调度器，否则它收尾时找不到已被关停清掉的作业。
+                deadline = time.monotonic() + 5
+                while len(self.service.scheduler.get_jobs()) > 1 and time.monotonic() < deadline:
+                    time.sleep(.01)
+                self.service.stop()
 
     def test_a_snapshot_for_another_work_cannot_repair_machine_text(self):
         self.damaged_asset()

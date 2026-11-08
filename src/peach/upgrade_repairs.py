@@ -355,14 +355,7 @@ class UpgradeRepairs:
                     'available': True, 'message': '处理记录无法读取，请重试'}
         local = receipt.get('local', {})
         queued = receipt.get('queued', {})
-        states = []
-        ids = list(queued.values())
-        if ids:
-            with self.contract.database.read_connection() as connection:
-                for offset in range(0, len(ids), 900):
-                    batch = ids[offset:offset + 900]
-                    states.extend(row[0] for row in connection.execute(
-                        f'SELECT status FROM task_run WHERE id IN ({",".join("?" for _ in batch)})', batch))
+        states = list(self._run_states(queued.values()).values())
         active = sum(state in ('pending', 'running') for state in states)
         failed = sum(state in ('failed', 'interrupted') for state in states)
         review = int(local.get('review_count', 0)) + len(receipt.get('deferred', []))
@@ -375,6 +368,23 @@ class UpgradeRepairs:
                   'pending': active, 'failed': failed, 'queued': len(queued)}]
         return {'state': state, 'items': items, 'available': self.available,
                 'message': self.error or paused.get('message', '')}
+
+    def _run_states(self, run_ids) -> dict[int, str]:
+        """回执里这些任务现在的状态；已清退的不在结果里。
+
+        回执的队列有上万条，逐条 `task_runs.get` 每条都新开一个连接，一轮要一分钟；
+        按 900 个一批 `IN` 查（SQLite 默认绑定参数上限 999），上万条约 0.1 秒。
+        """
+        ids = sorted({int(run_id) for run_id in run_ids})
+        states: dict[int, str] = {}
+        if not ids:
+            return states
+        with self.contract.database.read_connection() as connection:
+            for offset in range(0, len(ids), 900):
+                batch = ids[offset:offset + 900]
+                states.update((row[0], row[1]) for row in connection.execute(
+                    f'SELECT id,status FROM task_run WHERE id IN ({",".join("?" * len(batch))})', batch))
+        return states
 
     def prepare(self, *, retry_media=False) -> None:
         self._prepare_local()
@@ -758,7 +768,6 @@ class UpgradeRepairs:
         from .settings_file import load_config, DATA_ROOT_ENV
         config = load_config(environ={DATA_ROOT_ENV: str(self.config.data_root)}) if self.config is not None else load_config()
         seen = set(receipt.get('queued', {}))
-        inherited, inherited_display = self._inherited_media(receipt)
 
         attempts = Attempts(attempts_root(self.contract.candidate_root))
         with self.contract.database.read_connection() as connection:
@@ -782,20 +791,22 @@ class UpgradeRepairs:
                 return planned[:MAX_FOLLOWUPS]
             rows = connection.execute("SELECT id,code,name,path,location,size,mtime,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
+        inherited, inherited_display = self._inherited_media(receipt)
         return self._plan_media(receipt, config, rows, planned, seen, inherited, inherited_display, media_limit)
 
     def _inherited_media(self, receipt):
         """保留旧队列中仍在执行或取消的影片及文件世代，避免重复派发。"""
         inherited, inherited_display = set(), set()
-        for key, run_id in receipt.get('queued', {}).items():
-            if key.startswith(MEDIA_TASK + ':'):
-                run = self.contract.task_runs.get(run_id)
-                if run is not None and run.status in ('pending', 'running', 'cancelled'):
-                    asset_id = int(key.rsplit(':', 1)[1])
-                    if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
-                        inherited_display.add((asset_id, key.rsplit(':', 2)[1]))
-                    else:
-                        inherited.add(asset_id)
+        media = {key: run_id for key, run_id in receipt.get('queued', {}).items() if key.startswith(MEDIA_TASK + ':')}
+        states = self._run_states(media.values())
+        for key, run_id in media.items():
+            if states.get(int(run_id)) not in ('pending', 'running', 'cancelled'):
+                continue
+            asset_id = int(key.rsplit(':', 1)[1])
+            if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
+                inherited_display.add((asset_id, key.rsplit(':', 2)[1]))
+            else:
+                inherited.add(asset_id)
         return inherited, inherited_display
 
     def _plan_media(self, receipt, config, rows, planned, seen, inherited, inherited_display, media_limit):
@@ -977,11 +988,10 @@ class UpgradeRepairs:
                 config = self.config or getattr(self.contract, 'upgrade_config', None) or load_config()
                 CapacityGuard(config).check(force=True)
                 receipt.pop('media_paused')
-            kept = {}
-            for key, run_id in receipt.get('queued', {}).items():
-                run = self.contract.task_runs.get(run_id)
-                if run is None or run.status not in ('failed', 'interrupted'):
-                    kept[key] = run_id
+            queued = receipt.get('queued', {})
+            states = self._run_states(queued.values())
+            kept = {key: run_id for key, run_id in queued.items()
+                    if states.get(int(run_id)) not in ('failed', 'interrupted')}
             receipt.update(queued=kept, dispatch_complete=False)
             self._save_receipt(receipt)
             self.error = ''
@@ -1025,8 +1035,10 @@ class UpgradeRepairs:
 
     def start(self) -> None:
         if self.available and not self.scheduler.running:
-            self.tick()
-            self.scheduler.add_job(self.tick, 'interval', seconds=60, max_instances=1, coalesce=True)
+            # 首轮由调度器立即跑，不挡服务启动：同步跑完首轮才返回，HTTPS 要晚一分钟才监听。
+            from datetime import datetime, timezone
+            self.scheduler.add_job(self.tick, 'interval', seconds=60, max_instances=1, coalesce=True,
+                                   next_run_time=datetime.now(timezone.utc))
             self.scheduler.add_job(self._settle_verification, max_instances=1)
             self.scheduler.add_job(self._release_studio_misses, max_instances=1)
             self.scheduler.add_job(self._clear_stale_codes, max_instances=1)
