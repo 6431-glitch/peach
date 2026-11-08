@@ -97,6 +97,12 @@ class UpgradeRepairTests(unittest.TestCase):
         self.assertEqual({key: (items[key]['state'], items[key]['done'], items[key]['total'])
                           for key in ('display-local', 'display-cloud')},
                          {'display-local': ('running', 1, 3), 'display-cloud': ('running', 1, 3)})
+        # 早期版本把网盘片直接排进了名单、没有确认记录：还有没进名单的就等确认，名单里那批照报进度。
+        receipt['display_dimensions_v2'].pop('cloud_included_at')
+        with self.database.read_connection() as connection:
+            cloud = next(item for item in repair_center.snapshot(connection, receipt, cloud_pending=2)['items']
+                         if item['id'] == 'display-cloud')
+        self.assertEqual((cloud['state'], cloud['pending'], cloud['done'], cloud['total']), ('waiting', 2, 1, 3))
 
     def test_repair_history_shows_each_run_and_whether_its_backup_is_still_kept(self):
         """历史与「账本备份」联动：修复前的备份还在就能去恢复，按保留规则清退了照实写。"""

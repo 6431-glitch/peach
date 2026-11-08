@@ -36,7 +36,9 @@ const stamp = (seconds: number) => new Date(seconds * 1000).toLocaleString('zh-C
 
 const reclaimable = (item: RepairItem) => `${number(item.files)} 个文件 · ${fmtSize(item.bytes || 0)}`;
 /** 页面开着时要跟进的后台进度：在跑的项与还在统计的删除类确认项。补测要跑几天，正因为久才要看得到进度。 */
-const inFlight = (item: RepairItem) => !!item.estimating || item.state === 'running';
+/** 名单里还有没做完的：网盘那项等确认新加的片子时，名单里已有的照样在补测。 */
+const unfinished = (item: RepairItem) => !!item.total && (item.done || 0) < item.total && item.state !== 'failed';
+const inFlight = (item: RepairItem) => !!item.estimating || item.state === 'running' || unfinished(item);
 
 function reading(item: RepairItem) {
   if (item.estimating) return '正在统计';
@@ -102,7 +104,7 @@ export function RepairCenterPage() {
           const [label, tone] = STATES[item.state] || STATES.none;
           return (
             <Row key={item.id} title={item.title} description={item.summary}
-              progress={item.state === 'running' && item.total
+              progress={unfinished(item) && item.total
                 ? <Progress label={`${item.title}进度`} value={item.done || 0} max={item.total} /> : null}>
               {reading(item) ? <span className="text-body-2-regular text-text-secondary">{reading(item)}</span> : null}
               {item.mode === 'confirm' && item.state === 'waiting'

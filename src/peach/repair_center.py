@@ -155,11 +155,12 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
                                        if key not in _NOT_CHANGES})},
         'display-local': {'state': 'none' if not total else 'done' if done >= total else 'running',
                           'done': done, 'total': total},
-        # 确认后有新加进网盘的旧视频，先等再确认；否则报确认那批补测到了哪里。
-        'display-cloud': {'state': 'waiting' if cloud_pending else 'none' if not included
+        # 还有没进名单的网盘旧视频就等确认；名单里已有的网盘片照报进度：确认过的那批，
+        # 以及早期版本准备名单时没排除网盘、因而没有确认记录的那批。
+        'display-cloud': {'state': 'waiting' if cloud_pending else 'none' if not cloud_total
                           else 'done' if cloud_done >= cloud_total else 'running',
                           'pending': cloud_pending, 'included': included,
-                          **({'done': cloud_done, 'total': cloud_total} if included else {})},
+                          **({'done': cloud_done, 'total': cloud_total} if cloud_total else {})},
         'system-files': {'state': 'done' if isolated else 'none', 'changed': _count(isolated.get('isolated'))},
         'garbled-people': {'state': 'done' if garbled else 'none', 'changed': _count(garbled.get('links'))},
         'dangling-candidates': {'state': 'done' if dangling else 'none',
