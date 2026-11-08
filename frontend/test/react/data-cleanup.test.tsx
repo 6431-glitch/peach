@@ -274,7 +274,7 @@ describe('资源同步', () => {
     expect(seen[0]!.title).toBe('清理失效条目');
     expect(seen[0]!.danger).toBe(true);
     expect(seen[0]!.body).toBe(
-      '将永久删除文件已不在盘上的 4 条记录（含回收站里的）、3 个空文件夹，并清理 2 个闲置缓存。来源根目录保留。这一步不可撤销。');
+      '将永久删除 4 条文件已不在的记录（含回收站）和 3 个空文件夹，并清理 2 个闲置缓存。这一步不可撤销。');
     expect(server.posts('/api/resource-sync/apply')).toEqual([
       { confirm: true, clean_cache: true, scan_id: 'scan-7', background: true },
     ]);
@@ -320,8 +320,8 @@ describe('资源同步', () => {
     await click(buttonNamed('清理失效条目', host));
     await settle();
     expect(seen[0]!.body).toBe(
-      '将永久删除文件已不在盘上的 3 条记录（含回收站里的）、3 个空文件夹，并清理 2 个闲置缓存。来源根目录保留。'
-      + '这几样不可撤销。2 条作品记录的文件已丢失，个人记录保留，可在「文件已丢失的记录」中转移个人记录或删除记录。');
+      '将永久删除 3 条文件已不在的记录（含回收站）和 3 个空文件夹，并清理 2 个闲置缓存。'
+      + '这几样不可撤销。2 条作品记录的文件已丢失，个人记录保留，可在「文件已丢失的记录」中处理。');
     await settle();
     expect(host.textContent).toContain(
       '1 条作品记录已标为文件丢失，可在「文件已丢失的记录」中处理。1 条的记录已接到库里的另一个版本。');
@@ -704,7 +704,7 @@ describe('整理', () => {
     await click(buttonNamed('执行整理', host));
     await settle();
     expect(seen.map((options) => options.title)).toEqual(['整理文件']);
-    expect(seen[0]!.body).toContain('「本地」上的文件名与目录');
+    expect(seen[0]!.body).toContain('「本地」上的全部文件');
     expect(server.posts('/api/organize/apply')).toEqual([
       { location: 'local', path: '', file_template: '{code}', dir_template: '', confirm: true },
     ]);

@@ -46,7 +46,8 @@ export function requiredEnv(name: string): string {
 }
 
 export async function launch(): Promise<Browser> {
-  const args: string[] = [];
+  // 界面语言默认跟浏览器语言走（ADR-0156）；用例断言的是中文文案，浏览器语言固定成简体中文，CI 上的 en-US 不影响结果。
+  const args: string[] = ['--lang=zh-CN'];
   if (process.platform === 'win32') {
     // 仅隔离 E2E：Chromium 572515601 的回环随机端口缺陷会返回 WSAENOBUFS 10055。
     // 重复 --disable-features 会覆盖默认值；保留锁定 Playwright 1.64.1 的全部条目。

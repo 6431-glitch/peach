@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { createTranslator, resources, storedInterfaceLanguage, INTERFACE_LANGUAGES, SOURCE_LANGUAGE } from '../src/i18n';
+import { createTranslator, resolveInterfaceLanguage, resources, storedInterfaceLanguage, INTERFACE_LANGUAGES, SOURCE_LANGUAGE } from '../src/i18n';
 // @ts-expect-error 检查脚本是纯 ESM，没有类型声明
 import { BASELINE, countLiterals, scan } from '../scripts/i18n-literals.mjs';
 
@@ -53,7 +53,7 @@ describe('界面文案的语言资源', () => {
     for (const ns of namespaces(SOURCE_LANGUAGE)) {
       const zh = read(SOURCE_LANGUAGE, ns), en = read('en', ns);
       for (const [key, text] of Object.entries(en)) {
-        const source = zh[key] ?? zh[`${base(key)}_other`] ?? '';
+        const source = zh[key] ?? zh[`${base(key)}_other`] ?? zh[base(key)] ?? '';
         expect(placeholders(text), `${ns}:${key}`).toEqual(placeholders(source));
       }
     }
@@ -65,10 +65,12 @@ describe('界面文案的语言资源', () => {
     for (const ns of namespaces(SOURCE_LANGUAGE)) {
       const zh = read(SOURCE_LANGUAGE, ns), en = read('en', ns);
       for (const [key, text] of Object.entries(en)) {
-        const source = zh[key] ?? zh[`${base(key)}_other`] ?? '';
+        const source = zh[key] ?? zh[`${base(key)}_other`] ?? zh[base(key)] ?? '';
+        /* 占位名是代码里的变量名（如 {{done}}），不是译文里的词。 */
+        const prose = text.replace(/\{\{[^}]*\}\}/g, ' ');
         for (const term of banned) {
           const word = new RegExp(`\\b${term.en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-          if (source.includes(term.zh) && word.test(text)) hits.push(`${ns}:${key}「${source}」→ ${text}：${term.zh} 不写 ${term.en}`);
+          if (source.includes(term.zh) && word.test(prose)) hits.push(`${ns}:${key}「${source}」→ ${text}：${term.zh} 不写 ${term.en}`);
         }
       }
     }
@@ -84,12 +86,29 @@ describe('界面文案的语言资源', () => {
 });
 
 describe('界面语言', () => {
-  it('从本地偏好同步读出，没存或不认识时用源语言', () => {
+  it('选了固定语言就用它，不看浏览器', () => {
+    const storage = (value: unknown) => ({ getItem: () => JSON.stringify(value) });
+    expect(storedInterfaceLanguage(storage({ interfaceLanguage: 'en' }), ['zh-CN'])).toBe('en');
+    expect(storedInterfaceLanguage(storage({ interfaceLanguage: 'zh-CN' }), ['en-US'])).toBe('zh-CN');
+  });
+
+  it('自动：按浏览器语言的顺序取第一个有译文的，中文各种写法都给简体中文', () => {
+    expect(resolveInterfaceLanguage('auto', null, ['ja-JP', 'zh-TW', 'en-US'])).toBe('zh-CN');
+    expect(resolveInterfaceLanguage('auto', 'zh-CN', ['en-GB', 'zh-CN'])).toBe('en');
+    expect(resolveInterfaceLanguage('auto', null, ['zh-Hant-HK'])).toBe('zh-CN');
+  });
+
+  it('自动：浏览器语言都没有译文时看系统语言，再没有就用英文', () => {
+    expect(resolveInterfaceLanguage('auto', 'zh-CN', ['ja-JP', 'fr'])).toBe('zh-CN');
+    expect(resolveInterfaceLanguage('auto', null, ['ja-JP'])).toBe('en');
+    expect(resolveInterfaceLanguage('auto', 'de-DE', [])).toBe('en');
+  });
+
+  it('没存、存坏或不认识的选择按自动算，系统语言从本地缓存读', () => {
     const storage = (value: string | null) => ({ getItem: () => value });
-    expect(storedInterfaceLanguage(storage(JSON.stringify({ interfaceLanguage: 'en' })))).toBe('en');
-    expect(storedInterfaceLanguage(storage(JSON.stringify({ interfaceLanguage: 'fr' })))).toBe('zh-CN');
-    expect(storedInterfaceLanguage(storage('{坏掉'))).toBe('zh-CN');
-    expect(storedInterfaceLanguage(storage(null))).toBe('zh-CN');
+    expect(storedInterfaceLanguage(storage(null), ['zh-CN'])).toBe('zh-CN');
+    expect(storedInterfaceLanguage(storage('{坏掉'), ['en-US'])).toBe('en');
+    expect(storedInterfaceLanguage(storage(JSON.stringify({ interfaceLanguage: 'fr', systemLanguage: 'zh-CN' })), ['ja'])).toBe('zh-CN');
   });
 
   it('英文取英文，缺的键回落到源文', () => {
@@ -98,6 +117,31 @@ describe('界面语言', () => {
     en.addResource('zh-CN', 'navigation', 'onlySource', '仅源文');
     expect(en.t('navigation:onlySource')).toBe('仅源文');
     expect(createTranslator('zh-CN').t('navigation:manage.configuration')).toBe('Peach 配置');
+  });
+
+  it('数字 count 选单复数并按语言加千位分隔', () => {
+    const en = createTranslator('en');
+    en.addResources('en', 'navigation', { items_one: '{{count, number}} item', items_other: '{{count, number}} items' });
+    en.addResource('zh-CN', 'navigation', 'items', '{{count, number}} 项');
+    expect([en.t('navigation:items', { count: 1 }), en.t('navigation:items', { count: 1234 })]).toEqual(['1 item', '1,234 items']);
+    expect(en.t('navigation:items', { count: 1234, lng: 'zh-CN' })).toBe('1,234 项');
+  });
+
+  it('count 传数字，不传格式化好的字符串', () => {
+    // 字符串 count 不走单复数，英文找不到不带后缀的键，整句会回落成中文。
+    const offenders: string[] = [];
+    const visit = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) { if (entry.name !== 'locales') visit(path); continue; }
+        if (!/\.(ts|tsx|js)$/.test(entry.name)) continue;
+        readFileSync(path, 'utf8').split('\n').forEach((line, index) => {
+          if (/\bt\(\s*'[^']+'[^)]*\bcount:\s*[^,}]*toLocaleString\(/.test(line)) offenders.push(`${path}:${index + 1}`);
+        });
+      }
+    };
+    visit(join(frontend, 'src'));
+    expect(offenders).toEqual([]);
   });
 });
 

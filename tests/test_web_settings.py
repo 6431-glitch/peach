@@ -7,6 +7,7 @@ import json
 import sqlite3
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from peach import web_settings
@@ -77,6 +78,10 @@ class SettingsRoundTripTests(unittest.TestCase):
         con.commit()
         con.close()
         self.contract = WebContract(self.db)
+        # 系统语言随跑测试的机器变，这里固定成「报不出」。
+        system = mock.patch.object(web_settings, "system_language", return_value=None)
+        system.start()
+        self.addCleanup(system.stop)
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -133,7 +138,7 @@ class SettingsRoundTripTests(unittest.TestCase):
                           "feedHideGroupCompilations": True,
                           "feedHideSoloCompilations": False, "feedHideExcerpts": True,
                           "searchHistoryLimit": None, "performerNameLanguage": "zh-CN", "taskSpeedMode": "standard",
-                          "interfaceLanguage": "zh-CN"})
+                          "interfaceLanguage": "auto", "systemLanguage": None})
 
     def test_code_patterns_are_checked_when_saved(self):
         """写错的规则在保存那一刻报出来；存下的规则去掉空行，读回来是同一份。"""
@@ -177,7 +182,9 @@ class SettingsRoundTripTests(unittest.TestCase):
             self.assertEqual(self._stored_json(), {'performerNameLanguage': 'ja'})
 
     def test_interface_language_is_shared_and_rejects_languages_without_translations(self):
-        self.assertEqual(q_settings(self.contract)['interfaceLanguage'], 'zh-CN')
+        self.assertEqual(q_settings(self.contract)['interfaceLanguage'], 'auto')
+        w_settings(self.contract, {'interfaceLanguage': 'auto'})
+        self.assertEqual(q_settings(self.contract)['interfaceLanguage'], 'auto')
         w_settings(self.contract, {'interfaceLanguage': 'en'})
         self.assertEqual(q_settings(WebContract(self.db.resolve()))['interfaceLanguage'], 'en')
         for value in ('fr', 'EN', '', None, 1, ['en']):
@@ -238,7 +245,7 @@ class SettingsRoundTripTests(unittest.TestCase):
                           "feedHideGroupCompilations": True,
                           "feedHideSoloCompilations": False, "feedHideExcerpts": True,
                           "searchHistoryLimit": None, "performerNameLanguage": "zh-CN", "taskSpeedMode": "standard",
-                          "interfaceLanguage": "zh-CN"})
+                          "interfaceLanguage": "auto", "systemLanguage": None})
         self.assertEqual(q_settings(self.contract)["sidebarOrder"], order)
         self.assertEqual(self._stored_json()["sidebarOrder"], order)
 

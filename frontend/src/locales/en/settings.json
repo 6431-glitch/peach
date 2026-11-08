@@ -1,9 +1,10 @@
 {
   "interfaceLanguage": {
-    "title": "Language",
-    "help": "English is being added page by page; text that isn't translated yet stays in Chinese. Saved in the database and shared by every device. The page reloads after you switch.",
-    "saved": "Language saved",
+    "auto": "Auto",
+    "help": "Auto follows your browser language, then the system language.",
     "saveFailed": "Save language",
+    "saved": "Language saved",
+    "title": "Language",
     "unavailable": "Couldn't read the language from the database. Reopen settings."
   }
 }

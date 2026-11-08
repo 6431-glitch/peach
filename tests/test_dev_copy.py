@@ -40,6 +40,21 @@ class DevCopyTests(unittest.TestCase):
             saved = json.loads((root / candidate['file']).read_text(encoding='utf-8'))
             self.assertEqual(saved, {'sidebar': {'home': '主页 "精选"'}})
 
+    def test_interpolated_locale_copy_is_found_by_its_rendered_text_and_keeps_placeholders(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            (root / 'frontend/src/locales/zh-CN').mkdir(parents=True)
+            path = root / 'frontend/src/locales/zh-CN/cleanup.json'
+            path.write_text('{\n  "trash": { "count": "{{count}} 项在回收站" }\n}\n', encoding='utf-8')
+            candidate, = dev_copy.candidates(root, '12 项在回收站')
+            self.assertEqual(candidate['template'], '{count} 项在回收站')
+            self.assertEqual(candidate['values'], {'count': '12'})
+            with self.assertRaises(ValueError):
+                dev_copy.save(root, {'original': '12 项在回收站', 'replacement': '回收站里有若干项', 'candidate': candidate})
+            result = dev_copy.save(root, {'original': '12 项在回收站', 'replacement': '回收站里有 {count} 项', 'candidate': candidate})
+            self.assertEqual(result['text'], '回收站里有 12 项')
+            self.assertEqual(json.loads(path.read_text(encoding='utf-8')), {'trash': {'count': '回收站里有 {{count}} 项'}})
+
     def test_status_recovers_from_a_short_read_lock_and_preserves_persistent_denial(self):
         from peach import dev_copy_runtime as runtime
         with tempfile.TemporaryDirectory() as tmp:

@@ -180,10 +180,9 @@ preferencesState.settingsEffects = {
     loadingState.syncPageTitle(location.href);
     catalogState.barsRendered='';buildBars();
   },
-  /* 本地那份确实写进去了才重载：存储不可写时重载回来还是旧语言，会一直重载下去。 */
+  /* 按本地存下的那份重新算一遍：算出来和页面正在用的不同才重载。存储不可写时算出来还是旧语言，不会一直重载。 */
   interfaceLanguage:()=>{
-    const next=preferencesState.appSettings.interfaceLanguage;
-    if(next!==interfaceLanguage&&storedInterfaceLanguage()===next)location.reload();
+    if(storedInterfaceLanguage()!==interfaceLanguage)location.reload();
   },
   theme:()=>applyTheme(),
   /* 开这一格时立刻响一声开关音，人才知道它开了。关的那一声由 document 上的 change 监听

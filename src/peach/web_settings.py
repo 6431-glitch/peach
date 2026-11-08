@@ -21,6 +21,7 @@ from .catalog_rules import compile_code_patterns
 from .feeds import DEFAULT_HIDDEN_COMPILATIONS, EXCERPT, GROUP_COMPILATION, SOLO_COMPILATION
 from .media_sources import SCANNABLE_LOCATIONS
 from .remote_media_cache import AVATAR_REFRESH_SECONDS, FAVICON_REFRESH_SECONDS
+from .system_language import system_language
 
 from .profiles import DEFAULT_PROFILE_ID
 
@@ -45,6 +46,8 @@ DEFAULT_FOLLOW_INITIAL_DAYS = 30
 SEARCH_HISTORY_LIMIT_MAX = 50
 #: 有译文的界面语言，与前端 `frontend/src/i18n/index.ts` 的 `INTERFACE_LANGUAGES` 逐项一致（test_web_settings.py）。
 INTERFACE_LANGUAGES = ("zh-CN", "en")
+#: 设置里能存的值：`auto` 由每个浏览器按自己的语言偏好、再按运行 Peach 的电脑的系统语言选（默认）。
+INTERFACE_LANGUAGE_CHOICES = ("auto", *INTERFACE_LANGUAGES)
 
 #: 只有这些键跟着账本走。白名单而不是黑名单：将来往设置里加字段的人必须显式表态
 #: 它该不该跨机同步，而不是默认就同步过去。
@@ -258,7 +261,8 @@ def q_settings(contract: SettingsContract, _args=None) -> dict:
         **_feed_switches(payload),
         "searchHistoryLimit": normalise_search_history_limit(payload.get("searchHistoryLimit")),
         "performerNameLanguage": "ja" if payload.get("performerNameLanguage") == "ja" else "zh-CN",
-        "interfaceLanguage": payload["interfaceLanguage"] if payload.get("interfaceLanguage") in INTERFACE_LANGUAGES else "zh-CN",
+        "interfaceLanguage": payload["interfaceLanguage"] if payload.get("interfaceLanguage") in INTERFACE_LANGUAGE_CHOICES else "auto",
+        "systemLanguage": system_language(),
         "taskSpeedMode": payload.get("taskSpeedMode", "standard"),
     }
 
@@ -302,8 +306,8 @@ def w_settings(contract: SettingsContract, body) -> dict:
             raise ValueError("performerNameLanguage 只收 zh-CN 或 ja")
         merged["performerNameLanguage"] = language
     if "interfaceLanguage" in body:
-        if body["interfaceLanguage"] not in INTERFACE_LANGUAGES:
-            raise ValueError("interfaceLanguage 只收 " + "、".join(INTERFACE_LANGUAGES))
+        if body["interfaceLanguage"] not in INTERFACE_LANGUAGE_CHOICES:
+            raise ValueError("interfaceLanguage 只收 " + "、".join(INTERFACE_LANGUAGE_CHOICES))
         merged["interfaceLanguage"] = body["interfaceLanguage"]
     if "manageOrder" in body:
         merged["manageOrder"] = normalise_manage_order(body["manageOrder"])

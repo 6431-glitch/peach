@@ -506,10 +506,6 @@
 <langSet xml:lang="zh-CN"><tig><term>重复文件</term></tig></langSet>
 <langSet xml:lang="en"><tig><term>Duplicates</term><note from="translator">导航里单词就够。</note></tig></langSet>
 </termEntry>
-<termEntry id="nav.duplicates.forbidden.0">
-<langSet xml:lang="zh-CN"><tig><term>重复文件</term></tig></langSet>
-<langSet xml:lang="en"><tig><term>Duplicate files</term><termNote type="administrativeStatus">forbidden</termNote></tig></langSet>
-</termEntry>
 <termEntry id="nav.batchDelete">
 <descrip>按条件永久删除一批作品。现在按女优，以后加按系列、按番号。</descrip>
 <langSet xml:lang="zh-CN"><tig><term>批量删除</term></tig></langSet>

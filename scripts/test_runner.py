@@ -61,7 +61,7 @@ SCOPES: dict[str, tuple[str, ...]] = {
                 "test_web_perf.py", "test_web_resource_sync.py", "test_record_rehome.py", "test_wants.py",
                 "test_magnet_chain.py",
                 "test_web_orphan_records.py",
-                "test_web_review.py", "test_web_settings.py"),
+                "test_web_review.py", "test_web_settings.py", "test_system_language.py"),
     # 任务中心的两个文件跟着 `test_jobs.py` 走：`jobs.py` 与 `task_runs.py` 是同一条
     # 接线的两端，改哪一端都要两边一起验。
     "media": ("test_external_playback.py", "test_runtime_consistency.py", "test_endcard.py", "test_fastapi_api.py", "test_jobs.py",
