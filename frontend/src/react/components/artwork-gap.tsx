@@ -1,12 +1,14 @@
 /* 作品卡封面格里没有图时的那一块：缺的是哪种图、为什么缺，能当场补的给一颗按钮。
  *
  * 两种来路：卡片本来就没有可画的图（`missingArtwork`，按条目字段推），或者有图但取失败了
- * （`failedArtwork`，再取一次读服务端说的原因）。补图的判据跟着服务端：预览阶段只给本机、
- * 可直接读的视频抽帧（`library_processing` 的 `previews`），网盘、在线、STRM 与 ISO 不抽；
- * 番号作品的官方封面走「当场取这一部」（`/api/jav/cover`，详情页「立即重试」同一个接口）。 */
+ * （`failedArtwork`，再取一次读服务端说的原因）。补图的判据跟着服务端（`preview_readable`）：
+ * 在线来源、STRM 与 ISO 不抽帧；开了流量保护的目录同步时跳过，卡上点「补全预览」先弹一次确认，
+ * 确认后这一部带着授权抽帧。番号作品的官方封面走「当场取这一部」（`/api/jav/cover`，详情页
+ * 「立即重试」同一个接口）。 */
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/base/buttons/button';
+import { confirmModal } from '@peach/legacy/ui';
 
 import { apiSend } from '../../api';
 import { patchCatalogItems } from '../catalog-grid/catalog-grid';
@@ -29,7 +31,7 @@ export interface ArtworkGap {
   fix: ArtworkFix;
 }
 
-type GapItem = Pick<MediaItem, 'is_jav' | 'code' | 'location' | 'duration' | 'name'> & { path?: string; is_strm?: boolean };
+type GapItem = Pick<MediaItem, 'is_jav' | 'code' | 'location' | 'duration' | 'name' | 'cost'> & { path?: string; is_strm?: boolean };
 
 /** 卡上一张图都没有。番号作品缺的是官方封面（竖屏格除外，那里只用视频帧），其余缺的是抽帧。
  *  右下角时长角标已经写了「尚未探查」那类状态，这里说的是图为什么没有。 */
@@ -40,7 +42,7 @@ export function missingArtwork(item: GapItem, frameOnly: boolean): ArtworkGap {
   if (item.is_strm || path.endsWith('.strm')) return none('strm', 'STRM 不抽帧');
   if (path.endsWith('.iso')) return none('iso', 'ISO 不抽帧');
   if (item.location === 'online') return none('online', '在线来源不抽帧');
-  if (item.location !== 'local') return none('remote', '网盘影片不自动抽帧');
+  if (item.cost === 'metered') return none('metered', '流量保护 · 同步时不抽帧', 'previews');
   if (Number(item.duration) < 0) return none('probe-failed', '探查失败，没能抽帧', 'previews');
   return none('pending', '还没抽帧', 'previews');
 }
@@ -81,7 +83,7 @@ const PREVIEWS_BUSY = '当前处理任务结束后可补全';
 export function ArtworkGapView({ gap, item, onRetry }: { gap: ArtworkGap; item: MediaItem; onRetry(): void }) {
   const action = useAction();
   const [note, setNote] = useState('');
-  const fix = gap.fix === 'previews' && item.location !== 'local' ? '' : gap.fix === 'cover' && !item.code ? 'retry' : gap.fix;
+  const fix = gap.fix === 'previews' && item.location === 'online' ? '' : gap.fix === 'cover' && !item.code ? 'retry' : gap.fix;
   const stop = (event: MouseEvent) => event.stopPropagation();
   const cover = () => action.run('cover', signal => apiSend<CoverNow>('/api/jav/cover', { code: item.code }, 'POST', signal), result => {
     if (!result.has_cover) { setNote(result.message || '没有找到可用的官方封面'); return }
@@ -98,7 +100,8 @@ export function ArtworkGapView({ gap, item, onRetry }: { gap: ArtworkGap; item: 
     <span className="line-clamp-2 text-caption-1-regular text-text-secondary" title={why}>{why}</span>
     {fix === 'cover' ? <Button size="small" variant="secondary" className="mt-1" {...busyProps(action.busy === 'cover')}
       onClick={() => { if (!action.busy) void cover() }}>{action.busy === 'cover' ? '抓取中' : '抓取封面'}</Button> : null}
-    {fix === 'previews' ? <PreviewsButton id={item.id} onDone={onRetry} onProblem={setNote} /> : null}
+    {fix === 'previews'
+      ? <PreviewsButton id={item.id} metered={item.cost === 'metered'} onDone={onRetry} onProblem={setNote} /> : null}
     {fix === 'retry' ? <Button size="small" variant="secondary" className="mt-1" onClick={onRetry}>重试</Button> : null}
   </div>;
 }
@@ -109,8 +112,11 @@ interface CoverNow {
 }
 
 /** 只给这一部抽帧。处理任务同一时刻只有一个：别的任务在跑时服务端不接新范围，按钮先停着；
- *  预览生成关着时同补全提示一样说明去哪开。自己发起的那一趟结束后刷新目录，换上新图。 */
-function PreviewsButton({ id, onDone, onProblem }: { id: number; onDone(): void; onProblem(text: string): void }) {
+ *  预览生成关着时同补全提示一样说明去哪开。自己发起的那一趟结束后刷新目录，换上新图。
+ *  开了流量保护的目录先确认一次，确认才带 `allow_metered`，服务端只对点名影片的补全预览认它。 */
+function PreviewsButton({ id, metered, onDone, onProblem }: {
+  id: number; metered: boolean; onDone(): void; onProblem(text: string): void;
+}) {
   const [started, setStarted] = useState<string | null>(null);
   const job = useQuery({ queryKey: LIBRARY_PROCESSING_KEY, queryFn: ({ signal }) => fetchLibraryProcessing(signal),
     staleTime: 15_000, refetchInterval: query => started ? pollInterval(query.state.data, true) : false }, queryClient);
@@ -129,7 +135,7 @@ function PreviewsButton({ id, onDone, onProblem }: { id: number; onDone(): void;
   const blocked = state?.metadata_only ? PREVIEWS_OFF : !running && processingActive(state) ? PREVIEWS_BUSY : '';
   /* 别的任务在跑时服务端原样交回那一趟的状态，不起新任务：同一个任务号就是没接。 */
   const start = (before = state?.job_id) => action.run('previews', signal => apiSend<LibraryProcessingData>(LIBRARY_PROCESSING_URL,
-    { stage: 'previews', asset_ids: [id] }, 'POST', signal), next => {
+    { stage: 'previews', asset_ids: [id], ...(metered ? { allow_metered: true } : {}) }, 'POST', signal), next => {
     queryClient.setQueryData(LIBRARY_PROCESSING_KEY, next);
     if (next.job_id && next.job_id !== before) {
       if (processingActive(next)) { setStarted(next.job_id); return }
@@ -140,6 +146,18 @@ function PreviewsButton({ id, onDone, onProblem }: { id: number; onDone(): void;
     onProblem(PREVIEWS_BUSY);
   });
   const busy = running || action.busy === 'previews';
+  const click = async () => {
+    if (busy) return;
+    if (metered) {
+      const { confirmed } = await confirmModal({
+        title: '读取开了流量保护的目录',
+        body: '这部影片所在的目录开了流量保护，同步时不会读它。补全预览会按九个时间点跳读这部影片，消耗这个来源的流量。',
+        confirmLabel: '继续补全',
+      });
+      if (!confirmed) return;
+    }
+    void start();
+  };
   return <Button size="small" variant="secondary" className="mt-1" disabled={!!blocked} title={blocked || undefined}
-    {...busyProps(busy)} onClick={() => { if (!busy) void start() }}>{busy ? '补全中' : '补全预览'}</Button>;
+    {...busyProps(busy)} onClick={() => { void click() }}>{busy ? '补全中' : '补全预览'}</Button>;
 }

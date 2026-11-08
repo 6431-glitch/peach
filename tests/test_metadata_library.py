@@ -3694,6 +3694,48 @@ class LibraryPreviewCompletionTests(unittest.TestCase):
         self.assertEqual(second['status'], 'complete')
         capture.assert_not_called()
 
+    def cloud_clip(self, *, cost):
+        """把 2 号放进真实可读的网盘挂载目录，目录的流量保护按 `cost` 设。"""
+        from dataclasses import replace
+        mount = self.root / 'unmounted-cloud'
+        mount.mkdir(exist_ok=True)
+        (mount / 'clip-2.mp4').write_bytes(b'video')
+        self.config = replace(self.config, media_costs={self.ledger_roots['pikpak']: cost})
+        self.enterContext(patch('peach.settings_file.active', return_value=self.config))
+
+    def test_unprotected_cloud_directory_gets_previews_like_local(self):
+        self.cloud_clip(cost='free')
+        with patch('peach.library_processing.FFmpegResolver', return_value=self.resolver), \
+                patch('peach.frame_capture.capture_with_retry', return_value=True), \
+                patch('peach.frame_capture.tile_frames', side_effect=self.make_tile):
+            result = self.run_processing(stage='previews')
+        self.assertEqual((result['status'], result['previews']), ('complete', 2))
+        with self.database.read_connection() as connection:
+            snapshot = connection.execute('SELECT snapshot_path FROM asset WHERE id=2').fetchone()[0]
+        self.assertTrue(Path(snapshot).is_relative_to(self.root / 'generated' / 'snapshots' / 'pikpak'))
+
+    def test_protected_directory_is_read_only_with_an_explicit_grant(self):
+        self.cloud_clip(cost='metered')
+        with patch('peach.library_processing.FFmpegResolver', return_value=self.resolver), \
+                patch('peach.frame_capture.capture_with_retry', return_value=True) as capture, \
+                patch('peach.frame_capture.tile_frames', side_effect=self.make_tile):
+            skipped = self.run_processing(stage='previews', asset_ids=[2])
+            self.assertEqual((skipped['previews'], capture.call_count), (0, 0))
+            granted = self.run_processing(stage='previews', asset_ids=[2], allow_metered=True)
+        self.assertEqual((granted['status'], granted['previews']), ('complete', 1))
+        self.assertTrue(granted['allow_metered'])
+
+    def test_metered_grant_only_covers_named_videos_for_previews(self):
+        from peach.web_library_processing import _metered_grant
+        self.assertTrue(_metered_grant({'allow_metered': True}, 'previews', [2]))
+        self.assertFalse(_metered_grant({}, 'previews', None))
+        for body, stage, ids in (({'allow_metered': True}, 'collect', [2]),
+                                 ({'allow_metered': True}, 'all', [2]),
+                                 ({'allow_metered': True}, 'previews', None),
+                                 ({'allow_metered': 'yes'}, 'previews', [2])):
+            with self.subTest(stage=stage, ids=ids), self.assertRaises(ValueError):
+                _metered_grant(body, stage, ids)
+
     def test_one_video_reuses_decode_probe_for_all_nine_frames(self):
         from peach import frame_capture, hardware_transcode
         from peach.media_io import file_stat

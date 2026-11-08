@@ -17,15 +17,16 @@ const prompt = (ids = [7, 8], onComplete = vi.fn()) =>
 const menuItem = (label: string) => [...document.querySelectorAll<HTMLButtonElement>('[role="dialog"] button')]
   .find(button => button.querySelector('span > span')?.textContent === label);
 
-it('缺图提示只选择没有可用卡面且可以补全的影片，保留来源已有图片', () => {
+it('缺图提示只选择没有可用卡面且可以补全的影片：免费网盘也能抽帧，流量保护的只补封面', () => {
   expect(missingPreviewIds([
     item(1), item(1), item(2, { has_thumb: true }), item(3, { has_local_poster: true }),
     item(4, { location: 'online' }), item(5, { disposal: 'trash' }), item(6, { medium: 'image' }),
-    item(7, { location: '115' }), item(8, { code: 'ABW-001', location: '115' }),
+    item(7, { location: '115' }), item(8, { code: 'ABW-001', location: 'pikpak', cost: 'metered' }),
+    item(13, { location: 'pikpak', cost: 'metered' }),
     item(9, { follow_thumb_url: 'https://example.test/image.jpg' }),
     item(10, { has_cover: true, cover_key: 'sample' }),
     item(11, { name: 'unknown.strm' }), item(12, { name: 'unknown.iso' }),
-  ], 'cover')).toEqual([1, 8]);
+  ], 'cover')).toEqual([1, 7, 8]);
 });
 
 it('关闭视频预览生成时保留资料同步，并禁用单独抽帧', async () => {

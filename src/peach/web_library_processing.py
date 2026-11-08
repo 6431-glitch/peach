@@ -259,6 +259,7 @@ def _control_action(contract, config, body):
                 'library_id': previous.get('library_id'),
                 **({'incremental': True} if previous.get('incremental') else
                    {'asset_ids': previous['asset_ids']} if previous.get('asset_ids') else {}),
+                **({'allow_metered': True} if previous.get('allow_metered') else {}),
                 'speed_mode': control.mode}, resume=True)
         finally:
             current_job_id.reset(identity)
@@ -393,6 +394,16 @@ def _processing_request(contract, config, previous, body):
     return retry_ids, asset_ids, stage
 
 
+def _metered_grant(body, stage, asset_ids):
+    """开了流量保护的目录只在人点名的影片上、只为抽帧读：整库同步与资料采集都不接受这个授权。"""
+    granted = (body or {}).get('allow_metered', False)
+    if type(granted) is not bool:
+        raise ValueError('流量保护授权必须为开关值')
+    if granted and (stage != PREVIEWS_STAGE or asset_ids is None):
+        raise ValueError('流量保护授权只用于指定影片的补全预览')
+    return granted
+
+
 def retry_after_network_recovery(contract, sync=None):
     """外网判回联网时，上一趟因断网跳过的外部资料自动补一次，等于替人点「立即重试」。
 
@@ -464,6 +475,7 @@ def w_library_processing(contract, body, *, resume=False):
     config, library_id, retry_ids, asset_ids, stage = _scoped_processing_request(
         contract, config, previous, body, resume)
     incremental = (body or {}).get('incremental', False)
+    allow_metered = _metered_grant(body, stage, asset_ids)
     if (body or {}).get('scope') == 'new':
         from .library_new_assets import remember
         remember(contract.db_path, asset_ids)
@@ -476,6 +488,7 @@ def w_library_processing(contract, body, *, resume=False):
         try:
             result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
                 job_id=job_id, retry_ids=retry_ids, stage=stage, asset_ids=asset_ids, incremental=incremental, library_id=library_id,
+                allow_metered=allow_metered,
                 # 自动落库与页面写的是同一个 `LedgerDatabase`：进程内写锁在实例上，
                 # 另建一个就是在同一个进程里开第二条写入路径。
                 database=contract.database,
@@ -501,8 +514,11 @@ def w_library_processing(contract, body, *, resume=False):
     result = contract.library_processing_job.start(
         work, restart=True, initial={'stage': labels[stage], 'requested_stage': stage,
                                     'library_id': library_id, 'library_name': library_name,
-                                    **initial_estimate(config, contract.db_path, stage, estimate_ids, mode)},
+                                    **({'allow_metered': True} if allow_metered else {}),
+                                    **initial_estimate(config, contract.db_path, stage, estimate_ids, mode,
+                                                       allow_metered=allow_metered)},
         recovery={'stage': stage, 'speed_mode': mode, 'incremental': incremental, 'library_id': library_id,
+                  **({'allow_metered': True} if allow_metered else {}),
                   **({'asset_ids': asset_ids or retry_ids}
                                     if asset_ids is not None or retry_ids is not None else {})})
     if not resume:

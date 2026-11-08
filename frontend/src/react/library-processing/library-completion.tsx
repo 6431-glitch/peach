@@ -16,14 +16,14 @@ import {
 } from './library-processing';
 import { ProcessingActions } from './processing-actions';
 
-/** 缺图判据与卡面一致；本机影片可抽帧，有番号的挂载影片可补发行封面。 */
-type PreviewItem = Pick<MediaItem, 'id' | 'name' | 'medium' | 'disposal' | 'location' | 'code' | 'is_jav'
+/** 缺图判据与卡面一致；没开流量保护的影片可抽帧，有番号的影片可补发行封面。 */
+type PreviewItem = Pick<MediaItem, 'id' | 'name' | 'medium' | 'disposal' | 'location' | 'cost' | 'code' | 'is_jav'
   | 'has_cover' | 'cover_key' | 'has_thumb' | 'has_local_poster' | 'follow_thumb_url'>;
 
 export function missingPreviewIds(items: PreviewItem[], javImage: string): number[] {
   return [...new Set(items.filter(item => (!item.medium || item.medium === 'video')
     && (!/\.(strm|iso)$/i.test(item.name || '') || !!item.code)
-    && !item.disposal && item.location !== 'online' && (item.location === 'local' || !!item.code)
+    && !item.disposal && item.location !== 'online' && (item.cost !== 'metered' || !!item.code)
     && !cardArtwork(item, 'small', false, javImage).html).map(item => item.id))];
 }
 

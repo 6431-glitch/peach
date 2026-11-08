@@ -2,7 +2,7 @@
  * 画出什么、点哪里去哪里。 */
 import { act, useState } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { MediaCard, cardRatio, type MediaCardVariant } from '../../src/react/components/media-card';
 import { CatalogGridPage, LoadMore } from '../../src/react/catalog-grid/catalog-grid-page';
@@ -18,6 +18,11 @@ import { missingArtwork } from '../../src/react/components/artwork-gap';
 import { queryClient } from '../../src/react/query';
 import { peachHistory } from '../../src/history';
 import { PLAYBACK_PROGRESS_EVENT } from '../../src/player/telemetry';
+
+vi.mock('@peach/legacy/ui', async (original) => ({
+  ...await original<typeof import('@peach/legacy/ui')>(),
+  confirmModal: (await import('../../src/ui-kit/modal')).confirmModal,
+}));
 
 const SMALL: MediaCardLayout = { active: false, size: 'small', portrait: false, javImage: 'cover' };
 
@@ -376,6 +381,8 @@ describe('比例', () => {
 });
 
 describe('作品卡', () => {
+  /* 缺图卡上的「补全预览」挂载时会查一次处理任务状态；没单独设请求的用例给一份空闲的。 */
+  beforeEach(() => { vi.stubGlobal('fetch', fetchMock(200, { status: 'idle' })) });
   const helpers: MediaCardHelpers = {
     badgeHtml: (location) => `<span>${location}</span>`,
     titleHtml: (_it, raw) => raw,
@@ -520,7 +527,8 @@ describe('作品卡', () => {
     [{ is_jav: true, code: 'ABC-001' }, false, '无封面', '还没取到官方封面', 'cover'],
     [{ is_jav: true, code: 'ABC-001', location: 'local' }, true, '无预览', '还没抽帧', 'previews'],
     [{ location: 'local', duration: -1 }, false, '无预览', '探查失败，没能抽帧', 'previews'],
-    [{ location: '115' }, false, '无预览', '网盘影片不自动抽帧', ''],
+    [{ location: '115' }, false, '无预览', '还没抽帧', 'previews'],
+    [{ location: 'pikpak', cost: 'metered' }, false, '无预览', '流量保护 · 同步时不抽帧', 'previews'],
     [{ location: 'online' }, false, '无预览', '在线来源不抽帧', ''],
     [{ location: 'local', name: 'a.strm' }, false, '无预览', 'STRM 不抽帧', ''],
     [{ location: 'local', name: 'a.ISO' }, false, '无预览', 'ISO 不抽帧', ''],
@@ -567,6 +575,29 @@ describe('作品卡', () => {
     expect(host.querySelector('[data-artwork-gap]')?.textContent).toContain('生成预览图失败');
     await click(buttonNamed('重试', host));
     expect(host.querySelector('[data-media-art] img')?.getAttribute('src')).toBe('/poster?id=32&c=4&r=1');
+  });
+
+  it('流量保护的影片补全预览先确认：取消不发请求，确认后这一部带着授权抽帧', async () => {
+    queryClient.removeQueries({ queryKey: ['library-processing'] });
+    const fetcher = vi.fn(async (_url: string, init?: RequestInit) => ({ ok: true, status: 200,
+      json: async () => init?.method === 'POST' ? { job_id: 'new', status: 'running' } : { job_id: 'old', status: 'complete' } }));
+    vi.stubGlobal('fetch', fetcher);
+    const { host } = await render(item(33, { location: 'pikpak', cost: 'metered', has_thumb: false }));
+    await settle();
+    expect(host.querySelector('[data-artwork-gap]')?.textContent).toContain('流量保护');
+    const posts = () => fetcher.mock.calls.filter(([, init]) => init?.method === 'POST');
+
+    await click(buttonNamed('补全预览', host));
+    await vi.waitFor(() => expect(document.querySelector('dialog')?.open).toBe(true));
+    await click(document.querySelector('dialog [data-modal-cancel]'));
+    expect(posts()).toEqual([]);
+
+    await click(buttonNamed('补全预览', host));
+    await vi.waitFor(() => expect(document.querySelector('dialog')?.open).toBe(true));
+    await click(document.querySelector('dialog [data-modal-confirm]'));
+    await vi.waitFor(() => expect(posts()).toHaveLength(1));
+    expect(JSON.parse(String(posts()[0]![1]!.body))).toEqual({ stage: 'previews', asset_ids: [33], allow_metered: true });
+    queryClient.removeQueries({ queryKey: ['library-processing'] });
   });
 
   it('不合并分卷时一卷一张卡：名字、时长写这一卷自己的，不叠纸边、不标卷数，打开时条目原样交出', async () => {
