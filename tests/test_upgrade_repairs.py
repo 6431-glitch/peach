@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-from peach import r18_legacy_repair, upgrade_repairs, upgrade_rules
+from peach import display_dimensions_repair, r18_legacy_repair, upgrade_repairs, upgrade_rules
 from peach.entities import upsert_asset_entity
 from peach.repository import LedgerDatabase
 from peach.task_runs import TaskRunStore
@@ -97,7 +97,36 @@ class UpgradeRepairTests(unittest.TestCase):
         probe.assert_not_called()
         self.assertEqual(sorted(self.display_targets()), ['1', '2'])
         self.assertEqual(self.service.cloud_display_videos(), 0)
-        self.assertEqual((cloud_item()['state'], cloud_item()['pending']), ('done', 0))
+        self.assertEqual((cloud_item()['state'], cloud_item()['pending']), ('running', 0))
+
+    def test_display_size_progress_is_split_between_local_and_cloud_items(self):
+        """网盘补测确认后并进同一份名单；两项各自只数自己来源的片子，页面才画得出各自的进度条。"""
+        from peach import repair_center
+        with self.database.write_transaction() as connection:
+            connection.executemany(
+                "INSERT INTO asset(id,location,path,name,medium,code,field_owners,duration,width,height) "
+                "VALUES(?,?,?,?,'video',?,'{}',60,720,1280)",
+                [(1, 'local', '1.mp4', '1.mp4', 'A-1'), (2, 'local', '2.mp4', '2.mp4', 'A-2'),
+                 (3, '115', '3.mp4', '3.mp4', 'A-3'), (4, '115', '4.mp4', '4.mp4', 'A-4'),
+                 (5, '115', '5.mp4', '5.mp4', 'A-5')])
+            connection.executemany(
+                "INSERT INTO ledger_upgrade_item(rule,asset_id,state,updated_at) VALUES(?,?,?,'now')",
+                [(display_dimensions_repair.ITEM_RULE, key, 'done' if key in (1, 3) else 'queued')
+                 for key in (1, 2, 3, 4, 5, 9)])
+        receipt = {'display_dimensions_v2': {'cloud_included_at': 1.0}}
+        with self.database.read_connection() as connection:
+            items = {item['id']: item for item in repair_center.snapshot(connection, receipt, cloud_pending=0)['items']}
+        # 资产 9 已删除，按本地算。
+        self.assertEqual({key: (items[key]['state'], items[key]['done'], items[key]['total'])
+                          for key in ('display-local', 'display-cloud')},
+                         {'display-local': ('running', 1, 3), 'display-cloud': ('running', 1, 3)})
+        # 早期版本把网盘片直接排进了名单、没有确认记录：没确认就是没开始，不报进度，
+        # 名单里还没测的 2 部和名单外的 2 部一起算待补测。
+        receipt['display_dimensions_v2'].pop('cloud_included_at')
+        with self.database.read_connection() as connection:
+            cloud = next(item for item in repair_center.snapshot(connection, receipt, cloud_pending=2)['items']
+                         if item['id'] == 'display-cloud')
+        self.assertEqual((cloud['state'], cloud['pending'], 'total' in cloud), ('waiting', 4, False))
 
     def test_repair_history_shows_each_run_and_whether_its_backup_is_still_kept(self):
         """历史与「账本备份」联动：修复前的备份还在就能去恢复，按保留规则清退了照实写。"""
