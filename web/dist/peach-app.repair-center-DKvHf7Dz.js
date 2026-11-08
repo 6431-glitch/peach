@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "994718b0-72e7-4dbb-8985-47463754ebc3", e._sentryDebugIdIdentifier = "sentry-dbid-994718b0-72e7-4dbb-8985-47463754ebc3");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "279f98f1-a74e-43fb-a74a-d8f2c5f2cd01", e._sentryDebugIdIdentifier = "sentry-dbid-279f98f1-a74e-43fb-a74a-d8f2c5f2cd01");
 	} catch {}
 })();
 import { Button as e, LinkButton as t, Note as n, Progress as r, RESULT_PANEL as i, RESULT_SECTION as a, SectionHeading as o, StatusLabel as s, __toESM as c, apiGet as l, apiSend as u, confirmModal as d, fmtSize as f, i2 as p, require_jsx_runtime as m, require_react as h, useAction as g } from "./peach-app.js";
@@ -94,18 +94,31 @@ function O() {
 				className: i,
 				"aria-busy": !a || void 0,
 				children: (a?.items || []).map((t) => {
-					let [n, i] = b[t.state] || b.none;
+					let [n, i] = b[t.state] || b.none, o = w(t), c = o && !(t.state === "waiting" && t.pending) ? "" : E(t);
 					return /* @__PURE__ */ (0, y.jsxs)(D, {
 						title: t.title,
 						description: t.summary,
-						progress: w(t) && t.total ? /* @__PURE__ */ (0, y.jsx)(r, {
-							label: `${t.title}进度`,
-							value: t.done || 0,
-							max: t.total
+						progress: o ? /* @__PURE__ */ (0, y.jsxs)("div", {
+							className: "flex items-center gap-3",
+							children: [/* @__PURE__ */ (0, y.jsx)("div", {
+								className: "min-w-0 flex-1",
+								children: /* @__PURE__ */ (0, y.jsx)(r, {
+									label: `${t.title}进度`,
+									value: t.done || 0,
+									max: t.total
+								})
+							}), /* @__PURE__ */ (0, y.jsxs)("span", {
+								className: "shrink-0 text-caption-1-regular text-text-secondary tabular-nums",
+								children: [
+									x(t.done),
+									" / ",
+									x(t.total)
+								]
+							})]
 						}) : null,
-						children: [E(t) ? /* @__PURE__ */ (0, y.jsx)("span", {
+						children: [c ? /* @__PURE__ */ (0, y.jsx)("span", {
 							className: "text-body-2-regular text-text-secondary",
-							children: E(t)
+							children: c
 						}) : null, t.mode === "confirm" && t.state === "waiting" ? /* @__PURE__ */ (0, y.jsx)(e, {
 							size: "small",
 							disabled: !a?.available || !!h.busy || t.estimating,
@@ -138,4 +151,4 @@ function O() {
 }
 export { O as RepairCenterPage };
 
-//# debugId=994718b0-72e7-4dbb-8985-47463754ebc3
+//# debugId=279f98f1-a74e-43fb-a74a-d8f2c5f2cd01

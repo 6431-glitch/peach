@@ -102,11 +102,17 @@ export function RepairCenterPage() {
         : <div className={RESULT_PANEL} aria-busy={!data || undefined}>
         {(data?.items || []).map(item => {
           const [label, tone] = STATES[item.state] || STATES.none;
+          // 有进度条时件数写在条旁边，右侧只留状态，手机宽度下才不挤说明列。
+          const bar = unfinished(item);
+          const text = bar && !(item.state === 'waiting' && item.pending) ? '' : reading(item);
           return (
             <Row key={item.id} title={item.title} description={item.summary}
-              progress={unfinished(item) && item.total
-                ? <Progress label={`${item.title}进度`} value={item.done || 0} max={item.total} /> : null}>
-              {reading(item) ? <span className="text-body-2-regular text-text-secondary">{reading(item)}</span> : null}
+              progress={bar ? <div className="flex items-center gap-3">
+                <div className="min-w-0 flex-1"><Progress label={`${item.title}进度`} value={item.done || 0} max={item.total} /></div>
+                <span className="shrink-0 text-caption-1-regular text-text-secondary tabular-nums">
+                  {number(item.done)} / {number(item.total)}</span>
+              </div> : null}>
+              {text ? <span className="text-body-2-regular text-text-secondary">{text}</span> : null}
               {item.mode === 'confirm' && item.state === 'waiting'
                 ? <Button size="small" disabled={!data?.available || !!action.busy || item.estimating}
                     onClick={() => start(item)}>开始</Button>
