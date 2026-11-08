@@ -90,12 +90,18 @@ def rows(config, *, windows: bool, probe: bool = False, known: dict | None = Non
 
 
 def reachability_states(reachability) -> dict[str, bool | None]:
-    """可达性快照按根 ID 与路径键各记一份：True 在线、False 离线、None 还在检测或探测未返回。"""
+    """可达性快照按根 ID 与路径键各记一份：True 在线、False 离线、None 探测未返回。
+
+    服务刚启动、快照还在检测的根不记，交给 `_online` 现场探测（有时限）；探测已经超时的
+    记 None，不再陪它等。
+    """
     states: dict[str, bool | None] = {}
     if reachability is None:
         return states
     for source in reachability.sources():
         for root in source["roots"]:
+            if root["online"] is None and root.get("state") != "timeout":
+                continue
             if root.get("root_id"):
                 states["id:" + root["root_id"]] = root["online"]
             states["path:" + media_identity.path_key(root["declared"])] = root["online"]
