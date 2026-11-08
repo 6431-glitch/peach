@@ -12,6 +12,7 @@ import { apiGet, apiSend } from '../../api';
 import { RESULT_PANEL, RESULT_SECTION, SectionHeading } from '../components/fieldset';
 import { Note } from '../components/note';
 import { Page } from '../components/page';
+import { Progress } from '../components/progress';
 import { StatusLabel, type StatusTone } from '../components/status-label';
 import { useAction } from './use-action';
 
@@ -34,25 +35,29 @@ const stamp = (seconds: number) => new Date(seconds * 1000).toLocaleString('zh-C
   year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 const reclaimable = (item: RepairItem) => `${number(item.files)} 个文件 · ${fmtSize(item.bytes || 0)}`;
-/** 页面开着时要跟进的后台进度：只有删除类确认项的统计与删除。显示尺寸补测要跑几天，不在这里轮询。 */
-const inFlight = (item: RepairItem) => !!item.estimating || (item.state === 'running' && item.id === 'follow-evidence');
+/** 页面开着时要跟进的后台进度：在跑的项与还在统计的删除类确认项。补测要跑几天，正因为久才要看得到进度。 */
+const inFlight = (item: RepairItem) => !!item.estimating || item.state === 'running';
 
 function reading(item: RepairItem) {
   if (item.estimating) return '正在统计';
   if (item.state === 'failed' && item.error) return item.error;
   // 行里只写体积，手机宽度下才不挤说明列；文件数在确认弹层里点名。
   if (item.files) return `可回收 ${fmtSize(item.bytes || 0)}`;
+  if (item.state === 'waiting' && item.pending) return `${number(item.pending)} 部待补测`;
   if (item.total) return `${number(item.done)} / ${number(item.total)}`;
-  if (item.mode === 'confirm') return item.pending ? `${number(item.pending)} 部待补测` : '';
+  if (item.mode === 'confirm') return '';
   return item.changed ? `改动 ${number(item.changed)} 项` : '';
 }
 
-function Row({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+function Row({ title, description, progress, children }: {
+  title: string; description: string; progress?: ReactNode; children: ReactNode;
+}) {
   return (
     <div className={`${RESULT_SECTION} flex flex-wrap items-center justify-between gap-x-4 gap-y-2`}>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-body-medium text-text-primary">{title}</span>
         <span className="text-body-2-regular text-text-secondary">{description}</span>
+        {progress ? <div className="pt-2">{progress}</div> : null}
       </div>
       <div className="flex shrink-0 items-center gap-3">{children}</div>
     </div>
@@ -96,7 +101,9 @@ export function RepairCenterPage() {
         {(data?.items || []).map(item => {
           const [label, tone] = STATES[item.state] || STATES.none;
           return (
-            <Row key={item.id} title={item.title} description={item.summary}>
+            <Row key={item.id} title={item.title} description={item.summary}
+              progress={item.state === 'running' && item.total
+                ? <Progress label={`${item.title}进度`} value={item.done || 0} max={item.total} /> : null}>
               {reading(item) ? <span className="text-body-2-regular text-text-secondary">{reading(item)}</span> : null}
               {item.mode === 'confirm' && item.state === 'waiting'
                 ? <Button size="small" disabled={!data?.available || !!action.busy || item.estimating}

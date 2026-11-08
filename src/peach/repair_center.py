@@ -14,6 +14,7 @@ import json
 from pathlib import Path
 
 from . import follow_evidence
+from .media_sources import CLOUD_LOCATIONS
 
 #: 列给用户看的修复：标题、一句做了什么、是否自动执行。顺序就是页面顺序。
 ITEMS = (
@@ -113,13 +114,38 @@ def _follow_evidence(status: dict | None, rows) -> dict:
     return {'state': 'done', 'changed': _count(last.get('files'))} if last else {'state': 'none'}
 
 
+def _display_progress(connection, display: dict) -> dict[bool, tuple[int, int]]:
+    """显示尺寸补测按来源拆开的进度：`{是否网盘: (完成几部, 一共几部)}`。
+
+    网盘补测确认后，网盘视频并进同一份补测名单（`dimensions`），回执不记哪部来自网盘，
+    所以按资产现在的 `location` 分：本地那项只数本机与局域网，网盘那项只数网盘。
+    资产已删除的按本地算。"""
+    queued = list(display.get('dimensions', {}))
+    completed = set(display.get('completed', {}))
+    cloud = set()
+    if queued and CLOUD_LOCATIONS:
+        places = ','.join('?' * len(CLOUD_LOCATIONS))
+        cloud = {str(row[0]) for row in connection.execute(
+            f'SELECT id FROM asset WHERE id IN (SELECT value FROM json_each(?)) AND location IN ({places})',
+            (json.dumps([int(key) for key in queued]), *CLOUD_LOCATIONS))}
+    split = {False: [0, 0], True: [0, 0]}
+    for key in queued:
+        counter = split[key in cloud]
+        counter[1] += 1
+        counter[0] += key in completed
+    return {where: (done, total) for where, (done, total) in split.items()}
+
+
 def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directories=(),
              follow_evidence_status: dict | None = None) -> dict:
     rows = sorted(((row[0], float(row[1] or 0), json.loads(row[2] or '{}')) for row in connection.execute(
         'SELECT id, applied_at, result_json FROM ledger_upgrade_repair')), key=lambda row: row[1], reverse=True)
     local = receipt.get('local', {})
     display = receipt.get('display_dimensions_v2', {})
-    done, total = len(display.get('completed', {})), len(display.get('dimensions', {}))
+    progress = _display_progress(connection, display)
+    done, total = progress[False]
+    cloud_done, cloud_total = progress[True]
+    included = bool(display.get('cloud_included_at'))
     isolated = _latest(rows, 'discovery-system-files-2') or {}
     garbled = _latest(rows, 'garbled_people') or {}
     dangling = next((result for row_id, _, result in rows if row_id.startswith('dangling-candidates-')), {})
@@ -129,8 +155,11 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
                                        if key not in _NOT_CHANGES})},
         'display-local': {'state': 'none' if not total else 'done' if done >= total else 'running',
                           'done': done, 'total': total},
-        'display-cloud': {'state': 'waiting' if cloud_pending else 'done' if display.get('cloud_included_at') else 'none',
-                          'pending': cloud_pending, 'included': bool(display.get('cloud_included_at'))},
+        # 确认后有新加进网盘的旧视频，先等再确认；否则报确认那批补测到了哪里。
+        'display-cloud': {'state': 'waiting' if cloud_pending else 'none' if not included
+                          else 'done' if cloud_done >= cloud_total else 'running',
+                          'pending': cloud_pending, 'included': included,
+                          **({'done': cloud_done, 'total': cloud_total} if included else {})},
         'system-files': {'state': 'done' if isolated else 'none', 'changed': _count(isolated.get('isolated'))},
         'garbled-people': {'state': 'done' if garbled else 'none', 'changed': _count(garbled.get('links'))},
         'dangling-candidates': {'state': 'done' if dangling else 'none',
