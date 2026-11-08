@@ -28,6 +28,88 @@ CATALOG_REVISION = ':'.join((upgrade_rules.CATALOG, upgrade_rules.PREVIEWS, upgr
 REVISION = f'{CATALOG_REVISION}:text-{upgrade_rules.PROVIDER_TEXT}'
 
 
+_ITEM_SQL = {
+    # 新加进补修的片子与旧回执搬进来的状态：已有的行不动。
+    'seed': 'INSERT OR IGNORE INTO ledger_upgrade_item(rule,asset_id,generation,state,run_id,attempts,retry_at,'
+            'result_json,updated_at) VALUES(:rule,:asset_id,:generation,:state,:run_id,:attempts,:retry_at,:result,:at)',
+    # 派出去了。处理器可能抢在派发方记账之前就跑完并写了自己的结论，同一任务的行不覆盖。
+    'dispatch': 'INSERT INTO ledger_upgrade_item(rule,asset_id,generation,state,run_id,updated_at) '
+                "VALUES(:rule,:asset_id,:generation,'queued',:run_id,:at) ON CONFLICT(rule,asset_id) DO UPDATE SET "
+                "state='queued',generation=excluded.generation,run_id=excluded.run_id,updated_at=excluded.updated_at "
+                'WHERE ledger_upgrade_item.run_id IS NOT excluded.run_id',
+    # 按任务终态结算；补测结果留着。
+    'settle': 'INSERT INTO ledger_upgrade_item(rule,asset_id,generation,state,run_id,attempts,retry_at,updated_at) '
+              'VALUES(:rule,:asset_id,:generation,:state,:run_id,:attempts,:retry_at,:at) '
+              'ON CONFLICT(rule,asset_id) DO UPDATE SET state=excluded.state,generation=excluded.generation,'
+              'run_id=excluded.run_id,attempts=excluded.attempts,retry_at=excluded.retry_at,'
+              'updated_at=excluded.updated_at',
+    # 处理器自己的结论：完成、延后。结果并进原有的那份（补测前的尺寸留着）。
+    'finish': 'INSERT INTO ledger_upgrade_item(rule,asset_id,generation,state,run_id,retry_at,result_json,updated_at) '
+              'VALUES(:rule,:asset_id,:generation,:state,:run_id,:retry_at,:result,:at) '
+              'ON CONFLICT(rule,asset_id) DO UPDATE SET state=excluded.state,generation=excluded.generation,'
+              'run_id=coalesce(excluded.run_id,ledger_upgrade_item.run_id),retry_at=excluded.retry_at,'
+              'result_json=json_patch(ledger_upgrade_item.result_json,excluded.result_json),'
+              'updated_at=excluded.updated_at',
+}
+
+
+def upsert_items(connection, rows, *, mode: str) -> None:
+    """写 `ledger_upgrade_item`：升级补修每部片一行的状态，写法见 `_ITEM_SQL`。"""
+    at = str(time.time())
+    connection.executemany(_ITEM_SQL[mode], [
+        {'rule': row['rule'], 'asset_id': int(row['asset_id']), 'generation': row.get('generation') or '',
+         'state': row.get('state', 'pending'), 'run_id': row.get('run_id'), 'attempts': row.get('attempts', 0),
+         'retry_at': row.get('retry_at'), 'result': json.dumps(row.get('result') or {}, ensure_ascii=False), 'at': at}
+        for row in rows])
+
+
+def item_of(key: str) -> tuple[str, int, str] | None:
+    """影片补全的后继键对应状态表里哪一行：(规则, 影片, 文件世代)。不是影片补全的键是 None。"""
+    from .display_dimensions_repair import ITEM_RULE
+    if not key.startswith(MEDIA_TASK + ':'):
+        return None
+    rest, _, asset_id = key[len(MEDIA_TASK) + 1:].rpartition(':')
+    if not asset_id.isdigit() or not rest:
+        return None
+    if rest.startswith(upgrade_rules.DISPLAY_DIMENSIONS_SAR + ':'):
+        return ITEM_RULE, int(asset_id), rest.rsplit(':', 1)[1]
+    return f'media:{rest}', int(asset_id), ''
+
+
+def settled(row, generation: str | None, now: float) -> bool:
+    """状态表里这一行说这部片这会儿不用派：做完了、用户取消了、在跑，或者还没到重派时间。
+
+    `generation` 给了就只认同一文件世代的结论：文件换过的片子按新文件重做。
+    `retry_at` 为空的失败只等用户在「自动修复」里点重试。
+    """
+    if row is None or (generation is not None and row['generation'] != generation):
+        return False
+    if row['state'] in ('done', 'cancelled', 'queued'):
+        return True
+    if row['state'] in ('failed', 'deferred'):
+        return row['retry_at'] is None or float(row['retry_at']) > now
+    return False
+
+
+def _media_items(connection, *, rules=None, every=False) -> dict:
+    """状态表里影片补全的行，键是 (规则, 影片)。
+
+    规划只要显示尺寸的全部行（那是补测的目标集）与其余规则里有结论的行；`every` 连待办行也要。
+    """
+    from .display_dimensions_repair import ITEM_RULE
+    sql = 'SELECT rule,asset_id,generation,state,run_id,attempts,retry_at FROM ledger_upgrade_item'
+    if rules is not None:
+        rules = sorted(rules)
+        sql += f' WHERE rule IN ({",".join("?" * len(rules))})'
+        arguments = rules
+    elif not every:
+        sql += " WHERE rule=? OR state<>'pending'"
+        arguments = [ITEM_RULE]
+    else:
+        arguments = []
+    return {(row['rule'], row['asset_id']): row for row in connection.execute(sql, arguments)}
+
+
 def _read(path: Path) -> dict:
     try:
         value = json.loads(path.read_text(encoding='utf-8'))
@@ -41,6 +123,22 @@ def _read(path: Path) -> dict:
 def _title(row) -> str:
     """任务中心里这一条写哪部片：有番号写番号，没有就写文件名。"""
     return str(row['code'] or row['name'] or f'影片 {row["id"]}')
+
+
+def _legacy_display_rows(display: dict) -> list[dict]:
+    """旧版回执里逐片的补测目标、文件世代与完成结果，换成状态表的行。"""
+    from .display_dimensions_repair import ITEM_RULE
+    generations, completed = display.get('generations') or {}, display.get('completed') or {}
+    rows = []
+    for asset_id, before in (display.get('dimensions') or {}).items():
+        result = completed.get(asset_id) or {}
+        if result.get('generation'):
+            rows.append({'rule': ITEM_RULE, 'asset_id': asset_id, 'generation': result['generation'],
+                         'state': 'done', 'result': {'before': before, **result}})
+        else:
+            rows.append({'rule': ITEM_RULE, 'asset_id': asset_id, 'generation': generations.get(asset_id, ''),
+                         'state': 'pending', 'result': {'before': before}})
+    return rows
 
 
 def _counts(connection) -> dict:
@@ -356,19 +454,38 @@ class UpgradeRepairs:
                     'available': True, 'message': '处理记录无法读取，请重试'}
         local = receipt.get('local', {})
         queued = receipt.get('queued', {})
-        states = list(self._run_states(queued.values()).values())
+        runs = self._run_states(queued.values())
+        states = [runs.get(int(run_id)) for run_id in queued.values()]
         active = sum(state in ('pending', 'running') for state in states)
         failed = sum(state in ('failed', 'interrupted') for state in states)
+        # 结算进状态表的失败与延后也要看得见：失败等用户决定，延后的到时间自己重派。
+        settled_counts = self._item_counts()
+        failed += settled_counts.get('failed', 0)
+        waiting = settled_counts.get('deferred', 0)
         review = int(local.get('review_count', 0)) + len(receipt.get('deferred', []))
         paused = receipt.get('media_paused', {})
-        state = 'failed' if self.error or paused else 'running' if active else 'failed' if failed else 'review' if review else (
+        state = 'failed' if self.error or paused else 'running' if active else 'failed' if failed else (
+            'running' if waiting else 'review' if review else
             'complete' if receipt.get('dispatch_complete') and local else 'pending')
         items = [{'id': REVISION, 'label': '更新已有资料', 'state': local.get('state', 'pending'),
                   'changed': local.get('changed', {}), 'review_count': review},
                  {'id': 'background', 'label': '后台更新进度', 'state': state,
-                  'pending': active, 'failed': failed, 'queued': len(queued)}]
+                  'pending': active, 'failed': failed, 'deferred': waiting, 'queued': len(queued)}]
         return {'state': state, 'items': items, 'available': self.available,
                 'message': self.error or paused.get('message', '')}
+
+    def _item_counts(self) -> dict[str, int]:
+        """状态表里等用户决定的失败、到时间会自己重派的（延后与退避中的失败）各几条。
+
+        表还没建出来（迁移前）按没有算。
+        """
+        try:
+            with self.contract.database.read_connection() as connection:
+                return {row[0]: row[1] for row in connection.execute(
+                    "SELECT CASE WHEN state='failed' AND retry_at IS NULL THEN 'failed' ELSE 'deferred' END,count(*) "
+                    "FROM ledger_upgrade_item WHERE state IN ('failed','deferred') GROUP BY 1")}
+        except sqlite3.OperationalError:
+            return {}
 
     def _run_states(self, run_ids) -> dict[int, str]:
         """回执里这些任务现在的状态；已清退的不在结果里。
@@ -475,38 +592,51 @@ class UpgradeRepairs:
         from . import display_dimensions_repair
         key = display_dimensions_repair.RECEIPT_KEY
         receipt = _read(self.receipt)
-        if key in receipt:
+        display = receipt.get(key)
+        if display is not None and not any(field in display for field in display_dimensions_repair.LEGACY_FIELDS):
             return
+        rows = []
         with self.contract.database.read_connection() as connection:
-            previous = connection.execute(
-                "SELECT result_json FROM ledger_upgrade_repair WHERE json_extract(result_json,?)=? "
-                "ORDER BY CAST(applied_at AS REAL) DESC LIMIT 1",
-                (f'$.{key}.rule', upgrade_rules.DISPLAY_DIMENSIONS_SAR)).fetchone()
-            legacy = connection.execute(
-                "SELECT result_json FROM ledger_upgrade_repair WHERE "
-                "json_extract(result_json,'$.display_dimensions.rule')=? "
-                "ORDER BY CAST(applied_at AS REAL) DESC LIMIT 1", (upgrade_rules.DISPLAY_DIMENSIONS,)).fetchone()
-            dimensions = display_dimensions_repair.collect(connection) if previous is None else {}
-            generations = {str(row['id']): display_dimensions_repair.generation(row) for row in connection.execute(
-                f'SELECT {display_dimensions_repair.IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
-                (json.dumps(list(dimensions)),))}
-        if previous is not None:
-            receipt[key] = json.loads(previous[0])[key]
-        else:
+            if display is None:
+                previous = connection.execute(
+                    "SELECT result_json FROM ledger_upgrade_repair WHERE json_extract(result_json,?)=? "
+                    "ORDER BY CAST(applied_at AS REAL) DESC LIMIT 1",
+                    (f'$.{key}.rule', upgrade_rules.DISPLAY_DIMENSIONS_SAR)).fetchone()
+                legacy = connection.execute(
+                    "SELECT result_json FROM ledger_upgrade_repair WHERE "
+                    "json_extract(result_json,'$.display_dimensions.rule')=? "
+                    "ORDER BY CAST(applied_at AS REAL) DESC LIMIT 1", (upgrade_rules.DISPLAY_DIMENSIONS,)).fetchone()
+                if previous is None:
+                    dimensions = display_dimensions_repair.collect(connection)
+                    rows = self._display_targets(connection, dimensions)
+        if display is None and previous is not None:
+            display = json.loads(previous[0])[key]
+        elif display is None:
             old = json.loads(legacy[0]) if legacy else receipt
             if 'display_dimensions' in old:
                 receipt.setdefault('display_dimensions', old['display_dimensions'])
             backup = self.contract.db_path.with_name(f'ledger.pre-sar-{time.time_ns()}.db')
             self._backup_display_dimensions(backup)
-            receipt[key] = {'rule': upgrade_rules.DISPLAY_DIMENSIONS_SAR, 'dimensions': dimensions,
-                            'generations': generations, 'completed': {}, 'backup': str(backup)}
-        display = receipt[key]
-        if any(asset_id not in display['completed'] and
-               f'{MEDIA_TASK}:{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:{display["generations"][asset_id]}:{asset_id}'
-               not in receipt.get('queued', {})
-               for asset_id in display['dimensions']):
+            display = {'rule': upgrade_rules.DISPLAY_DIMENSIONS_SAR, 'backup': str(backup)}
+        # 旧版回执的逐片字典搬进状态表（已有的行不动，重复搬是空操作），回执里只留规则与备份。
+        rows += _legacy_display_rows(display)
+        receipt[key] = {name: value for name, value in display.items()
+                        if name not in display_dimensions_repair.LEGACY_FIELDS}
+        with self.contract.database.write_transaction(notify=False) as connection:
+            upsert_items(connection, rows, mode='seed')
+        if self._display_due(receipt):
             receipt['dispatch_complete'] = False
         self._save_receipt(receipt)
+
+    @staticmethod
+    def _display_targets(connection, dimensions: dict) -> list[dict]:
+        """要补测的片子写成状态表的待办行：补测前的尺寸记进结果，文件世代记当时的。"""
+        from . import display_dimensions_repair as repair
+        return [{'rule': repair.ITEM_RULE, 'asset_id': row['id'], 'generation': repair.generation(row),
+                 'state': 'pending', 'result': {'before': dimensions[str(row['id'])]}}
+                for row in connection.execute(
+                    f'SELECT {repair.IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
+                    (json.dumps([int(asset_id) for asset_id in dimensions]),))]
 
     def _backup_display_dimensions(self, backup):
         from .jobs import DiskSpaceDenied
@@ -725,31 +855,22 @@ class UpgradeRepairs:
         if authoritative is not None and cached != authoritative:
             atomic_write_text(self.receipt, json.dumps(authoritative, ensure_ascii=False))
 
-    def _save_receipt(self, receipt):
+    def _save_receipt(self, receipt, items=()):
+        """回执与状态表的行（`items`：`(写法, 行)`）同一事务提交。"""
         with self.contract.database.write_transaction(notify=False) as connection:
             stored = connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?', (REVISION,)).fetchone()
             if stored is None:
                 raise ValueError('更新后的处理记录需要重新准备，请重试')
-            # 媒体测量已提交而文件回执没写成时，调度不能用旧文件覆盖成功检查点。
-            from .display_dimensions_repair import IDENTITY_COLUMNS, RECEIPT_KEY, generation
+            from .display_dimensions_repair import LEGACY_FIELDS, RECEIPT_KEY
             saved = json.loads(stored[0]).get(RECEIPT_KEY)
             if saved is not None:
+                # 文件回执没写成时还是旧的：补测规则段以账本为准，已搬进状态表的逐片字典不再写回。
                 display = receipt.setdefault(RECEIPT_KEY, saved)
-                generations = display.setdefault('generations', {})
-                saved_generations = saved.get('generations', {})
-                different = [asset_id for asset_id in generations.keys() | saved_generations.keys()
-                             if generations.get(asset_id) != saved_generations.get(asset_id)]
-                if different:
-                    for row in connection.execute(
-                            f'SELECT {IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
-                            (json.dumps(different),)):
-                        generations[str(row['id'])] = generation(row)
-                completed = display.setdefault('completed', {})
-                for asset_id in list(completed):
-                    if not completed[asset_id].get('generation') or completed[asset_id]['generation'] != generations.get(asset_id):
-                        completed.pop(asset_id)
-                completed.update({asset_id: result for asset_id, result in saved.get('completed', {}).items()
-                                  if result.get('generation') and result['generation'] == generations.get(asset_id)})
+                if not any(field in saved for field in LEGACY_FIELDS):
+                    for field in LEGACY_FIELDS:
+                        display.pop(field, None)
+            for mode, rows in items:
+                upsert_items(connection, rows, mode=mode)
             encoded = json.dumps(receipt, ensure_ascii=False)
             connection.execute('UPDATE ledger_upgrade_repair SET result_json=? WHERE id=? AND result_json<>?',
                                (encoded, REVISION, encoded))
@@ -792,47 +913,49 @@ class UpgradeRepairs:
                 return planned[:MAX_FOLLOWUPS]
             rows = connection.execute("SELECT id,code,name,path,location,size,mtime,snapshot_path FROM asset WHERE medium='video' "
                                       "AND disposal IS NULL ORDER BY id").fetchall()
-        inherited, inherited_display = self._inherited_media(receipt)
-        return self._plan_media(receipt, config, rows, planned, seen, inherited, inherited_display, media_limit)
+            items = _media_items(connection)
+        inherited, inherited_display = self._inherited_media(receipt, items)
+        return self._plan_media(receipt, config, rows, planned, seen, inherited, inherited_display, media_limit, items)
 
-    def _inherited_media(self, receipt):
-        """保留旧队列中仍在执行或取消的影片及文件世代，避免重复派发。"""
+    def _inherited_media(self, receipt, items=None):
+        """保留仍在执行或用户取消的影片及文件世代，避免重复派发。
+
+        还在回执队列里的看任务状态，已结算进状态表的看那一行。
+        """
+        from .display_dimensions_repair import ITEM_RULE
         inherited, inherited_display = set(), set()
-        media = {key: run_id for key, run_id in receipt.get('queued', {}).items() if key.startswith(MEDIA_TASK + ':')}
+        media = {key: run_id for key, run_id in receipt.get('queued', {}).items() if item_of(key)}
         states = self._run_states(media.values())
-        for key, run_id in media.items():
-            if states.get(int(run_id)) not in ('pending', 'running', 'cancelled'):
-                continue
-            asset_id = int(key.rsplit(':', 1)[1])
-            if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
-                inherited_display.add((asset_id, key.rsplit(':', 2)[1]))
+        held = [item_of(key) for key, run_id in media.items()
+                if states.get(int(run_id)) in ('pending', 'running', 'cancelled')]
+        held += [(rule, asset_id, row['generation']) for (rule, asset_id), row in (items or {}).items()
+                 if row['state'] in ('queued', 'cancelled')]
+        for rule, asset_id, generation in held:
+            if rule == ITEM_RULE:
+                inherited_display.add((asset_id, generation))
             else:
                 inherited.add(asset_id)
         return inherited, inherited_display
 
-    def _plan_media(self, receipt, config, rows, planned, seen, inherited, inherited_display, media_limit):
+    def _plan_media(self, receipt, config, rows, planned, seen, inherited, inherited_display, media_limit, items=None):
         """在余下配额中先补显示尺寸，再安排旧规则产物更新。"""
         from .media_sources import cost_for
         from .followups import Followup
         selected = set(receipt.get('media_ids', []))
-        from .display_dimensions_repair import RECEIPT_KEY, generation, task_key
-        display = receipt.get(RECEIPT_KEY, {})
-        dimensions = display.get('dimensions', {})
-        completed = display.get('completed', {})
-        generations = display.setdefault('generations', {})
+        from .display_dimensions_repair import ITEM_RULE, generation, task_key
+        items = items or {}
+        now = time.time()
         deferred = []
         media_count = 0
         for row in rows:
             if media_count >= media_limit:
                 break
-            if row['id'] in inherited or (row['id'], generation(row)) in inherited_display:
+            current = generation(row)
+            if row['id'] in inherited or (row['id'], current) in inherited_display:
                 continue
             display_key = task_key(row)
-            if str(row['id']) in dimensions:
-                generations[str(row['id'])] = generation(row)
-                if completed.get(str(row['id']), {}).get('generation') != generation(row):
-                    completed.pop(str(row['id']), None)
-            if str(row['id']) in dimensions and str(row['id']) not in completed and display_key not in seen:
+            display = items.get((ITEM_RULE, row['id']))
+            if display is not None and display_key not in seen and not settled(display, current, now):
                 if cost_for(row['location'], row['path'], config) != 'free':
                     deferred.append(row['id'])
                     continue
@@ -849,7 +972,8 @@ class UpgradeRepairs:
             if row['id'] in receipt.get('code_media_ids', []):
                 rule += f':{CODE_EVIDENCE_RULE}'
             key = f'{MEDIA_TASK}:{rule}:{row["id"]}'
-            if key in seen:
+            # 结算过的键已移出回执队列，防重复派发靠状态表里那一行。
+            if key in seen or settled(items.get((f'media:{rule}', row['id'])), None, now):
                 continue
             if cost_for(row['location'], row['path'], config) != 'free':
                 deferred.append(row['id'])
@@ -867,6 +991,9 @@ class UpgradeRepairs:
         try:
             with FileLock(str(self.receipt) + '.lock', timeout=0):
                 receipt = _read(self.receipt)
+                settled_rows = self._settle_queue(receipt)
+                if settled_rows is not None:
+                    self._save_receipt(receipt, [('settle', settled_rows)])
                 if receipt.get('dispatch_complete'):
                     from . import seed_followup
                     with self.contract.database.read_connection() as connection:
@@ -883,12 +1010,14 @@ class UpgradeRepairs:
                 planned = self._plan(receipt, media=media, media_limit=max(0, available))
                 if not planned and not media:
                     return
+                dispatched = []
                 if not planned:
                     receipt['dispatch_complete'] = True
                 else:
-                    if not self._dispatch(planned, receipt):
+                    dispatched = self._dispatch(planned, receipt)
+                    if dispatched is None:
                         return
-                self._save_receipt(receipt)
+                self._save_receipt(receipt, [('dispatch', dispatched)])
                 self.error = ''
             self.contract.followups.wake()
         except Timeout:
@@ -900,24 +1029,61 @@ class UpgradeRepairs:
             self.error = str(exc)
             LOGGER.exception('升级补修派发失败')
 
-    def _display_due(self, receipt):
-        from .display_dimensions_repair import IDENTITY_COLUMNS, RECEIPT_KEY, generation, task_key
-        display = receipt.get(RECEIPT_KEY, {})
-        with self.contract.database.read_connection() as connection:
-            rows = connection.execute(f'SELECT {IDENTITY_COLUMNS} FROM asset WHERE medium=\'video\' '
-                'AND disposal IS NULL AND id IN (SELECT value FROM json_each(?))',
-                (json.dumps(list(display.get('dimensions', {}))),)).fetchall()
-        return any(display.get('completed', {}).get(str(row['id']), {}).get('generation') != generation(row)
-                   and task_key(row) not in receipt.get('queued', {}) for row in rows)
+    def _settle_queue(self, receipt) -> list[dict] | None:
+        """已结束的影片补全移出回执队列，结论记进状态表；没有要结算的返回 None。
 
-    def _dispatch(self, planned, receipt):
+        回执队列原本只增不减，上万条结束了的键还在承担防重复派发；结算后这件事交给
+        状态表里那一行（`settled`）。只改两种行：本版派发时记下、还归这一轮任务管的
+        （`queued` 且 `run_id` 对得上），和旧版留下、表里没有结论的。处理器自己写过结论的不动。
+        任务已被清退的，清退只删成功与取消的后继（`TaskRunStore.prune(keep_errors=True)`），按完成算。
+        旧版留下的失败照旧只等用户点重试（`retry_at` 为空），不会被自动重派。
+        """
+        queued = receipt.get('queued', {})
+        media = {key: int(run_id) for key, run_id in queued.items() if item_of(key)}
+        states = self._run_states(media.values())
+        finished = {key: run_id for key, run_id in media.items() if states.get(run_id) not in ('pending', 'running')}
+        if not finished:
+            return None
+        targets = {item_of(key)[:2] for key in finished}
+        with self.contract.database.read_connection() as connection:
+            current = _media_items(connection, rules={rule for rule, _ in targets}, every=True)
+        rows = []
+        for key, run_id in finished.items():
+            rule, asset_id, generation = item_of(key)
+            row = current.get((rule, asset_id))
+            owned = row is not None and row['state'] == 'queued' and row['run_id'] == run_id
+            if row is None or row['state'] == 'pending' or owned:
+                status = states.get(run_id)
+                state = ('done' if status in (None, 'succeeded') else 'cancelled' if status == 'cancelled'
+                         else 'failed')
+                attempts = (row['attempts'] if row is not None else 0) + (state == 'failed')
+                rows.append({'rule': rule, 'asset_id': asset_id, 'generation': generation, 'state': state,
+                             'run_id': run_id, 'attempts': attempts, 'retry_at': None})
+            del queued[key]
+        return rows
+
+    def _display_due(self, receipt):
+        from .display_dimensions_repair import IDENTITY_COLUMNS, ITEM_RULE, generation, task_key
+        now = time.time()
+        columns = ','.join(f'asset.{name}' for name in IDENTITY_COLUMNS.split(','))
+        with self.contract.database.read_connection() as connection:
+            rows = connection.execute(
+                f'SELECT {columns},item.generation AS item_generation,item.state,item.retry_at '
+                'FROM ledger_upgrade_item item JOIN asset ON asset.id=item.asset_id '
+                "WHERE item.rule=? AND asset.medium='video' AND asset.disposal IS NULL", (ITEM_RULE,)).fetchall()
+        queued = receipt.get('queued', {})
+        return any(not settled({'generation': row['item_generation'], 'state': row['state'], 'retry_at': row['retry_at']},
+                               generation(row), now) and task_key(row) not in queued for row in rows)
+
+    def _dispatch(self, planned, receipt) -> list[dict] | None:
+        """派出这一批；返回派出的影片补全在状态表里要记的行，没派成是 None。"""
         store = self.contract.task_runs
         orphan = store.blocking(TASK_KEY)
         if orphan is not None:
             store.finish(orphan.id, 'failed', error='资料派发被中断，正在重新安排')
         run = store.start(TASK_KEY, trigger='scheduled', mutex_key=TASK_KEY, label='安排自动更新资料')
         if run is None:
-            return False
+            return None
         try:
             result = store.enqueue_followups(run.id, [(row.key, row.task_key, row.label) for row in planned])
             queued = receipt.setdefault('queued', {})
@@ -935,7 +1101,14 @@ class UpgradeRepairs:
             raise
         finally:
             store.prune(TASK_KEY)
-        return True
+        planned_keys = {row.key for row in planned}
+        return [{'rule': item[0], 'asset_id': item[1], 'generation': item[2], 'run_id': int(run_id)}
+                for key, run_id in queued.items() if key in planned_keys and (item := item_of(key))]
+
+    def _display_targets_known(self, connection) -> set[str]:
+        from .display_dimensions_repair import ITEM_RULE
+        return {str(row[0]) for row in connection.execute(
+            'SELECT asset_id FROM ledger_upgrade_item WHERE rule=?', (ITEM_RULE,))}
 
     def cloud_display_videos(self) -> int:
         """网盘里还没加进显示尺寸补测的旧视频数；用户点过「补测网盘视频」就是 0。"""
@@ -947,8 +1120,8 @@ class UpgradeRepairs:
         if display is None or display.get('cloud_included_at'):
             return 0
         with self.contract.database.read_connection() as connection:
-            return sum(asset_id not in display.get('dimensions', {})
-                       for asset_id in repair.collect(connection, cloud=True))
+            known = self._display_targets_known(connection)
+            return sum(asset_id not in known for asset_id in repair.collect(connection, cloud=True))
 
     def include_cloud_display_dimensions(self) -> dict:
         """用户在「自动修复」里点了「补测网盘视频」：把网盘来源的旧视频加进显示尺寸补测。
@@ -965,16 +1138,13 @@ class UpgradeRepairs:
             if display is None:
                 raise ValueError('显示尺寸补测还没准备好，请稍后再试')
             with self.contract.database.read_connection() as connection:
+                known = self._display_targets_known(connection)
                 extra = {asset_id: size for asset_id, size in repair.collect(connection, cloud=True).items()
-                         if asset_id not in display['dimensions']}
-                generations = {str(row['id']): repair.generation(row) for row in connection.execute(
-                    f'SELECT {repair.IDENTITY_COLUMNS} FROM asset WHERE id IN (SELECT value FROM json_each(?))',
-                    (json.dumps(list(extra)),))}
-            display['dimensions'].update(extra)
-            display.setdefault('generations', {}).update(generations)
+                         if asset_id not in known}
+                rows = self._display_targets(connection, extra)
             display['cloud_included_at'] = time.time()
             receipt['dispatch_complete'] = False
-            self._save_receipt(receipt)
+            self._save_receipt(receipt, [('seed', rows)])
         self.tick()
         return self.snapshot()
 
@@ -992,12 +1162,13 @@ class UpgradeRepairs:
                 config = self.config or getattr(self.contract, 'upgrade_config', None) or load_config()
                 CapacityGuard(config).check(force=True)
                 receipt.pop('media_paused')
-            queued = receipt.get('queued', {})
-            states = self._run_states(queued.values())
-            kept = {key: run_id for key, run_id in queued.items()
-                    if states.get(int(run_id)) not in ('failed', 'interrupted')}
-            receipt.update(queued=kept, dispatch_complete=False)
-            self._save_receipt(receipt)
+            # 先把结束了的键结算进状态表，再把失败与延后一并放回待办：旧版留下、只等用户决定的失败也在这里重派。
+            settled_rows = self._settle_queue(receipt) or []
+            receipt['dispatch_complete'] = False
+            self._save_receipt(receipt, [('settle', settled_rows)])
+            with self.contract.database.write_transaction(notify=False) as connection:
+                connection.execute("UPDATE ledger_upgrade_item SET state='pending',attempts=0,retry_at=NULL,"
+                                   "updated_at=? WHERE state IN ('failed','deferred')", (str(time.time()),))
             self.error = ''
         from . import task_control
         from .update_tasks import _mutex, state_for
@@ -1139,7 +1310,8 @@ def _display_run(contract, key: str, handle) -> dict:
                 raise DiskSpaceDenied(paused['message'])
         handle.progress(label='补测视频显示尺寸')
         result = display_dimensions_repair.reprobe(contract, config, asset_id, checkpoint=available,
-                                                   expected_generation=key.rsplit(':', 2)[1])
+                                                   expected_generation=key.rsplit(':', 2)[1],
+                                                   run_id=getattr(handle, 'run_id', None))
     except DiskSpaceDenied as error:
         if service is not None:
             service.pause_media(error)

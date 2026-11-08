@@ -98,8 +98,9 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
     rows = sorted(((row[0], float(row[1] or 0), json.loads(row[2] or '{}')) for row in connection.execute(
         'SELECT id, applied_at, result_json FROM ledger_upgrade_repair')), key=lambda row: row[1], reverse=True)
     local = receipt.get('local', {})
+    from .display_dimensions_repair import progress
     display = receipt.get('display_dimensions_v2', {})
-    done, total = len(display.get('completed', {})), len(display.get('dimensions', {}))
+    done, total = progress(connection)
     isolated = _latest(rows, system_file_repair.RULE) or {}
     garbled = _latest(rows, 'garbled_people') or {}
     dangling = next((result for row_id, _, result in rows if row_id.startswith('dangling-candidates-')), {})
