@@ -14,7 +14,7 @@ import {
   authorAvatar, authorGroups, authorInitial, authorName, checkReceipt, checkSummary, errorHeadline, feedIntervalText, FEEDS_CHECK_URL, FEED_SOURCE_URL,
   FEEDS_LOOKUP_URL, FEEDS_URL, FOLLOW_CHECK_URL, FOLLOW_MANAGE_KEY,
   FOLLOW_CREDENTIAL_URL, FOLLOW_CREDENTIALS_URL, FOLLOW_RESOLVE_URL, FOLLOW_SOURCE_URL,
-  FOLLOW_SUGGEST_URL, FOLLOW_URL, pageWindow, prefetchFollowManage,
+  FOLLOW_STATUS_URL, FOLLOW_SUGGEST_URL, FOLLOW_URL, MARK_BATCH, markAllPending, pageWindow, prefetchFollowManage,
   sortLabel, SUGGEST_DEBOUNCE_MS, tableRows,
   type CheckJob, type CredentialData, type CredentialRow, type FeedLookup, type FeedsData, type FollowData,
   type FollowSource, type ResolveJob, type SuggestData,
@@ -1641,4 +1641,44 @@ it('凭据文件路径可展开，权限过宽警告在凭据收起时可见', a
   await click(file.querySelector('summary'));
   expect(file.open).toBe(true);
   expect(file.textContent).toContain('fanbox.json');
+});
+
+it('全部标为已看：一页待处理之外的也标完，每批不超过批量接口的 1000 条', async () => {
+  // 1500 条未看，每组一条主条目；服务端一页最多给 1000 组，标过的离开 status=new。
+  const unseen = new Set(Array.from({ length: 1500 }, (_, index) => index + 1));
+  const batches: number[][] = [];
+  vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+    const path = new URL(url, location.origin).pathname;
+    if (path === FOLLOW_STATUS_URL) {
+      const body = JSON.parse(String(init?.body)) as { items: number[]; to: string };
+      expect(body.to).toBe('seen');
+      batches.push(body.items);
+      for (const id of body.items) unseen.delete(id);
+      return { ok: true, status: 200, json: async () => ({ ok: true, items: body.items }) } as Response;
+    }
+    expect(path).toBe(FOLLOW_URL);
+    const page = [...unseen].slice(0, MARK_BATCH);
+    return { ok: true, status: 200, json: async () => ({
+      groups: page.map((id) => ({ primary: { id, status: 'new' }, variants: [], duplicates: [] })),
+      has_more: unseen.size > MARK_BATCH }) } as Response;
+  }));
+  const result = await markAllPending('seen');
+  expect(result).toEqual({ total: 1500, failed: 0, error: undefined });
+  expect(unseen.size).toBe(0);
+  expect(batches.map((items) => items.length)).toEqual([1000, 500]);
+});
+
+it('全部标为已看：写失败的那批记进失败数，不反复重取同一批', async () => {
+  const fetcher = vi.fn(async (url: string) => {
+    const path = new URL(url, location.origin).pathname;
+    if (path === FOLLOW_STATUS_URL) return { ok: false, status: 500, json: async () => ({ error: '数据库忙' }) } as Response;
+    return { ok: true, status: 200, json: async () => ({
+      groups: [{ primary: { id: 1, status: 'new' }, variants: [{ id: 2, status: 'seen' }], duplicates: [{ id: 3, status: 'new' }] }],
+      has_more: true }) } as Response;
+  });
+  vi.stubGlobal('fetch', fetcher);
+  const result = await markAllPending('ignored');
+  expect([result.total, result.failed]).toEqual([2, 2]);
+  expect(String((result.error as Error).message)).toContain('数据库忙');
+  expect(fetcher.mock.calls.filter(([url]) => new URL(url, location.origin).pathname === FOLLOW_URL)).toHaveLength(2);
 });
