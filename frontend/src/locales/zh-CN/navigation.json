@@ -21,5 +21,9 @@
     "quality": "高清版",
     "activity": "任务中心",
     "configuration": "Peach 配置"
+  },
+  "pageTitle": {
+    "search": "搜索 {{term}}",
+    "portrait": "竖屏"
   }
 }

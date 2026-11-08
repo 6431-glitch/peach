@@ -15,6 +15,7 @@
 import { overlayMatch } from './overlay';
 import { entityLinkName } from '../core/entity-links';
 import { entityDisplayName } from '../core/entity-names';
+import { t } from '../i18n';
 import { CLEANUP_CRUMB_PAGES, type CleanupToolPath } from '../cleanup-tools';
 import { PREFERENCE_SECTIONS, CONFIGURATION_SECTIONS, REPAIR_CENTER_PATH } from './settings-route';
 
@@ -66,7 +67,7 @@ const ROUTE_ENTRIES = {
   '/watch-later': { nav: 'later', title: '稍后看' },
   '/flagged': { nav: 'flagged', title: '已标记' },
   '/junk-files': { nav: 'ads', title: '垃圾文件' },
-  '/trash': { section: 'trash', title: '回收站' },
+  '/trash': { section: 'trash', title: t('navigation:manage.trash') },
   // 覆盖：详情、四种队列与关注详情。分卷与版本队列没有自己的标签。
   '/assets/:id': { title: '媒体记录' },
   '/works/:code': { nav: 'jav', title: 'JAV 作品' },
