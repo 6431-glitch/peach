@@ -31,7 +31,7 @@ import type { CatalogGridProps, MediaCardLayout, MediaCardHelpers, MediaItem, Me
 import { VideoWall } from '../video-wall/video-wall';
 import { finiteWallFilters, wallHasCover } from '../video-wall/wall-layout';
 import { wallEmptyHtml } from '../video-wall/wall-empty';
-import { LibraryCompletionPrompt, missingPreviewIds } from '../library-processing/library-completion';
+import { LibraryCompletionPrompt, meteredPreviewIds, missingPreviewIds } from '../library-processing/library-completion';
 import { useCatalogView } from './catalog-view';
 import { queryClient } from '../query';
 import { CatalogListPage } from './catalog-list-page';
@@ -162,8 +162,9 @@ function GridBody(props: CatalogGridProps) {
   const wallAvailable = !trash && !props.selectMode && !!actions.wallPlayer && !!actions.wallDetails;
   const wallItems = tiles.flatMap(tile => tile.kind === 'card' && wallHasCover(tile.item) ? [tile.item] : []);
   const wallPool = wallItems;
-  const missing = trash ? [] : missingPreviewIds(
-    tiles.flatMap(tile => tile.kind === 'card' ? [tile.item] : []), layout.javImage);
+  const shownItems = tiles.flatMap(tile => tile.kind === 'card' ? [tile.item] : []);
+  const missing = trash ? [] : missingPreviewIds(shownItems, layout.javImage);
+  const metered = trash ? [] : meteredPreviewIds(shownItems, layout.javImage);
 
   const body = useRef<HTMLDivElement | null>(null);
   const cuts = useShortsStrips(props, result.isPlaceholderData ? undefined : result.data, tiles, pageStarts, body);
@@ -249,7 +250,7 @@ function GridBody(props: CatalogGridProps) {
 
   return (
     <div ref={body} data-media-body="" aria-busy={result.isFetching && !result.isFetchingNextPage}>
-      <LibraryCompletionPrompt assetIds={missing} />
+      <LibraryCompletionPrompt assetIds={missing} meteredIds={metered} />
       {props.wall ? content() : <SkeletonContent pending={result.isPending} skeletonHtml={props.skeletonHtml}>
         {content()}
       </SkeletonContent>}

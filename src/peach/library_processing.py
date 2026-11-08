@@ -2169,7 +2169,8 @@ class _SourceScan:
 
 
 def _scan_sources(config, db_path, *, locations, asset_ids, stage, guard, update, issue,
-                  scan_checkpoints=None, save_checkpoint=lambda: None, initial_probed=0, incremental=False):
+                  scan_checkpoints=None, save_checkpoint=lambda: None, initial_probed=0, incremental=False,
+                  allow_metered=False):
     """发现本趟可访问的来源根，按阶段登记文件并探测新视频。"""
     result = _SourceScan([], probed=initial_probed)
     def count_junk(checked):
@@ -2180,10 +2181,13 @@ def _scan_sources(config, db_path, *, locations, asset_ids, stage, guard, update
     mounts = {key: tuple(str(value) for value in values) for key, values in config.mounts.items()}
     ffprobe = _ffprobe_path(config) if stage == SCAN_STAGE else None
     for source, roots in locations.items():
-        if stage == PREVIEWS_STAGE and source != 'local':
+        if stage == PREVIEWS_STAGE and source == 'online':
             continue
         for root in roots:
             guard.check()
+            # 只补预览不碰开了流量保护的目录，连目录在不在线都不探，除非这一趟显式授权了计费读取。
+            if stage == PREVIEWS_STAGE and not allow_metered and cost_for(source, root, config) == 'metered':
+                continue
             translated_root = _online_source_root(
                 source, root, chosen_paths, retrying=asset_ids is not None, issue=issue)
             if translated_root is None:
@@ -2544,7 +2548,7 @@ def _generate_preview(config, row, database, resolver, *, progress):
         with database.write_transaction() as connection:
             connection.execute(media_probe.UPDATE, measured)
     digest = hashlib.sha1(str(row['path']).encode('utf-8')).hexdigest()[:16]
-    destination = root / 'local' / digest[:2] / (digest + '.jpg')
+    destination = root / row['location'] / digest[:2] / (digest + '.jpg')
     if not artifact_rules.current(destination) or not measure_image_file(destination):
         from .hardware_transcode import frame_decode_options
         decode_options = frame_decode_options(str(choice.path), str(video))
@@ -2582,19 +2586,29 @@ def _generate_preview(config, row, database, resolver, *, progress):
     progress()
     with database.write_transaction() as connection:
         result = connection.execute(
-            "UPDATE asset SET snapshot_path=? WHERE id=? AND path=? AND location='local' "
-            "AND medium='video' AND disposal IS NULL", (str(destination), row['id'], row['path']))
+            "UPDATE asset SET snapshot_path=? WHERE id=? AND path=? AND location=? "
+            "AND medium='video' AND disposal IS NULL", (str(destination), row['id'], row['path'], row['location']))
     return bool(result.rowcount)
 
 
+def preview_readable(row, config, *, allow_metered=False):
+    """抽帧可以读的视频：在线来源与 STRM/ISO 不读，开了流量保护的目录只在显式授权时读。
+
+    抽帧按九个时间点跳读，不读整部，免费的网盘挂载和本机一样处理。流量保护按目录算
+    （`cost_for`），和探测时长用的是同一份判据。扫描、计数、流量预估与抽帧都按它取舍，
+    各写一份迟早会出现「计数里有、抽帧时跳过」。"""
+    return (row['location'] != 'online' and not skip_background_read(row['path'])
+            and (allow_metered or cost_for(row['location'], row['path'], config) == 'free'))
+
+
 def _generate_previews(config, rows, database, *, update, issue, guard,
-                       completed=(), checkpoint=lambda row: None, initial_made=0):
-    """只读本机视频；来源失败与抽帧失败各自保留可重试项目。媒体库处理方式不生成九宫格的作品跳过。"""
+                       completed=(), checkpoint=lambda row: None, initial_made=0, allow_metered=False):
+    """来源失败与抽帧失败各自保留可重试项目。媒体库处理方式不生成九宫格的作品跳过。"""
     from .previews import PreviewUnavailable
     if database is None:
         return 0
     stages_of = _library_stages(config)
-    rows = [row for row in rows if row['location'] == 'local' and not skip_background_read(row['path'])
+    rows = [row for row in rows if preview_readable(row, config, allow_metered=allow_metered)
             and 'preview' in stages_of(row['path'])]
     base_done = sum(_checkpoint_key(row) in completed for row in rows)
     rows = [row for row in rows if _checkpoint_key(row) not in completed]
@@ -2822,7 +2836,7 @@ def _complete_processing_step(steps, key):
     return progress
 
 
-def _processing_workload(config, rows, stage, database, completed_previews):
+def _processing_workload(config, rows, stage, database, completed_previews, allow_metered=False):
     """按处理范围和已完成检查点建立各阶段的待处理数量。"""
     pending = {}
     if stage not in (SCAN_STAGE, PREVIEWS_STAGE):
@@ -2833,7 +2847,7 @@ def _processing_workload(config, rows, stage, database, completed_previews):
                                and cost_for(row['location'], row['path'], config) == 'free')
     if (database is not None and stage in (ALL_STAGES, COLLECT_STAGE, PREVIEWS_STAGE)
             and not metadata_only(config.directory('state'))):
-        pending['previews'] = sum(row['location'] == 'local' and not skip_background_read(row['path'])
+        pending['previews'] = sum(preview_readable(row, config, allow_metered=allow_metered)
                                   and _checkpoint_key(row) not in completed_previews for row in rows)
     return pending
 
@@ -2958,14 +2972,16 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                     retry_ids=None, active=lambda: True, stage=ALL_STAGES,
                     database=None, route_overrides=None, state_file=None, asset_ids=None,
                     resume_state=None, speed_mode=None, protected_ids=(), recheck_existing=False,
-                    incremental=False, network=None, library_id=None):
+                    incremental=False, network=None, library_id=None, allow_metered=False):
     """登记文件与确定的番号，外部资料保留为可复核候选。
 
     `retry_ids` 为 `None` 时处理整个馆藏；给定时只处理这些项目（上一任务记录的
     可重试失败），不重新扫描来源目录，已有候选与封面照常复用。
 
-    `stage` 指定处理范围：`all` 扫描并补全资料与本地预览，`scan` 只扫描，
-    `collect` 补全资料与本地预览，`metadata` 只采集资料，`previews` 只生成本地预览。
+    `stage` 指定处理范围：`all` 扫描并补全资料与预览，`scan` 只扫描，
+    `collect` 补全资料与预览，`metadata` 只采集资料，`previews` 只生成预览。预览只抽
+    `preview_readable` 认可的视频；`allow_metered` 是对开了流量保护的目录的显式授权，
+    只对指定了 `asset_ids` 的 `previews` 生效（路由层把关）。
     `asset_ids` 指定仍在馆藏中的视频，不扫描来源目录；空选择无效。
     `library_id` 将目录扫描、资料处理与候选结算限制到一个媒体库，恢复时沿用原范围。
 
@@ -2997,7 +3013,8 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
     identity = job_id or uuid.uuid4().hex
     from .processing_inventory import recent_rows
     traffic = ProcessingTraffic(config, db_path, stage, initial_ids,
-                                resume_state=resume_state, inventory_rows=recent_rows(config, db_path, stage, scope_ids))
+                                resume_state=resume_state, inventory_rows=recent_rows(config, db_path, stage, scope_ids),
+                                allow_metered=allow_metered)
     def control_report(**values):
         resume_fields(state, values)
         state.update(values)
@@ -3014,7 +3031,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
         state = dict(job_id=identity, status='running',
                      stage='检查配套文件' if retrying else '扫描文件',
                      checked=0, total=0, scanned=0, scanned_bytes=0, probed=0, identified=0, candidates=0, covers=0, previews=0,
-                     requested_stage=stage, asset_ids=scope_ids, incremental=incremental,
+                     requested_stage=stage, asset_ids=scope_ids, incremental=incremental, allow_metered=allow_metered,
                      library_id=library_id, library_name=config.library_catalog.get(library_id, {}).get('name', ''),
                      issue_count=0, paused_count=0, issue_preview=[], issues_truncated=False,
                      notes={}, retryable_asset_ids=[],
@@ -3087,7 +3104,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                                     stage=stage, guard=guard, update=update, issue=issue,
                                     scan_checkpoints=state['scan_checkpoints'],
                                     save_checkpoint=lambda: flush_state(force=True), initial_probed=state['probed'],
-                                    incremental=incremental)
+                                    incremental=incremental, allow_metered=allow_metered)
             if incremental:
                 from .library_new_assets import _active_videos
                 scope_ids = _active_videos(db_path, sorted(set(initial_ids) | set(sources.new_ids)))
@@ -3117,12 +3134,13 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
             rows, genre_decisions = _collection_rows(
                 db_path, locations=locations, online_roots=sources.online_roots, asset_ids=scope_ids)
             traffic.refresh_plan(rows)
-            pending = _processing_workload(config, rows, stage, database, checkpoints.completed['completed_previews'])
+            pending = _processing_workload(config, rows, stage, database, checkpoints.completed['completed_previews'],
+                                           allow_metered=allow_metered)
             update(estimate_pending=dict(pending))
             if stage == PREVIEWS_STAGE:
                 _generate_previews(config, rows, database, update=update, issue=issue, guard=guard,
                                    completed=checkpoints.completed['completed_previews'],
-                                   initial_made=state['previews'],
+                                   initial_made=state['previews'], allow_metered=allow_metered,
                                    checkpoint=lambda row: checkpoints.mark('completed_previews', row, flush_state))
                 _check_processing_junk(judgement_database, locations, sources.online_roots,
                                        scope_ids, protected_ids, state, update)

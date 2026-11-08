@@ -167,7 +167,7 @@ it.each([
   ['仅扫描文件', '扫描全部文件', '全部文件与影片', {stage:'scan'}, {stage:'scan'}],
   ['补全资料与预览', '补全已入库影片', '全部文件与影片', {stage:'collect'}, {stage:'collect'}],
   ['仅补全影片资料', '仅补全影片资料', '全部文件与影片', {stage:'metadata'}, {stage:'metadata'}],
-  ['仅补全预览图', '仅补全预览图', '已入库的本地视频', {stage:'previews'}, {stage:'previews'}],
+  ['仅补全预览图', '仅补全预览图', '已入库的视频（跳过流量保护目录）', {stage:'previews'}, {stage:'previews'}],
 ] as const)('%s 的确认范围、预估请求与提交保持一致', async (label, title, scope, command, estimate) => {
   const {fetcher, posts} = await open({status:'idle',new_asset_count:2});
   const host = await mount(card({toast:vi.fn()}));
