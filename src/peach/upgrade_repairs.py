@@ -290,6 +290,70 @@ STALE_CODES_KEY = 'stale-filename-codes-1'
 #: 永久删除后悬空的资料候选（#486）在 `ledger_upgrade_repair` 里的回执键；规则版本见 `upgrade_rules`。
 DANGLING_KEY = f'dangling-candidates-{upgrade_rules.DANGLING_CANDIDATES}'
 
+#: JavDB 演员页补记有碼／無碼（#271）的回执键；规则版本见 `upgrade_rules`。
+JAVDB_RECORDS_KEY = f'javdb-actor-records-{upgrade_rules.JAVDB_ACTOR_RECORDS}'
+
+
+def javdb_card_pages(contract):
+    """本机缓存过的 javdb 搜索页：回填脚本的整页缓存，和补女优资料后继的取页缓存。"""
+    for path in sorted((Path(contract.entry_links_root) / 'directory-links' / 'javdb').glob('*.html')):
+        try:
+            yield path.read_text(encoding='utf-8', errors='replace')
+        except OSError:
+            continue
+    for path in sorted((Path(contract.candidate_root) / 'provider-cache' / 'javdb-pages').glob('*.json')):
+        try:
+            body = json.loads(path.read_text(encoding='utf-8')).get('body')
+        except (OSError, ValueError, AttributeError):
+            continue
+        if isinstance(body, str):
+            yield body
+
+
+def settle_javdb_records(connection, records: dict[str, bool]) -> dict:
+    """给存量 javdb 演员 id 记下有碼还是無碼（`records` 取自本机缓存的搜索卡片）。
+
+    记上之后，与署名 id 同类的按名字找到的 id 不再出入口（`entry_links.provider_ids`）；
+    订阅新作已经订着那一页的源停用，不删：条目与发现记录留着，回执里的源 id 能原样启用回去。
+    已记下的不改，缓存里没有卡的不猜。
+    """
+    from . import entry_links
+    recorded, touched = [], set()
+    for entity_id, external_id, raw in connection.execute(
+            "SELECT entity_id,external_id,metadata_json FROM entity_external_ref "
+            "WHERE provider='javdb' AND external_kind='performer' ORDER BY entity_id,external_id").fetchall():
+        if external_id not in records:
+            continue
+        try:
+            metadata = json.loads(raw or '{}')
+        except ValueError:
+            continue
+        if not isinstance(metadata, dict) or isinstance(metadata.get('uncensored'), bool):
+            continue
+        metadata['uncensored'] = records[external_id]
+        connection.execute("UPDATE entity_external_ref SET metadata_json=? WHERE provider='javdb' "
+                           "AND external_kind='performer' AND external_id=?",
+                           (json.dumps(metadata, ensure_ascii=False), external_id))
+        recorded.append({'entity_id': entity_id, 'external_id': external_id, 'uncensored': records[external_id]})
+        touched.add(entity_id)
+    hidden, disabled = [], []
+    for entity_id in sorted(touched):
+        refs = [dict(row) for row in connection.execute(
+            "SELECT provider,external_kind,external_id,metadata_json FROM entity_external_ref "
+            "WHERE entity_id=? AND provider='javdb' AND external_kind='performer'", (entity_id,))]
+        shown = set(entry_links.provider_ids(refs).get('javdb', []))
+        for ref in refs:
+            if ref['external_id'] in shown:
+                continue
+            hidden.append({'entity_id': entity_id, 'external_id': ref['external_id']})
+            for (source_id,) in connection.execute(
+                    'SELECT id FROM feed_source WHERE entity_id=? AND url=? AND enabled=1',
+                    (entity_id, entry_links.javdb_actor_page(ref['external_id']))).fetchall():
+                connection.execute('UPDATE feed_source SET enabled=0 WHERE id=?', (source_id,))
+                disabled.append({'entity_id': entity_id, 'external_id': ref['external_id'], 'source_id': source_id})
+    return {'rule': upgrade_rules.JAVDB_ACTOR_RECORDS, 'recorded': recorded, 'hidden': hidden,
+            'disabled_feeds': disabled}
+
 
 def restore_dangling_candidates(database, candidate_root) -> dict:
     """按 `DANGLING_KEY` 的回执把悬空候选补修整批还原。
@@ -661,6 +725,7 @@ class UpgradeRepairs:
                 self._restore_receipt(json.loads(applied[0]))
                 self._withdraw_stale_code_evidence()
                 self._settle_dangling_candidates()
+                self._settle_javdb_records()
                 self._isolate_system_files()
                 return
             self._restore_receipt(None)
@@ -709,6 +774,7 @@ class UpgradeRepairs:
             atomic_write_text(self.receipt, json.dumps(receipt, ensure_ascii=False))
             self._withdraw_stale_code_evidence()
             self._settle_dangling_candidates()
+            self._settle_javdb_records()
             self._isolate_system_files()
 
     def _prepare_display_dimensions(self) -> None:
@@ -894,6 +960,32 @@ class UpgradeRepairs:
                 write_rows(path, header, rows, atomic=True)
         LOGGER.info('悬空资料候选：改挂 %s 行，撤下 %s 行，决定改挂或清掉 %s 条',
                     len(plan['repinned']), len(plan['withdrawn']), len(decisions))
+
+    def _settle_javdb_records(self) -> None:
+        """存量 javdb 演员 id 补记有碼／無碼（`settle_javdb_records`），只做一次。
+
+        只读本机缓存、不出网；缓存不在的部署没有可记的，照样记一条空回执，不再每次启动重扫。
+        出错只记日志：缓存读不了不该挡住服务启动，下次启动再试。
+        """
+        from . import javdb
+        try:
+            with self.contract.database.read_connection() as connection:
+                if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?',
+                                      (JAVDB_RECORDS_KEY,)).fetchone():
+                    return
+            records = javdb.card_records(javdb_card_pages(self.contract))
+            with self.contract.database.write_transaction() as connection:
+                if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?',
+                                      (JAVDB_RECORDS_KEY,)).fetchone():
+                    return
+                result = settle_javdb_records(connection, records)
+                connection.execute('INSERT INTO ledger_upgrade_repair(id,applied_at,result_json) VALUES(?,?,?)',
+                                   (JAVDB_RECORDS_KEY, str(time.time()), json.dumps(result, ensure_ascii=False)))
+        except Exception:
+            LOGGER.exception('JavDB 演员页记录类型补修失败')
+            return
+        LOGGER.info('JavDB 演员页：补记 %s 个记录类型，%s 枚入口不再给出，停用 %s 条订阅',
+                    len(result['recorded']), len(result['hidden']), len(result['disabled_feeds']))
 
     def _clear_stale_codes(self) -> None:
         """清掉旧版从文件名误认的番号（`stale_filename_codes`），只做一次。"""
