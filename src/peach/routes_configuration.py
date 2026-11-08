@@ -240,8 +240,12 @@ def _read_section(result: dict, key: str, title: str, reader) -> None:
                               message=f"配置区域 {key} 读取失败", section=key, error_id=error_id)
 
 
-def snapshot(config) -> dict[str, Any]:
-    """配置页首屏要的一切：当前值、修订号、可写与否，以及这台机器的运行信息。"""
+def snapshot(config, reachability=None) -> dict[str, Any]:
+    """配置页首屏要的一切：当前值、修订号、可写与否，以及这台机器的运行信息。
+
+    所有设置页都等这一份。媒体目录的在线状态读 `reachability`（`MountReachability`）的快照，
+    不在请求里同步列举网盘根：网盘一卡住，整个设置区就停在加载。
+    """
     editable = managed_configuration()
     from . import remote_reporting, library_sharing
     media = config.mounts.get("local") or config.locations.get("local", ())
@@ -268,7 +272,9 @@ def snapshot(config) -> dict[str, Any]:
         ("updates", "版本更新", release_updates.snapshot),
         ("update_job", "更新任务", standalone_update.public),
         ("access", "访问设置", lambda: access.public(access.load(config.directory("secrets") / "access.json"))),
-        ("media_sources", "媒体目录", lambda: media_configuration.rows(config, windows=os.name == "nt", probe=True)),
+        ("media_sources", "媒体目录", lambda: media_configuration.rows(
+            config, windows=os.name == "nt", probe=True,
+            known=media_configuration.reachability_states(reachability))),
         ("library_count", "媒体库状态", lambda: len(media_libraries.libraries(config))),
         ("mount_dependencies", "挂载依赖", media_configuration.mount_dependencies),
         ("facts", "运行信息", lambda: runtime_fact_entries(config)),
@@ -360,7 +366,7 @@ def read_configuration(request: Request, _args=Depends(require_auth)):
     config = settings_file.load_config()
     if not config.present:
         raise HTTPException(409, "请先完成首次设置")
-    result = snapshot(config)
+    result = snapshot(config, getattr(request.app.state, "mount_reachability", None))
     _read_section(result, 'network', '访问地址', lambda: network_payload(request, config))
     sync = getattr(request.app.state, "sync", None)
     result["ledger_read_only"] = bool(sync is not None and sync.read_only)
