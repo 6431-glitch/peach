@@ -1,4 +1,5 @@
 """改字工具保存源文案与动态模板，冲突与代码路径不能误写。"""
+import json
 from pathlib import Path
 import tempfile
 import unittest
@@ -24,6 +25,20 @@ class DevCopyTests(unittest.TestCase):
                     self.assertEqual(path.read_text(encoding='utf-8'), "LABEL = '媒体设置说明'")
                     with self.assertRaises(ValueError):
                         dev_copy.save(root, {'original': '设置说明', 'replacement': '无效修改', 'candidate': candidate})
+
+    def test_extracted_copy_is_saved_into_the_source_language_file_only(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp).resolve()
+            for language, text in (('zh-CN', '首页'), ('en', 'Home')):
+                (root / 'frontend/src/locales' / language).mkdir(parents=True)
+                (root / 'frontend/src/locales' / language / 'navigation.json').write_text(
+                    '{\n  "sidebar": { "home": "%s" }\n}\n' % text, encoding='utf-8')
+            candidate, = dev_copy.candidates(root, '首页')
+            self.assertEqual(candidate['file'], 'frontend/src/locales/zh-CN/navigation.json')
+            self.assertEqual(dev_copy.candidates(root, 'Home'), [])
+            dev_copy.save(root, {'original': '首页', 'replacement': '主页 "精选"', 'candidate': candidate})
+            saved = json.loads((root / candidate['file']).read_text(encoding='utf-8'))
+            self.assertEqual(saved, {'sidebar': {'home': '主页 "精选"'}})
 
     def test_status_recovers_from_a_short_read_lock_and_preserves_persistent_denial(self):
         from peach import dev_copy_runtime as runtime
