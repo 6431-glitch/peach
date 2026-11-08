@@ -2090,6 +2090,78 @@ class UpgradeRepairTests(unittest.TestCase):
         self.assertEqual(process.call_args.kwargs['asset_ids'], [1])
         self.assertTrue(process.call_args.kwargs['recheck_existing'])
 
+    def checkpoint(self, name):
+        """在补修状态目录里放一份续跑状态：状态文件、问题日志与逐项检查点目录。"""
+        self.service.root.mkdir(parents=True, exist_ok=True)
+        (self.service.root / f'{name}.json').write_text('{}', encoding='utf-8')
+        (self.service.root / f'{name}.issues.jsonl').write_text('{}\n', encoding='utf-8')
+        (self.service.root / f'{name}-items').mkdir()
+        (self.service.root / f'{name}-items' / 'a.json').write_text('{}', encoding='utf-8')
+        return [f'{name}.json', f'{name}.issues.jsonl', f'{name}-items']
+
+    def test_a_finished_film_removes_its_checkpoint_and_a_failed_one_keeps_it_for_the_retry(self):
+        from peach.settings_file import load_config
+        self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
+        self.checkpoint('1')
+        with patch('peach.library_processing.process_library', return_value={
+                'status': 'failed', 'outcome': 'failed', 'error': '来源出错'}), \
+                self.assertRaises(RuntimeError):
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:processing-v2:1', Mock())
+        self.assertEqual(sorted(path.name for path in self.service.root.iterdir()), ['1-items', '1.issues.jsonl', '1.json'])
+        with patch('peach.library_processing.process_library', return_value={'status': 'complete'}):
+            upgrade_repairs._media_run(self.contract, 'upgrade-library:processing-v2:1', Mock())
+        self.assertEqual(list(self.service.root.iterdir()), [])
+
+    def test_a_settled_batch_removes_its_checkpoint_even_when_a_film_is_deferred(self):
+        """延后的片子重派时编进新批次、换了键，旧批次的检查点再也认不上。"""
+        from peach.settings_file import load_config
+        self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
+        for key in (1, 2):
+            self.asset(key, duration=10)
+        key = 'upgrade-library:batch:processing-v2:1,2'
+        self.checkpoint(f'batch-{upgrade_repairs._batch_digest(key)}')
+        with patch('peach.library_processing.process_library', return_value={
+                'status': 'failed', 'outcome': 'partial', 'paused_count': 1, 'paused_asset_ids': [2]}), \
+                patch.object(upgrade_repairs, 'mount_unreachable', return_value=False):
+            result = upgrade_repairs._media_run(self.contract, key, Mock(run_id=None))
+        self.assertEqual((result['done'], result['deferred']), (1, 1))
+        self.assertEqual(list(self.service.root.iterdir()), [])
+
+    def test_checkpoints_left_by_finished_repairs_are_cleared_once_on_upgrade(self):
+        """旧版补修完不删的续跑状态：只清用不上的，待补、延后、失败与在跑批次的留着。"""
+        import os
+        self.service.prepare()
+        stale = time.time() - 7200
+        names = {key: self.checkpoint(key) for key in ('1', '2', '3', '4', '5', '6')}
+        running = 'upgrade-library:batch:processing-v2:7,8'
+        names['running'] = self.checkpoint(f'batch-{upgrade_repairs._batch_digest(running)}')
+        names['old-batch'] = self.checkpoint('batch-' + 'a' * 16)
+        names['fresh'] = self.checkpoint('9')
+        (self.service.root / 'catalog-review.json').write_text('{}', encoding='utf-8')
+        for path in self.service.root.iterdir():
+            if not path.name.startswith('9'):
+                os.utime(path, (stale, stale))
+        with self.database.write_transaction() as connection:
+            upgrade_repairs.upsert_items(connection, [
+                {'rule': 'media:processing-v2', 'asset_id': asset_id, 'state': state}
+                for asset_id, state in ((1, 'done'), (2, 'failed'), (3, 'deferred'), (4, 'cancelled'))], mode='finish')
+        receipt = upgrade_repairs._read(self.service.receipt)
+        receipt['queued'] = {'upgrade-library:processing-v2:5': 1, running: 2}
+        self.service._save_receipt(receipt)
+        self.service._prune_repair_checkpoints()
+        kept = sorted(path.name for path in self.service.root.iterdir())
+        expected = names['2'] + names['3'] + names['5'] + names['running'] + names['fresh'] + ['catalog-review.json', 'receipt.json']
+        self.assertEqual(kept, sorted(expected))
+        with self.database.read_connection() as connection:
+            result = json.loads(connection.execute("SELECT result_json FROM ledger_upgrade_repair "
+                                                   "WHERE id='upgrade-repair-checkpoints-1'").fetchone()[0])
+        # 1、4、6 与旧批次各三个文件。
+        self.assertEqual(result['removed'], 12)
+        self.checkpoint('10')
+        os.utime(self.service.root / '10.json', (stale, stale))
+        self.service._prune_repair_checkpoints()
+        self.assertTrue((self.service.root / '10.json').exists())
+
     def test_a_new_text_rule_does_not_resume_completed_metadata_from_the_old_rule(self):
         from peach.settings_file import load_config
         self.contract.upgrade_config = load_config(environ={'PEACH_DATA_ROOT': str(self.root)})
