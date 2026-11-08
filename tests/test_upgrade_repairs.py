@@ -585,6 +585,107 @@ class UpgradeRepairTests(unittest.TestCase):
         _, probe = self.run_display_probe((60, 1920, 1280, None, 0, 0, None, '横屏', '2K', 1))
         probe.assert_not_called()
 
+    def run_queued_display(self, measured=(60, 1440, 1280, None, 0, 0, None, '横屏', '1080P', 1), *, unreachable=False):
+        """派出显示尺寸补测再在当前线程跑完，返回这一轮的任务行。"""
+        from peach.followups import FollowupRunner
+        self.contract.upgrade_repairs = self.service
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch.object(upgrade_repairs, '_stale_previews', return_value=False):
+            self.service.tick()
+        run_id = upgrade_repairs._read(self.service.receipt)['queued'][self.display_key()]
+        with patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch.object(upgrade_repairs, 'mount_unreachable', return_value=unreachable), \
+                patch('peach.media_probe.measure', return_value=measured):
+            FollowupRunner(self.contract).drain()
+        return self.store.get(run_id)
+
+    def tick_quietly(self):
+        with patch('peach.library_processing._people_allowed', return_value=False), \
+                patch('peach.seed_followup.plan', return_value=[]), \
+                patch.object(upgrade_repairs, '_stale_previews', return_value=False):
+            self.service.tick()
+        return upgrade_repairs._read(self.service.receipt)
+
+    def make_due(self):
+        with self.database.write_transaction() as connection:
+            connection.execute('UPDATE ledger_upgrade_item SET retry_at=1 WHERE retry_at IS NOT NULL')
+
+    def test_unreachable_mount_defers_the_measurement_instead_of_failing_it(self):
+        """挂载掉线时补测延后、不读媒体、不算失败；到时间自己重派。"""
+        self.display_sample()
+        run = self.run_queued_display(unreachable=True)
+        self.assertEqual(run.status, 'succeeded')
+        self.assertIn('已延后', run.result_summary['outcome'])
+        row = self.display_items()['1']
+        self.assertEqual((row['state'], row['attempts']), ('deferred', 0))
+        self.assertGreater(row['retry_at'], time.time() + 60)
+        with self.database.read_connection() as connection:
+            self.assertEqual(tuple(connection.execute('SELECT width,height FROM asset').fetchone()), (720, 1280))
+        self.assertEqual(self.tick_quietly()['queued'], {})
+        self.assertEqual(self.service.snapshot()['items'][1]['deferred'], 1)
+        self.make_due()
+        self.assertEqual(list(self.tick_quietly()['queued']), [self.display_key()])
+
+    def test_new_failures_are_dispatched_again_with_backoff_until_the_attempt_limit(self):
+        """本版派出的失败按退避自动重派；连败到上限后只等用户点重试。"""
+        self.display_sample()
+        for attempt in range(1, upgrade_repairs.MAX_AUTO_RETRIES + 2):
+            with self.assertLogs('peach.followups', level='WARNING'):
+                run = self.run_queued_display((-1, 0, 0, None, 0, 0, None, None, None, 1))
+            self.assertEqual(run.status, 'failed')
+            self.assertEqual(self.tick_quietly()['queued'], {})
+            row = self.display_items()['1']
+            self.assertEqual((row['state'], row['attempts']), ('failed', attempt))
+            if attempt > upgrade_repairs.MAX_AUTO_RETRIES:
+                self.assertIsNone(row['retry_at'])
+                break
+            self.assertAlmostEqual(row['retry_at'] - time.time(),
+                                   min(upgrade_repairs.RETRY_BASE_SECONDS * 2 ** (attempt - 1),
+                                       upgrade_repairs.RETRY_CAP_SECONDS), delta=30)
+            self.make_due()
+        self.make_due()
+        self.assertEqual(self.tick_quietly()['queued'], {})
+        self.assertEqual(self.service.snapshot()['items'][1]['failed'], 1)
+
+    def test_source_cooldown_defers_the_processing_repair(self):
+        """资料来源冷却时这部片延后到来源放开，不按失败结算。"""
+        self.asset(1, duration=60)
+        self.service.prepare()
+        self.contract.upgrade_repairs = self.service
+        key = 'upgrade-library:processing-v2:1'
+        cooled = {'status': 'failed', 'outcome': 'partial', 'issue_count': 1, 'paused_count': 1,
+                  'paused_asset_ids': [1], 'retryable_asset_ids': [1]}
+        with patch('peach.library_processing.process_library', return_value=cooled):
+            result = upgrade_repairs._media_run(self.contract, key, Mock(run_id=None))
+        self.assertIn('来源', result['outcome'])
+        with self.database.read_connection() as connection:
+            row = connection.execute("SELECT state,retry_at FROM ledger_upgrade_item WHERE rule='media:processing-v2'").fetchone()
+        self.assertEqual(row['state'], 'deferred')
+        self.assertGreater(row['retry_at'], time.time() + 600)
+
+    def test_capacity_denial_returns_the_run_to_the_queue_until_explicit_retry(self):
+        """容量触线这一条挂回队列、整批暂停，不按失败结算；用户重试后接着跑。"""
+        from peach import task_control
+        from peach.jobs import DiskSpaceDenied
+        from peach.followups import FollowupRunner
+        self.display_sample()
+        self.contract.upgrade_repairs = self.service
+        self.tick_quietly()
+        run_id = upgrade_repairs._read(self.service.receipt)['queued'][self.display_key()]
+        with patch('peach.storage_budget.CapacityGuard.check', side_effect=DiskSpaceDenied('空间不足')), \
+                patch('peach.library_processing._ffprobe_path', return_value='ffprobe'), \
+                patch('peach.media_probe.measure') as probe:
+            FollowupRunner(self.contract).drain()
+        probe.assert_not_called()
+        self.assertEqual(self.store.get(run_id).status, 'pending')
+        self.assertEqual(task_control.requested(self.db, run_id), 'pause')
+        self.assertIsNone(self.store.claim_followup([upgrade_repairs.MEDIA_TASK]))
+        with patch.object(self.service, 'tick'):
+            self.service.retry()
+        self.assertEqual(task_control.requested(self.db, run_id), 'resume')
+        self.assertEqual(self.store.claim_followup([upgrade_repairs.MEDIA_TASK]).id, run_id)
+
     def test_queued_display_reprobe_skips_without_media_reads_or_measurement_changes(self):
         from peach import artifact_rules, media_probe
         sheet = self.display_sample()

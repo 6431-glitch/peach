@@ -75,7 +75,8 @@ def _completed(connection, asset_id: int) -> dict | None:
 
 def reprobe(contract, config, asset_id: int, *, checkpoint, expected_generation=None, run_id=None) -> dict:
     from .library_processing import _ffprobe_path
-    from .upgrade_repairs import REVISION, upsert_items
+    from .upgrade_repairs import (MOUNT_RETRY_SECONDS, REVISION, RepairDeferred, mount_unreachable,
+                                  upsert_items)
 
     with contract.database.read_connection() as connection:
         if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?', (REVISION,)).fetchone() is None:
@@ -91,14 +92,19 @@ def reprobe(contract, config, asset_id: int, *, checkpoint, expected_generation=
     if completed is not None and completed.get('generation') == current_generation:
         return completed
     if cost_for(row['location'], row['path'], config) != 'free':
-        raise ValueError('显示尺寸补测需要先确认计费来源的流量')
+        raise RepairDeferred('计费来源的流量还没确认，稍后再补测', MOUNT_RETRY_SECONDS)
     ffprobe = _ffprobe_path(config)
     if not ffprobe:
         raise ValueError('显示尺寸补测未取得 ffprobe')
+    if mount_unreachable(row['path']):
+        raise RepairDeferred('影片所在目录读不到，挂载恢复后再补测', MOUNT_RETRY_SECONDS)
     checkpoint()
     measured = media_probe.measure(ffprobe, asset_id, row['path'])
     checkpoint()
     if measured[0] <= 0 or measured[1] <= 0 or measured[2] <= 0:
+        # 测量途中掉线也是挂载的事，不按这部片失败结算。
+        if mount_unreachable(row['path']):
+            raise RepairDeferred('影片所在目录读不到，挂载恢复后再补测', MOUNT_RETRY_SECONDS)
         raise ValueError('显示尺寸未取得，保留原有测量')
     changed = (row['width'], row['height']) != tuple(measured[1:3])
     result = {'changed': changed, 'dimensions': list(measured[1:3]), 'generation': current_generation}

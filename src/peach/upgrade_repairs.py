@@ -16,6 +16,7 @@ from . import artifact_rules, composite_alias_repair, metadata_text_repair, r18_
 from .field_owners import SCAN_FILENAME, is_protected, owner_of, write_owned_fields
 from .followups import FollowupType, Attempts, attempts_root, register
 from .fsutil import atomic_path, atomic_write_text
+from .jobs import DiskSpaceDenied, JobPaused
 from .migrations import sqlite_backup
 from .task_runs import MAX_FOLLOWUPS
 from .update_tasks import UpdateBusy
@@ -26,6 +27,47 @@ MEDIA_TASK = 'upgrade-library'
 CATALOG_REVISION = ':'.join((upgrade_rules.CATALOG, upgrade_rules.PREVIEWS, upgrade_rules.PROCESSING,
                            str(upgrade_rules.PUBLIC_SNAPSHOTS), str(upgrade_rules.PROVIDER_EVIDENCE)))
 REVISION = f'{CATALOG_REVISION}:text-{upgrade_rules.PROVIDER_TEXT}'
+
+
+#: 本版派出的补修失败后按退避自动重派：10 分钟起翻倍，最长一天；连败五次后只等用户点重试。
+RETRY_BASE_SECONDS = 600
+RETRY_CAP_SECONDS = 86400
+MAX_AUTO_RETRIES = 5
+#: 挂载不可达、来源冷却时这部片延后多久再派；不算失败，不计次数。
+MOUNT_RETRY_SECONDS = 1800
+COOLDOWN_RETRY_SECONDS = 3600
+
+
+def retry_at(attempts: int, now: float) -> float | None:
+    """第 `attempts` 次失败之后什么时候自动重派；超过次数是 None（只等用户重试）。"""
+    if attempts > MAX_AUTO_RETRIES:
+        return None
+    return now + min(RETRY_BASE_SECONDS * 2 ** max(attempts - 1, 0), RETRY_CAP_SECONDS)
+
+
+class RepairDeferred(Exception):
+    """这部片这会儿补不了（挂载不可达、计费来源未确认、来源冷却），过 `retry_after` 秒再派。"""
+
+    def __init__(self, message: str, retry_after: float):
+        super().__init__(message)
+        self.retry_after = retry_after
+
+
+def mount_unreachable(ledger_path: str) -> bool:
+    """影片所在目录现在读不到：网盘或 NAS 掉线时补修延后，不按这部片失败结算。"""
+    from .platform import root_status, translate_ledger_path
+    try:
+        folder = getattr(translate_ledger_path(ledger_path), 'parent', None)
+        return folder is not None and root_status(folder) != 'ok'
+    except (OSError, ValueError):
+        return True
+
+
+class CapacityPaused(JobPaused, DiskSpaceDenied):
+    """容量触线：整批已暂停（`pause_media`），这一条挂回队列等用户重试，不按失败结算。
+
+    仍是 `DiskSpaceDenied`，调用方照旧认得出是容量；后继通道按 `JobPaused` 把它挂回待跑。
+    """
 
 
 _ITEM_SQL = {
@@ -999,7 +1041,7 @@ class UpgradeRepairs:
                     with self.contract.database.read_connection() as connection:
                         maximum = connection.execute('SELECT coalesce(max(id),0) FROM entity').fetchone()[0]
                         seed = seed_followup.plan(connection, since_entity_id=maximum)
-                    if (not receipt.get('deferred') and not self._display_due(receipt)
+                    if (not receipt.get('deferred') and not self._display_due(receipt) and not self._retry_due()
                             and not any(row.key not in receipt.get('queued', {}) for row in seed)):
                         return
                     receipt['dispatch_complete'] = False
@@ -1036,7 +1078,8 @@ class UpgradeRepairs:
         状态表里那一行（`settled`）。只改两种行：本版派发时记下、还归这一轮任务管的
         （`queued` 且 `run_id` 对得上），和旧版留下、表里没有结论的。处理器自己写过结论的不动。
         任务已被清退的，清退只删成功与取消的后继（`TaskRunStore.prune(keep_errors=True)`），按完成算。
-        旧版留下的失败照旧只等用户点重试（`retry_at` 为空），不会被自动重派。
+        本版派出的失败按退避自动重派（`retry_at`）；旧版留下的失败照旧只等用户点重试
+        （`retry_at` 为空），不会被自动重派。
         """
         queued = receipt.get('queued', {})
         media = {key: int(run_id) for key, run_id in queued.items() if item_of(key)}
@@ -1048,6 +1091,7 @@ class UpgradeRepairs:
         with self.contract.database.read_connection() as connection:
             current = _media_items(connection, rules={rule for rule, _ in targets}, every=True)
         rows = []
+        now = time.time()
         for key, run_id in finished.items():
             rule, asset_id, generation = item_of(key)
             row = current.get((rule, asset_id))
@@ -1058,9 +1102,18 @@ class UpgradeRepairs:
                          else 'failed')
                 attempts = (row['attempts'] if row is not None else 0) + (state == 'failed')
                 rows.append({'rule': rule, 'asset_id': asset_id, 'generation': generation, 'state': state,
-                             'run_id': run_id, 'attempts': attempts, 'retry_at': None})
+                             'run_id': run_id, 'attempts': attempts,
+                             'retry_at': retry_at(attempts, now) if state == 'failed' and owned else None})
             del queued[key]
         return rows
+
+    def _retry_due(self) -> bool:
+        """有延后或退避中的补修到了重派时间。"""
+        with self.contract.database.read_connection() as connection:
+            return connection.execute(
+                "SELECT 1 FROM ledger_upgrade_item item JOIN asset ON asset.id=item.asset_id "
+                "WHERE item.state IN ('failed','deferred') AND item.retry_at IS NOT NULL AND item.retry_at<=? "
+                'AND asset.disposal IS NULL LIMIT 1', (time.time(),)).fetchone() is not None
 
     def _display_due(self, receipt):
         from .display_dimensions_repair import IDENTITY_COLUMNS, ITEM_RULE, generation, task_key
@@ -1183,14 +1236,29 @@ class UpgradeRepairs:
         self.tick()
         return self.snapshot()
 
-    def pause_media(self, error) -> None:
-        """磁盘触线后持久暂停整批；腾出空间或重启都不解除，显式重试才解除。"""
+    def pause_media(self, error, *, run_id: int | None = None) -> None:
+        """磁盘触线后持久暂停整批；腾出空间或重启都不解除，显式重试才解除。
+
+        `run_id` 是撞上触线的那一条：它挂回队列等重试，所以整批已经暂停时也要给它下暂停，
+        否则挂回去马上又被领走、再撞一次。
+        """
         from . import task_control
         from .update_tasks import _mutex, state_for
         store = self.contract.task_runs
         with FileLock(str(self.receipt) + '.lock'):
             receipt = _read(self.receipt)
-            if receipt.get('media_paused'):
+            paused = receipt.get('media_paused')
+            if paused:
+                if run_id is None or str(run_id) in paused.get('commands', {}):
+                    return
+                with _mutex(state_for(self.contract.db_path)):
+                    if task_control.requested(self.contract.db_path, run_id) != 'resume':
+                        return
+                    task_control.request(store, run_id, 'pause')
+                    paused.setdefault('run_ids', []).append(run_id)
+                    paused.setdefault('commands', {})[str(run_id)] = task_control.intent(
+                        self.contract.db_path, run_id)['id']
+                    self._save_receipt(receipt)
                 return
             with self.contract.database.read_connection() as connection:
                 rows = connection.execute(
@@ -1245,10 +1313,11 @@ def _media_run(contract, key: str, handle) -> dict:
     if previous.get('job_id', job_id) != job_id:
         previous = {}
     if previous:
-        previous.update(issue_count=0, paused_count=0, issue_preview=[], retryable_asset_ids=[])
+        previous.update(issue_count=0, paused_count=0, issue_preview=[], retryable_asset_ids=[],
+                        paused_asset_ids=[])
     service = getattr(contract, 'upgrade_repairs', None)
     with contract.database.read_connection() as connection:
-        found = connection.execute('SELECT id,code,name FROM asset WHERE id=?', (asset_id,)).fetchone()
+        found = connection.execute('SELECT id,code,name,path FROM asset WHERE id=?', (asset_id,)).fetchone()
     title = _title(found) if found else f'影片 {asset_id}'
     def active():
         return service is None or not service.stopping.is_set()
@@ -1257,6 +1326,9 @@ def _media_run(contract, key: str, handle) -> dict:
             paused = _read(service.receipt).get('media_paused')
             if paused:
                 raise DiskSpaceDenied(paused['message'])
+        if found is not None and mount_unreachable(found['path']):
+            return _defer(contract, key, handle, [asset_id],
+                          RepairDeferred('影片所在目录读不到，挂载恢复后再补全', MOUNT_RETRY_SECONDS))
         guard = CapacityGuard(config)
         guard.check(force=True)
         result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
@@ -1269,17 +1341,18 @@ def _media_run(contract, key: str, handle) -> dict:
                                  label=f"{title} · {state.get('stage') or '更新影片资料'}"))
         guard.check(force=True)
     except DiskSpaceDenied as error:
-        if service is not None:
-            service.pause_media(error)
-        raise
+        _pause_for_capacity(service, handle, error)
     except InterruptedError:
         if not active():
             raise JobPaused('服务重启后继续') from None
         raise
-    # 走完全程只剩这部片自己的问题（坏文件探不出时长、抽不出帧）算完成；有来源冷却暂缓的
-    # 还要等来源放开再补，留成失败交给后继重试。
+    # 走完全程只剩这部片自己的问题（坏文件探不出时长、抽不出帧）算完成；卡在来源冷却上的
+    # 延后到来源放开再派，不算失败；其余未完成的按失败结算，由退避重派。
     finished = result.get('status') in ('complete', 'succeeded') or (
         result.get('outcome') == 'partial' and not result.get('paused_count'))
+    if not finished and asset_id in result.get('paused_asset_ids', ()):
+        return _defer(contract, key, handle, [asset_id],
+                      RepairDeferred('资料来源正在冷却，来源放开后再补全', COOLDOWN_RETRY_SECONDS))
     if not finished:
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
     return {'outcome': '影片升级补全完成', 'name': title, 'asset_id': asset_id}
@@ -1311,17 +1384,41 @@ def _display_run(contract, key: str, handle) -> dict:
         handle.progress(label='补测视频显示尺寸')
         result = display_dimensions_repair.reprobe(contract, config, asset_id, checkpoint=available,
                                                    expected_generation=key.rsplit(':', 2)[1],
-                                                   run_id=getattr(handle, 'run_id', None))
+                                                   run_id=_run_id(handle))
+    except RepairDeferred as error:
+        return _defer(contract, key, handle, [asset_id], error)
     except DiskSpaceDenied as error:
-        if service is not None:
-            service.pause_media(error)
-        raise
+        _pause_for_capacity(service, handle, error)
     except InterruptedError:
         if service is not None and service.stopping.is_set():
             raise JobPaused('服务重启后继续') from None
         raise
     return {'outcome': 'skipped' if result.get('skipped') else '显示尺寸补测完成',
             'asset_id': asset_id, 'dimensions_changed': result['changed']}
+
+
+def _run_id(handle) -> int | None:
+    run_id = getattr(handle, 'run_id', None)
+    return run_id if isinstance(run_id, int) else None
+
+
+def _defer(contract, key: str, handle, asset_ids, error: RepairDeferred) -> dict:
+    """这几部片延后：状态表记下重派时间，这一轮按完成结算，不算失败、不计次数。"""
+    rule, _, generation = item_of(key) or ('', 0, '')
+    until = time.time() + error.retry_after
+    with contract.database.write_transaction(notify=False) as connection:
+        upsert_items(connection, [{'rule': rule, 'asset_id': asset_id, 'generation': generation, 'state': 'deferred',
+                                   'run_id': _run_id(handle), 'retry_at': until} for asset_id in asset_ids],
+                     mode='finish')
+    return {'outcome': f'已延后：{error}', 'deferred': len(asset_ids), 'retry_at': until}
+
+
+def _pause_for_capacity(service, handle, error):
+    """容量触线：整批暂停，这一条挂回队列，用户显式重试后接着跑。没有服务（命令行）照旧抛出。"""
+    if service is None:
+        raise error
+    service.pause_media(error, run_id=_run_id(handle))
+    raise CapacityPaused(str(error)) from error
 
 
 TYPE = register(FollowupType(MEDIA_TASK, '更新影片资料', True, _media_run))
