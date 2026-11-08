@@ -19,7 +19,9 @@
     "check:copy": "node scripts/copy-check.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
-    "e2e": "node --test --test-concurrency=1 --test-reporter=tap \"e2e/**/*.test.ts\""
+    "e2e": "node --test --test-concurrency=1 --test-reporter=tap \"e2e/**/*.test.ts\"",
+    "i18n:literals": "node scripts/i18n-literals.mjs",
+    "i18n:terms": "node scripts/i18n-terms.mjs"
   },
   "dependencies": {
     "@remixicon/react": "4.9.0",
@@ -30,6 +32,7 @@
     "d3-sankey": "0.12.3",
     "diff": "9.0.0",
     "driver.js": "1.10.2",
+    "i18next": "27.0.1",
     "motion": "14.9.1",
     "react": "19.3.1",
     "react-aria": "3.53.1",

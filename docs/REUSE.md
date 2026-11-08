@@ -293,6 +293,10 @@ React 页面复用 `EmptyState`，HTML 页面复用 `emptyStateHtml`。图标统
 
 JS/TS 文案复用 [Oxc parser](https://oxc.rs/docs/guide/usage/parser)，开发依赖固定 `oxc-parser@0.154.0`，MIT 许可，来源为 [Oxc 官方仓库](https://github.com/oxc-project/oxc)。项目 Vite/Oxlint 工具链已有 Oxc；独立 Node 检查器解析注释、字符串、模板与 JSX，不进入应用运行包。前端源码解析错误为零。Tree-sitter 的试用在具名元组成员与 JSX 查询参数处产生错误，未采用；不新增 Python 解析器依赖。中文和英文判据集中于 `scripts/copy-rules.json`，含糊词语只提示人工核对。
 
+## 界面翻译
+
+界面文案的翻译复用 [i18next](https://www.i18next.com/)，运行依赖固定 `i18next@27.0.1`，MIT 许可，来源为 [i18next 官方仓库](https://github.com/i18next/i18next)，没有传递依赖。它提供插值、按 `Intl.PluralRules` 选复数形式、缺键回落源语言，资源格式 i18next JSON v4 也是 Weblate、POEditor 直接支持的格式，换平台不用转换。只用核心库：界面语言在页面载入时定下，换语言整页重载，用不到 `react-i18next` 的响应式能力。写死中文的计数和术语扫描复用上一节的 Oxc parser；术语表用 Weblate 能读出禁用标记的 TBX，前端测试用 happy-dom 自带的 `DOMParser` 解析，后端不新增解析依赖。决策见 [ADR-0156](adr/0156-interface-translation.md)。
+
 ## macOS 独立构建
 
 macOS 发行包复用 Windows 固定的 FFmpeg 9.0.2、x264、dav1d 1.5.4 和 untrunc `9d86ec9` 源码锁、下载 SHA-256 校验与 `media_tool_bundle.validate`。untrunc 单独静态链接兼容的 FFmpeg 8.1.3；其 [上游 Makefile](https://github.com/anthwlock/untrunc/blob/9d86ec9ef2ffed1bf8131abe80742c0574db52b6/Makefile)提供 macOS 编译依据。头文件用 `-idirafter` 保留 C++ 标准头 `version` 的优先级。FFmpeg/x264 按 GPL-3.0-or-later、dav1d 按 BSD-2-Clause、untrunc 按 GPL-2.0-or-later 分发；完整对应源码归档包含全部上游源码、构建脚本和许可。Peach 仅维护目标架构、静态库组合、清单与拒收判据，不复制 Homebrew dylib。macOS 编译启用 VideoToolbox、AudioToolbox 与 Secure Transport，硬件转码选择仍服从已有产品策略。

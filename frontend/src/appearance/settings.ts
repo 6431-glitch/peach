@@ -4,6 +4,9 @@
  * 存量只接受形状与范围合法的值，单项非法时取该项默认值。 */
 import { api } from '@peach/legacy/core';
 
+import { isInterfaceLanguage, type InterfaceLanguage } from '../i18n';
+import { SETTINGS_KEY } from '../settings-key';
+
 import { normalizeJavPreferences } from '../jav-artwork';
 import { boundedPreference } from '../number-setting';
 import { createSettingsStore, type SettingsStore } from '../settings-store';
@@ -13,7 +16,7 @@ import { normalizeNavigationOrders, type NavigationOrders } from '../navigation-
 import { SORT_ALIASES, SORT_KEYS } from '../sort-preferences';
 import { DEFAULT_ACCENT, DEFAULT_HOME_GLOW, normalizeAccent, normalizeHomeGlow, type HomeGlow } from './home-glow';
 
-export const SETTINGS_KEY = 'peach.settings.v1';
+export { SETTINGS_KEY };
 /* 主题三档，键名与 <html> 上的 data-theme 同一套写法：web/css/01-base.css 的色板
    已经按 `prefers-color-scheme` 和 `[data-theme]` 两条路径写好，这里只负责选哪一条。
    跟随系统是默认档，选它等于不写属性。 */
@@ -40,6 +43,7 @@ export interface AppSettings {
   homeLayout: string;
   javImage: string;
   performerNameLanguage: 'zh-CN' | 'ja';
+  interfaceLanguage: InterfaceLanguage;
   followLayout: string;
   peopleLayout: string;
   photoSize: string;
@@ -70,7 +74,7 @@ export const DEFAULT_SETTINGS = {
   searchHistoryLimit: 10, relatedLimit: 20, feedLimit: 12, javLayout: 'big', homeLayout: 'small', javImage: 'cover',
   followLayout: 'default', peopleLayout: 'big', photoSize: 'small', ambientMode: true, miniplayer: true,
   theaterMode: false, theme: 'system', groupCollapse: true, sidebarOrder: [...DEFAULT_SIDEBAR_ORDER], manageOrder: [...MANAGE_MENU_SECTIONS],
-  homeGlow: DEFAULT_HOME_GLOW, accent: DEFAULT_ACCENT, performerNameLanguage: 'zh-CN',
+  homeGlow: DEFAULT_HOME_GLOW, accent: DEFAULT_ACCENT, performerNameLanguage: 'zh-CN', interfaceLanguage: 'zh-CN',
   navigationOrders: {},
   libraryOrder: [],
 } as const;
@@ -116,6 +120,7 @@ export function normalizeAppSettings(raw: unknown): { settings: AppSettings; mig
   Object.assign(settings, normalizeJavPreferences(settings));
   settings.theme = allowedSetting(settings.theme, THEME_CHOICES, 'system');
   settings.performerNameLanguage = allowedSetting(settings.performerNameLanguage, ['zh-CN', 'ja'], 'zh-CN');
+  settings.interfaceLanguage = isInterfaceLanguage(settings.interfaceLanguage) ? settings.interfaceLanguage : 'zh-CN';
   settings.homeGlow = normalizeHomeGlow(settings.homeGlow);
   settings.accent = normalizeAccent(settings.accent);
   settings.sidebarOrder = normalizeSidebarOrder(settings.sidebarOrder);
@@ -144,11 +149,12 @@ export function appSettingsStore(): SettingsStore<AppSettings> {
 }
 
 /** 数据库那一份要求某个壳侧效果跟着做时报的名字（同设置面板的效果名）。 */
-export type SyncedEffect = 'searchHistoryLimit' | 'performerNameLanguage';
+export type SyncedEffect = 'searchHistoryLimit' | 'performerNameLanguage' | 'interfaceLanguage';
 
 /** 搜索记录条数在 `/api/settings` 上的形状：还没定过时是 null。 */
 export interface SyncedSettings {
   performerNameLanguage?: unknown;
+  interfaceLanguage?: unknown;
   followInitialDays?: unknown;
   feedHideGroupCompilations?: unknown;
   feedHideSoloCompilations?: unknown;
@@ -173,6 +179,13 @@ export function applySyncedSettings(
     settings.performerNameLanguage = language;
     target.save();
     changed('performerNameLanguage');
+  }
+  /* 界面语言在页面载入时就定了（`i18n` 模块），数据库那一份变了只能整页重载才换得过来。 */
+  const interfaceLanguage = remote?.interfaceLanguage;
+  if (isInterfaceLanguage(interfaceLanguage) && interfaceLanguage !== settings.interfaceLanguage) {
+    settings.interfaceLanguage = interfaceLanguage;
+    target.save();
+    changed('interfaceLanguage');
   }
   const initial = remote && remote.followInitialDays;
   if (FOLLOW_INITIAL_DAYS.includes(initial as number)) { settings.followInitialDays = initial as number; target.save() }
