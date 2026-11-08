@@ -1,17 +1,18 @@
 /** 数据管理的维护工具；首页入口、二级页和面包屑共用名称与地址。 */
+import { t } from './i18n';
 export const CLEANUP_TOOLS = [
-  { key: 'organize', path: '/data-cleanup/organize', title: '整理文件', icon: 'folder-cog',
-    description: '清理文件名，按模板改名和归档；先预览，执行后可整批退回。' },
-  { key: 'resource-sync', path: '/data-cleanup/resource-sync', title: '资源同步', icon: 'git-compare',
-    description: '核对文件与馆藏记录，检查失效条目、空文件夹和缓存。' },
-  { key: 'orphan-records', path: '/data-cleanup/orphan-records', title: '文件已丢失的记录', icon: 'file-stack',
-    description: '为丢失的文件选择替代版本，转移或清理保留的个人记录。' },
-  { key: 'media-repair', path: '/data-cleanup/media-repair', title: '媒体修复', icon: 'wrench',
-    description: '处理播放卡顿或打不开的视频，修复时间戳表和索引。' },
-  { key: 'links', path: '/data-cleanup/links', title: '链接管理', icon: 'link',
-    description: '检查官网、社交账号和资料站链接，复核并清理失效地址。' },
-  { key: 'batch-delete', path: '/data-cleanup/batch-delete', title: '批量删除', icon: 'trash',
-    description: '按女优勾选并永久删除关联影片，执行前确认范围与影响。' },
+  { key: 'organize', path: '/data-cleanup/organize', title: t('cleanup:tools.organize'), icon: 'folder-cog',
+    description: t('cleanup:tools.organizeDescription') },
+  { key: 'resource-sync', path: '/data-cleanup/resource-sync', title: t('cleanup:tools.resourceSync'), icon: 'git-compare',
+    description: t('cleanup:tools.resourceSyncDescription') },
+  { key: 'orphan-records', path: '/data-cleanup/orphan-records', title: t('cleanup:tools.orphanRecords'), icon: 'file-stack',
+    description: t('cleanup:tools.orphanRecordsDescription') },
+  { key: 'media-repair', path: '/data-cleanup/media-repair', title: t('cleanup:tools.mediaRepair'), icon: 'wrench',
+    description: t('cleanup:tools.mediaRepairDescription') },
+  { key: 'links', path: '/data-cleanup/links', title: t('cleanup:tools.links'), icon: 'link',
+    description: t('cleanup:tools.linksDescription') },
+  { key: 'batch-delete', path: '/data-cleanup/batch-delete', title: t('cleanup:tools.bulkDelete'), icon: 'trash',
+    description: t('cleanup:tools.bulkDeleteDescription') },
 ] as const;
 
 export type CleanupTool = typeof CLEANUP_TOOLS[number];

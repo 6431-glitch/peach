@@ -6,8 +6,10 @@
 import i18next from 'i18next';
 
 import { SETTINGS_KEY } from '../settings-key';
+import enCleanup from '../locales/en/cleanup.json';
 import enNavigation from '../locales/en/navigation.json';
 import enSettings from '../locales/en/settings.json';
+import zhCleanup from '../locales/zh-CN/cleanup.json';
 import zhNavigation from '../locales/zh-CN/navigation.json';
 import zhSettings from '../locales/zh-CN/settings.json';
 
@@ -16,8 +18,8 @@ export type InterfaceLanguage = typeof INTERFACE_LANGUAGES[number];
 export const SOURCE_LANGUAGE: InterfaceLanguage = 'zh-CN';
 
 export const resources = {
-  'zh-CN': { navigation: zhNavigation, settings: zhSettings },
-  en: { navigation: enNavigation, settings: enSettings },
+  'zh-CN': { navigation: zhNavigation, settings: zhSettings, cleanup: zhCleanup },
+  en: { navigation: enNavigation, settings: enSettings, cleanup: enCleanup },
 } as const;
 
 export const isInterfaceLanguage = (value: unknown): value is InterfaceLanguage =>
@@ -39,7 +41,8 @@ export function createTranslator(language: InterfaceLanguage) {
   void instance.init({
     lng: language, fallbackLng: SOURCE_LANGUAGE, supportedLngs: [...INTERFACE_LANGUAGES],
     resources, ns: Object.keys(resources[SOURCE_LANGUAGE]), defaultNS: 'navigation',
-    initAsync: false, returnNull: false, interpolation: { escapeValue: false },
+    // 中文的句间分隔是空串（英文是空格），空串要原样返回，不能当成缺键。
+    initAsync: false, returnNull: false, returnEmptyString: true, interpolation: { escapeValue: false },
   });
   return instance;
 }
