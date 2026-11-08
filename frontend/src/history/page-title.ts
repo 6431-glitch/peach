@@ -1,3 +1,23 @@
+/** 首页那几栏（全部、JAV、竖屏都在 `/` 上）与搜索结果的标签页名称；不在 `/` 上是空串。 */
+export function homeRouteLabel(pathname: string, search: string): string {
+  if (pathname !== '/') return '';
+  const query = new URLSearchParams(search);
+  const term = (query.get('q') || '').trim();
+  if (term) return `搜索 ${term}`;
+  return query.get('jav') === '1' ? 'JAV' : query.get('orient') === '竖屏' ? '竖屏' : '';
+}
+
+let presentedPost: { id: number; label: string } | null = null;
+/** 关注详情画出来的那一条：标题优先，没有标题用作者。 */
+export function presentPost(id: number, title: string, author = ''): void {
+  presentedPost = { id, label: (title || '').trim() || (author || '').trim() };
+}
+/** 关注详情的标签页名称；仅使用当前地址对应的已画出条目。 */
+export function postRouteLabel(pathname: string): string {
+  const post = /^\/posts\/(\d+)$/.exec(pathname);
+  return post && presentedPost?.id === Number(post[1]) ? presentedPost.label : '';
+}
+
 /** 媒体详情的标签页身份；仅使用当前地址对应的已呈现条目。 */
 export function mediaRouteLabel(pathname: string, item: {
   id: number; display_code?: string | null; code?: string | null; name?: string | null;

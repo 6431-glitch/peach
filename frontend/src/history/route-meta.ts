@@ -60,13 +60,13 @@ const ROUTE_ENTRIES = {
   '/playlists': { nav: 'playlists', title: '播放列表', refresh: 'reopen' },
   // 关注页重画要联网取一遍卡面，「换一批」只由页面自己的按钮触发。
   '/follow': { nav: 'follow', title: '关注', refresh: 'skip' },
-  // 目录：首页与回收站没有自己的标签，三个筛选态与垃圾文件的侧栏键与标签同 `STATE_ROUTES`、`STATE_LABELS`。
+  // 目录：首页的标签按栏目取（`homeRouteLabel`），三个筛选态与垃圾文件的侧栏键与标签同 `STATE_ROUTES`、`STATE_LABELS`。
   '/': {},
   '/unseen': { nav: 'fresh', title: '没看过' },
   '/watch-later': { nav: 'later', title: '稍后看' },
   '/flagged': { nav: 'flagged', title: '已标记' },
   '/junk-files': { nav: 'ads', title: '垃圾文件' },
-  '/trash': { section: 'trash' },
+  '/trash': { section: 'trash', title: '回收站' },
   // 覆盖：详情、四种队列与关注详情。分卷与版本队列没有自己的标签。
   '/assets/:id': { title: '媒体记录' },
   '/works/:code': { nav: 'jav', title: 'JAV 作品' },
