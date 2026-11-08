@@ -1359,6 +1359,49 @@ class LibraryNfoTests(unittest.TestCase):
         self.assertEqual({call.args[0] for call in provider.query.call_args_list}, {'ABW-358', 'SSIS-057'})
 
     @windows_ledger_roots
+    def test_spent_source_budget_stops_remote_rows_with_one_summary(self):
+        """整趟采集预算到顶后，后面要出网的行一家都不问，只记一条汇总，留给重试接着采。"""
+        from peach.scraping_access import BUDGET_SPENT
+        media = self.root / 'media'
+        media.mkdir()
+        for name in ('ABW-358', 'SSIS-057', 'SSIS-058'):
+            (media / f'{name}.mp4').write_bytes(b'video')
+        db = fresh_ledger(self.root)
+        config = PeachConfig(self.root, self.root / 'config.toml', present=True, locations={'local': (str(media),)})
+        provider = stub_provider()
+        provider.query.return_value = {'id': 'ABW-358', 'title': '作品资料'}
+        provider.cover.return_value = False
+        # 第一部问完预算就到顶。
+        provider.budget_spent.side_effect = lambda: BUDGET_SPENT['seconds'] if provider.query.called else ''
+        generated, covers = self.root / 'generated', self.root / 'covers'
+
+        process_library(config, db, generated, covers, stage='scan')
+        result = process_library(config, db, generated, covers, provider_factory=Mock(return_value=provider),
+                                 stage='metadata', database=LedgerDatabase(db))
+
+        self.assertEqual(len({call.args[0] for call in provider.query.call_args_list}), 1)
+        self.assertEqual(result['budget_skipped'], 2)
+        summary = [issue for issue in result['issue_preview'] if issue['message'].startswith('本趟采集时间已用完')]
+        self.assertEqual([issue['message'] for issue in summary],
+                         ['本趟采集时间已用完，还有 2 部没问外部来源，再跑一次接着采。'])
+        self.assertTrue(result['error'].startswith('本趟采集时间已用完，还有 2 部'))
+        asked = {call.args[0] for call in provider.query.call_args_list}
+        with closing(sqlite3.connect(db)) as connection:
+            unasked = {row_id for row_id, code in connection.execute('SELECT id,code FROM asset')
+                       if code not in asked}
+        self.assertEqual(len(unasked), 2)
+        self.assertLessEqual(unasked, set(result['retryable_asset_ids']))
+        self.assertLessEqual(unasked, set(result['paused_asset_ids']))
+
+        fresh = stub_provider()
+        fresh.query.return_value = {'id': 'SSIS-057', 'title': '作品资料'}
+        fresh.cover.return_value = False
+        process_library(config, db, generated, covers, provider_factory=Mock(return_value=fresh),
+                        database=LedgerDatabase(db), retry_ids=result['retryable_asset_ids'])
+        self.assertLessEqual({code for code in ('ABW-358', 'SSIS-057', 'SSIS-058') if code not in asked},
+                             {call.args[0] for call in fresh.query.call_args_list})
+
+    @windows_ledger_roots
     def test_local_nfo_fields_keep_remote_differences_for_review(self):
         """本地字段优先补空，在线不同值保留为覆盖复核候选。"""
         from PIL import Image
