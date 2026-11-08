@@ -248,14 +248,19 @@ def pending_work(contract: WebContract, connection, kind: str, entity_id: int) -
     """这位实体还在排队或正在跑的资料补全：页面据此显示「补全中」并定时重取。
 
     只报任务表里真实存在的行，不按缺哪些字段猜：缺资料但没有任务在补，就不算补全中。
+    初始资料导入不按实体记键：它补的是声明它那一轮新登记的实体，所以那一轮开工早于这位
+    建档、导入还没跑完时也算——它常排在别名、资料后继后面，最后才写进别名与外链。
     """
+    from .seed_followup import TASK_KEY as SEED_TASK_KEY
     from .task_runs import ACTIVE_STATUSES, task_label
     keys = _followup_keys(kind, entity_id)
     try:
         rows = connection.execute(
-            f"SELECT task_key,status FROM task_run WHERE followup_key IN ({','.join('?' for _ in keys)}) "
-            f"AND status IN ({','.join('?' for _ in ACTIVE_STATUSES)}) ORDER BY id",
-            (*keys, *ACTIVE_STATUSES),
+            f"SELECT t.task_key,t.status FROM task_run t WHERE t.status IN ({','.join('?' for _ in ACTIVE_STATUSES)}) "
+            f"AND (t.followup_key IN ({','.join('?' for _ in keys)}) OR (t.task_key=? AND EXISTS ("
+            "SELECT 1 FROM task_run p JOIN entity e ON e.id=? WHERE p.id=t.parent_run_id "
+            "AND p.started_at<=e.created_at))) ORDER BY t.id",
+            (*ACTIVE_STATUSES, *keys, SEED_TASK_KEY, entity_id),
         ).fetchall()
     except sqlite3.OperationalError:
         # 还没建任务表的账本（迁移前的只读副本）：没有任务可报。

@@ -388,7 +388,12 @@ describe('换筛选与视图', () => {
     await settle();
     expect(page.host.querySelector('[data-pending-work]')).toBeNull();
     expect(interval({ state: { data: entity() } } as never)).toBe(false);
-  });
+    /* 补完之后再取一次，接住紧跟着落地的别名与外链；之后不再取。 */
+    const settled = page.calls('/api/entity').length;
+    await act(async () => { await new Promise((done) => setTimeout(done, PENDING_REFETCH_MS + 300)) });
+    await settle();
+    expect(page.calls('/api/entity')).toHaveLength(settled + 1);
+  }, 15000);
 
   it('批量操作后换代次：按同一份筛选重取作品', async () => {
     const page = await open();

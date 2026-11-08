@@ -1803,6 +1803,27 @@ class EntityPendingWorkTests(LedgerTestCase):
             state.update(status="complete", asset_ids=[asset_id])
             self.assertEqual(pending_work(contract, connection, "performer", entity_id), [])
 
+    def test_seed_import_declared_by_the_round_that_registered_her_counts_until_it_lands(self):
+        import sqlite3
+        from peach import seed_followup
+        from peach.web_entity import pending_work
+        round_run = self.parent()
+        _, entity_id = self.performer("松島智子")
+        seed = self.store.enqueue_followups(round_run.id, [
+            ("seed-import:2026-10-23.1", seed_followup.TASK_KEY, "初始资料导入")])["queued"][0]
+        contract = SimpleNamespace(library_processing_job=None)
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [
+                {"task_key": "seed-import", "label": "初始资料导入", "status": "pending"}])
+        # 开工晚于她建档的那一轮登记的是别人，不算她的补全。
+        later = self.store.start("upgrade-repairs", trigger="manual")
+        with closing(sqlite3.connect(self.db)) as connection, connection:
+            connection.execute("UPDATE task_run SET started_at='2999-01-01T00:00:00Z' WHERE id=?", (later.id,))
+        self.store.finish(seed, "succeeded")
+        self.store.enqueue_followups(later.id, [("seed-import:2026-10-23.2", seed_followup.TASK_KEY, "初始资料导入")])
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [])
+
     def test_downloaded_work_still_in_postprocess_counts_for_its_performer_and_its_detail(self):
         import sqlite3
         from peach.web_catalog import q_item

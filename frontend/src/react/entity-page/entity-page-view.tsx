@@ -36,6 +36,7 @@ import {
   photosOptions, tagList, tagPressed, type EntityPageData, type EntityPageProps, type PhotoPage,
 } from './entity-page';
 import { useEntityOnline } from './use-entity-online';
+import { PENDING_REFETCH_MS } from '../components/pending-work';
 
 export function EntityPage(props: EntityPageProps) {
   const { kind, name } = props;
@@ -135,6 +136,12 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
     void queryClient.invalidateQueries({ queryKey: ['entity-items', kind, name] });
     void queryClient.invalidateQueries({ queryKey: ['entity-photos', kind, name] });
     if (entityId) void queryClient.invalidateQueries({ queryKey: feedNewKey(entityId) });
+    if (pendingCount) return;
+    /* 全部补完、轮询停下之后再取一次：最后一项结算与它顺手写进的别名、外链可能差一两秒才落地。 */
+    const settle = window.setTimeout(() => {
+      void queryClient.invalidateQueries({ queryKey: entityKey(kind, name) });
+    }, PENDING_REFETCH_MS);
+    return () => window.clearTimeout(settle);
   }, [actions, entityId, kind, name, pendingCount]);
 
   /* ── 作品 ── */
