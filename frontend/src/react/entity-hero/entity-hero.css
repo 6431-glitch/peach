@@ -638,7 +638,7 @@
   .peach-react [data-entity-portrait] { width: 96px; }
   .peach-react [data-entity-identity] { width: 100%; }
   .peach-react [data-entity-foot] { padding: 10px 16px; }
-  .peach-react [data-entity-title] { justify-content: center; }
+  .peach-react :is([data-entity-title], [data-entity-identity] > [data-pending-work]) { justify-content: center; }
   /* 这枚开关紧挨着名字，画的仍是 32px，命中区由一层伸出去、不着墨的方块补到 44px。 */
   .peach-react [data-namepick-toggle] { position: relative; }
   .peach-react [data-namepick-toggle]::after {
