@@ -2,7 +2,8 @@
 
 开销小、只改自动写入的值（用户手改的不动）的修复在升级后自动执行，这里只列结果；开销大或
 可能改错的（例如逐部读取网盘视频）不自动做，在这里等用户确认后才执行。
-数据只读本机升级回执（`upgrade-repairs/receipt.json`）与账本的 `ledger_upgrade_repair`。
+数据只读本机升级回执（`upgrade-repairs/receipt.json`）与账本的 `ledger_upgrade_repair`；
+关注快照清理的估算与进度由 `follow_evidence.Reclaim` 在后台算好交进来。
 
 只列这台机器真碰到的项：馆藏里没有网盘视频、没有 NAS 系统目录、没有乱码人物的，对应那项不出现；
 历史里没改动的那几次也不列。平台、媒体来源与馆藏的差别都落在这些读数上，不另按系统判断。
@@ -12,6 +13,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from . import follow_evidence
+
 #: 列给用户看的修复：标题、一句做了什么、是否自动执行。顺序就是页面顺序。
 ITEMS = (
     ('catalog', '资料与番号整理', '按新规则修正番号、标题等自动写入的资料，你手动改过的不动', 'auto'),
@@ -20,12 +23,14 @@ ITEMS = (
     ('system-files', 'NAS 系统文件', '群晖、飞牛等系统目录里被当成视频的文件移出馆藏，文件本身不删', 'auto'),
     ('garbled-people', '乱码人物', '解除早期采集乱码留下的人物关联，重新补采演员', 'auto'),
     ('dangling-candidates', '失效的复核候选', '资产删除后留下的候选改挂到同一文件的新编号，对不上的撤下', 'auto'),
+    ('follow-evidence', '关注抓取的旧快照', '每个关注来源只留最近 3 份原始快照和条目引用的那几份，其余删除，删除后不能恢复', 'confirm'),
 )
 #: 历史里的规则：账本行 id 的前缀、名字、计哪个字段（`None` 为资料整理的改动合计）。
 RULES = (
     ('catalog-', '资料与番号整理', None), ('verification-settlement-', '核查差异结算', ('applied',)),
     ('studio-unbounded-misses-', '厂牌查询缓存', ('released',)), ('stale-filename-codes-', '清除误认的番号', ('cleared',)),
     ('dangling-candidates-', '失效的复核候选', ('repinned', 'withdrawn')),
+    (follow_evidence.RECEIPT_PREFIX, '清理关注抓取的旧快照', ('files',)),
 )
 #: 资料整理回执里不算「改动」的计数：重新探测、转人工与来源快照失效只是排队或让缓存重取，不是改了资料。
 _NOT_CHANGES = ('probe_retry', 'text_review', 'text_snapshots_invalidated')
@@ -92,7 +97,24 @@ def _history(rows, backup_directories) -> list[dict]:
     return history
 
 
-def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directories=()) -> dict:
+def _follow_evidence(status: dict | None, rows) -> dict:
+    """关注快照清理：在删就报进度，估算出有可删的就等确认，删过且没剩下的报上一次删了多少。"""
+    status = status or {}
+    phase = status.get('phase')
+    if phase == 'running':
+        return {'state': 'running', 'done': status.get('done', 0), 'total': status.get('total', 0)}
+    if phase == 'failed':
+        return {'state': 'failed', 'error': status.get('error', '')}
+    if phase == 'estimating':
+        return {'state': 'waiting', 'estimating': True}
+    if phase == 'ready' and status.get('files'):
+        return {'state': 'waiting', 'files': status['files'], 'bytes': status.get('bytes', 0)}
+    last = next((result for row_id, _, result in rows if row_id.startswith(follow_evidence.RECEIPT_PREFIX)), None)
+    return {'state': 'done', 'changed': _count(last.get('files'))} if last else {'state': 'none'}
+
+
+def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directories=(),
+             follow_evidence_status: dict | None = None) -> dict:
     rows = sorted(((row[0], float(row[1] or 0), json.loads(row[2] or '{}')) for row in connection.execute(
         'SELECT id, applied_at, result_json FROM ledger_upgrade_repair')), key=lambda row: row[1], reverse=True)
     local = receipt.get('local', {})
@@ -113,6 +135,7 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
         'garbled-people': {'state': 'done' if garbled else 'none', 'changed': _count(garbled.get('links'))},
         'dangling-candidates': {'state': 'done' if dangling else 'none',
                                 'changed': _count(dangling.get('repinned')) + _count(dangling.get('withdrawn'))},
+        'follow-evidence': _follow_evidence(follow_evidence_status, rows),
     }
     items = [{'id': key, 'title': title, 'summary': summary, 'mode': mode, **facts[key]}
              for key, title, summary, mode in ITEMS if _touched(facts[key])]

@@ -911,9 +911,11 @@ def _repair_center(request: Request) -> dict:
         directories.append(ledger_backups.organize_dir(settings_file.active().directory('generated')))
     except (OSError, ValueError):
         pass
+    reclaim = getattr(request.app.state, 'follow_evidence', None)
     with request.app.state.web_contract.read_connection() as connection:
         result = repair_center.snapshot(connection, receipt, backup_directories=directories,
-                                        cloud_pending=service.cloud_display_videos() if service.available else 0)
+                                        cloud_pending=service.cloud_display_videos() if service.available else 0,
+                                        follow_evidence_status=reclaim.status() if reclaim and service.available else None)
     return {**result, 'available': service.available}
 
 
@@ -937,6 +939,20 @@ async def include_cloud_display_dimensions(request: Request, _args=Depends(requi
         await asyncio.to_thread(request.app.state.upgrade_repairs.include_cloud_display_dimensions)
         return _repair_center(request)
     except (ValueError, OSError, Timeout) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.post('/api/configuration/repairs/follow-evidence')
+def reclaim_follow_evidence(request: Request, _args=Depends(require_auth)):
+    """关注抓取的旧快照不在升级时自动删，由用户在「修复与迁移」里看过数量与体积、确认后在后台删。"""
+    local_only(request)
+    same_origin(request)
+    try:
+        if not request.app.state.upgrade_repairs.available:
+            raise ValueError('只在本机写入端可用')
+        request.app.state.follow_evidence.start()
+        return _repair_center(request)
+    except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
 
 

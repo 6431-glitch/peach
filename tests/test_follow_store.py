@@ -346,8 +346,9 @@ class RecordTests(_StoreCase):
                 variants = (fetch, replace(fetch, request_url=fetch.request_url + "?firstId=1"),
                             replace(fetch, candidates=()), replace(fetch, raw_body=b"different body"))
                 paths = []
-                for variant in variants:
-                    outcome = self.store.record(source_id, variant, moment=MOMENT)
+                for offset, variant in enumerate(variants):
+                    # 时刻各不相同：保留规则按时间留最近几份，同一时刻的先后没有定义。
+                    outcome = self.store.record(source_id, variant, moment=MOMENT + timedelta(seconds=offset))
                     self.assertIsNone(outcome.evidence_error)
                     paths.append(self.root / "sources" / Path(outcome.evidence_path))
                 self.assertEqual(len(set(paths)), 4)
@@ -1598,6 +1599,106 @@ class StoredCompilationTests(_StoreCase):
             "SELECT count(*) FROM follow_item").fetchone()[0], 0)
         self.assertEqual(self.connection.execute(
             "SELECT count(*) FROM follow_playback").fetchone()[0], 0)
+
+
+def _old_snapshot(directory: Path, index: int, size: int = 10) -> Path:
+    """升级前留下的一份快照：`.raw` 加同名 `.json`，名字按序号排出先后。"""
+    directory.mkdir(parents=True, exist_ok=True)
+    raw = directory / f"20260801T{index:06d}.000000Z-{index:064x}.raw"
+    raw.write_bytes(b"x" * size)
+    raw.with_suffix(".json").write_bytes(b"{}")
+    return raw
+
+
+class EvidenceRetentionTests(_StoreCase):
+    """原始快照：相同的不重写，每个来源只留最近 3 份和被条目引用的，存量等用户确认才删。"""
+
+    def _evidence(self):
+        return [row[0] for row in self.connection.execute("SELECT evidence_path FROM follow_item")]
+
+    def _raws(self, provider="rule34video"):
+        return sorted((self.root / "sources" / "follow" / provider).rglob("*.raw"))
+
+    def test_an_unchanged_page_reuses_the_latest_snapshot(self):
+        source_id = self._source()
+        fetch = _fetch([_candidate("1", "A")])
+        first = self.store.record(source_id, fetch, moment=MOMENT)
+        again = self.store.record(source_id, fetch, moment=MOMENT + timedelta(hours=1))
+        self.assertEqual(again.evidence_path, first.evidence_path)
+        self.assertEqual(len(self._raws()), 1)
+        changed = self.store.record(source_id, replace(fetch, raw_body=b"<html>new</html>"),
+                                    moment=MOMENT + timedelta(hours=2))
+        self.assertNotEqual(changed.evidence_path, first.evidence_path)
+        repeat = self.store.record(source_id, fetch, moment=MOMENT + timedelta(hours=3))
+        self.assertNotEqual(repeat.evidence_path, first.evidence_path,
+                            "只和最新一份比：页面改回旧样子也记一份新的")
+        self.assertEqual(len(self._raws()), 3)
+        self.assertEqual(self._evidence(), [first.evidence_path])
+
+    def test_each_source_keeps_three_recent_snapshots_and_the_referenced_ones(self):
+        other = self.root / "sources" / "follow" / "rule34video" / "another-source"
+        untouched = [_old_snapshot(other, index) for index in range(5)]
+        source_id = self._source()
+        paths = []
+        for index in range(5):
+            outcome = self.store.record(
+                source_id, _fetch([_candidate("1", "A")], raw=f"<html>{index}</html>".encode()),
+                moment=MOMENT + timedelta(hours=index))
+            paths.append(self.root / "sources" / Path(outcome.evidence_path))
+        self.assertEqual(self._evidence(), [str(paths[0].relative_to(self.root / "sources"))])
+        self.assertEqual([path.exists() for path in paths], [True, False, True, True, True])
+        self.assertFalse(paths[1].with_suffix(".json").exists())
+        self.assertTrue(all(path.exists() for path in untouched), "只清这次写入的那个来源目录")
+
+    def test_stock_snapshots_wait_for_the_user_and_keep_what_items_reference(self):
+        from peach import repair_center
+        from peach.follow_evidence import Reclaim
+        from peach.repository import LedgerDatabase
+        source_id = self._source()
+        directory = self.root / "sources" / "follow" / "rule34video" / "legacy"
+        raws = [_old_snapshot(directory, index, size=100) for index in range(6)]
+        # 迁移数据根前留下的绝对路径、反斜杠也认得出是同一个文件。
+        self.connection.execute(
+            "INSERT INTO follow_item(source_id,external_id,title,release_key,evidence_path,first_seen_at,"
+            "last_seen_at) VALUES(?,?,?,'old',?,?,?)", (source_id, "old", "Old", "D:\\peach-data\\sources\\follow\\rule34video"
+                                     f"\\legacy\\{raws[1].name}", "2026-08-01T00:00:00Z", "2026-08-01T00:00:00Z"))
+        self.connection.commit()
+        database = LedgerDatabase(self.root / "ledger.db")
+        reclaim = Reclaim(self.root / "sources" / "follow", database)
+
+        def settle():
+            while reclaim.worker is not None and reclaim.worker.is_alive():
+                reclaim.worker.join(10)
+
+        def item():
+            with database.read_connection() as connection:
+                center = repair_center.snapshot(connection, {}, cloud_pending=0,
+                                                follow_evidence_status=reclaim.status())
+            return next((row for row in center["items"] if row["id"] == "follow-evidence"), None), center
+
+        self.assertTrue(item()[0]["estimating"])
+        settle()
+        waiting, _ = item()
+        # 留 3、4、5 三份最近的和被引用的 1，删 0、2 两份，每份 100 + 2 字节。
+        self.assertEqual((waiting["mode"], waiting["state"], waiting["files"], waiting["bytes"]),
+                         ("confirm", "waiting", 4, 204))
+        self.assertTrue(all(raw.exists() for raw in raws), "估算不删文件")
+        reclaim.start()
+        settle()
+        self.assertEqual([raw.exists() for raw in raws], [False, True, False, True, True, True])
+        done, center = item()
+        self.assertEqual((done["state"], done["changed"]), ("done", 4))
+        self.assertEqual([(row["title"], row["changed"]) for row in center["history"]],
+                         [("清理关注抓取的旧快照", 4)])
+
+    def test_a_library_without_follow_snapshots_does_not_list_the_item(self):
+        from peach import repair_center
+        from peach.follow_evidence import Reclaim
+        reclaim = Reclaim(self.root / "sources" / "follow", None)
+        self.assertEqual(reclaim.status(), {"phase": "idle"})
+        center = repair_center.snapshot(self.connection, {}, cloud_pending=0,
+                                        follow_evidence_status=reclaim.status())
+        self.assertNotIn("follow-evidence", [row["id"] for row in center["items"]])
 
 
 if __name__ == "__main__":
