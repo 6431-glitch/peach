@@ -546,6 +546,29 @@ class FeedWebTest(FeedWebFixture):
         self.assertEqual({rows[source]["next_fetch_at"] for source in (first, *rest)}, {expected})
         self.assertTrue(all(rows[source]["last_fetched_at"] is None for source in rest))
 
+    def test_a_region_page_reads_as_the_exit_problem_not_an_empty_page(self):
+        """JavDB 对日本出口回 200 的版权说明页：整轮只记一条地区限制的原因，其余源顺延，不再各报
+        一条「这一页解不出任何条目」（2026-11-08，14 个演员页源一起这么报过）。"""
+        from peach.scraping_access import SourceTransport
+        first, *_ = self._sources_named("Smp2", "Smp3")
+        served = FakeTransport({})
+        transport = SourceTransport(self.contract.follow_secrets_root)
+
+        def blocked(request, timeout, max_bytes):
+            served.requests.append(request)
+            return HttpResponse(200, {}, "由於版權限制，本站禁止了你的網路所在國家的訪問。".encode("utf-8"),
+                                request.url)
+
+        transport.transports["javdb"] = blocked
+        self.transport = transport
+        result = self._check()
+        self.assertEqual(len(served.requests), 1)
+        self.assertEqual(result["deferred"], 2)
+        [row] = result["results"]
+        self.assertIn("JavDB 不对当前出口所在的地区开放", row["error"])
+        self.assertIn("其余 2 个源顺延到冷却结束后再拉", row["error"])
+        self.assertNotIn("解不出", self._rows()[first]["last_error"])
+
     def test_a_round_that_starts_in_cooldown_asks_nothing(self):
         """别的任务撞出来的冷却还没过：这一轮一个请求都不发，整轮只说一句。"""
         from peach import scraping_access

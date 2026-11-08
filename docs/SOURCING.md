@@ -258,6 +258,8 @@ Wiki 与视频作品资料无关。
 - Prestige 回的日期是 MGS 配信开始日（ABW-032 答 2020-11-11，发行日 2020-12-11），只记在
   `extra['delivery_date']`，发行日留给 r18.dev。
 - 地区限制与站方裸回的 401/403 都算「被挡」：归 `auth` 一档，整站按 403 那一档冷却，不冻进「没有」的记忆。
+- 不经桥的请求在 `SourceTransport` 认回 200 的拒绝说明页（`sources.base.refusal_page`，判据与 amane 一致，
+  另加 JavDB 对日本出口的版权说明页）：地区限制固定停 15 分钟、不翻倍，换出口后很快重试；封禁页按 403 翻倍。
 - dmm、giga、kin8 不进官方档，理由与数据见 ADR-0048 与 `build/agent-verification/amane-official-stage.md`。
 - fc2ppvdb.com 旧域已关（ADR-0043 修订）；新站 fc2ppv-db.com 由 Peach 自写解析器接回 FC2 链（ADR-0060），不经桥。
 - 经代理的实测记录在 `build/agent-verification/amane-chain-realtest.json`；那一轮 airav 的搜索地址回 404。
