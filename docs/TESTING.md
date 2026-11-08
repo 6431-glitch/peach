@@ -142,7 +142,7 @@ Windows 的路径、挂载、托盘、证书、进程编码、更新、认证及
 
 浏览器入口通过 `PEACH_E2E_NET_LOG_DIR` 保存 Chromium 网络事件日志；模式为 `HeavilyRedacted`，文件位于 `build/agent-verification/browser/network/`，CI 与 TAP 一起上传。网络请求失败仍使测试失败；排查 `ERR_NO_BUFFER_SPACE` 时同时核对 TAP 与该次浏览器的网络事件，不根据错误字样推断机器资源状态，也不添加放行重试。
 
-Windows 隔离 E2E 浏览器对 [Chromium 572515601](https://issuetracker.google.com/issues/572515601) 的回环建连缺陷禁用 `TcpPortRandomizationWin`，保留当前锁定 Playwright 的全部默认禁用特性。同名开关的最后一个值会覆盖先前值，不能只追加此单项；`browser-launch.test.ts` 用真实 Chrome 启动参数与原生 Playwright 对照，依赖升级后也验证默认列表没有漂移。生产浏览器、页面断言、请求失败判据及机器网络配置不变；独立的启动超时不能据此标为已修复。
+[Chromium 572515601](https://issuetracker.google.com/issues/572515601) 的 Windows 回环建连缺陷由 Playwright 默认禁用的 `TcpPortRandomizationWin` 规避，隔离 E2E 浏览器不另传 `--disable-features`：同名开关的最后一个值会覆盖整串默认值。`browser-launch.test.ts` 用真实 Chrome 启动参数与原生 Playwright 对照，确认默认列表保留且包含该项。生产浏览器、页面断言、请求失败判据及机器网络配置不变；独立的启动超时不能据此标为已修复。
 
 测试应在用户可感知的行为错误时失败。页面的请求、缓存、选择、错误反馈和路由由组件测试与浏览器测试验证；CSS 层叠、主题、尺寸和交互后的样式由浏览器读取计算值。
 
