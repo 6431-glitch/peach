@@ -2149,7 +2149,8 @@ class UpgradeRepairTests(unittest.TestCase):
         receipt['queued'] = {'upgrade-library:processing-v2:5': 1, running: 2}
         self.service._save_receipt(receipt)
         self.service._prune_repair_checkpoints()
-        kept = sorted(path.name for path in self.service.root.iterdir())
+        # 回执的文件锁在 macOS、Linux 上用完不删，留下 `receipt.json.lock`，与这里的清理无关。
+        kept = sorted(path.name for path in self.service.root.iterdir() if path.suffix != '.lock')
         expected = names['2'] + names['3'] + names['5'] + names['running'] + names['fresh'] + ['catalog-review.json', 'receipt.json']
         self.assertEqual(kept, sorted(expected))
         with self.database.read_connection() as connection:
