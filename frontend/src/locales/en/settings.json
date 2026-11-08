@@ -1,6 +1,6 @@
 {
   "interfaceLanguage": {
-    "auto": "Auto ({{language}})",
+    "auto": "Auto",
     "help": "Auto follows your browser language, then the system language.",
     "saveFailed": "Save language",
     "saved": "Language saved",
