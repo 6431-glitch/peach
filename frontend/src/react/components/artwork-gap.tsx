@@ -8,15 +8,14 @@
 import { useEffect, useState, type MouseEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/base/buttons/button';
-import { confirmModal } from '@peach/legacy/ui';
 
 import { apiSend } from '../../api';
 import { patchCatalogItems } from '../catalog-grid/catalog-grid';
 import type { MediaItem } from '../catalog-grid/types';
 import {
-  fetchLibraryProcessing, LIBRARY_PROCESSING_KEY, LIBRARY_PROCESSING_URL, pollInterval, processingActive,
-  type LibraryProcessingData,
+  fetchLibraryProcessing, LIBRARY_PROCESSING_KEY, pollInterval, processingActive,
 } from '../library-processing/library-processing';
+import { confirmMeteredPreviews, startPreviews } from '../library-processing/metered-previews';
 import { queryClient } from '../query';
 import { busyProps, useAction } from '../settings/use-action';
 
@@ -134,8 +133,7 @@ function PreviewsButton({ id, metered, onDone, onProblem }: {
   const running = mine && processingActive(state);
   const blocked = state?.metadata_only ? PREVIEWS_OFF : !running && processingActive(state) ? PREVIEWS_BUSY : '';
   /* 别的任务在跑时服务端原样交回那一趟的状态，不起新任务：同一个任务号就是没接。 */
-  const start = (before = state?.job_id) => action.run('previews', signal => apiSend<LibraryProcessingData>(LIBRARY_PROCESSING_URL,
-    { stage: 'previews', asset_ids: [id], ...(metered ? { allow_metered: true } : {}) }, 'POST', signal), next => {
+  const start = (before = state?.job_id) => action.run('previews', signal => startPreviews([id], metered, signal), next => {
     queryClient.setQueryData(LIBRARY_PROCESSING_KEY, next);
     if (next.job_id && next.job_id !== before) {
       if (processingActive(next)) { setStarted(next.job_id); return }
@@ -148,14 +146,7 @@ function PreviewsButton({ id, metered, onDone, onProblem }: {
   const busy = running || action.busy === 'previews';
   const click = async () => {
     if (busy) return;
-    if (metered) {
-      const { confirmed } = await confirmModal({
-        title: '读取开了流量保护的目录',
-        body: '这部影片所在的目录开了流量保护，同步时不会读它。补全预览会按九个时间点跳读这部影片，消耗这个来源的流量。',
-        confirmLabel: '继续补全',
-      });
-      if (!confirmed) return;
-    }
+    if (metered && !await confirmMeteredPreviews(1)) return;
     void start();
   };
   return <Button size="small" variant="secondary" className="mt-1" disabled={!!blocked} title={blocked || undefined}
