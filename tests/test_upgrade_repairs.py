@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import Mock, patch
 
-from peach import display_dimensions_repair, r18_legacy_repair, upgrade_repairs, upgrade_rules
+from peach import display_dimensions_repair, entry_links, r18_legacy_repair, upgrade_repairs, upgrade_rules
 from peach.entities import upsert_asset_entity
 from peach.repository import LedgerDatabase
 from peach.task_runs import TaskRunStore
@@ -1049,9 +1049,10 @@ class UpgradeRepairTests(unittest.TestCase):
             row=connection.execute('SELECT catalog_title,field_owners FROM asset WHERE id=1').fetchone()
             self.assertEqual(row[0], '元の題名')
             self.assertEqual(json.loads(row[1])['catalog_title'], 'auto:dmm')
-            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
-                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 2)
+            # 悬空候选与 JavDB 记录类型两条补修各记一行，这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT IN (?,?)',
+                                                (upgrade_repairs.DANGLING_KEY,
+                                                 upgrade_repairs.JAVDB_RECORDS_KEY)).fetchone()[0], 2)
             self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
         self.assertEqual(upgrade_repairs._read(self.service.receipt)['text_media_ids'], [1])
@@ -1370,6 +1371,7 @@ class UpgradeRepairTests(unittest.TestCase):
         self.store = TaskRunStore(self.database, host='upgrade-test')
         self.contract = SimpleNamespace(database=self.database, db_path=self.db, task_runs=self.store,
             follow_state_root=self.root / 'state', follow_sources_root=self.root / 'sources',
+            entry_links_root=self.root / 'state',
             candidate_root=self.root / 'generated', cover_root=self.root / 'covers',
             logo_root=self.root / 'logos', avatar_root=self.root / 'avatars', snapshot_root=self.root / 'snapshots',
             followups=SimpleNamespace(wake=Mock()))
@@ -1462,9 +1464,10 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code,duration FROM asset ORDER BY id').fetchall()
             self.assertEqual([tuple(row) for row in rows], [(1, 'SSIS-123', None), (2, 'BAD-001', None)])
-            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
-                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 1)
+            # 悬空候选与 JavDB 记录类型两条补修各记一行，这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT IN (?,?)',
+                                                (upgrade_repairs.DANGLING_KEY,
+                                                 upgrade_repairs.JAVDB_RECORDS_KEY)).fetchone()[0], 1)
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 1)
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(receipt['local']['before'], receipt['local']['after'])
@@ -1700,6 +1703,73 @@ class UpgradeRepairTests(unittest.TestCase):
         self.assertEqual(self.decisions(), decided)
         self.service.prepare()
         self.assertEqual(self.candidate_rows(output), before)
+
+    def test_javdb_records_from_cached_cards_hide_the_same_record_name_matched_page_once(self):
+        """#271：森日向子 的署名页 bkxd 与按名字回填的 MmbDR（白石アイリ）都是有碼记录。
+
+        补修按本机缓存的搜索卡片记下有碼／無碼：MmbDR 不再出入口，订着它的那条源停用；
+        深田えいみ 按名字回填的是她的無碼那页，照出。只做一次，再启动不重扫。
+        """
+        def card(actor, name, record=''):
+            mark = f'<span class="info">{record}</span>' if record else ''
+            return f'<div class="box actor-box">\n<a href="/actors/{actor}" title="{name}">{mark}</a></div>'
+
+        cache = self.root / 'state' / 'directory-links' / 'javdb'
+        cache.mkdir(parents=True)
+        (cache / 'a.html').write_text(card('MmbDR', '白石アイリ') + card('bkxd', '森日向子, 日向結衣'),
+                                      encoding='utf-8')
+        followup_cache = self.root / 'generated' / 'provider-cache' / 'javdb-pages'
+        followup_cache.mkdir(parents=True)
+        (followup_cache / 'b.json').write_text(json.dumps({
+            'final_url': 'https://javdb.com/search', 'body': card('E26vd', '深田えいみ', '无码')}), encoding='utf-8')
+        backfill, signed = {'source': 'backfill_performer_entry_ids'}, {'source': 'javdb', 'provider_id': 'X-1'}
+        with self.database.write_transaction() as connection:
+            for key, name in ((1, '森日向子'), (2, '深田咏美')):
+                connection.execute("INSERT INTO entity(id,kind,canonical_name,normalized_name,created_at,updated_at)"
+                                   " VALUES(?,'performer',?,?,'t','t')", (key, name, name))
+            connection.executemany(
+                "INSERT INTO entity_external_ref(entity_id,provider,external_kind,external_id,metadata_json)"
+                " VALUES(?,'javdb','performer',?,?)",
+                [(1, 'MmbDR', json.dumps(backfill)), (1, 'bkxd', json.dumps(signed)),
+                 (2, 'E26vd', json.dumps(backfill)), (2, 'pRMq', json.dumps(signed))])
+            connection.executemany(
+                "INSERT INTO feed_source(id,kind,name,url,entity_id,enabled,interval_minutes,created_at)"
+                " VALUES(?,'javdb_actor','',?,?,1,60,'t')",
+                [(3, 'https://javdb.com/actors/MmbDR', 1), (4, 'https://javdb.com/actors/bkxd', 1)])
+        self.service.prepare()
+
+        def pages(entity_id, name):
+            with self.database.read_connection() as connection:
+                refs = [dict(row) for row in connection.execute(
+                    'SELECT provider,external_kind,external_id,metadata_json FROM entity_external_ref'
+                    ' WHERE entity_id=?', (entity_id,))]
+            return entry_links.javdb_actor_pages(name, refs)
+
+        self.assertEqual(pages(1, '森日向子'), ['https://javdb.com/actors/bkxd'])
+        # pRMq 没有缓存卡片，类型未知；E26vd 是無碼那条，与谁都不同类，照出。
+        self.assertEqual(pages(2, '深田咏美'), ['https://javdb.com/actors/pRMq', 'https://javdb.com/actors/E26vd'])
+        with self.database.read_connection() as connection:
+            self.assertEqual(dict(connection.execute('SELECT id,enabled FROM feed_source').fetchall()), {3: 0, 4: 1})
+            receipt = json.loads(connection.execute('SELECT result_json FROM ledger_upgrade_repair WHERE id=?',
+                                                    (upgrade_repairs.JAVDB_RECORDS_KEY,)).fetchone()[0])
+        self.assertEqual(receipt['hidden'], [{'entity_id': 1, 'external_id': 'MmbDR'}])
+        self.assertEqual(receipt['disabled_feeds'], [{'entity_id': 1, 'external_id': 'MmbDR', 'source_id': 3}])
+        self.assertEqual(sorted((row['external_id'], row['uncensored']) for row in receipt['recorded']),
+                         [('E26vd', True), ('MmbDR', False), ('bkxd', False)])
+        # 按来源整批撤回（ADR-0052）：类型去掉、订阅启用回去，入口回到补修之前；补修不再重做。
+        from peach import auto_landing_revert
+        with self.database.write_transaction() as connection:
+            planned = auto_landing_revert.plan(connection, upgrade_repairs.JAVDB_RECORDS_SOURCE,
+                                               logo_root=self.root / 'logos', cover_root=self.root / 'covers')
+            self.assertEqual(len(planned['javdb_records']), 4)
+            self.assertEqual(auto_landing_revert.apply(connection, planned)['还原 JavDB 类型与订阅'], 4)
+        self.assertEqual(pages(1, '森日向子'), ['https://javdb.com/actors/bkxd', 'https://javdb.com/actors/MmbDR'])
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual(connection.execute('SELECT enabled FROM feed_source WHERE id=3').fetchone()[0], 1)
+            self.assertEqual(auto_landing_revert.plan(
+                connection, upgrade_repairs.JAVDB_RECORDS_SOURCE, logo_root=self.root / 'logos',
+                cover_root=self.root / 'covers')['javdb_records'], [])
 
     def test_old_code_snapshot_stays_while_another_video_is_that_release(self):
         from peach import artifact_rules

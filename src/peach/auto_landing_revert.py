@@ -46,6 +46,9 @@ id 或路径已被别的行占用时那一批拒绝撤回。登记时自动接�
 回执 `garbled_people` 存着删掉的关联、`演员:` 标签与实体子表行的原样快照，撤回把账本里还没有的
 那几行插回；实体的 id 或名字已被占用时整批拒绝。
 
+升级补修记下的 JavDB 演员页有码／无码（#271）按 `upgrade:javdb-actor-records` 认，批次是回执行的 id。
+撤回去掉还原样在账本里的那几项类型，重新启用补修停掉的订阅。
+
 `plan` 只读，`apply` 只写账本、在调用方的事务里跑，`remove_files` 等事务提交之后再删盘上文件。
 """
 from __future__ import annotations
@@ -278,7 +281,14 @@ def plan(connection, source: str, batch: str = "", *, logo_root: Path, cover_roo
         "acquired": wants.planned_revert(connection, source, batch),
         "verified": planned_verified_revert(connection, source, batch, item_keys),
         "garbled": metadata_text_repair.planned_revert(connection, source, batch),
+        "javdb_records": _planned_javdb_records(connection, source, batch),
     }
+
+
+def _planned_javdb_records(connection, source: str, batch: str) -> list[dict]:
+    # 升级补修模块带着调度器与任务通道，只在用到时才载入。
+    from .upgrade_repairs import planned_javdb_records_revert
+    return planned_javdb_records_revert(connection, source, batch)
 
 
 def counts(planned: dict) -> dict:
@@ -293,7 +303,8 @@ def counts(planned: dict) -> dict:
             "否决": len(planned["rejections"]), "标签": len(planned["tags"]),
             "接回": len(planned["rehomes"]), "想要入库": len(planned["acquired"]),
             "中文名": len(planned["names"]), "核查结算": len(planned["verified"]),
-            "乱码人物": len(planned["garbled"])}
+            "乱码人物": len(planned["garbled"]),
+            "JavDB 类型与订阅": len(planned.get("javdb_records", []))}
 
 
 def apply(connection, planned: dict) -> dict:
@@ -344,6 +355,8 @@ def apply(connection, planned: dict) -> dict:
     creator_revert = follow_creators.revert(connection, planned["creators"])
     verified_revert = revert_verified(connection, planned["verified"])
     restored_garbled = metadata_text_repair.revert(connection, planned.get("garbled", []))
+    from .upgrade_repairs import revert_javdb_records
+    restored_javdb = revert_javdb_records(connection, planned.get("javdb_records", []))
     return {"删除链接": len(links), "删除别名": len(aliases), "删除资料": len(profiles),
             "删除断言": len(claims), "删除编号": len(refs), "删除归属": len(memberships),
             "删除片商": len(makers), "删除样张": removed_samples, "删除否决": len(rejections),
@@ -352,7 +365,8 @@ def apply(connection, planned: dict) -> dict:
             "解绑关注来源": creator_revert["unbound"], "删除建档实体": creator_revert["removed"],
             "还原中文名": restored_names, "还原核查覆盖": verified_revert["restored"],
             "删除核查并集标签": verified_revert["removed_tags"],
-            "删除核查决定": verified_revert["decisions"], "插回乱码人物行": restored_garbled}
+            "删除核查决定": verified_revert["decisions"], "插回乱码人物行": restored_garbled,
+            "还原 JavDB 类型与订阅": restored_javdb}
 
 
 def remove_files(planned: dict) -> int:

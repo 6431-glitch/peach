@@ -629,6 +629,13 @@ def _record_bind(url: str, verdict: str, work: str, actor: dict, found: list[dic
     return len(found)
 
 
+def _card_metadata(card: dict, batch: str) -> dict:
+    """绑上一张 javdb 演员卡时记下的资料；认不出记录类型就不记。"""
+    record = javdb.card_uncensored(card)
+    return {"source": SOURCE, "batch": batch,
+            **({"uncensored": record} if record is not None else {})}
+
+
 def _visit_javdb(contract, pages, entity_id: int, names, batch: str, base: dict, reports: dict,
                  rows: list) -> None:
     """javdb：按名字搜演员卡，卡上的 id 是她的就绑上。只给 JAV 女优，已有 id 的不再搜。"""
@@ -690,8 +697,9 @@ def _visit_javdb(contract, pages, entity_id: int, names, batch: str, base: dict,
         if not _alive(connection, entity_id, canonical):
             reports[JAVDB] = f"{MISS}：数据库里这条实体已经变了"
             return
-        verdicts = [(card, bind(connection, entity_id, JAVDB, card["id"],
-                                {"source": SOURCE, "batch": batch})) for card in cards]
+        # 记下这张卡是有碼还是無碼那条：同站几枚入口按它分辨（`entry_links.provider_ids`）。
+        verdicts = [(card, bind(connection, entity_id, JAVDB, card["id"], _card_metadata(card, batch)))
+                    for card in cards]
     reports[JAVDB] = "；".join(f"{'命中' if verdict == BIND else TAKEN} {card['id']}"
                               for card, verdict in verdicts)
     for card, verdict in verdicts:

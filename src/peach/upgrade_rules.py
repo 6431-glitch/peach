@@ -17,3 +17,5 @@ DISPLAY_DIMENSIONS = 'display-dimensions-1'
 DISPLAY_DIMENSIONS_SAR = 'display-dimensions-2'
 #: 永久删除后悬空的资料候选与复核决定（#486）按路径改挂或撤下。判据改了就加一，升级时再对存量做一遍。
 DANGLING_CANDIDATES = 1
+#: JavDB 演员 id 按本机缓存的搜索卡片补记有碼／無碼（#271）。判据改了就加一，升级时再对存量做一遍。
+JAVDB_ACTOR_RECORDS = 1
