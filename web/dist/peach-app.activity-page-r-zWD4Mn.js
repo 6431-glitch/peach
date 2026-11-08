@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "481f1921-7729-48e0-acc1-b60145b3a508", e._sentryDebugIdIdentifier = "sentry-dbid-481f1921-7729-48e0-acc1-b60145b3a508");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b00bf9a9-0044-469b-bcb4-e6c2d1204def", e._sentryDebugIdIdentifier = "sentry-dbid-b00bf9a9-0044-469b-bcb4-e6c2d1204def");
 	} catch {}
 })();
 import { Button as e, Bx as t, Chip as n, DataTableFooter as r, Disclosure as i, DownloadsPanel as a, EmptyState as o, Gg as s, HN as c, IssueRow as l, LinkButton as u, Lo as d, LoadingDots as f, Ma as p, NameLink as m, Note as h, OV as g, Pf as _, ProcessingMode as v, Progress as y, RB as b, Rk as x, Su as S, TASKS_KEY as C, TRIGGER_LABELS as w, Xl as T, __toESM as E, apiGet as D, apiSend as ee, busyProps as O, cardClass as k, confirmModal as A, controlTask as te, cx as ne, elapsedText as j, errorMessage as M, fetchTasks as re, fmtSize as ie, foldByKind as ae, foldRoutine as oe, followupDetail as se, followupTally as N, groupFollowups as ce, hasResultProblems as P, i2 as F, isActive as I, isRoutine as le, latestOfKind as ue, momentText as L, notifyManager as de, oe as fe, pollInterval as pe, problemDestination as me, progressText as R, readableErrorHeadline as z, replaceEqualDeep as he, require_jsx_runtime as ge, require_react as _e, setTaskSpeed as ve, statusLabel as ye, summaryItems as be, taskIssues as xe, taskSubject as B, um as Se, uo as Ce, useMutation as V, useQuery as H, useQueryClient as U, vl as we } from "./peach-app.js";
@@ -573,32 +573,33 @@ function Z({ run: e, meta: t, children: n, error: r, issues: a, followups: o, fo
 		]
 	});
 }
-function Ye({ run: e, followups: t }) {
-	let n = e.progress_total || 0, r = e.progress_current || 0, i = e.control?.state, a = i && i !== "running", o = a ? qe[i] : e.progress_label || "正在进行", s = j(e.elapsed_seconds), c = [w[e.trigger] || e.trigger, s && `已跑 ${s}`].filter(Boolean).join(" · ");
+function Ye({ run: e, followups: t, followupTotal: n }) {
+	let r = e.progress_total || 0, i = e.progress_current || 0, a = e.control?.state, o = a && a !== "running", s = o ? qe[a] : e.progress_label || "正在进行", c = j(e.elapsed_seconds), l = [w[e.trigger] || e.trigger, c && `已跑 ${c}`].filter(Boolean).join(" · ");
 	return /* @__PURE__ */ (0, J.jsx)(Z, {
 		run: e,
-		meta: c,
+		meta: l,
 		followups: t,
-		children: n > 0 ? /* @__PURE__ */ (0, J.jsxs)("div", {
+		followupTotal: n,
+		children: r > 0 ? /* @__PURE__ */ (0, J.jsxs)("div", {
 			className: "flex flex-col gap-1.5",
 			children: [/* @__PURE__ */ (0, J.jsx)(y, {
-				label: o,
-				value: Math.min(r, n),
-				max: n
+				label: s,
+				value: Math.min(i, r),
+				max: r
 			}), /* @__PURE__ */ (0, J.jsxs)("p", {
 				className: "text-caption-1-regular text-text-secondary wrap-anywhere",
 				children: [
-					o,
+					s,
 					" · ",
-					R(r, n),
+					R(i, r),
 					" 项"
 				]
 			})]
-		}) : a ? /* @__PURE__ */ (0, J.jsx)("p", {
-			"data-copy-key": `tasks.control.state.${i}`,
+		}) : o ? /* @__PURE__ */ (0, J.jsx)("p", {
+			"data-copy-key": `tasks.control.state.${a}`,
 			className: "text-caption-1-regular text-text-secondary",
-			children: o
-		}) : /* @__PURE__ */ (0, J.jsx)(f, { label: o })
+			children: s
+		}) : /* @__PURE__ */ (0, J.jsx)(f, { label: s })
 	});
 }
 function Xe({ run: e, followups: t, runs: r, latest: a, followupTotal: o, followupFailed: s = 0, followupCancelled: c = 0 }) {
@@ -795,7 +796,8 @@ function Qe() {
 					live: !0,
 					children: [w.map((e) => /* @__PURE__ */ (0, J.jsx)(Ye, {
 						run: e,
-						followups: g.get(e.id)
+						followups: g.get(e.id),
+						followupTotal: N(b, [e]).total
 					}, e.id)), O.map(({ run: e, runs: t }) => /* @__PURE__ */ (0, J.jsx)(Ze, {
 						runs: t,
 						followups: x(t),
@@ -850,4 +852,4 @@ function Qe() {
 }
 export { Qe as ActivityPage };
 
-//# debugId=481f1921-7729-48e0-acc1-b60145b3a508
+//# debugId=b00bf9a9-0044-469b-bcb4-e6c2d1204def

@@ -498,6 +498,19 @@ class TasksEndpointTests(unittest.TestCase):
         self.assertEqual([row["id"] for row in payload["running"]], [parent.id])
         self.assertEqual([row["id"] for row in payload["finished"]], queued)
 
+    def test_a_running_parent_sends_only_its_latest_settled_followups_with_the_full_count(self):
+        """任务中心两秒取一次；一轮派出上千条后继时只下发最近那几条，总数看计数。"""
+        parent = self.store.start("follow-check", trigger="manual")
+        queued = self.store.enqueue_followups(
+            parent.id, [(f"entity-avatar:performer:{n}", "entity-avatar", f"补头像 {n}")
+                        for n in range(5)])["queued"]
+        for run_id in queued:
+            self.store.finish(run_id, "succeeded")
+        with unittest.mock.patch("peach.task_runs.SETTLED_FOLLOWUP_LIMIT", 2):
+            payload = web_tasks.q_tasks(self.contract, {})
+        self.assertEqual([row["id"] for row in payload["finished"]], queued[-2:])
+        self.assertEqual(payload["followup_counts"][str(parent.id)], {"succeeded": 5})
+
     def test_a_dispatch_with_dozens_of_followups_stays_one_working_parent_with_counts(self):
         """自动修复每批派几十条；接口只下发最近几条排队的，但在跑的、父任务与总数都不能丢。"""
         older = self.store.start("upgrade-repairs", trigger="scheduled", mutex_key="upgrade-repairs")
