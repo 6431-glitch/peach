@@ -10,7 +10,7 @@ export type { RepresentativeRow } from './representatives';
 export {
   avatarInner, cardArtwork, cardIdentity, coverImage, coverUrl, detailPosterUrl, entityAvatar, entityFaceImg,
   faceBoxAttrs, faceOrigin, facePos, frameArtwork, javArtwork, logoUrl, mixFace, mixLabel, performerLabel,
-  queueAvatarHtml, queueThumbHtml, remoteCoverUrl, withVersion,
+  queueAvatarHtml, queueThumbHtml, remoteCoverUrl, withMissingNote, withVersion,
 } from './markup';
 export type { Artwork, ArtworkKind, CoverItem, FaceFocus, FaceRef, IdentityItem } from './markup';
 export {

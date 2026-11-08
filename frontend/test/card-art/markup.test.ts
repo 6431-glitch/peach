@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   avatarInner, cardArtwork, cardIdentity, coverImage, coverUrl, detailPosterUrl, entityAvatar, entityFaceImg,
   faceBoxAttrs, faceOrigin, facePos, javArtwork, logoUrl, mixFace, mixLabel, performerLabel, queueAvatarHtml,
-  queueThumbHtml,
+  queueThumbHtml, withMissingNote,
 } from '../../src/card-art/markup';
 import { rememberRepresentatives, representativeOf } from '../../src/card-art/representatives';
 import { advanceImageFallback } from '../../src/card-art/image-fallback';
@@ -336,6 +336,21 @@ describe('cardArtwork 与队列小图', () => {
   it('队列一行没有图时写「无预览」占住那一格；番号作品按小图取', () => {
     expect(queueThumbHtml({ id: 1 }, 'cover')).toBe('<span class="nopic">无预览</span>');
     expect(parse(queueThumbHtml(JAV, 'cover'))!.className).toBe('poster cover whole');
+  });
+
+  it('作品卡的图取不到时换成写明缘由的占位字，不留坏图', () => {
+    const fail = (html: string) => {
+      const box = document.createElement('span');
+      box.innerHTML = html;
+      advanceImageFallback(box.querySelector('img'));
+      return box.innerHTML;
+    };
+    const note = (text: string) => `<span class="media-nopic">${text}</span>`;
+    expect(fail(withMissingNote(cardArtwork({ id: 1, has_thumb: true }, 'small', false, 'cover')).html)).toBe(note('预览未取得'));
+    expect(fail(withMissingNote(cardArtwork({ id: 1, follow_thumb_url: 'https://x/a' }, 'small', false, 'cover')).html)).toBe(note('预览未取得'));
+    expect(fail(withMissingNote(cardArtwork(JAV, 'big', false, 'cover')).html)).toBe(note('封面未取得'));
+    expect(fail(withMissingNote(cardArtwork({ ...JAV, has_thumb: true }, 'small', false, 'thumbnail')).html)).toBe(note('预览未取得'));
+    expect(withMissingNote(cardArtwork({ id: 1 }, 'small', false, 'cover')).html).toBe('');
   });
 });
 

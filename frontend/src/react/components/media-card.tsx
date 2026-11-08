@@ -22,6 +22,7 @@ import { memo, useCallback, useRef, useState, type CSSProperties, type MouseEven
 import { cardRatio as layoutRatio } from '@peach/appearance';
 import {
   cardArtwork, cardIdentity, entityAvatar, frameArtwork, performerLabel, relayoutCovers, releaseHover, wireHover,
+  withMissingNote,
 } from '@peach/card-art';
 import { esc, fmtDur, fmtSize } from '@peach/legacy/core';
 import { spinnerHtml } from '@peach/legacy/ui';
@@ -220,10 +221,12 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
   const size = jav ? layout.size : 'small';
   /* 竖屏格（竖屏带与筛竖屏的网格）只展示竖屏比例的视频，卡面只用视频自己的帧图；番号作品也
      不走官方封面，「JAV 默认封面」设置在这里不起作用：那张封面是整部作品的宣传图，多是横图，
-     和这一卷竖屏视频不是同一个画面。没有帧图就是「无预览」。 */
+     和这一卷竖屏视频不是同一个画面。没有帧图就是「无预览」，番号作品在别处没有图就是「无封面」。 */
   const frameOnly = ratio === PORTRAIT_RATIO && !!item.is_jav;
-  const artwork = frameOnly ? frameArtwork(item, false) : cardArtwork(item, size, false, layout.javImage);
-  const identity = frameOnly || size === 'small' ? artwork.html : cardArtwork(item, 'small', false, layout.javImage).html;
+  const drawn = frameOnly ? frameArtwork(item, false) : cardArtwork(item, size, false, layout.javImage);
+  const identity = frameOnly || size === 'small' ? drawn.html : cardArtwork(item, 'small', false, layout.javImage).html;
+  const artwork = withMissingNote(drawn);
+  const missing = item.is_jav && !frameOnly ? '无封面' : '无预览';
   const rawName = parts?.title || item.name || '';
   const shownName = helpers.displayName(item, rawName).trim() || UNNAMED;
   const titleHtml = helpers.titleHtml(item, rawName).trim() || esc(UNNAMED);
@@ -263,7 +266,7 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
       style={{ '--card-ratio': String(ratio) } as CSSProperties}>
       {artwork.html
         ? <ArtSlot artwork={artwork} identity={identity} relayout={(root) => relayoutCovers(root, size)} />
-        : <span data-media-nopic="">无预览</span>}
+        : <span data-media-nopic="">{missing}</span>}
       <div data-media-badge="" dangerouslySetInnerHTML={{ __html: helpers.badgeHtml(item.location || '', item.cost || '') }} />
       <span data-media-check=""><Icon name="check" /></span>
       <span data-media-trash-mark=""><Icon name="trash" /><b>回收站</b></span>

@@ -294,6 +294,19 @@ export function cardArtwork(item: CoverItem & { follow_thumb_url?: string | null
   return mixFace(item, size, eager, javImage);
 }
 
+/** 作品卡封面格里的图取不到时，换成灰底上的一句「封面未取得」或「预览未取得」。预览图的
+ *  `.poster` 自带黑底，坏图留在原地就是一块黑加一个坏图标，看不出是没图还是还在加载；
+ *  官方封套原本的 `data-drop="self"` 撤掉图后也只剩一格空底，一样什么都没说。 */
+export function withMissingNote(artwork: Artwork): Artwork {
+  if (!artwork.kind) return artwork;
+  const note = artwork.kind === 'cover' ? '封面未取得' : '预览未取得';
+  const attrs = `data-drop="initial" data-initial="${note}" data-drop-class="media-nopic"`;
+  const html = artwork.html.includes('data-drop="self"')
+    ? artwork.html.replace('data-drop="self"', attrs)
+    : artwork.html.replace('<img ', `<img ${attrs} `);
+  return { ...artwork, html };
+}
+
 /** Mix 的一张画面，播放队列每一行的小图也是它：番号作品走封套链，其余取本地预览格，同一条
  *  在两处长得一样。`size` 只施加给番号作品。 */
 export function mixFace(item: CoverItem, size: 'big' | 'small', eager: boolean, javImage: unknown): Artwork {
