@@ -724,6 +724,8 @@ class JavdbTests(Case):
         found = self.javdb_ids(self.meguri)
         self.assertEqual([number for number, _metadata in found], ["Ab12", "Cd34"])
         self.assertEqual({metadata["batch"] for _number, metadata in found}, {f"{followup.SOURCE}@4"})
+        # 记下哪页是無碼那条：日后作品署名了其中一类，同类的另一页才分得出来（#271）。
+        self.assertEqual([metadata["uncensored"] for _number, metadata in found], [False, True])
         self.assertIn("javdb 绑定", summary["outcome"])
 
     def test_two_people_sharing_her_name_are_left_unbound(self):

@@ -1284,6 +1284,21 @@ class PerformerFeedSwitchTest(PerformerFeedFixture):
                                 {"entity": self.performer})
         self.assertEqual([item["code"] for item in mine["items"]], ["PBD-528", "BBSS-106"])
 
+    def test_a_name_matched_page_of_the_credited_record_is_not_subscribed(self):
+        """#271：按名字对上的同类演员页（旧艺名的空页）不进订阅，只订作品署名的那页。"""
+        with self.contract.database.write_transaction() as connection:
+            connection.execute(
+                "UPDATE entity_external_ref SET metadata_json=? WHERE entity_id=? AND external_id='pRMq'",
+                (json.dumps({"source": "javdb", "provider_id": "PBD-528", "uncensored": False}),
+                 self.performer))
+            connection.execute(
+                "INSERT INTO entity_external_ref(entity_id,provider,external_kind,external_id,metadata_json)"
+                " VALUES(?,'javdb','performer','MmbDR',?)",
+                (self.performer, json.dumps({"source": "backfill_performer_entry_ids", "uncensored": False})))
+        self._switch(True)
+        self.assertEqual([source["url"] for source in self._sources()], [self.page])
+        self._settled()
+
     def test_a_page_of_only_compilations_is_backfilled_from_her_solo_works(self):
         retired = self._performer("篠田ゆう", ["WE4e"])
         page = "https://javdb.com/actors/WE4e"
