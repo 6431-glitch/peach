@@ -620,7 +620,7 @@ class UpgradeRepairTests(unittest.TestCase):
                 connection.execute("INSERT INTO asset(id,location,path,name,medium) "
                                    "VALUES(?,'local',?,'metadata','other')",
                                    (key, fr'R:\media\@eaDir\old{key}@SynoEAStream'))
-        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULE):
+        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULES[-1]):
             self.service.prepare()
         with self.database.write_transaction() as connection:
             connection.execute("UPDATE asset SET disposal=NULL,disposal_reason=NULL,path=? WHERE id=1",
@@ -640,9 +640,9 @@ class UpgradeRepairTests(unittest.TestCase):
             connection.execute("INSERT INTO asset(id,location,path,name,medium) "
                                "VALUES(1,'local',?,'old metadata','other')",
                                (r'R:\media\@eaDir\old@SynoEAStream',))
-        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULE):
+        with patch.object(system_file_repair, 'RULE', system_file_repair.PRIOR_RULES[-1]):
             self.service.prepare()
-        previous = upgrade_repairs._read(self.service.receipt)[system_file_repair.PRIOR_RULE]
+        previous = upgrade_repairs._read(self.service.receipt)[system_file_repair.PRIOR_RULES[-1]]
         with self.database.write_transaction() as connection:
             connection.execute('UPDATE asset SET disposal=NULL,disposal_reason=NULL WHERE id=1')
             for key, name, medium, rating, code, feedback, plays in (
@@ -661,12 +661,29 @@ class UpgradeRepairTests(unittest.TestCase):
                                "VALUES('junk_file','8','rejected','','2026-11-06')")
         self.service.prepare()
         receipt = upgrade_repairs._read(self.service.receipt)
-        self.assertEqual(receipt[system_file_repair.PRIOR_RULE], previous)
-        self.assertEqual([row['id'] for row in receipt[system_file_repair.RULE]['isolated']], [2])
+        self.assertEqual(receipt[system_file_repair.PRIOR_RULES[-1]], previous)
+        self.assertEqual([row['id'] for row in receipt[system_file_repair.RULE]['isolated']], [2, 4, 5])
         with self.database.read_connection() as connection:
             self.assertEqual([tuple(row) for row in connection.execute('SELECT id,disposal FROM asset ORDER BY id')],
-                             [(1, None), (2, 'trash'), (3, None), (4, None), (5, None),
+                             [(1, None), (2, 'trash'), (3, None), (4, 'trash'), (5, 'trash'),
                               (6, None), (7, None), (8, None)])
+
+    def test_scraped_appledouble_videos_are_isolated_but_videos_in_system_directories_stay(self):
+        from peach import system_file_repair
+        with self.database.write_transaction() as connection:
+            for key, path, code in ((1, r'R:\media\SSIS-950.mp4', 'SSIS-950'),
+                                    (2, r'R:\media\._SSIS-950.mp4', 'SSIS-950'),
+                                    (3, r'R:\media\@eaDir\clip.mp4', None)):
+                connection.execute("INSERT INTO asset(id,location,path,name,medium,code) "
+                                   "VALUES(?,'local',?,?,'video',?)", (key, path, PureWindowsPath(path).name, code))
+            connection.execute("INSERT INTO asset_tag(asset_id,tag,source) VALUES(2,'scraped','test')")
+        self.service.prepare()
+        with self.database.read_connection() as connection:
+            self.assertEqual([tuple(row) for row in connection.execute('SELECT id,disposal FROM asset ORDER BY id')],
+                             [(1, None), (2, 'trash'), (3, None)])
+            self.assertEqual(connection.execute('SELECT count(*) FROM asset_tag WHERE asset_id=2').fetchone()[0], 1)
+        receipt = upgrade_repairs._read(self.service.receipt)[system_file_repair.RULE]
+        self.assertEqual([row['id'] for row in receipt['isolated']], [2])
 
     def test_javdb_upgrade_requeues_legacy_evidence_and_keeps_manual_values(self):
         from peach import artifact_rules, upgrade_rules

@@ -12,12 +12,14 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from . import system_file_repair
+
 #: 列给用户看的修复：标题、一句做了什么、是否自动执行。顺序就是页面顺序。
 ITEMS = (
     ('catalog', '资料与番号整理', '按新规则修正番号、标题等自动写入的资料，你手动改过的不动', 'auto'),
     ('display-local', '本地视频显示尺寸', '重新读取本机与局域网视频的文件头，修正横竖屏判断', 'auto'),
     ('display-cloud', '网盘视频显示尺寸', '要逐部读取网盘里的视频，网盘缓存和流量会增加，确认后才开始', 'confirm'),
-    ('system-files', 'NAS 系统文件', '群晖、飞牛等系统目录里被当成视频的文件移出馆藏，文件本身不删', 'auto'),
+    ('system-files', '系统附属文件', 'NAS 系统目录里的缩略图、macOS 的 ._ 附属文件等移出馆藏，文件本身不删', 'auto'),
     ('garbled-people', '乱码人物', '解除早期采集乱码留下的人物关联，重新补采演员', 'auto'),
     ('dangling-candidates', '失效的复核候选', '资产删除后留下的候选改挂到同一文件的新编号，对不上的撤下', 'auto'),
 )
@@ -98,7 +100,7 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
     local = receipt.get('local', {})
     display = receipt.get('display_dimensions_v2', {})
     done, total = len(display.get('completed', {})), len(display.get('dimensions', {}))
-    isolated = _latest(rows, 'discovery-system-files-2') or {}
+    isolated = _latest(rows, system_file_repair.RULE) or {}
     garbled = _latest(rows, 'garbled_people') or {}
     dangling = next((result for row_id, _, result in rows if row_id.startswith('dangling-candidates-')), {})
     facts = {
