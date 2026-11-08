@@ -1049,9 +1049,10 @@ class UpgradeRepairTests(unittest.TestCase):
             row=connection.execute('SELECT catalog_title,field_owners FROM asset WHERE id=1').fetchone()
             self.assertEqual(row[0], '元の題名')
             self.assertEqual(json.loads(row[1])['catalog_title'], 'auto:dmm')
-            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
-                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 2)
+            # 悬空候选与 JavDB 记录类型两条补修各记一行，这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT IN (?,?)',
+                                                (upgrade_repairs.DANGLING_KEY,
+                                                 upgrade_repairs.JAVDB_RECORDS_KEY)).fetchone()[0], 2)
             self.assertEqual(connection.execute('PRAGMA integrity_check').fetchone()[0], 'ok')
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 2)
         self.assertEqual(upgrade_repairs._read(self.service.receipt)['text_media_ids'], [1])
@@ -1463,9 +1464,10 @@ class UpgradeRepairTests(unittest.TestCase):
         with self.database.read_connection() as connection:
             rows = connection.execute('SELECT id,code,duration FROM asset ORDER BY id').fetchall()
             self.assertEqual([tuple(row) for row in rows], [(1, 'SSIS-123', None), (2, 'BAD-001', None)])
-            # 悬空候选补修另记一行（`DANGLING_KEY`），这里只数更新已有资料的回执。
-            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id<>?',
-                                                (upgrade_repairs.DANGLING_KEY,)).fetchone()[0], 1)
+            # 悬空候选与 JavDB 记录类型两条补修各记一行，这里只数更新已有资料的回执。
+            self.assertEqual(connection.execute('SELECT count(*) FROM ledger_upgrade_repair WHERE id NOT IN (?,?)',
+                                                (upgrade_repairs.DANGLING_KEY,
+                                                 upgrade_repairs.JAVDB_RECORDS_KEY)).fetchone()[0], 1)
         self.assertEqual(len(list(self.root.glob('ledger.pre-upgrade-*.db'))), 1)
         receipt = upgrade_repairs._read(self.service.receipt)
         self.assertEqual(receipt['local']['before'], receipt['local']['after'])
@@ -1754,12 +1756,20 @@ class UpgradeRepairTests(unittest.TestCase):
         self.assertEqual(receipt['disabled_feeds'], [{'entity_id': 1, 'external_id': 'MmbDR', 'source_id': 3}])
         self.assertEqual(sorted((row['external_id'], row['uncensored']) for row in receipt['recorded']),
                          [('E26vd', True), ('MmbDR', False), ('bkxd', False)])
-        # 只做一次：用户之后手动重新启用的源，再启动也不会被停掉。
+        # 按来源整批撤回（ADR-0052）：类型去掉、订阅启用回去，入口回到补修之前；补修不再重做。
+        from peach import auto_landing_revert
         with self.database.write_transaction() as connection:
-            connection.execute('UPDATE feed_source SET enabled=1 WHERE id=3')
+            planned = auto_landing_revert.plan(connection, upgrade_repairs.JAVDB_RECORDS_SOURCE,
+                                               logo_root=self.root / 'logos', cover_root=self.root / 'covers')
+            self.assertEqual(len(planned['javdb_records']), 4)
+            self.assertEqual(auto_landing_revert.apply(connection, planned)['还原 JavDB 类型与订阅'], 4)
+        self.assertEqual(pages(1, '森日向子'), ['https://javdb.com/actors/bkxd', 'https://javdb.com/actors/MmbDR'])
         self.service.prepare()
         with self.database.read_connection() as connection:
             self.assertEqual(connection.execute('SELECT enabled FROM feed_source WHERE id=3').fetchone()[0], 1)
+            self.assertEqual(auto_landing_revert.plan(
+                connection, upgrade_repairs.JAVDB_RECORDS_SOURCE, logo_root=self.root / 'logos',
+                cover_root=self.root / 'covers')['javdb_records'], [])
 
     def test_old_code_snapshot_stays_while_another_video_is_that_release(self):
         from peach import artifact_rules

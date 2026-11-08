@@ -355,6 +355,57 @@ def settle_javdb_records(connection, records: dict[str, bool]) -> dict:
             'disabled_feeds': disabled}
 
 
+#: `revert_auto_landing.py --source` 认这条补修的归属串；批次是回执行的 id（`JAVDB_RECORDS_KEY`）。
+JAVDB_RECORDS_SOURCE = 'upgrade:javdb-actor-records'
+
+
+def planned_javdb_records_revert(connection, source: str, batch: str = '') -> list[dict]:
+    """这条补修写下、现在还原样在账本里的记录类型与停用的订阅（ADR-0052 整批撤回），只读。
+
+    按当前状态认：类型已被改成别的值、订阅已被重新启用或删掉的，不再列出。
+    """
+    if source != JAVDB_RECORDS_SOURCE:
+        return []
+    planned = []
+    for receipt_id, encoded in connection.execute(
+            "SELECT id,result_json FROM ledger_upgrade_repair WHERE id GLOB 'javdb-actor-records-*' "
+            'ORDER BY CAST(applied_at AS REAL)').fetchall():
+        if batch and receipt_id != batch:
+            continue
+        detail = json.loads(encoded)
+        for row in detail.get('recorded', []):
+            held = connection.execute(
+                "SELECT json_extract(metadata_json,'$.uncensored') FROM entity_external_ref "
+                "WHERE provider='javdb' AND external_kind='performer' AND external_id=? "
+                "AND json_valid(metadata_json) AND json_type(metadata_json,'$.uncensored') IN ('true','false')",
+                (row['external_id'],)).fetchone()
+            if held is not None and bool(held[0]) == row['uncensored']:
+                planned.append({'kind': 'record', **row, 'batch': receipt_id})
+        for row in detail.get('disabled_feeds', []):
+            if connection.execute('SELECT 1 FROM feed_source WHERE id=? AND enabled=0',
+                                  (row['source_id'],)).fetchone():
+                planned.append({'kind': 'feed', **row, 'batch': receipt_id})
+    return planned
+
+
+def revert_javdb_records(connection, planned: list[dict]) -> int:
+    """按 `planned_javdb_records_revert` 去掉记下的类型、重新启用停掉的订阅，返回改了几行。
+
+    不开不提交事务，由调用方包住。回执行留着，补修不会再做一遍。
+    """
+    changed = 0
+    for item in planned:
+        if item['kind'] == 'record':
+            changed += connection.execute(
+                "UPDATE entity_external_ref SET metadata_json=json_remove(metadata_json,'$.uncensored') "
+                "WHERE provider='javdb' AND external_kind='performer' AND external_id=?",
+                (item['external_id'],)).rowcount or 0
+        else:
+            changed += connection.execute('UPDATE feed_source SET enabled=1 WHERE id=? AND enabled=0',
+                                          (item['source_id'],)).rowcount or 0
+    return changed
+
+
 def restore_dangling_candidates(database, candidate_root) -> dict:
     """按 `DANGLING_KEY` 的回执把悬空候选补修整批还原。
 
