@@ -2112,6 +2112,53 @@ class WebDataTests(unittest.TestCase):
         self.assertTrue(kept.exists(), "不在回收站的媒体一个都不能碰")
         self.assertIsNotNone(self.row(2))
 
+    def test_empty_trash_moves_media_outside_the_write_lock_and_spares_rows_restored_meanwhile(self):
+        """网盘上逐个 stat、改名不占写锁；这期间被还原出回收站的，事务里复核时留下、文件放回原处。"""
+        binned = self.stage_media(1, "binned.mp4")
+        restored = self.stage_media(2, "restored.mp4")
+        rm_web.w_feedback(self.contract, {"id": 1, "kind": "dispose"})
+        rm_web.w_feedback(self.contract, {"id": 2, "kind": "dispose"})
+        quarantine = web_batch._quarantine_media
+        locked = []
+
+        def outside_lock(original, **kwargs):
+            locked.append(self.contract.database.write_lock.locked())
+            moved = quarantine(original, **kwargs)
+            if original == restored and not locked[-1]:
+                rm_web.w_feedback(self.contract, {"id": 2, "kind": "dispose"})
+            return moved
+        with mock.patch.object(web_batch, "_quarantine_media", side_effect=outside_lock):
+            result = rm_web.w_empty_trash(self.contract)
+
+        self.assertEqual(locked, [False, False])
+        self.assertEqual(result["purged"], 1)
+        self.assertEqual([item["id"] for item in result["blocked"]], [2])
+        self.assertFalse(binned.exists())
+        self.assertIsNone(self.row(1))
+        self.assertTrue(restored.is_file(), "隔离期间被还原的，文件放回原处")
+        self.assertIsNone(self.row(2)["disposal"])
+
+    def test_a_purge_cleans_only_what_the_deleted_rows_left_behind(self):
+        """删完不再把整个派生目录扫一遍：只清这几部留下的产物，别的孤儿留给资源同步那一轮。"""
+        self.stage_media(1, "binned.mp4")
+        root = Path(self.tmp.name).resolve()
+        transcodes, streams = root / "transcodes", root / "stream-segments"
+        (streams / "1" / "v").mkdir(parents=True)
+        transcodes.mkdir()
+        mine, segment, stranger = transcodes / "1-5-6.mp4", streams / "1" / "v" / "0.ts", transcodes / "999-5-6.mp4"
+        for path in (mine, segment, stranger):
+            path.write_bytes(b"cache")
+        self.contract.transcode_root, self.contract.stream_root = transcodes, streams
+        self.contract.resource_cleanup_enabled = True
+        rm_web.w_feedback(self.contract, {"id": 1, "kind": "dispose"})
+
+        result = rm_web.w_empty_trash(self.contract)
+
+        self.assertEqual((result["purged"], result["cache_removed"]), (1, 2))
+        self.assertFalse(mine.exists())
+        self.assertFalse((streams / "1").exists())
+        self.assertTrue(stranger.is_file(), "别的孤儿留给资源同步那一轮")
+
     def test_empty_trash_withdraws_candidates_and_decisions_pinned_to_purged_assets(self):
         # #486：删掉的资产留下的候选与决定，之后同一路径重新登记拿到新编号时就悬空了。
         from peach.library_processing import FIELDS
