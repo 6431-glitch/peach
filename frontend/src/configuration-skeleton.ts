@@ -244,7 +244,7 @@ const media = () => {
   + (shape.cloud ? cloudProxySkeleton() : '')
   + discoverySkeleton()
   + section('番号识别规则', stack(`${text('90%')}${text('60%')}<span class="skeleton ui-configuration-skeleton-input" style="width:100%;height:88px"></span>`), button('保存配置'))
-  + section('视频预览', row('生成视频预览', '为本地视频生成九宫格与时间轴预览；关闭后仍按入库规则探测时长与分辨率。')
+  + section('视频预览', row('生成视频预览', '为本地视频生成九宫格与时间轴预览。')
     + row('时间轴预览', '按所选间隔抽帧，仅处理本机磁盘上的视频。', 'ui-configuration-skeleton-select')
     + row('抽帧解码方式', '用于生成封面、九宫格和时间轴。', 'ui-configuration-skeleton-select'));
 };

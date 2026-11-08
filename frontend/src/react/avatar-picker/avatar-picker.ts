@@ -144,24 +144,14 @@ export function pickerNote(name: string, data: AvatarChoices | undefined): strin
     const more = elsewhere.length > NOTE_NAMES ? `等 ${elsewhere.length.toLocaleString()} 个名字` : '';
     return `${name}：图库里按${named}${more}找到的。`;
   }
-  return data.choices.length
-    ? `${name}：换上的那张留在本机，随时能换回来。`
-    : `${name}：还没有备选图片，可输入番号、图片地址或从本机选择。`;
+  return data.choices.length ? name : `${name}：还没有备选图片，可输入番号、图片地址或从本机选择。`;
 }
 
-/** 超过两天按天数说：「124 小时」要人自己去除。 */
-const indexAge = (hours: number): string =>
-  hours < 48 ? `${Math.max(1, Math.round(hours))} 小时` : `${Math.floor(hours / 24)} 天`;
-
-/** 图库索引没取过或已过期、这一次也一张图库图都没拿到时的那句提示；别的情形是空串。
- *  没取过和过期是两回事：过期的索引照样在查，只是新收的人像查不到。 */
+/** 图库索引正在更新或更新失败时的那句提示；别的情形是空串。 */
 export function indexNote(data: AvatarChoices | undefined): string {
   if (data?.index_refreshing) return '正在更新图库索引，候选图片会自动显示。';
   if (data?.index_error && data.index_stale) return '图库索引未取得：' + data.index_error;
-  if (!data || !data.index_stale || data.choices.some((one) => one.source === 'gfriends')) return '';
-  return data.index_age_hours === null
-    ? '图库索引还没取过，只能从用过的图里选。'
-    : `图库索引 ${indexAge(data.index_age_hours)}没更新，新收的人像这里还查不到。`;
+  return '';
 }
 
 /** 多人合演的作品：格子上标人数，框选时提醒先找到她自己的脸。 */

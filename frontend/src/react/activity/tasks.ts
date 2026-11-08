@@ -23,7 +23,6 @@ export interface TaskResourcesPayload {
   gpu: TaskPercentMetric;
   network: TaskResourceMetric & { bytes_per_second: number | null };
   sampled_at: string;
-  detail?: string;
 }
 
 export interface TaskRunPayload {

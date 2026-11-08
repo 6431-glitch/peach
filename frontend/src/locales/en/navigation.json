@@ -21,5 +21,9 @@
     "quality": "HD upgrades",
     "activity": "Tasks",
     "configuration": "Settings"
+  },
+  "pageTitle": {
+    "search": "Search {{term}}",
+    "portrait": "Vertical"
   }
 }

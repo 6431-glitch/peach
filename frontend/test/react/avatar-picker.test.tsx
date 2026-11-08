@@ -272,11 +272,11 @@ it('换不成时弹层留在原地，原因写在里面', async () => {
   expect(dialog()).not.toBeNull();
 });
 
-it('图库索引还没取过时只剩手填那两条路', async () => {
+it('图库索引没取过或已过期时不解释索引，只剩手填那两条路', async () => {
   server(listing([], { matched_names: [], index_age_hours: null, index_stale: true }));
   await openPicker();
   expect(cells()).toHaveLength(0);
-  expect(dialog()?.textContent).toContain('图库索引还没取过');
+  expect(dialog()?.textContent).not.toContain('图库索引');
   expect(buttonNamed('从本机选图片')).not.toBeNull();
   expect(document.querySelector('input[type=file]')).not.toBeNull();
 });
@@ -328,13 +328,6 @@ it('过期索引在重新打开弹层时读取当前候选', async () => {
   await settle();
   expect(calls).toBe(2);
   expect(cells()).toHaveLength(1);
-});
-
-it('过期的图库索引说出多久没更新，不说成还没取过', async () => {
-  server(listing([], { matched_names: [], index_age_hours: 124, index_stale: true }));
-  await openPicker();
-  expect(dialog()?.textContent).toContain('图库索引 5 天没更新');
-  expect(dialog()?.textContent).not.toContain('还没取过');
 });
 
 it('按好多个名字找到时说明只点名前两个，余下的报个数', async () => {

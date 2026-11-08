@@ -8,7 +8,7 @@ import { cx } from '@/utils/cx';
 
 import { errorMessage } from '../../api';
 import { BATCH_DELETE_TEXT } from '../../cleanup-tool-skeletons';
-import { entityDisplayName, nameFallback } from '../../core/entity-names';
+import { entityDisplayName } from '../../core/entity-names';
 import { DataTable, type DataColumn } from '../components/data-table';
 import { Fieldset, FieldsetTitle } from '../components/fieldset';
 import { LEGACY_AVATAR_IMG } from '../components/legacy-avatar';
@@ -25,8 +25,7 @@ import {
 
 function PerformerName({ person }: { person: DeletePerformer }) {
   const name = entityDisplayName('performer', person.k, person.entity_id);
-  const fallback = nameFallback('performer', person.k, person.entity_id);
-  return <a href={entityPath('performer', person.k, person.entity_id)} title={fallback || name}
+  return <a href={entityPath('performer', person.k, person.entity_id)} title={name}
     className="flex min-w-0 items-center gap-3 text-text-primary">
     <span aria-hidden className={cx('relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-background-quaternary-default text-caption-1-medium', LEGACY_AVATAR_IMG)}
       dangerouslySetInnerHTML={{ __html: `<span>${esc(firstGrapheme(name))}</span>` + entityFaceImg({

@@ -36,6 +36,7 @@ import {
   photosOptions, tagList, tagPressed, type EntityPageData, type EntityPageProps, type PhotoPage,
 } from './entity-page';
 import { useEntityOnline } from './use-entity-online';
+import { PENDING_REFETCH_MS } from '../components/pending-work';
 
 export function EntityPage(props: EntityPageProps) {
   const { kind, name } = props;
@@ -121,6 +122,27 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
   /* 换过几次头像。资料卡与作品网格都把图拼进了自己的状态（网格只在代次变时才按新的第一页
      重建），重取到新数据还不够，得换键重建，新图地址里的版本才落得到页面上。 */
   const [avatarEpoch, setAvatarEpoch] = useState(0);
+
+  /* 资料还在补全时资料卡每隔几秒重取一次（`entityOptions` 的 `refetchInterval`）。每补完一项，头像、
+     作品署名与照片都可能换了：同换头像那样作废作品、照片与新作，换键重建，不用刷新页面。 */
+  const pendingCount = entity.pending_work?.length || 0;
+  const lastPending = useRef(pendingCount);
+  useEffect(() => {
+    const finished = pendingCount < lastPending.current;
+    lastPending.current = pendingCount;
+    if (!finished) return;
+    actions.avatarChanged();
+    setAvatarEpoch((epoch) => epoch + 1);
+    void queryClient.invalidateQueries({ queryKey: ['entity-items', kind, name] });
+    void queryClient.invalidateQueries({ queryKey: ['entity-photos', kind, name] });
+    if (entityId) void queryClient.invalidateQueries({ queryKey: feedNewKey(entityId) });
+    if (pendingCount) return;
+    /* 全部补完、轮询停下之后再取一次：最后一项结算与它顺手写进的别名、外链可能差一两秒才落地。 */
+    const settle = window.setTimeout(() => {
+      void queryClient.invalidateQueries({ queryKey: entityKey(kind, name) });
+    }, PENDING_REFETCH_MS);
+    return () => window.clearTimeout(settle);
+  }, [actions, entityId, kind, name, pendingCount]);
 
   /* ── 作品 ── */
   const itemsQuery = itemsOptions(props);

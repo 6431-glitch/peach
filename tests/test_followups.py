@@ -4,7 +4,7 @@ import tempfile
 import threading
 import time
 import unittest
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from pathlib import Path
 from types import SimpleNamespace
 from unittest import mock
@@ -1748,6 +1748,104 @@ class TaskPayloadTests(LedgerTestCase):
         self.assertEqual(listed, [queued[0], *queued[-TASK_FOLLOWUP_LIMIT:]])
         self.assertEqual(payload["followup_counts"], {"running": 1, "pending": len(queued) - 1})
         self.assertEqual(payload["followup_total"], len(queued))
+
+
+class EntityPendingWorkTests(LedgerTestCase):
+    """资料页的「补全中」只认任务表里这位名下在排或在跑的后继，结束了就不再报。"""
+
+    def performer(self, name: str) -> tuple[int, int]:
+        import sqlite3
+        from peach.entities import upsert_asset_entity
+        with closing(sqlite3.connect(self.db)) as connection, connection:
+            connection.execute("INSERT INTO asset(location,path,name,medium) VALUES('local',?,?,'video')",
+                               (f"R:\\media\\{name}.mp4", f"{name}.mp4"))
+            asset_id = connection.execute("SELECT last_insert_rowid()").fetchone()[0]
+            entity_id = upsert_asset_entity(connection, kind="performer", name=name, asset_id=asset_id,
+                                            role="performer", source="legacy:asset")
+        return asset_id, entity_id
+
+    def test_queued_and_running_followups_show_until_they_finish(self):
+        from peach import performer_profile_followup
+        from peach.web_entity import q_entity
+        from peach.web_state import WebContract
+        _, entity_id = self.performer("月野江すい")
+        _, other_id = self.performer("别的人")
+        parent = self.parent()
+        queued = self.store.enqueue_followups(parent.id, [
+            (followup_key("performer", entity_id), AVATAR_TASK_KEY, "补头像"),
+            (performer_profile_followup.followup_key(entity_id), performer_profile_followup.TASK_KEY, "补资料"),
+            (followup_key("performer", other_id), AVATAR_TASK_KEY, "别人的"),
+        ])["queued"]
+        contract = WebContract(self.db)
+        work = q_entity(contract, {"kind": "performer", "id": str(entity_id)})["pending_work"]
+        self.assertEqual([(row["task_key"], row["label"], row["status"]) for row in work], [
+            (AVATAR_TASK_KEY, "资料图片补全", "pending"),
+            (performer_profile_followup.TASK_KEY, "女优资料补全", "pending"),
+        ])
+        self.store.finish(queued[0], "succeeded")
+        self.store.finish(queued[1], "failed", error="来源未取得")
+        self.assertEqual(q_entity(contract, {"kind": "performer", "id": str(entity_id)})["pending_work"], [])
+
+    def test_scoped_processing_of_this_entitys_work_counts_and_whole_library_runs_do_not(self):
+        import sqlite3
+        from peach.web_entity import pending_work
+        asset_id, entity_id = self.performer("月野江すい")
+        state = {"status": "running", "asset_ids": [asset_id]}
+        contract = SimpleNamespace(library_processing_job=SimpleNamespace(snapshot=lambda: state))
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual([row["task_key"] for row in pending_work(contract, connection, "performer", entity_id)],
+                             ["library-processing"])
+            state["asset_ids"] = None
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [])
+            state["current_asset_id"] = asset_id
+            self.assertEqual([row["task_key"] for row in pending_work(contract, connection, "performer", entity_id)],
+                             ["library-processing"])
+            state.update(status="complete", asset_ids=[asset_id])
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [])
+
+    def test_seed_import_declared_by_the_round_that_registered_her_counts_until_it_lands(self):
+        import sqlite3
+        from peach import seed_followup
+        from peach.web_entity import pending_work
+        round_run = self.parent()
+        _, entity_id = self.performer("松島智子")
+        seed = self.store.enqueue_followups(round_run.id, [
+            ("seed-import:2026-10-23.1", seed_followup.TASK_KEY, "初始资料导入")])["queued"][0]
+        contract = SimpleNamespace(library_processing_job=None)
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [
+                {"task_key": "seed-import", "label": "初始资料导入", "status": "pending"}])
+        # 开工晚于她建档的那一轮登记的是别人，不算她的补全。
+        later = self.store.start("upgrade-repairs", trigger="manual")
+        with closing(sqlite3.connect(self.db)) as connection, connection:
+            connection.execute("UPDATE task_run SET started_at='2999-01-01T00:00:00Z' WHERE id=?", (later.id,))
+        self.store.finish(seed, "succeeded")
+        self.store.enqueue_followups(later.id, [("seed-import:2026-10-23.2", seed_followup.TASK_KEY, "初始资料导入")])
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [])
+
+    def test_downloaded_work_still_in_postprocess_counts_for_its_performer_and_its_detail(self):
+        import sqlite3
+        from peach.web_catalog import q_item
+        from peach.web_entity import pending_work
+        from peach.web_state import WebContract
+        asset_id, entity_id = self.performer("月野江すい")
+        contract = SimpleNamespace(library_processing_job=None)
+        with closing(sqlite3.connect(self.db)) as connection, connection:
+            connection.execute(
+                "INSERT INTO download_task(provider,source_uri,target,state,asset_id,updated_at,postprocess_state) "
+                "VALUES('pikpak','magnet:?xt=urn:btih:1','R:\\media','ingested',?,'2026-11-08T12:00:00Z','running')",
+                (asset_id,))
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [
+                {"task_key": "download-postprocess", "label": "云下载后处理", "status": "running"}])
+        self.assertEqual([row["task_key"] for row in q_item(WebContract(self.db), asset_id)["pending_work"]],
+                         ["download-postprocess"])
+        with closing(sqlite3.connect(self.db)) as connection, connection:
+            connection.execute("UPDATE download_task SET postprocess_state='complete'")
+        with closing(sqlite3.connect(self.db)) as connection:
+            self.assertEqual(pending_work(contract, connection, "performer", entity_id), [])
+        self.assertEqual(q_item(WebContract(self.db), asset_id)["pending_work"], [])
 
 
 if __name__ == "__main__":  # pragma: no cover

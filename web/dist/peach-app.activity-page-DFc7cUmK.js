@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b00bf9a9-0044-469b-bcb4-e6c2d1204def", e._sentryDebugIdIdentifier = "sentry-dbid-b00bf9a9-0044-469b-bcb4-e6c2d1204def");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "f3d45222-5726-4167-aff5-1f520ca689ce", e._sentryDebugIdIdentifier = "sentry-dbid-f3d45222-5726-4167-aff5-1f520ca689ce");
 	} catch {}
 })();
 import { Button as e, Bx as t, Chip as n, DataTableFooter as r, Disclosure as i, DownloadsPanel as a, EmptyState as o, Gg as s, HN as c, IssueRow as l, LinkButton as u, Lo as d, LoadingDots as f, Ma as p, NameLink as m, Note as h, OV as g, Pf as _, ProcessingMode as v, Progress as y, RB as b, Rk as x, Su as S, TASKS_KEY as C, TRIGGER_LABELS as w, Xl as T, __toESM as E, apiGet as D, apiSend as ee, busyProps as O, cardClass as k, confirmModal as A, controlTask as te, cx as ne, elapsedText as j, errorMessage as M, fetchTasks as re, fmtSize as ie, foldByKind as ae, foldRoutine as oe, followupDetail as se, followupTally as N, groupFollowups as ce, hasResultProblems as P, i2 as F, isActive as I, isRoutine as le, latestOfKind as ue, momentText as L, notifyManager as de, oe as fe, pollInterval as pe, problemDestination as me, progressText as R, readableErrorHeadline as z, replaceEqualDeep as he, require_jsx_runtime as ge, require_react as _e, setTaskSpeed as ve, statusLabel as ye, summaryItems as be, taskIssues as xe, taskSubject as B, um as Se, uo as Ce, useMutation as V, useQuery as H, useQueryClient as U, vl as we } from "./peach-app.js";
@@ -300,18 +300,15 @@ function ze({ color: e, high: t, ...r }) {
 var Be = {
 	cpu: {
 		name: "CPU",
-		color: "blue",
-		description: "CPU 使用率以执行端可用容量为 100%，容器按可见 CPU 配额计算。达到 50% 时加深显示。"
+		color: "blue"
 	},
 	gpu: {
 		name: "GPU",
-		color: "purple",
-		description: "GPU 使用率显示该任务最忙的 GPU 引擎。达到 50% 时加深显示。"
+		color: "purple"
 	},
 	network: {
 		name: "网络",
-		color: "cyan",
-		description: "网络速率显示该任务已观测的下载速度，达到 10 MiB/s 时加深显示。从网盘挂载读取时显示网盘读取，SMB 或无法准确归属的传输显示未取得。"
+		color: "cyan"
 	}
 };
 function Ve(e) {
@@ -331,24 +328,18 @@ function Ue({ run: e, active: t = I(e) || !!e.control }) {
 			"gpu",
 			"network"
 		].map((e) => {
-			let t = n[e], r = Be[e], i = e === "network" ? n.network.bytes_per_second : n[e].percent, a = t.state === "ready" && i !== null, o = a && t.high, s = a ? He(e, i) : Ve(t), c = [
-				t.reason,
-				o ? "当前为高占用。" : "",
-				r.description,
-				n.detail
-			].filter(Boolean).join("\n");
+			let t = n[e], r = Be[e], i = e === "network" ? n.network.bytes_per_second : n[e].percent, a = t.state === "ready" && i !== null, o = a && t.high, s = a ? He(e, i) : Ve(t), c = [t.reason, o ? "当前为高占用。" : ""].filter(Boolean).join("\n");
 			return /* @__PURE__ */ (0, J.jsxs)(ze, {
 				color: r.color,
 				high: o,
-				tabIndex: 0,
-				title: c,
+				tabIndex: c ? 0 : void 0,
+				title: c || void 0,
 				"data-task-resource": e,
 				"data-resource-state": t.state,
 				"data-resource-via": t.via,
 				"data-resource-high": o || void 0,
 				"data-resource-idle": a && i === 0 || void 0,
 				"data-copy-ignore": "",
-				"data-tooltip-copy-key": !t.reason && !n.detail && !o ? `tasks.resources.${e}.description` : void 0,
 				children: [
 					r.name,
 					" ",
@@ -550,7 +541,7 @@ function Z({ run: e, meta: t, children: n, error: r, issues: a, followups: o, fo
 							children: [
 								"列出其中 ",
 								b.toLocaleString(),
-								" 项，正在处理的排在前面"
+								" 项"
 							]
 						}) : null,
 						/* @__PURE__ */ (0, J.jsx)(Je, { rows: y })
@@ -852,4 +843,4 @@ function Qe() {
 }
 export { Qe as ActivityPage };
 
-//# debugId=b00bf9a9-0044-469b-bcb4-e6c2d1204def
+//# debugId=f3d45222-5726-4167-aff5-1f520ca689ce

@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "29f77252-37e1-43ad-aebd-9097d9469dab", e._sentryDebugIdIdentifier = "sentry-dbid-29f77252-37e1-43ad-aebd-9097d9469dab");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "aa24f796-313c-4e7f-886a-2752fbf86298", e._sentryDebugIdIdentifier = "sentry-dbid-aa24f796-313c-4e7f-886a-2752fbf86298");
 	} catch {}
 })();
 import { Button as e, CollectionSummary as t, DUPLICATES_KEY as n, EmptyState as r, FilterGlass as i, GlassPill as a, KEEP_LABELS as o, LOC as s, MEDIA_SOURCES_KEY as c, MEDIA_SOURCE_ICONS as l, Note as u, SourceLabel as d, SourceMark as f, TRASH_KEY as p, __toESM as m, batchOperate as h, bulkCloudPreferences as g, busyProps as _, cardClass as v, cloudLocations as y, confirmModal as b, distinctName as x, duplicateVictims as S, errorMessage as C, fetchDuplicates as w, fetchMediaSources as T, fmtDur as E, fmtSize as D, keepGroup as O, mixedCloudPreferences as k, queryClient as A, require_jsx_runtime as j, require_react as M, sharedNamePrefix as N, spriteGlyph as P, useMutation as F, useQuery as I, victimBytes as L } from "./peach-app.js";
@@ -295,15 +295,15 @@ function Y({ openItem: l, toast: f, failure: p }) {
 			}),
 			P.length > 0 && M.total > P.length ? /* @__PURE__ */ (0, z.jsx)("p", {
 				className: "text-center text-caption-1-regular text-text-secondary",
-				children: `显示可回收最多的前 ${P.length.toLocaleString()} 组，共 ${Number(M.total).toLocaleString()} 组；处理掉这些后，其余的会补上来。`
+				children: `显示可回收最多的前 ${P.length.toLocaleString()} 组，共 ${Number(M.total).toLocaleString()} 组`
 			}) : null,
 			M.kept ? /* @__PURE__ */ (0, z.jsx)("p", {
 				className: "mt-2 text-center text-caption-1-regular text-text-secondary",
-				children: `另有 ${M.kept.toLocaleString()} 组标记了都保留，不再列出；组里文件有增减时会重新列出。`
+				children: `另有 ${M.kept.toLocaleString()} 组标记了都保留，不再列出`
 			}) : null
 		]
 	});
 }
 export { Y as DuplicatesPage };
 
-//# debugId=29f77252-37e1-43ad-aebd-9097d9469dab
+//# debugId=aa24f796-313c-4e7f-886a-2752fbf86298

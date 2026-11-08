@@ -189,7 +189,7 @@ it('「都保留」不进回收站也不弹确认，整组一条；回执撤销�
 it('标过都保留的组数写在页尾，空态时也写', async () => {
   vi.stubGlobal('fetch', fetchMock(200, {}));
   const { host } = await open({ total: 0, files: 0, reclaimable: 0, groups: [], kept: 3 });
-  expect(host.textContent).toContain('另有 3 组标记了都保留，不再列出；组里文件有增减时会重新列出。');
+  expect(host.textContent).toContain('另有 3 组标记了都保留，不再列出');
   const plain = await open();
   expect(plain.host.textContent).not.toContain('标记了都保留');
 });

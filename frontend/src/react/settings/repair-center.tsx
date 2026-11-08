@@ -19,7 +19,7 @@ import { Progress } from '../components/progress';
 import { StatusLabel, type StatusTone } from '../components/status-label';
 import { queryClient } from '../query';
 import {
-  fetchRepairs, REPAIR_CENTER_INTRO, REPAIRS_KEY, type RepairCenterData, type RepairHistory, type RepairItem,
+  fetchRepairs, REPAIRS_KEY, type RepairCenterData, type RepairHistory, type RepairItem,
 } from './repair-center-data';
 import { useAction } from './use-action';
 
@@ -98,7 +98,6 @@ export function RepairCenterPage() {
   const failure = action.error || (query.error ? query.error.message : '');
 
   return <Page>
-    <p className="text-body-regular text-text-secondary">{REPAIR_CENTER_INTRO}</p>
     {failure ? <Note tone="error">{failure}</Note> : null}
     <section aria-labelledby="repair-items" className="flex flex-col gap-4">
       <SectionHeading id="repair-items">修复项目</SectionHeading>

@@ -13,13 +13,14 @@ import { createPortal } from 'react-dom';
 import { entityFaceImg, facePos } from '@peach/card-art';
 import { entityPath, esc, firstGrapheme, icon } from '@peach/legacy/core';
 import { textLang } from '../../core/text-lang';
-import { entityDisplayName, nameFallback, nameLanguage } from '../../core/entity-names';
+import { entityDisplayName, nameLanguage } from '../../core/entity-names';
 import { useEntityNames } from '../use-entity-names';
 
 import { Button } from '@/components/base/buttons/button';
 
 import { AvatarPicker } from '../avatar-picker/avatar-picker-page';
 import { Note } from '../components/note';
+import { PendingWork } from '../components/pending-work';
 import { FavoriteButton } from '../library-shortcuts/shortcut-controls';
 import { busyProps } from '../settings/busy-props';
 import { FeedNewRow } from '../feed-new/feed-new-row';
@@ -43,7 +44,6 @@ function costarImg(person: HeroCostar): string {
 export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, feedError, retryFeed, actions, helpers }: EntityHeroProps) {
   useEntityNames();
   const displayName = entityDisplayName(kind, entity.canonical_name, Number(entity.id));
-  const fallback = nameFallback(kind, entity.canonical_name, Number(entity.id));
   const people = isPeople(kind);
   const company = isCompany(kind);
   const facts = people ? factRows(entity.profile) : company ? companyFactRows(entity.company_profile) : [];
@@ -72,12 +72,12 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, feedErro
           </div>
           <div data-entity-identity="">
             <div data-entity-title="">
-              <h2 lang={textLang(displayName)} title={fallback || undefined}>{displayName}</h2>
+              <h2 lang={textLang(displayName)}>{displayName}</h2>
               {kind !== 'tag' ? <NamePicker current={entity.canonical_name} choices={nameChoices(entity, nameLanguage())}
                 onChoose={actions.chooseName} onAddAlias={actions.addAlias} /> : null}
               {entity.id ? <FavoriteButton item={{ entity_id: Number(entity.id), kind, name: entity.canonical_name || name, favorite: entity.favorite }} /> : null}
             </div>
-            {fallback ? <span data-name-fallback="" data-copy-key={`performer-name-fallback.${nameLanguage()}`} className="text-caption-1-regular text-text-secondary">{fallback}</span> : null}
+            <PendingWork work={entity.pending_work} />
             <AliasLine kind={kind} entity={entity} actions={actions} />
             {entity.related_identities?.length ? (
               <div className="flex min-w-0 flex-wrap gap-2 text-caption-1-regular text-text-secondary">
