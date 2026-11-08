@@ -1,14 +1,14 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "b7ddcf6d-13d4-4916-9edd-f413320da39f", e._sentryDebugIdIdentifier = "sentry-dbid-b7ddcf6d-13d4-4916-9edd-f413320da39f");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "a14baf38-8d0b-4ead-bc9d-efac637d3634", e._sentryDebugIdIdentifier = "sentry-dbid-a14baf38-8d0b-4ead-bc9d-efac637d3634");
 	} catch {}
 })();
 import { $fe21c36db05242bb$export$d7b12c4107be0d61 as e, AMANE_BRIDGE_CHECK_URL as t, AMANE_BRIDGE_KEY as n, AMANE_BRIDGE_REBUILD_URL as r, Button as i, CHECK_ALL_KEY as a, COVER_JOB_KEY as o, CUSTOM_SOURCES_KEY as s, CUSTOM_SOURCES_URL as c, Checkbox as l, Disclosure as u, ErrorText as d, ExternalLink as f, Fact as p, FactList as m, FieldLabel as h, Footer as g, Help as _, Input as v, IssueRow as y, LinkButton as ee, LoadingDots as b, Note as x, Progress as S, Rows as te, SCRAPING_CHECK_ALL_URL as C, SCRAPING_CHECK_URL as ne, SCRAPING_COVER_URL as w, SCRAPING_KEY as T, SCRAPING_SETTINGS_URL as re, SEGMENT as ie, SEGMENTED_TRACK as ae, Section as E, SegmentedRadioGroup as oe, Select$1 as se, SelectField as D, SelectItem as ce, SettingsRow as le, Stack as O, StatusLabel as k, __toESM as A, apiSend as j, busyProps as M, checkText as ue, composingKey as N, confirmModal as de, errorMessage as P, esc as F, fetchAmaneBridge as I, fetchCheckAllJob as L, fetchCoverJob as R, fetchCustomSources as z, fetchSources as fe, i2 as pe, momentText as me, queryClient as B, require_jsx_runtime as he, require_react as ge, spinnerHtml as _e, useAction as V, useBackgroundJob as H, useMutation as U, useQuery as W } from "./peach-app.js";
-import { CodeBlock as ve } from "./peach-app.code-block-5D8eSV-F.js";
+import { ConnectionStatus as ve } from "./peach-app.connection-status-DI6kgn3i.js";
 import { Page as G } from "./peach-app.page-QAncjzM1.js";
 import { SiteMark as K } from "./peach-app.site-mark-D_VlIyJz.js";
-import { ConnectionStatus as ye } from "./peach-app.connection-status-DI6kgn3i.js";
+import { CodeBlock as ye } from "./peach-app.code-block-5D8eSV-F.js";
 // src/react/scraping/custom-sources.tsx
 var q = /* @__PURE__ */ A(ge(), 1), J = he(), be = [
 	["code", "番号"],
@@ -220,7 +220,7 @@ function we({ initial: e, cancel: t, saved: n }) {
 				role: "status",
 				children: [/* @__PURE__ */ (0, J.jsx)("span", { dangerouslySetInnerHTML: { __html: _e("正在试查来源") } }), "正在试查来源"]
 			}) : null,
-			u ? /* @__PURE__ */ (0, J.jsx)(ve, {
+			u ? /* @__PURE__ */ (0, J.jsx)(ye, {
 				code: u,
 				language: "json",
 				label: "元数据接口返回"
@@ -274,7 +274,7 @@ function Ee({ source: t, toast: n }) {
 			}), C(), n(t ? "Cookie 已撤销" : "来源设置已保存");
 		}
 	}), D = U({ mutationFn: () => j(ne, { source: t.source }) }), A = w.isPending || D.isPending, N = (e) => {
-		e.preventDefault(), !A && (D.reset(), w.mutate(!1));
+		e.preventDefault(), A || (D.reset(), w.mutate(!1));
 	}, de = () => {
 		A || (D.reset(), w.mutate(!0));
 	}, F = () => {
@@ -415,7 +415,7 @@ function Ee({ source: t, toast: n }) {
 						tone: e.ok ? "success" : "error",
 						children: /* @__PURE__ */ (0, J.jsxs)("span", {
 							className: "flex flex-col items-start gap-1",
-							children: [/* @__PURE__ */ (0, J.jsx)(ye, {
+							children: [/* @__PURE__ */ (0, J.jsx)(ve, {
 								tone: e.ok ? "success" : "error",
 								children: e.ok ? "可访问" : "连接失败"
 							}), /* @__PURE__ */ (0, J.jsx)("span", { children: ue(e, t.label) })]
@@ -475,7 +475,7 @@ function ke({ toast: e }) {
 			}), t.status === "complete" && e(t.failed ? `检查完成，${t.failed} 项未通过` : "检查完成，全部可连接");
 		}
 	}), s = (e) => {
-		e.preventDefault(), !(!o.data || n || r.isPending) && r.mutate();
+		e.preventDefault(), !o.data || n || r.isPending || r.mutate();
 	}, c = (t?.results ?? []).flatMap((e) => e.results.map((t) => ({
 		source: e.source,
 		name: Oe(e, t),
@@ -742,4 +742,4 @@ function Me({ toast: e }) {
 }
 export { Me as ScrapingPage, Z as linkHost, X as networkOptions };
 
-//# debugId=b7ddcf6d-13d4-4916-9edd-f413320da39f
+//# debugId=a14baf38-8d0b-4ead-bc9d-efac637d3634

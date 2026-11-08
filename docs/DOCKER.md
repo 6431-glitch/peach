@@ -163,7 +163,7 @@ PEACH_LOG_MAX_FILE=2
 
 ## amane 刮削站点
 
-镜像随附按 `tools/amane-bridge/uv.lock` 构建的 amane `0.20.0` 独立环境，位于 `/app/amane-runtime`，通过 `PEACH_AMANE_RUNTIME` 定位。全新 `/data` 卷可直接调用刮削站点，无需在首次运行时安装依赖。桥通过独立子进程调用，站点请求仍使用所选连接方式。
+镜像随附按 `tools/amane-bridge/uv.lock` 构建的 amane `0.22.1` 独立环境，位于 `/app/amane-runtime`，通过 `PEACH_AMANE_RUNTIME` 定位。全新 `/data` 卷可直接调用刮削站点，无需在首次运行时安装依赖。桥通过独立子进程调用，站点请求仍使用所选连接方式。
 
 运行环境与镜像一起更新，`manifest.json` 记录固定 revision、版本和解释器相对路径。镜像构建阶段与最终运行阶段都会执行 `bridge.py --self-check`，离线载入运行时与全部 Peach 开放站点类。此检查不发站点请求；来源网络是否可达需在部署环境验证。环境损坏时重新拉取并创建对应镜像，保留 `/data` 卷。
 
