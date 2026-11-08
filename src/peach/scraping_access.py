@@ -111,6 +111,17 @@ class SourceBudgetExhausted(SourcePaused):
     """本趟采集预算耗尽，不能作为单个来源的冷却跳过。"""
 
 
+class SourceRefused(SourcePaused):
+    """站方回的是拒绝这个出口的说明页（`sources.base.refusal_page`），来源已经记下冷却。
+
+    `reason` 是 `FailureReason` 的取值（`geo_restricted`／`ip_banned`），来源检查按它报细档。
+    """
+
+    def __init__(self, message: str, reason: str) -> None:
+        super().__init__(message)
+        self.reason = reason
+
+
 def cooldown_path(root: Path, source: str) -> Path:
     """这个来源的冷却记录。键是来源名；没有来源名的请求按主机名散列，见 `SourceTransport`。"""
     return Path(root) / ("scraping-" + source + ".cooldown.json")
@@ -501,6 +512,7 @@ class SourceTransport:
                     until = time.time() + 900
             _pause(cooldown, until, blocks, via)
             raise SourcePaused("来源限流，已记录冷却时间；已有图片保留")
+        self._refuse(source, request.url, response, cooldown, blocks, via)
         blocked_pause = SOURCES.get(source or "", {}).get("blocked_pause")
         if response.status == 403 and blocked_pause:
             blocks += 1
@@ -514,6 +526,31 @@ class SourceTransport:
             # 这一趟通了，封已经解除：清掉记录，下次撞上从最短的一档重新起算。
             cooldown.unlink(missing_ok=True)
         return response
+
+    @staticmethod
+    def _refuse(source: str | None, url: str, response, cooldown: Path, blocks: int, via: str) -> None:
+        """回的是拒绝这个出口的说明页（地区限制、出口封禁）就记冷却并抛 `SourceRefused`。
+
+        状态码多半是 200，交给调用方只会被读成「这一页解不出东西」或「站上没有」。两种都是换一部片
+        问结果不变，整站停下。地区限制要换出口才会变，用户改完代理不该再等一整天，所以固定停
+        `FIRST_BLOCKED_PAUSE`、不往上翻倍；封禁和 403 一样按次翻倍到 `blocked_pause`。
+        """
+        from .sources.base import FailureReason, refusal_page
+
+        reason = refusal_page(response.body)
+        if reason is None:
+            return
+        label = SOURCES.get(source or "", {}).get("label") or hostname_of(url)
+        if reason is FailureReason.GEO_RESTRICTED:
+            _pause(cooldown, time.time() + FIRST_BLOCKED_PAUSE, blocks, via)
+            raise SourceRefused(
+                f"{label} 不对当前出口所在的地区开放，请在代理里给它换一个它接受的地区的出口；"
+                f"暂停向它请求 {FIRST_BLOCKED_PAUSE // 60} 分钟", reason.value)
+        blocks += 1
+        limit = SOURCES.get(source or "", {}).get("blocked_pause") or 24 * 3600
+        _pause(cooldown, time.time() + min(FIRST_BLOCKED_PAUSE * 2 ** (blocks - 1), limit), blocks, via)
+        raise SourceRefused(f"{label} 封禁了当前出口 IP，暂停向它请求一段时间，"
+                            "也可以在代理里给它换一个出口", reason.value)
 
     def hold(self, source: str, action: str) -> None:
         """契约报的冷却细档（`SourceFailure.cooldown_action`）写回这个来源的冷却记录。
