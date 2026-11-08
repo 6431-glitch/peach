@@ -1660,6 +1660,7 @@ class WebDataTests(unittest.TestCase):
             "/api/downloads", "/api/resources/search",
             "/api/wants", "/api/wants/magnets",
             "/api/jav/detail", "/api/jav/reviews", "/api/jav/resources", "/api/jav/discoveries", "/api/jav/releases",
+            "/api/jav/discoveries/metadata",
             "/api/result-updates",
         })
         self.assertEqual(set(rm_web.POST_HANDLERS), {
@@ -1668,7 +1669,7 @@ class WebDataTests(unittest.TestCase):
             "/api/library-processing", "/api/thumbnail-jobs", "/api/media-repair",
             "/api/media-processing",
             "/api/scraping/settings", "/api/scraping/check", "/api/scraping/check-all",
-            "/api/scraping/cover", "/api/jav/cover",
+            "/api/scraping/cover", "/api/jav/cover", "/api/jav/discoveries/metadata",
             "/api/scraping/amane-bridge/check", "/api/scraping/amane-bridge/rebuild",
             "/api/activity", "/api/play", "/api/feedback", "/api/watch-later",
             "/api/playlist",

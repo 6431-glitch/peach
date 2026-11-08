@@ -1724,14 +1724,60 @@ class JavDiscoveryTest(FeedWebFixture):
                 {"browser_tags": [{"name": "中出内射", "score": 4}]})), \
                 patch("peach.javdb_public.PUBLIC_API.movie") as movie:
             result = web_jav_discovery.q_jav_discoveries(self.contract, {"sort": "source_score"})
-            metadata.job.thread.join(5)
         movie.assert_not_called()
+        self.assertIsNone(metadata.job.thread, "GET 只读，不起外网任务")
         self.assertEqual([row["source_score"] for row in result["items"]], [4.23, None])
         self.assertTrue(all(row["tags"] == ["中出内射"] for row in result["items"]))
         self.assertTrue(all(row["duration"] == 10800 for row in result["items"]))
         self.assertEqual(result["ranking_method"], "field-sort")
         self.assertEqual([row["rank"] for row in result["items"]], [1, 2])
         self.assertTrue(all(row["taste_score"] == row["score"] for row in result["items"]))
+
+    def test_discovery_scoring_is_cached_until_its_inputs_change(self):
+        """任务进行中页面会反复来取；打分只在账本、口味库或资料边车变了之后重算。"""
+        from peach import web_jav_discovery
+        from peach.jav_discovery_metadata import discovery_metadata
+        self._add()
+        self._check()
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE feed_discovery SET studio='示例厂牌'")
+        fixture = self._preference_fixture({"peach_studios": [{"name": "示例厂牌", "score": 4}]})
+        with patch.object(web_jav_discovery, "preference_profile", return_value=fixture) as profile:
+            first = web_jav_discovery.q_jav_discoveries(self.contract, {})
+            again = web_jav_discovery.q_jav_discoveries(self.contract, {})
+            self.assertEqual(profile.call_count, 1)
+            self.assertEqual([row["id"] for row in again["items"]], [row["id"] for row in first["items"]])
+            code = first["items"][0]["code"]
+            discovery_metadata(self.contract).remember(code, {"number": code, "tags": [{"name": "中出"}]})
+            web_jav_discovery.q_jav_discoveries(self.contract, {})
+            self.assertEqual(profile.call_count, 2, "资料边车变了要重算")
+
+    def test_metadata_reading_starts_from_post_and_progress_is_read_alone(self):
+        """GET 不起任务；页面用 POST 起、停，进度单独轮询，不再整页重取。"""
+        from peach import web_jav_discovery
+        self._add()
+        self._check()
+        with self.contract.database.write_transaction() as connection:
+            connection.execute("UPDATE feed_discovery SET studio='示例厂牌'")
+        fixture = self._preference_fixture({"peach_studios": [{"name": "示例厂牌", "score": 4}]})
+        started = {"job_id": "batch", "status": "running", "completed": 0, "total": 2, "failed": 0,
+                   "requests": 0, "bytes": 0, "codes": ["X"]}
+        with patch.object(web_jav_discovery, "preference_profile", return_value=fixture), \
+                patch("peach.jav_discovery_metadata.DiscoveryMetadata.ensure", return_value=started) as ensure:
+            listing = web_jav_discovery.q_jav_discoveries(self.contract, {})
+            ensure.assert_not_called()
+            response = web_jav_discovery.w_jav_discovery_metadata(self.contract, {"action": "refresh"})
+        self.assertEqual(sorted(ensure.call_args.args[0]), sorted(row["code"] for row in listing["items"]))
+        self.assertTrue(ensure.call_args.kwargs["refresh"])
+        self.assertEqual(response["metadata_job"]["status"], "running")
+        self.assertNotIn("codes", response["metadata_job"])
+        with patch("peach.jav_discovery_metadata.DiscoveryMetadata.current", return_value=started), \
+                patch.object(web_jav_discovery, "_ranked", side_effect=AssertionError("进度轮询不打分")):
+            progress = web_jav_discovery.q_jav_discovery_metadata(self.contract, {})
+        self.assertEqual(progress["metadata_job"]["job_id"], "batch")
+        self.assertEqual(progress["poll_after_ms"], 3000)
+        with self.assertRaises(ValueError):
+            web_jav_discovery.w_jav_discovery_metadata(self.contract, {"action": "delete"})
 
     def test_releases_page_by_date_and_facets_come_only_from_unowned_releases(self):
         from peach import web_jav_discovery
@@ -1780,6 +1826,8 @@ class JavDiscoveryTest(FeedWebFixture):
 
     def _discover(self, scope="external", rankings=None, metadata=None, args=None):
         from peach import web_jav_discovery
+        # 口味与来源资料在这里是换掉的函数，不经它们的版本；每次从头算，不读上一次的打分缓存。
+        self.contract.cache.clear()
         with patch.object(web_jav_discovery, "preference_profile", return_value=self._preference_fixture(rankings or {})), \
                 patch.object(web_jav_discovery, "_cached_movie", return_value=metadata or {}), \
                 patch("peach.jav_discovery_metadata.DiscoveryMetadata.ensure", return_value=None):

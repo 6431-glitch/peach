@@ -59,7 +59,8 @@ from .web_downloads import (q_downloads, w_download_cancel, w_download_postproce
 from .web_resource_search import q_resource_search
 from .web_search import q_search_recommendations
 from .web_jav_detail import q_jav_detail, q_jav_resources, q_jav_reviews, w_jav_cover
-from .web_jav_discovery import q_jav_discoveries, q_jav_releases
+from .web_jav_discovery import (q_jav_discoveries, q_jav_discovery_metadata, q_jav_releases,
+                                w_jav_discovery_metadata)
 from .web_feeds import (
     q_feed_check,
     q_feed_discoveries,
@@ -372,6 +373,7 @@ GET_HANDLERS = {
     "/api/jav/reviews": q_jav_reviews,
     "/api/jav/resources": q_jav_resources,
     "/api/jav/discoveries": q_jav_discoveries,
+    "/api/jav/discoveries/metadata": q_jav_discovery_metadata,
     "/api/jav/releases": q_jav_releases,
     "/api/library-processing": q_library_processing,
     "/api/library-processing/issues": q_library_processing_issues,
@@ -452,6 +454,7 @@ POST_HANDLERS = {
     "/api/scraping/settings": w_scraping_settings,
     "/api/scraping/cover": w_scraping_cover,
     "/api/jav/cover": w_jav_cover,
+    "/api/jav/discoveries/metadata": w_jav_discovery_metadata,
     "/api/scraping/check": w_scraping_check,
     "/api/scraping/check-all": w_scraping_check_all,
     "/api/scraping/amane-bridge/check": w_scraping_amane_check,

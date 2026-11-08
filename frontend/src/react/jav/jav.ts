@@ -81,7 +81,7 @@ export function coverArrived(code: string, result: CoverNow): void {
   for (const key of ['jav-releases', 'jav-discoveries']) queryClient.setQueriesData({ queryKey: [key] }, patch);
 }
 export interface DiscoveryMetadataJob {
-  job_id: string; status: 'running' | 'complete' | 'stopped' | 'failed'; completed: number; total: number;
+  job_id: string; status: 'running' | 'complete' | 'stopped' | 'failed' | 'cancelling' | 'cancelled'; completed: number; total: number;
   failed: number; requests: number; bytes: number; stop_reason?: string; message?: string;
 }
 export interface DiscoveryResult {
@@ -90,14 +90,26 @@ export interface DiscoveryResult {
 }
 export const discoveryKey = (scope: DiscoveryScope, sort: DiscoverySort = 'taste', direction: DiscoveryDirection = 'desc') =>
   ['jav-discoveries', scope, sort, direction] as const;
+/** 推荐列表只读：资料读取由 `controlDiscoveryMetadata` 起停，进度由 `fetchDiscoveryMetadata` 单独轮询。 */
 export function fetchDiscoveries(scope: DiscoveryScope, signal: AbortSignal, options: {
-  sort?: DiscoverySort; direction?: DiscoveryDirection; jobId?: string; refreshMetadata?: boolean; cancelMetadata?: boolean;
+  sort?: DiscoverySort; direction?: DiscoveryDirection;
 } = {}) {
   const params = new URLSearchParams({ scope, limit: '100', sort: options.sort || 'taste', direction: options.direction || 'desc' });
-  if (options.jobId) params.set('metadata_job_id', options.jobId);
-  if (options.refreshMetadata) params.set('metadata_refresh', '1');
-  if (options.cancelMetadata) params.set('metadata_cancel', '1');
   return apiGet<DiscoveryResult>(`/api/jav/discoveries?${params}`, signal);
+}
+
+export const DISCOVERY_METADATA_KEY = ['jav-discovery-metadata'] as const;
+export type DiscoveryMetadataStatus = Pick<DiscoveryResult, 'metadata_job' | 'poll_after_ms'>;
+/** 资料读取进度：只读任务快照，不重算推荐。 */
+export const fetchDiscoveryMetadata = (signal: AbortSignal) =>
+  apiGet<DiscoveryMetadataStatus>('/api/jav/discoveries/metadata', signal);
+/** `start` 只读过期或从没读过的，`refresh` 整批重读，`cancel` 停下当前这一轮。读的是当前排序下那一页。 */
+export function controlDiscoveryMetadata(action: 'start' | 'refresh' | 'cancel', options: {
+  sort?: DiscoverySort; direction?: DiscoveryDirection; jobId?: string;
+}, signal?: AbortSignal) {
+  return apiSend<DiscoveryMetadataStatus>('/api/jav/discoveries/metadata', {
+    action, limit: 100, sort: options.sort || 'taste', direction: options.direction || 'desc', job_id: options.jobId || '',
+  }, 'POST', signal);
 }
 
 /** 新作分区的筛选与排序：都写在地址栏里，刷新与返回原样恢复。`seed` 只在换一批时有值。 */
