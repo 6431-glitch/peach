@@ -20,6 +20,7 @@ import { Button } from '@/components/base/buttons/button';
 
 import { AvatarPicker } from '../avatar-picker/avatar-picker-page';
 import { Note } from '../components/note';
+import { PendingWork } from '../components/pending-work';
 import { FavoriteButton } from '../library-shortcuts/shortcut-controls';
 import { busyProps } from '../settings/busy-props';
 import { FeedNewRow } from '../feed-new/feed-new-row';
@@ -76,6 +77,7 @@ export function EntityHeroPage({ kind, name, entity, feedNew, feedHost, feedErro
                 onChoose={actions.chooseName} onAddAlias={actions.addAlias} /> : null}
               {entity.id ? <FavoriteButton item={{ entity_id: Number(entity.id), kind, name: entity.canonical_name || name, favorite: entity.favorite }} /> : null}
             </div>
+            <PendingWork work={entity.pending_work} />
             <AliasLine kind={kind} entity={entity} actions={actions} />
             {entity.related_identities?.length ? (
               <div className="flex min-w-0 flex-wrap gap-2 text-caption-1-regular text-text-secondary">

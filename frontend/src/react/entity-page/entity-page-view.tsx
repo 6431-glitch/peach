@@ -122,6 +122,21 @@ function EntityLoaded(props: EntityPageProps & { entity: EntityPageData }) {
      重建），重取到新数据还不够，得换键重建，新图地址里的版本才落得到页面上。 */
   const [avatarEpoch, setAvatarEpoch] = useState(0);
 
+  /* 资料还在补全时资料卡每隔几秒重取一次（`entityOptions` 的 `refetchInterval`）。每补完一项，头像、
+     作品署名与照片都可能换了：同换头像那样作废作品、照片与新作，换键重建，不用刷新页面。 */
+  const pendingCount = entity.pending_work?.length || 0;
+  const lastPending = useRef(pendingCount);
+  useEffect(() => {
+    const finished = pendingCount < lastPending.current;
+    lastPending.current = pendingCount;
+    if (!finished) return;
+    actions.avatarChanged();
+    setAvatarEpoch((epoch) => epoch + 1);
+    void queryClient.invalidateQueries({ queryKey: ['entity-items', kind, name] });
+    void queryClient.invalidateQueries({ queryKey: ['entity-photos', kind, name] });
+    if (entityId) void queryClient.invalidateQueries({ queryKey: feedNewKey(entityId) });
+  }, [actions, entityId, kind, name, pendingCount]);
+
   /* ── 作品 ── */
   const itemsQuery = itemsOptions(props);
   const items = useQuery(itemsQuery);

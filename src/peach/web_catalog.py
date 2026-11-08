@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import random
 import re
+import sqlite3
 import time
 from collections.abc import Callable
 from functools import lru_cache
@@ -1037,6 +1038,44 @@ def label_makers(contract: WebContract, c, aid) -> dict[int, dict]:
     return chains
 
 
+#: 云下载落地后还没处理完的那几档：识别正片、采集资料与整理都在这一段里。
+DOWNLOAD_POSTPROCESS_ACTIVE = ("pending", "queued", "running")
+
+
+def processing_assets(contract: WebContract, connection) -> dict[int, str]:
+    """此刻还在补资料的作品，值是在补它的那类任务（`task_key`）。
+
+    三处来源：在跑的定向扫描与采集那一批（整库处理不算，它说明不了某一部缺什么，只算它此刻
+    正在处理的那一部）、云下载落地后还没处理完的正片。只读内存状态与任务表，不按缺哪些字段猜。
+    """
+    found: dict[int, str] = {}
+    job = getattr(contract, "library_processing_job", None)
+    state = job.snapshot() if job is not None else None
+    if state and state.get("status") in ("running", "pausing", "paused"):
+        scope = state.get("asset_ids")
+        current = state.get("current_asset_id")
+        for value in [*(scope if isinstance(scope, list) else []), current]:
+            if isinstance(value, int):
+                found[value] = "library-processing"
+    try:
+        rows = connection.execute(
+            "SELECT asset_id FROM download_task WHERE asset_id IS NOT NULL AND postprocess_state IN "
+            f"({','.join('?' for _ in DOWNLOAD_POSTPROCESS_ACTIVE)})", DOWNLOAD_POSTPROCESS_ACTIVE).fetchall()
+    except sqlite3.OperationalError:
+        # 迁移前的只读副本还没有下载任务表。
+        rows = []
+    for row in rows:
+        found.setdefault(int(row[0]), "download-postprocess")
+    return found
+
+
+def processing_work(task_keys) -> list[dict]:
+    """把在补资料的任务种类写成页面读的那一种形状，同一类只报一次。"""
+    from .task_runs import task_label
+    return [{"task_key": key, "label": task_label(key), "status": "running"}
+            for key in dict.fromkeys(task_keys)]
+
+
 def q_item(contract: WebContract, aid):
     """按 id 直取。
     ⚠️ 没有这个接口时，前端只能用「带筛选条件再查一遍然后 find」的绕法：
@@ -1160,6 +1199,10 @@ def q_item(contract: WebContract, aid):
     d.pop("snapshot_path", None); d.pop("path", None)
     attach_multipart_groups(contract, [d])
     attach_edition_groups(contract, [d])
+    # 刚入库还在补资料的那一部：详情据此显示「补全中」并定时重取，补完自己消失。
+    with contract.read_connection() as c:
+        busy = processing_assets(contract, c).get(d["id"])
+    d["pending_work"] = processing_work([busy] if busy else [])
     return d
 
 def _one_card_per_release(contract: WebContract, source_code, rows: list[dict]) -> list[dict]:

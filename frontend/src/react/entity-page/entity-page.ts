@@ -18,6 +18,7 @@ import type { EntityHeroData, HeroCostar } from '../entity-hero/entity-hero';
 import { feedNewKey, feedNewOptions, type FeedRowHtml } from '../feed-new/feed-new';
 import type { IndexPerson, PeopleLayout } from '../index/index-data';
 import { queryClient } from '../query';
+import { pendingRefetch } from '../components/pending-work';
 
 /** 地址栏上这一页的筛选，键同壳的 `ENTITY_FILTER_KEYS`。 */
 export const ENTITY_FILTER_KEYS = ['loc', 'creator', 'tag', 'state', 'dur_min', 'dur_max', 'orient', 'year', 'sort', 'dir', 'browse', 'folder', 'folder_recursive'] as const;
@@ -223,6 +224,7 @@ export const entityOptions = (kind: string, name: string) => ({
   queryFn: ({ signal }: { signal: AbortSignal }) =>
     api(`/api/entity?kind=${encodeURIComponent(kind)}&name=${encodeURIComponent(name)}`, { signal }) as Promise<EntityPageData>,
   staleTime: Infinity,
+  refetchInterval: pendingRefetch,
 });
 
 /** 照片一页的地址。整组照片第一页沿用壳里的口径（不带 limit，换一批才带种子）；图集与续页每页 120。 */
