@@ -24,6 +24,8 @@ NOTICES: dict[str, dict] = {
             {"title": "拖动排序", "icon": "reorder", "body": "侧栏和各类菜单都能拖动排序"},
             {"title": "按媒体库同步", "icon": "library", "body": "扫描和采集可以只选一个库", "route": "/data-cleanup"},
             {"title": "新作多选", "icon": "select", "body": "批量加入想要或查找资源", "route": "/jav"},
+            {"title": "修复与迁移", "icon": "refresh", "body": "查看升级修复的进度，确认清理关注旧快照",
+             "route": "/settings/maintenance/repairs"},
         ],
         "automatic": [
             {"id": "display-dimensions", "icon": "resize", "when": "display_reprobe",
