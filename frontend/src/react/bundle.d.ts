@@ -287,7 +287,8 @@ export interface UpdateJob {
 export interface MediaSource {
   transport?: 'filesystem' | 'smb'; smb_username?: string; smb_password_saved?: boolean; smb_encrypt?: boolean;
   root_id?: string; library_id?: string;
-  location: string; root: string; path: string; online?: boolean; library?: string; library_icon?: string; cost?: 'free' | 'metered';
+  /** `online`：挂载可达性快照，`null` 是检测超时或还没检测（`media_configuration.reachability_states`）。 */
+  location: string; root: string; path: string; online?: boolean | null; library?: string; library_icon?: string; cost?: 'free' | 'metered';
   /** 媒体库来源色（强调色键名，空串不上色）与处理方式；`library_stages` 是自定义时所选步骤，逗号分隔。 */
   library_color?: string; library_policy?: 'auto' | 'local' | 'custom'; library_stages?: string;
 }
