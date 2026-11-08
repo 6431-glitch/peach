@@ -400,7 +400,9 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
               <div data-setting-card="">
                 <section data-sidebar-setting=""><SidebarOrder host={current} /></section>
               </div>
-              <div data-setting-card=""><NavigationOrderPreferences /></div>
+              <div data-setting-card="">
+                <section data-sidebar-setting=""><NavigationOrderPreferences /></section>
+              </div>
             </section>
           </Group>
           <BrowseGroup host={current} tab={shown.tab} epoch={epoch} />
