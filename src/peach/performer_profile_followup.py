@@ -65,9 +65,8 @@ TASK_KEY = "performer-profile"
 TASK_LABEL = "补女优资料"
 SOURCE = "auto:performer-profile"
 MINNANO, AVBASE, AVWIKIDB, JAVDB = alias.MINNANO, "avbase", "avwikidb", "javdb"
-#: javdb 的主机间隔，与 `harvest_directory_links.SOURCE_INTERVAL` 同一档（docs/SOURCING.md）。
-JAVDB_INTERVAL = 5.0
-_JAVDB_LIMITER = HostLimiter({"javdb.com": JAVDB_INTERVAL})
+#: javdb 的女优页不另设间隔：取页时等 `library_processing.SOURCE_LIMITER`，与资料处理、订阅源同一份。
+#: 配额按出口 IP 算，两份互不知情的间隔同时跑会叠到每分钟 30 多页，超过用户定的 20 页（docs/SOURCING.md）。
 #: avbase 女优页与 minnano-av、avwikidb 同一档间隔（2026-11-04 实测 4 秒一页、32 页没撞墙）。
 AVBASE_INTERVAL = 3.0
 _AVBASE_LIMITER = HostLimiter({"avbase.net": AVBASE_INTERVAL})
@@ -188,6 +187,7 @@ def stock(connection: sqlite3.Connection, attempts, *, limit: int, skip=()) -> l
 
 def open_sites(contract) -> dict:
     """四站的取页器。缓存目录与补别名后继共用，同一页不问第二次。测试把这一步整个换掉。"""
+    from .library_processing import SOURCE_LIMITER
     from .scraping_access import SourceTransport
 
     cache = Path(contract.candidate_root) / "provider-cache"
@@ -199,7 +199,7 @@ def open_sites(contract) -> dict:
                                        source=AVBASE, max_age=REFRESH),
             AVWIKIDB: avwikidb_pages(contract),
             JAVDB: alias.MinnanoPages(cache / "javdb-pages", cooldown, SourceTransport(cooldown),
-                                      limiter=_JAVDB_LIMITER, max_requests=alias.MAX_KEYS,
+                                      limiter=SOURCE_LIMITER, max_requests=alias.MAX_KEYS,
                                       source=JAVDB, max_age=REFRESH)}
 
 

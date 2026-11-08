@@ -453,7 +453,8 @@ minnano-av 也在 Cloudflare 后面，但对 HTTP 客户端是间歇拦截：202
   60 秒），同一请求交给下一家；三家都在冷却才整源停。签名常量从网页前端读不到时改用 App 那一套签名与请求参数，
   一小时后再回头读网页前端。
 - 详情页那一路（视频预览）的主机间隔由用户定：`library_processing.SOURCE_INTERVALS` 里 `javdb.com` 与
-  `jdbstatic.com` 都是 3 秒，两个主机要一起改。这份间隔由 `SOURCE_LIMITER` 整个进程共用，问同一主机仍按一条队排。
+  `jdbstatic.com` 都是 3 秒，两个主机要一起改。这份间隔由 `SOURCE_LIMITER` 整个进程共用，问同一主机仍按一条队排；
+  补女优资料取 javdb 女优页、详情页视频预告和订阅源也排在这条队里，几条同时跑合计仍是每分钟 20 页。
 - **FC2 的商品号在综合索引中只问 JavDB**（`community_catalog.community_sources_for`）。匿名接口能够提供完整作品元数据；FC2 先查它，字段不足再查专站。AVBase 与 JavBus 不进入 FC2 默认链。
 - 一轮采集的长短约等于 javdb 请求数乘接口间隔。`HostLimiter` 等的是「距上次满 N 秒」，别家的
   往返落在这个窗口里被吸收，所以跳过两家省的是配额和撞 Cloudflare 的次数，不是时间；改成并行也省不出时间。
