@@ -1732,6 +1732,23 @@ class TaskPayloadTests(LedgerTestCase):
         # 契约是 JSON，派生字段不能带出 Path、set 这类东西。
         json.dumps(payload)
 
+    def test_the_detail_endpoint_lists_the_running_and_latest_followups_and_counts_them_all(self):
+        """卡片展开时每两秒取一次：派出上千条时只下发在跑的与最近派出的那些，计数按全部算。"""
+        from peach.web_tasks import TASK_FOLLOWUP_LIMIT, q_task
+        from peach.web_contract import WebContract
+
+        parent = self.parent()
+        queued = self.store.enqueue_followups(
+            parent.id, [(f"entity-avatar:performer:{index}", AVATAR_TASK_KEY, f"第{index}位")
+                        for index in range(1, TASK_FOLLOWUP_LIMIT * 2 + 21)])["queued"]
+        running = self.store.claim_followup([AVATAR_TASK_KEY])
+        self.assertEqual(running.id, queued[0], "后继按 id 认领，在跑的是最早那条")
+        payload = q_task(WebContract(self.db), parent.id)
+        listed = [row["id"] for row in payload["followups"]]
+        self.assertEqual(listed, [queued[0], *queued[-TASK_FOLLOWUP_LIMIT:]])
+        self.assertEqual(payload["followup_counts"], {"running": 1, "pending": len(queued) - 1})
+        self.assertEqual(payload["followup_total"], len(queued))
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()
