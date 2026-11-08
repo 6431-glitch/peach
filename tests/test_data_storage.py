@@ -964,11 +964,17 @@ class CapacityProtectionTests(unittest.TestCase):
         with patch.object(self.budget, 'GIB', 1024), \
                 patch.object(self.budget, 'allocated_bytes', side_effect=lambda path, info: info.st_size):
             self.budget.refresh_usage(self.config)
-            with patch.object(self.budget, '_files', wraps=self.budget._files) as walked:
+            walkers, files = [], self.budget._files
+
+            def walk(*args, **kwargs):
+                walkers.append(threading.get_ident())
+                return files(*args, **kwargs)
+            with patch.object(self.budget, '_files', side_effect=walk):
                 result = playback.check(force=True)
-                # 播放请求只排后台清理，本身不走缓存目录。
-                walked.assert_not_called()
-            self.join_cleaning()
+                self.join_cleaning()
+            # 播放请求只排后台清理，本身不走缓存目录；后台清理线程什么时候开始走不由请求决定。
+            self.assertNotIn(threading.get_ident(), walkers)
+            self.assertTrue(walkers)
             # 数据超限：后台清了缓存，仍超限也照常播放；前台不写状态文件。
             self.assertFalse(cached.exists())
             self.assertTrue(result['paused'])
