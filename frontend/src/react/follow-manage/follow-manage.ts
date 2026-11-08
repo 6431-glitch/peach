@@ -474,13 +474,46 @@ export const renameAliasGroup = (key: string, name: string, signal?: AbortSignal
 export const saveCredential = (provider: string, values: Record<string, string>) =>
   apiSend<{ note?: string }>(FOLLOW_CREDENTIAL_URL, { provider, values });
 
-export const markItem = (item: number, to: string) =>
-  apiSend<{ ok: boolean }>(FOLLOW_STATUS_URL, { item, to });
+/** 一次批量写最多几条，与 `w_follow_status` 收 `items` 的上限相同；一页待处理也最多这么多组。 */
+export const MARK_BATCH = 1000;
+/** 「全部标为」最多取几轮待处理清单：一轮最多标 `MARK_BATCH` 组，十万条以上的积压不在一次点击里收完。 */
+const MARK_ROUNDS = 100;
 
-/** 待处理的未看条目。批量标记要先知道有哪些，取一趟再逐条写。 */
+export const markItems = (items: number[], to: string) =>
+  apiSend<{ ok: boolean; items: number[] }>(FOLLOW_STATUS_URL, { items, to });
+
+type PendingRow = { id: number; status: string };
+/** 待处理的未看条目，最多 `MARK_BATCH` 组；`has_more` 说后面还有。 */
 export const fetchPending = () =>
-  apiGet<{ groups?: { primary: { id: number; status: string }; variants: { id: number; status: string }[];
-    duplicates: { id: number; status: string }[] }[] }>(`${FOLLOW_URL}?status=new&limit=1000`);
+  apiGet<{ groups?: { primary: PendingRow; variants: PendingRow[]; duplicates: PendingRow[] }[]; has_more?: boolean }>(
+    `${FOLLOW_URL}?status=new&limit=${MARK_BATCH}`);
+
+/** 把未看条目全部标成 `to`：取一页待处理、按 `MARK_BATCH` 条一批写，写完再从第一页取，直到取不到为止。
+ *  标过的离开 `status=new`，所以不按偏移翻页；写失败的那批不再重取，免得一直撞同一个错。 */
+export async function markAllPending(to: string): Promise<{ total: number; failed: number; error?: unknown }> {
+  const tried = new Set<number>();
+  let failed = 0;
+  let error: unknown;
+  for (let round = 0; round < MARK_ROUNDS; round += 1) {
+    const pending = await fetchPending();
+    const ids = [...new Set((pending.groups || [])
+      .flatMap((group) => [group.primary, ...group.variants, ...group.duplicates])
+      .filter((item) => item.status === 'new' && !tried.has(item.id)).map((item) => item.id))];
+    if (!ids.length) break;
+    for (let start = 0; start < ids.length; start += MARK_BATCH) {
+      const batch = ids.slice(start, start + MARK_BATCH);
+      for (const id of batch) tried.add(id);
+      try {
+        await markItems(batch, to);
+      } catch (cause) {
+        failed += batch.length;
+        error ??= cause;
+      }
+    }
+    if (!pending.has_more) break;
+  }
+  return { total: tried.size, failed, error };
+}
 
 /** 一条订阅源。字段以 `feeds.sources`（`src/peach/feeds.py`）为准。 */
 export interface FeedSource {

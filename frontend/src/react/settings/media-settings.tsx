@@ -376,7 +376,8 @@ function MediaForm({ data, receipt }: ConfigurationGroupProps) {
   );
 }
 
-function MountBadge({ online }: { online: boolean | undefined }) {
+/** 挂载可达性：快照里 `null` 是检测超时或还没检测，显示「未检测」，不当离线。 */
+function MountBadge({ online }: { online: boolean | null | undefined }) {
   return <ConnectionStatus online={online} />;
 }
 

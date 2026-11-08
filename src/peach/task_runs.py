@@ -621,12 +621,22 @@ class TaskRunStore:
                 (stamp(),))
         return [int(row["id"]) for row in rows]
 
-    def children(self, parent_run_id: int) -> list[TaskRun]:
-        """这一轮派出的后继，按入队顺序。"""
+    def children(self, parent_run_id: int, *, limit: int | None = None) -> list[TaskRun]:
+        """这一轮派出的后继，按入队顺序。
+
+        给了 `limit` 只取最近派出的那么多条，正在跑的另外一条不落：后继按 id 顺序认领，在跑的那条
+        往往是最早的，按 id 取最近几条只剩排队的。总数看 `followup_counts`。
+        """
         with self.database.read_connection() as connection:
-            rows = connection.execute(
-                f"SELECT {_COLUMNS} FROM task_run WHERE parent_run_id=? ORDER BY id",
-                (int(parent_run_id),)).fetchall()
+            if limit is None:
+                rows = connection.execute(
+                    f"SELECT {_COLUMNS} FROM task_run WHERE parent_run_id=? ORDER BY id",
+                    (int(parent_run_id),)).fetchall()
+            else:
+                rows = connection.execute(
+                    f"SELECT {_COLUMNS} FROM task_run WHERE parent_run_id=? AND (status='running' OR id IN ("
+                    "SELECT id FROM task_run WHERE parent_run_id=? ORDER BY id DESC LIMIT ?)) ORDER BY id",
+                    (int(parent_run_id), int(parent_run_id), max(1, int(limit)))).fetchall()
         return [_row(row) for row in rows]
 
     def _due(self, run_id: int, throttle: float) -> bool:

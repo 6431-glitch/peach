@@ -14,7 +14,7 @@ import { WantList } from '../wants/want-list';
 import { JavSelectionProvider, useVisibleJavWorks } from './jav-selection';
 import { addWant, invalidateWants } from '../wants/wants';
 import { busyProps, useAction } from '../settings/use-action';
-import { controlDiscoveryMetadata, DISCOVERY_METADATA_KEY, discoveryKey, fetchDiscoveries, fetchDiscoveryMetadata, writeJavQuery,
+import { controlDiscoveryMetadata, DISCOVERY_METADATA_KEY, DISCOVERY_REFRESH_MS, discoveryKey, fetchDiscoveries, fetchDiscoveryMetadata, writeJavQuery,
   type DiscoveryMetadataJob, type DiscoveryScope } from './jav';
 import { queryClient } from '../query';
 import { DiscoveryCard, resourcePrefill } from './discovery-card';
@@ -31,8 +31,6 @@ import { DISCOVERY_SORTS, discoveryScore, recommendationScore, type DiscoverySor
 const MetadataStopGlyph = spriteGlyph('x');
 const MetadataRefreshGlyph = spriteGlyph('refresh-cw');
 const SEARCH_LABELS: Record<string, string> = { releases: '筛选新作', discover: '筛选推荐', wants: '筛选想要' };
-/** 资料读取进行中，推荐列表隔这么久重取一次，把读到的标签与评分带上来；进度条另按任务轮询走。 */
-const DISCOVERY_REFRESH_MS = 15000;
 
 export function JavPage({ tab, readOnly, navigate, receipt }: {
   tab: string; readOnly: boolean; navigate(path: string): void; receipt(message: string): void;

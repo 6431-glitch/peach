@@ -333,23 +333,18 @@ def q_jav_releases(contract, args):
     出现过的女优、厂牌与标签；每个维度的计数按「文字与其他维度已生效、本维度不计」的行集算，
     计数为 0 的不列。
 
-    筛选结果里还有从没读过来源资料的（`metadata_state` 为 pending），就为它们起一轮资料读取，与「发现」
-    共用同一个有预算的后台任务；读过但没取到的不在此列，不会每次打开都重试。`metadata_job_id` 是轮询。
+    只读：筛选结果里从没读过来源资料的（`metadata_state` 为 pending）只报个数（`metadata_unread`），
+    读取由 `w_jav_release_metadata` 起停，与「发现」共用同一个有预算的后台任务，进度由
+    `/api/jav/discoveries/metadata` 单独轮询。每问一次都把全部候选重算一遍，不该拿它当进度轮询。
     """
     try:
         size = max(1, min(int(args.get("size") or RELEASE_PAGE_SIZE), 100))
         page = max(1, int(args.get("page") or 1))
     except (TypeError, ValueError):
         size, page = RELEASE_PAGE_SIZE, 1
-    sort = args.get("sort") if args.get("sort") in RELEASE_SORTS else "release_date"
-    descending = args.get("direction") != "asc"
-    matches = _release_matcher({facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS},
-                               str(args.get("q") or "").strip().casefold())
     with contract.read_connection() as connection, entities.memoized_resolution():
-        rows = _release_order(_release_rows(contract, connection, taste=sort == "taste"), sort, descending,
-                              str(args.get("seed") or ""))
+        rows, shown, matches, sort, descending = _release_listing(contract, connection, args)
         facets = {facet: _release_facet(contract, rows, facet, matches) for facet in RELEASE_FACETS}
-        shown = [row for row in rows if matches(row)]
         picked = shown[(page - 1) * size:page * size]
         wanted = wants.wanted_keys(connection, (web_catalog.normalise_code_key(row["code"]) for row in picked))
     states = feed_followup.cover_states(contract, picked)
@@ -361,7 +356,48 @@ def q_jav_releases(contract, args):
     return {"items": picked, "total": len(shown), "candidate_total": len(rows), "page": page, "size": size,
             "sort": sort, "direction": "desc" if descending else "asc",
             "facets": {"performers": facets["performer"], "studios": facets["studio"], "tags": facets["tag"]},
-            **_release_metadata(contract, shown, args.get("metadata_job_id"))}
+            "metadata_unread": len(_release_unread(shown)), **_current_job(contract)}
+
+
+def _release_listing(contract, connection, args):
+    """新作全集（已排序）与按筛选条件留下的那些；列表与「读取资料」共用，读的是同一批。"""
+    sort = args.get("sort") if args.get("sort") in RELEASE_SORTS else "release_date"
+    descending = args.get("direction") != "asc"
+    matches = _release_matcher({facet: str(args.get(facet) or "").strip() for facet in RELEASE_FACETS},
+                               str(args.get("q") or "").strip().casefold())
+    rows = _release_order(_release_rows(contract, connection, taste=sort == "taste"), sort, descending,
+                          str(args.get("seed") or ""))
+    return rows, [row for row in rows if matches(row)], matches, sort, descending
+
+
+def _release_unread(shown):
+    """从没读过来源资料的那几部；读过但没取到的不在此列，不会每次打开都重试。"""
+    return [row["code"] for row in shown if row.get("metadata_state") == "pending"]
+
+
+def _current_job(contract):
+    job = discovery_metadata(contract).current()
+    return _job_response(job) if job else {}
+
+
+def w_jav_release_metadata(contract, body):
+    """新作页的「读取资料」：`start` 为当前筛选结果里从没读过的那几部起一轮读取，`cancel` 停下当前这一轮。
+
+    与「发现」共用一个任务：一轮在跑时 `start` 只回它的快照。从没读过的作品没有缓存可用，
+    所以按 `refresh` 起，不沿用上一轮那批番号。
+    """
+    action = str(body.get("action") or "start")
+    if action not in ("start", "cancel"):
+        raise ValueError("action 只能是 start 或 cancel")
+    metadata = discovery_metadata(contract)
+    if action == "cancel":
+        job = metadata.cancel(body.get("job_id") or None)
+        return _job_response(job) if job else {"metadata_job": None}
+    with contract.read_connection() as connection, entities.memoized_resolution():
+        _rows, shown, _matches, _sort, _descending = _release_listing(contract, connection, body)
+    unread = _release_unread(shown)
+    job = metadata.ensure(unread, refresh=True) if unread else metadata.current()
+    return _job_response(job) if job else {"metadata_job": None}
 
 
 def _release_rows(contract, connection, *, taste):
@@ -411,12 +447,3 @@ def _release_facet(contract, rows, facet, matches):
         return [{"name": name, "count": count, "has_logo": contract.has_logo(name), "logo_version": contract.logo_version(name)}
                 for name, count in ordered]
     return [{"name": name, "count": count} for name, count in ordered]
-
-
-def _release_metadata(contract, shown, job_id):
-    """筛选结果里从没读过来源资料的那几部起一轮读取；`job_id` 是轮询。没有要读的也没在轮询就不回任务。"""
-    unread = [row["code"] for row in shown if row.get("metadata_state") == "pending"]
-    if not unread and not job_id:
-        return {}
-    job = discovery_metadata(contract).ensure(unread, refresh=bool(unread), job_id=job_id)
-    return _job_response(job) if job else {}

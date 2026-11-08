@@ -1214,6 +1214,22 @@ class FaceMatchFollowupTests(FaceStubCase):
         self.assertEqual(self.run_followup()["outcome"], "已有头像")
         self.assertEqual((self.avatars / f"performer-{self.person}.img").read_bytes(), body)
 
+    def test_deciding_who_needs_an_avatar_does_not_hash_the_installed_pictures(self):
+        """存量规划每分钟对每位女优问一次「缺不缺头像」：只看文件在不在与来源记录，不整张算哈希。"""
+        from peach import avatar_picker
+        from peach.avatar_followup import needs_avatar
+        self.assertTrue(needs_avatar(self.avatars, "performer", self.person))
+        avatar_picker.install(self.providers, self.avatars, "performer", self.person,
+                              self.picture((125, 125), self.HER_AGAIN),
+                              {"provider": "cover-face", "source_kind": "cover_face_crop", "face_px": 50})
+        with mock.patch.object(avatar_picker, "installed_digest", side_effect=AssertionError("不该算哈希")):
+            self.assertTrue(needs_avatar(self.avatars, "performer", self.person), "封面截的那一档还能换")
+            avatar_picker.install(self.providers, self.avatars, "performer", self.person,
+                                  self.picture((125, 125), self.HER_AGAIN),
+                                  {"provider": "cover-face", "source_kind": "cover_face_crop",
+                                   "face_px": 50, "user_selected": True})
+            self.assertFalse(needs_avatar(self.avatars, "performer", self.person))
+
     def test_a_profile_smaller_than_300_pixels_remains_a_cover_fallback(self):
         self.candidate("y-Minnano", (299, 350), self.HER)
         self.work(1, "IPX-001", self.HER)
@@ -1715,6 +1731,23 @@ class TaskPayloadTests(LedgerTestCase):
         self.assertEqual(child["run"]["followup_depth"], 1)
         # 契约是 JSON，派生字段不能带出 Path、set 这类东西。
         json.dumps(payload)
+
+    def test_the_detail_endpoint_lists_the_running_and_latest_followups_and_counts_them_all(self):
+        """卡片展开时每两秒取一次：派出上千条时只下发在跑的与最近派出的那些，计数按全部算。"""
+        from peach.web_tasks import TASK_FOLLOWUP_LIMIT, q_task
+        from peach.web_contract import WebContract
+
+        parent = self.parent()
+        queued = self.store.enqueue_followups(
+            parent.id, [(f"entity-avatar:performer:{index}", AVATAR_TASK_KEY, f"第{index}位")
+                        for index in range(1, TASK_FOLLOWUP_LIMIT * 2 + 21)])["queued"]
+        running = self.store.claim_followup([AVATAR_TASK_KEY])
+        self.assertEqual(running.id, queued[0], "后继按 id 认领，在跑的是最早那条")
+        payload = q_task(WebContract(self.db), parent.id)
+        listed = [row["id"] for row in payload["followups"]]
+        self.assertEqual(listed, [queued[0], *queued[-TASK_FOLLOWUP_LIMIT:]])
+        self.assertEqual(payload["followup_counts"], {"running": 1, "pending": len(queued) - 1})
+        self.assertEqual(payload["followup_total"], len(queued))
 
 
 if __name__ == "__main__":  # pragma: no cover

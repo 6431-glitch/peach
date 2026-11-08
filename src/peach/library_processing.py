@@ -96,7 +96,7 @@ MISS_TTL_SECONDS = 7 * 24 * 3600
 SOURCE_INTERVALS = {'javdb.com': 3.0, 'jdbstatic.com': 3.0}
 #: 按 `SOURCE_INTERVALS` 等的那一份间隔，整个进程共用。想要作品资料采集、新作资料采集、资料处理
 #: 各起各的 provider，间隔若各算各的，几条同时跑时问同一主机的请求就叠在一起，配额照样按
-#: 出口 IP 一份算。
+#: 出口 IP 一份算。补女优资料的 javdb 女优页、详情页视频预告与订阅源取页也等这一份。
 SOURCE_LIMITER = HostLimiter(SOURCE_INTERVALS, default_interval=2.0)
 #: 认人 Wiki 的取页层自己不再等主机间隔：它的传输就是 provider 的 `transport`，那里已经按
 #: `SOURCE_LIMITER` 等过一次，再等一遍每页就要 4 秒。
