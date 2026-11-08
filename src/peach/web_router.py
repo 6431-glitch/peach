@@ -180,10 +180,12 @@ def _get_ads(contract, args):
     )
 
 
-#: `/api/related` 确定不读的账本表：订阅新作与复核结论。其余表一律算进版本：推荐卡要的
-#: 出镜者、关注卡、下载来源散在好几处，漏一张，那张表变了之后就一直回旧结果。
+#: `/api/related` 确定不读的账本表：订阅新作、复核结论，以及在线播放心跳、播放记录与搜索历史
+#: 这几张高频写的表。其余表一律算进版本：推荐卡要的出镜者、关注卡、下载来源散在好几处，
+#: 漏一张，那张表变了之后就一直回旧结果。
 RELATED_UNREAD_TABLES = ("feed_source", "feed_item", "feed_discovery", "feed_discovery_entity",
-                         "review_decision", "genre_decision")
+                         "review_decision", "review_decision_history", "genre_decision",
+                         "follow_playback", "activity_event", "search_history")
 
 
 def _get_related(contract, args):
