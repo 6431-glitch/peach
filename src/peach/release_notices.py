@@ -24,6 +24,8 @@ NOTICES: dict[str, dict] = {
             {"title": "拖动排序", "icon": "reorder", "body": "侧栏和各类菜单都能拖动排序"},
             {"title": "按媒体库同步", "icon": "library", "body": "扫描和采集可以只选一个库", "route": "/data-cleanup"},
             {"title": "新作多选", "icon": "select", "body": "批量加入想要或查找资源", "route": "/jav"},
+            {"title": "修复与迁移", "icon": "refresh", "body": "查看升级修复的进度，确认清理关注旧快照",
+             "route": "/settings/maintenance/repairs"},
         ],
         "automatic": [
             {"id": "display-dimensions", "icon": "resize", "when": "display_reprobe",
@@ -32,6 +34,8 @@ NOTICES: dict[str, dict] = {
              "title": "移出系统附属文件", "body": "NAS 缩略图、macOS 的 ._ 文件不再算作视频"},
             {"id": "garbled-performers", "icon": "person", "when": "garbled_performers",
              "title": "清理乱码人物", "body": "重新补采演员"},
+            {"id": "javdb-entries", "icon": "switch", "when": "javdb_entries",
+             "title": "收起错配的 JavDB 入口", "body": "人物页不再给出同名旧艺名的空页"},
         ],
         "attention": [
             {"title": "网盘视频可以手动补测尺寸", "when": "display_cloud_pending",

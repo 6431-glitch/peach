@@ -445,8 +445,11 @@ class ReleaseNoticeFactsTests(unittest.TestCase):
         connection.executemany('INSERT INTO ledger_upgrade_repair VALUES(?,?,?)', [
             ('a', json.dumps({'discovery-system-files-3': {'isolated': [{'id': 1}, {'id': 2}]}}), '1'),
             ('b', json.dumps({'garbled_people': {'links': [{'asset_id': 7}], 'tags': [], 'entities': []}}), '2'),
+            ('javdb-actor-records-1', json.dumps({'rule': 1, 'recorded': [{}, {}, {}],
+                                                  'hidden': [{}, {}], 'disabled_feeds': [{}]}), '3'),
         ])
         request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(
             upgrade_repairs=SimpleNamespace(available=False))))
         facts = routes_configuration._release_notice_facts(request, connection)
-        self.assertEqual(facts, {'system_files': {'count': 2}, 'garbled_performers': {'count': 1}})
+        self.assertEqual(facts, {'system_files': {'count': 2}, 'garbled_performers': {'count': 1},
+                                 'javdb_entries': {'count': 3}})

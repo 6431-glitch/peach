@@ -25,7 +25,8 @@ MIGRATION_FLOOR = ((50, '0.51.0'), (48, '0.50.0'), (47, '0.45.0'), (46, '0.40.0'
 #: `platforms` 可用的取值：系统与安装方式。
 PLATFORM_TOKENS = frozenset({'windows', 'macos', 'linux', 'docker', 'standalone', 'source'})
 #: `when` 可用的条件，由调用方按本机数据给出。
-FACTS = frozenset({'display_reprobe', 'system_files', 'garbled_performers', 'display_cloud_pending'})
+FACTS = frozenset({'display_reprobe', 'system_files', 'garbled_performers', 'javdb_entries',
+                   'display_cloud_pending'})
 RELEASES_URL = 'https://github.com/peach-mitao/peach/releases/tag/v'
 
 

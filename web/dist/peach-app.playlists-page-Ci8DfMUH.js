@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e3d812c5-77ad-4ad2-a6ae-a065069d0e03", e._sentryDebugIdIdentifier = "sentry-dbid-e3d812c5-77ad-4ad2-a6ae-a065069d0e03");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "ac546f39-c2bf-4cda-aa2d-9617574f1a8c", e._sentryDebugIdIdentifier = "sentry-dbid-ac546f39-c2bf-4cda-aa2d-9617574f1a8c");
 	} catch {}
 })();
 import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as e, $542a13ca2fa5b484$export$5b6b19405a83ff9d as t, Button as n, EmptyFocusButton as r, EmptyState as i, Input as a, MENU_ITEM as o, MENU_ITEM_INTERACTIVE as s, MENU_POPOVER_SURFACE as c, MenuDialog as l, MixCard as u, ModalFrame as d, ObjectOrderDialog as f, PLAYLISTS_KEY as p, RetryNote as m, __toESM as h, busyProps as g, confirmModal as _, createPlaylist as v, cx as y, deletePlaylist as b, errorMessage as x, fetchPlaylist as S, fetchPlaylists as C, keepPlaylist as w, posterUrl as T, recreatePlaylist as E, refreshPlaylists as D, renamePlaylist as O, reorderPlaylist as k, require_jsx_runtime as A, require_react as j, resumeAssetId as M, spriteGlyph as N, useMutation as P, useQuery as F } from "./peach-app.js";
@@ -25,7 +25,7 @@ function G({ toast: e }) {
 		"data-playlist-create": "",
 		"aria-label": "新建播放列表",
 		onSubmit: (e) => {
-			e.preventDefault(), !s.isPending && (t.trim() ? s.mutate(t) : o(U));
+			e.preventDefault(), s.isPending || (t.trim() ? s.mutate(t) : o(U));
 		},
 		className: "flex flex-wrap items-end gap-2",
 		children: [/* @__PURE__ */ (0, L.jsx)("div", {
@@ -306,4 +306,4 @@ function Y({ row: e, close: t, toast: r }) {
 }
 export { J as PlaylistsPage };
 
-//# debugId=e3d812c5-77ad-4ad2-a6ae-a065069d0e03
+//# debugId=ac546f39-c2bf-4cda-aa2d-9617574f1a8c

@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "85dcd517-300a-485d-95f1-8f0b87d3c4e2", e._sentryDebugIdIdentifier = "sentry-dbid-85dcd517-300a-485d-95f1-8f0b87d3c4e2");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "43acac22-76f1-4059-8437-3b3169b4d657", e._sentryDebugIdIdentifier = "sentry-dbid-43acac22-76f1-4059-8437-3b3169b4d657");
 	} catch {}
 })();
 import { CHART_CARD as e, CategoryTick as t, ChartEmpty as n, ChartHead as r, ChartTip as i, Dot as a, EvilBarChart as o, Layer as s, TIP_SURFACE as c, TIP_SWATCH as l, Text as u, TipRow as d, ZIndexLayer as f, adaptEventsOfChild as p, addAngleAxis as m, categoryAxisWidth as h, combineAxisTicks as g, combineCategoricalDomain as _, combineConfiguredScale as v, combineGraphicalItemTicks as y, createSelector as b, defaultPolarAngleAxisProps as x, degreeToRadian as S, getAxisTypeBasedOnLayout as C, getClassNameFromUnknown as w, noop as T, pickAxisType as E, polarToCartesian as D, rechartsScaleFactory as ee, removeAngleAxis as te, resolveDefaultProps as ne, roundTemplateLiteral as re, selectAngleAxis as O, selectAngleAxisRangeWithReversed as ie, selectChartLayout as k, selectDuplicateDomain as A, selectPolarAppliedValues as ae, selectPolarAxisCheckedDomain as oe, selectPolarNiceTicks as se, selectPolarViewBox as ce, selectRadiusAxis as le, selectRadiusAxisRangeWithReversed as ue, selectRealScaleType as de, selectRenderableAxisSettings as fe, svgPropertiesAndEvents as j, svgPropertiesNoEvents as M, svgPropertiesNoEventsFromUnknown as pe, tone as me, useAppDispatch as he, useAppSelector as N, useIsPanorama as ge, usePolarChartLayout as _e } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -488,7 +488,7 @@ function $({ title: t, words: n, cells: i, total: a, columns: o, rows: s, axis: 
 			Home: n,
 			End: Math.min(n + o, i.length) - 1
 		}[e.key];
-		r !== void 0 && (e.preventDefault(), !(r < 0 || r >= i.length) && (m(r), h.current?.querySelector(`rect[data-cell="${r}"]`)?.focus()));
+		r !== void 0 && (e.preventDefault(), r < 0 || r >= i.length || (m(r), h.current?.querySelector(`rect[data-cell="${r}"]`)?.focus()));
 	};
 	return /* @__PURE__ */ (0, J.jsxs)("section", {
 		className: e,
@@ -639,4 +639,4 @@ function ct({ children: e, className: t = "", previewCount: n = 10 }) {
 }
 export { st as ActivityHeat, Y as BAR_DOMAIN, Qe as BarCard, ct as ExpandableRanking, Xe as PolarAngleAxis, z as Polygon, X as barLabel, H as selectPolarAxisScale, W as selectPolarAxisTicks, je as selectPolarGraphicalItemAxisTicks };
 
-//# debugId=85dcd517-300a-485d-95f1-8f0b87d3c4e2
+//# debugId=43acac22-76f1-4059-8437-3b3169b4d657
