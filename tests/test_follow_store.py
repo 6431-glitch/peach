@@ -1650,6 +1650,21 @@ class EvidenceRetentionTests(_StoreCase):
         self.assertFalse(paths[1].with_suffix(".json").exists())
         self.assertTrue(all(path.exists() for path in untouched), "只清这次写入的那个来源目录")
 
+    def test_a_new_snapshot_only_offsets_its_own_growth_and_leaves_the_stock(self):
+        """升级后第一次检查不能把存量一口气删光：那在写事务里，也绕过了「修复与迁移」的确认。"""
+        source_id = self._source()
+        fetch = _fetch([_candidate("1", "A")])
+        directory = (self.root / "sources" / Path(self.store.record(source_id, fetch, moment=MOMENT)
+                                                  .evidence_path)).parent
+        stock = [_old_snapshot(directory, index) for index in range(20)]
+        self.store.record(source_id, replace(fetch, raw_body=b"<html>new</html>"),
+                          moment=MOMENT + timedelta(hours=1))
+        self.assertEqual(sum(not raw.exists() for raw in stock), 1)
+        self.assertEqual(len(list(directory.glob("*.raw"))), 22 - 1)
+        self.store.record(source_id, replace(fetch, raw_body=b"<html>new</html>"),
+                          moment=MOMENT + timedelta(hours=2))
+        self.assertEqual(sum(not raw.exists() for raw in stock), 1, "去重命中时没写新的，也不删")
+
     def test_stock_snapshots_wait_for_the_user_and_keep_what_items_reference(self):
         from peach import repair_center
         from peach.follow_evidence import Reclaim

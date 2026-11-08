@@ -444,7 +444,8 @@ class FollowStore:
                 " last_error=NULL, updated_at=? WHERE id=?", (stamp, stamp, source_id))
             return RecordOutcome(source_id, not_modified=True)
 
-        evidence, evidence_error = self._persist_evidence(fetch, moment) if complete else (None, None)
+        evidence, evidence_error, fresh = (self._persist_evidence(fetch, moment) if complete
+                                           else (None, None, False))
         if complete:
             self._replace_candidate_profile_links(source_id, fetch, moment=moment, page=page)
         added = updated = 0
@@ -502,10 +503,11 @@ class FollowStore:
                 updated += 1
             else:
                 added += 1
-        if evidence is not None:
-            # 条目都写完了再清：这一轮新引用的快照已经算进引用里。只列这一个来源的目录。
+        if fresh:
+            # 新写了一份就在这个来源目录里删一份，抵消增长；条目都写完了再删，这一轮的新引用已算进去。
+            # 只删一份：这里在写事务里，升级前留下的存量等用户在「修复与迁移」里确认（`follow_evidence`）。
             follow_evidence.prune(self._evidence_directory(fetch),
-                                  follow_evidence.referenced_names(connection, source_id))
+                                  follow_evidence.referenced_names(connection, source_id), limit=1)
         if fetch.provider in _SITE_WIDE_CHARACTERS:
             self._promote_characters(fetch.provider, {
                 str(tag) for candidate in fetch.candidates if not candidate.partial
@@ -693,8 +695,8 @@ class FollowStore:
             " last_error=NULL, updated_at=? WHERE id=?", (stamp, stamp, source_id))
 
     def _persist_evidence(self, fetch: SourceFetch,
-                          moment: datetime | None) -> tuple[str | None, str | None]:
-        """存原始响应。存不下来不算检查失败。
+                          moment: datetime | None) -> tuple[str | None, str | None, bool]:
+        """存原始响应，返回（相对路径，未取得的原因，是否新写了一份）。存不下来不算检查失败。
 
         Mac 上 `peach-data/sources` 是指向外置盘的符号链接，盘不在时它是一条**断链**——
         `mkdir(exist_ok=True)` 在断链上会抛 `FileExistsError`（链接在、目标不在），
@@ -708,13 +710,13 @@ class FollowStore:
         只记首次引用（`COALESCE`），返回旧路径不会改掉已有引用。
         """
         if self.sources_root is None or fetch.raw_body is None:
-            return None, None
+            return None, None, False
         reference = moment or datetime.now(timezone.utc)
         digest = hashlib.sha256(fetch.raw_body).hexdigest()
         directory = self._evidence_directory(fetch)
         latest = follow_evidence.latest_snapshot(directory)
         if latest is not None and _same_snapshot(latest, fetch, digest):
-            return str(latest.relative_to(self.sources_root.parent)), None
+            return str(latest.relative_to(self.sources_root.parent)), None, False
         stamp = reference.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
         sidecar = (json.dumps({
             "provider": fetch.provider, "ref": fetch.ref,
@@ -730,8 +732,8 @@ class FollowStore:
             write_immutable(path, fetch.raw_body)
             write_immutable(path.with_suffix(".json"), sidecar)
         except OSError as error:
-            return None, f"证据未取得（{self.sources_root} 不可写：{error.strerror or error}）"
-        return str(path.relative_to(self.sources_root.parent)), None
+            return None, f"证据未取得（{self.sources_root} 不可写：{error.strerror or error}）", False
+        return str(path.relative_to(self.sources_root.parent)), None, True
 
     def _evidence_directory(self, fetch: SourceFetch) -> Path:
         key = hashlib.sha256(f"{fetch.provider}\n{fetch.ref}".encode()).hexdigest()[:20]

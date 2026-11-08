@@ -2,7 +2,8 @@
 
 快照在 `sources/follow/<provider>/<来源摘要>/`，一份是 `<时间>-<摘要>.raw` 加同名 `.json`。
 每个来源目录留最近 `KEEP` 份，加上被 `follow_item.evidence_path` 引用的；其余两件一起删。
-新写入后由 `FollowStore.record` 只清它自己那一个目录；升级前留下的存量不自动删，
+新写入一份后由 `FollowStore.record` 在它自己那个目录里删一份，只抵消这次增长：它在写事务里，
+在 Windows 上删一个文件就要几毫秒到几十毫秒。升级前留下的存量不自动删，
 在「设置 › 修复与迁移」里先估算、等用户确认后由 `Reclaim` 在后台删，结果记进 `ledger_upgrade_repair`。
 
 除 `follow_item.evidence_path` 外没有别处读这些快照：诊断与重新解析只用账本里的条目和来源行。
@@ -51,17 +52,23 @@ def latest_snapshot(directory: Path) -> Path | None:
     return Path(directory) / max(names) if names else None
 
 
-def surplus(directory: Path, referenced, keep: int = KEEP) -> list[tuple[Path, int]]:
-    """目录里该删的文件与字节数：最近 `keep` 份之外、又没被引用的 `.raw`，连同同名 `.json`。"""
+def surplus(directory: Path, referenced, keep: int = KEEP, limit: int | None = None) -> list[tuple[Path, int]]:
+    """目录里该删的文件与字节数：最近 `keep` 份之外、又没被引用的 `.raw`，连同同名 `.json`。
+
+    `limit` 限定最多几份，从新往旧数：新写入后只抵消这一份增长，升级前留下的存量原样等用户确认。"""
     try:
         entries = {entry.name: entry for entry in os.scandir(directory) if entry.is_file(follow_symlinks=False)}
     except OSError:
         return []
     snapshots = sorted((name for name in entries if name.endswith('.raw')), reverse=True)
     doomed = []
+    chosen = 0
     for name in snapshots[keep:]:
         if name in referenced:
             continue
+        if limit is not None and chosen >= limit:
+            break
+        chosen += 1
         for member in (name, name[:-len('.raw')] + '.json'):
             entry = entries.get(member)
             if entry is None:
@@ -90,8 +97,8 @@ def remove(doomed) -> tuple[int, int]:
     return files, freed
 
 
-def prune(directory: Path, referenced, keep: int = KEEP) -> tuple[int, int]:
-    return remove(surplus(directory, referenced, keep))
+def prune(directory: Path, referenced, keep: int = KEEP, limit: int | None = None) -> tuple[int, int]:
+    return remove(surplus(directory, referenced, keep, limit))
 
 
 def directories(root: Path):
