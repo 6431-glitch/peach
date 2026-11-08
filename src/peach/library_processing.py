@@ -1017,6 +1017,10 @@ def _record_issue(state, log_path, record, *, diagnostics=None):
     asset_id = record['asset_id']
     if record['retryable'] and asset_id is not None and asset_id not in state['retryable_asset_ids']:
         state['retryable_asset_ids'].append(asset_id)
+    # 卡在来源冷却上的是哪几部：升级补全据此把它们延后，而不是按失败结算。
+    paused = state.setdefault('paused_asset_ids', [])
+    if record['severity'] == 'paused' and asset_id is not None and asset_id not in paused:
+        paused.append(asset_id)
 
 
 def snapshot(config):
@@ -2838,7 +2842,8 @@ def _restore_processing_counts(state, previous):
     """同一处理任务沿用累计数、问题清单和已保存证据索引。"""
     previous = previous or {}
     for key in ('started_at', 'identified', 'covers', 'previews', 'probed', 'issue_count', 'paused_count',
-                'issue_preview', 'issues_truncated', 'notes', 'retryable_asset_ids', 'junk_isolated', 'junk_review',
+                'issue_preview', 'issues_truncated', 'notes', 'retryable_asset_ids', 'paused_asset_ids',
+                'junk_isolated', 'junk_review',
                 'offline_skipped'):
         if key in previous:
             state[key] = previous[key]

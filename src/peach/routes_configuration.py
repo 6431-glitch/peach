@@ -831,16 +831,12 @@ def client_updates(request: Request, _args=Depends(require_auth)):
 def _release_notice_facts(request: Request, connection) -> dict:
     """公告条目的显示条件：只看本机回执，不发外部请求。读不到的一项按不显示处理。"""
     from . import system_file_repair
-    from .display_dimensions_repair import RECEIPT_KEY
-    from .upgrade_repairs import _read
+    from .display_dimensions_repair import progress
     facts: dict[str, Any] = {}
     service = request.app.state.upgrade_repairs
-    try:
-        display = _read(service.receipt).get(RECEIPT_KEY, {}) if service.available else {}
-    except (OSError, ValueError, TypeError):
-        display = {}
-    if display.get('dimensions'):
-        facts['display_reprobe'] = {'done': len(display.get('completed', {})), 'total': len(display['dimensions'])}
+    done, total = progress(connection) if service.available else (0, 0)
+    if total:
+        facts['display_reprobe'] = {'done': done, 'total': total}
     row = connection.execute(
         'SELECT result_json FROM ledger_upgrade_repair WHERE json_type(result_json,?) IS NOT NULL '
         'ORDER BY applied_at DESC LIMIT 1', (f'$."{system_file_repair.RULE}"',)).fetchone()

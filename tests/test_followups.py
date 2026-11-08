@@ -269,6 +269,43 @@ class RunnerTests(LedgerTestCase):
         self.assertEqual(self.store.get(child).status, "succeeded")
         self.assertEqual(attempts, ["ledger-a:1", "ledger-a:1"])
 
+    def test_a_busy_task_gate_keeps_the_lane_alive_until_the_followup_is_claimed(self):
+        """闸门锁被别人拿着时领取等满超时：通道不退出，锁放开后照样领到这一条。"""
+        from filelock import FileLock
+        from peach import update_tasks
+        parent = self.parent()
+        held, release = threading.Event(), threading.Event()
+        # 闸门锁可重入要靠同一个对象；替身也按目录缓存，只把等待期限缩短。
+        locks = {}
+
+        def short_gate(root):
+            return locks.setdefault(root, FileLock(root / "admission.lock", timeout=0.05))
+
+        def hold():
+            with FileLock(update_tasks.state_for(self.db) / "admission.lock"):
+                held.set()
+                release.wait(10)
+
+        with registered(echo_type("ledger-a")), \
+                mock.patch.object(followups_module, "DEFER_POLL_SECONDS", 0.01), \
+                mock.patch.object(update_tasks, "_mutex", short_gate):
+            child = self.store.enqueue_followups(parent.id, [("ledger-a:1", "ledger-a", "甲")])["queued"][0]
+            holder = threading.Thread(target=hold)
+            holder.start()
+            self.assertTrue(held.wait(5))
+            runner = FollowupRunner(self.contract())
+            try:
+                runner.wake()
+                time.sleep(0.3)
+                self.assertTrue(runner._threads[followups_module.LEDGER_LANE].is_alive())
+                self.assertEqual(self.store.get(child).status, "pending")
+            finally:
+                release.set()
+                holder.join(5)
+            self.wait_until_settled(parent.id)
+            runner.stop(timeout=10)
+        self.assertEqual(self.store.get(child).status, "succeeded")
+
     def test_draining_leaves_a_followup_that_steps_aside_in_the_queue(self):
         attempts = []
 
