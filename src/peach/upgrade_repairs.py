@@ -108,7 +108,7 @@ def upsert_items(connection, rows, *, mode: str) -> None:
 def item_of(key: str) -> tuple[str, int, str] | None:
     """影片补全的后继键对应状态表里哪一行：(规则, 影片, 文件世代)。不是影片补全的键是 None。"""
     from .display_dimensions_repair import ITEM_RULE
-    if not key.startswith(MEDIA_TASK + ':'):
+    if not key.startswith(MEDIA_TASK + ':') or batch_members(key) is not None:
         return None
     rest, _, asset_id = key[len(MEDIA_TASK) + 1:].rpartition(':')
     if not asset_id.isdigit() or not rest:
@@ -116,6 +116,52 @@ def item_of(key: str) -> tuple[str, int, str] | None:
     if rest.startswith(upgrade_rules.DISPLAY_DIMENSIONS_SAR + ':'):
         return ITEM_RULE, int(asset_id), rest.rsplit(':', 1)[1]
     return f'media:{rest}', int(asset_id), ''
+
+
+#: 一条影片补全后继处理几部片。逐部各跑一整套 `process_library`，每部都要整份读写
+#: 十几 MB 的候选表；一批共用一次读取，整份写回按耗时节流摊薄。
+BATCH_SIZE = 16
+_BATCH_PREFIX = f'{MEDIA_TASK}:batch:'
+
+
+def batch_members(key: str) -> tuple[str, list[int]] | None:
+    """一批影片补全的键（`upgrade-library:batch:<规则>:<id,id,…>`）里的规则与影片。"""
+    if not key.startswith(_BATCH_PREFIX):
+        return None
+    rule, _, ids = key[len(_BATCH_PREFIX):].rpartition(':')
+    return rule, [int(asset_id) for asset_id in ids.split(',')]
+
+
+def member_keys(key: str) -> list[str]:
+    """后继键对应回执队列里的哪几个键：一批展开成每部片的键，其余原样。"""
+    members = batch_members(key)
+    if members is None:
+        return [key]
+    rule, ids = members
+    return [f'{MEDIA_TASK}:{rule}:{asset_id}' for asset_id in ids]
+
+
+def _batched(planned) -> list:
+    """同一规则的影片补全按 `BATCH_SIZE` 合成一批；显示尺寸补测与资料后继不动。"""
+    from .followups import Followup
+    from .display_dimensions_repair import ITEM_RULE
+    rows, groups = [], {}
+    for row in planned:
+        item = item_of(row.key) if row.task_key == MEDIA_TASK else None
+        if item is None or item[0] == ITEM_RULE:
+            rows.append(row)
+            continue
+        groups.setdefault(item[0].removeprefix('media:'), []).append((item[1], row))
+    for rule, members in groups.items():
+        for offset in range(0, len(members), BATCH_SIZE):
+            chunk = members[offset:offset + BATCH_SIZE]
+            if len(chunk) == 1:
+                rows.append(chunk[0][1])
+                continue
+            ids = ','.join(str(asset_id) for asset_id, _ in chunk)
+            rows.append(Followup(f'{_BATCH_PREFIX}{rule}:{ids}', MEDIA_TASK,
+                                 f'{chunk[0][1].label} 等 {len(chunk)} 部'))
+    return rows
 
 
 def settled(row, generation: str | None, now: float) -> bool:
@@ -919,10 +965,11 @@ class UpgradeRepairs:
         atomic_write_text(self.receipt, encoded)
 
     def _media_backlog(self) -> int:
-        """已经派出、还没轮到的影片补全条数。"""
+        """已经派出、还没跑完的影片补全有几部片；一批按其中的片数算。"""
         with self.contract.database.read_connection() as connection:
-            return connection.execute("SELECT count(*) FROM task_run WHERE task_key=? AND status IN ('pending','running')",
-                                      (MEDIA_TASK,)).fetchone()[0]
+            keys = [row[0] or '' for row in connection.execute(
+                "SELECT followup_key FROM task_run WHERE task_key=? AND status IN ('pending','running')", (MEDIA_TASK,))]
+        return sum(len(member_keys(key)) for key in keys)
 
     def _plan(self, receipt: dict, *, media: bool = True, media_limit: int = MAX_FOLLOWUPS):
         """`media` 为假时只排资料与人物后继，影片补全等前面那批跑下去再派。"""
@@ -1045,8 +1092,9 @@ class UpgradeRepairs:
                             and not any(row.key not in receipt.get('queued', {}) for row in seed)):
                         return
                     receipt['dispatch_complete'] = False
-                # 影片补全只有一条通道、一次一部；不等前面那批跑下去就每分钟再派一批，
+                # 影片补全只有一条通道、一次一条；不等前面那批跑下去就每分钟再派一批，
                 # 整个库会在一两个小时里全堆进队列，任务中心满屏都是「已处理 0 / 64」。
+                # 配额按片数算：处理规则的补全合批派出（`BATCH_SIZE`），排着的最多 64 部。
                 available = MAX_FOLLOWUPS - self._media_backlog()
                 media = not receipt.get('media_paused') and available > 0
                 planned = self._plan(receipt, media=media, media_limit=max(0, available))
@@ -1137,24 +1185,29 @@ class UpgradeRepairs:
         run = store.start(TASK_KEY, trigger='scheduled', mutex_key=TASK_KEY, label='安排自动更新资料')
         if run is None:
             return None
+        planned_keys = {row.key for row in planned}
+        batched = _batched(planned)
         try:
-            result = store.enqueue_followups(run.id, [(row.key, row.task_key, row.label) for row in planned])
+            result = store.enqueue_followups(run.id, [(row.key, row.task_key, row.label) for row in batched])
             queued = receipt.setdefault('queued', {})
+            # 回执队列按每部片记：一批里的每部片都指向这一批的任务，防重复派发与结算照旧按片。
             for run_id in result['queued']:
                 child = store.get(run_id)
-                queued[child.followup_key] = run_id
-            for row in planned:
-                if row.key not in queued:
-                    child = store.blocking(row.key)
-                    if child is not None:
-                        queued[row.key] = child.id
+                for key in member_keys(child.followup_key):
+                    queued[key] = run_id
+            for row in batched:
+                child = None
+                for key in member_keys(row.key):
+                    if key not in queued:
+                        child = child or store.blocking(row.key)
+                        if child is not None:
+                            queued[key] = child.id
             store.finish(run.id, 'succeeded', summary={'outcome': f'已安排 {len(result["queued"])} 项处理'})
         except Exception as exc:
             store.finish(run.id, 'failed', error=str(exc))
             raise
         finally:
             store.prune(TASK_KEY)
-        planned_keys = {row.key for row in planned}
         return [{'rule': item[0], 'asset_id': item[1], 'generation': item[2], 'run_id': int(run_id)}
                 for key, run_id in queued.items() if key in planned_keys and (item := item_of(key))]
 
@@ -1301,9 +1354,10 @@ def _media_run(contract, key: str, handle) -> dict:
         return {'outcome': 'skipped', 'reason': '已停用自动显示尺寸重探，保留已有测量和预览'}
     if f':{upgrade_rules.DISPLAY_DIMENSIONS_SAR}:' in key:
         return _display_run(contract, key, handle)
+    if batch_members(key) is not None:
+        return _batch_run(contract, key, handle)
     from .settings_file import load_config
     from .library_processing import process_library
-    from .jobs import DiskSpaceDenied, JobPaused
     from .storage_budget import CapacityGuard
     asset_id = int(key.rsplit(':', 1)[1])
     config = getattr(contract, 'upgrade_config', None) or load_config()
@@ -1356,6 +1410,77 @@ def _media_run(contract, key: str, handle) -> dict:
     if not finished:
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
     return {'outcome': '影片升级补全完成', 'name': title, 'asset_id': asset_id}
+
+
+def _batch_run(contract, key: str, handle) -> dict:
+    """一批影片共用一次 `process_library`，每部片的结论各自写进状态表。
+
+    结论与单部时一致：走完全程只剩片子自己的问题算完成，卡在来源冷却上的、所在目录读不到的
+    延后；整轮没走完（不是部分完成）按这一批失败结算，由退避重派。
+    """
+    import hashlib
+    from .settings_file import load_config
+    from .library_processing import process_library
+    from .storage_budget import CapacityGuard
+    rule, asset_ids = batch_members(key)
+    config = getattr(contract, 'upgrade_config', None) or load_config()
+    digest = hashlib.sha1(key.encode('utf-8')).hexdigest()[:16]
+    job_id = f'{MEDIA_TASK}-batch-{digest}'
+    state_file = Path(contract.follow_state_root) / 'upgrade-repairs' / f'batch-{digest}.json'
+    previous = _read(state_file)
+    if previous.get('job_id', job_id) != job_id:
+        previous = {}
+    if previous:
+        previous.update(issue_count=0, paused_count=0, issue_preview=[], retryable_asset_ids=[],
+                        paused_asset_ids=[])
+    service = getattr(contract, 'upgrade_repairs', None)
+    with contract.database.read_connection() as connection:
+        found = {row['id']: row for row in connection.execute(
+            'SELECT id,path FROM asset WHERE id IN (SELECT value FROM json_each(?))', (json.dumps(asset_ids),))}
+    offline = [asset_id for asset_id in asset_ids if asset_id in found and mount_unreachable(found[asset_id]['path'])]
+    targets = [asset_id for asset_id in asset_ids if asset_id in found and asset_id not in offline]
+
+    def active():
+        return service is None or not service.stopping.is_set()
+    result = {'status': 'complete'}
+    try:
+        if service is not None:
+            paused = _read(service.receipt).get('media_paused')
+            if paused:
+                raise DiskSpaceDenied(paused['message'])
+        if targets:
+            guard = CapacityGuard(config)
+            guard.check(force=True)
+            result = process_library(config, contract.db_path, contract.candidate_root, contract.cover_root,
+                                     database=contract.database, asset_ids=targets, stage='collect',
+                                     recheck_existing=True, job_id=job_id, state_file=state_file,
+                                     resume_state=previous or None, active=active,
+                                     report=lambda state: handle.progress(
+                                         label=f"{len(targets)} 部影片 · {state.get('stage') or '更新影片资料'}"))
+            guard.check(force=True)
+    except DiskSpaceDenied as error:
+        _pause_for_capacity(service, handle, error)
+    except InterruptedError:
+        if not active():
+            raise JobPaused('服务重启后继续') from None
+        raise
+    if result.get('status') not in ('complete', 'succeeded') and result.get('outcome') != 'partial':
+        raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
+    cooling = [asset_id for asset_id in targets if asset_id in set(result.get('paused_asset_ids', ()))]
+    done = [asset_id for asset_id in asset_ids if asset_id not in offline and asset_id not in cooling]
+    now = time.time()
+    item_rule = f'media:{rule}'
+    rows = [{'rule': item_rule, 'asset_id': asset_id, 'state': 'done', 'run_id': _run_id(handle)} for asset_id in done]
+    rows += [{'rule': item_rule, 'asset_id': asset_id, 'state': 'deferred', 'run_id': _run_id(handle),
+              'retry_at': now + MOUNT_RETRY_SECONDS} for asset_id in offline]
+    rows += [{'rule': item_rule, 'asset_id': asset_id, 'state': 'deferred', 'run_id': _run_id(handle),
+              'retry_at': now + COOLDOWN_RETRY_SECONDS} for asset_id in cooling]
+    with contract.database.write_transaction(notify=False) as connection:
+        upsert_items(connection, rows, mode='finish')
+    outcome = f'影片升级补全完成 {len(done)} 部'
+    if offline or cooling:
+        outcome += f'；目录读不到或来源冷却，延后 {len(offline) + len(cooling)} 部'
+    return {'outcome': outcome, 'asset_ids': asset_ids, 'done': len(done), 'deferred': len(offline) + len(cooling)}
 
 
 def _display_run(contract, key: str, handle) -> dict:

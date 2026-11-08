@@ -1953,6 +1953,47 @@ class UpgradeRepairTests(unittest.TestCase):
         self.assertEqual(self.service._media_backlog(), 64)
         self.assertFalse(receipt['dispatch_complete'])
 
+    def test_processing_repairs_run_in_batches_and_each_film_is_settled_on_its_own(self):
+        """一批共用一次馆藏处理；每部片各自结算，冷却的那部延后，其余完成后不再派。"""
+        from peach.followups import FollowupRunner
+        for key in range(1, 21):
+            self.asset(key, duration=10)
+        self.service.prepare()
+        receipt = upgrade_repairs._read(self.service.receipt)
+        receipt.update(media_ids=list(range(1, 21)), dispatch_complete=False)
+        self.service._save_receipt(receipt)
+        self.contract.upgrade_repairs = self.service
+        planning = (patch('peach.library_processing._people_allowed', return_value=False),
+                    patch('peach.seed_followup.plan', return_value=[]),
+                    patch('peach.media_sources.cost_for', return_value='free'))
+        for active in planning:
+            active.start()
+            self.addCleanup(active.stop)
+        self.service.tick()
+        queued = upgrade_repairs._read(self.service.receipt)['queued']
+        self.assertEqual(sorted(queued), sorted(f'upgrade-library:processing-v2:{key}' for key in range(1, 21)))
+        with self.database.read_connection() as connection:
+            keys = [row[0] for row in connection.execute(
+                'SELECT followup_key FROM task_run WHERE task_key=? ORDER BY id', (upgrade_repairs.MEDIA_TASK,))]
+        self.assertEqual([len(upgrade_repairs.member_keys(key)) for key in keys], [16, 4])
+        self.assertEqual(len(set(queued.values())), 2)
+        self.assertEqual(self.service._media_backlog(), 20)
+
+        def process(*_args, asset_ids, **_kwargs):
+            cooling = [3] if 3 in asset_ids else []
+            return {'status': 'failed' if cooling else 'complete', 'outcome': 'partial' if cooling else 'complete',
+                    'paused_count': len(cooling), 'paused_asset_ids': cooling}
+        with patch('peach.library_processing.process_library', side_effect=process) as processed, \
+                patch.object(upgrade_repairs, 'mount_unreachable', return_value=False):
+            self.assertEqual(FollowupRunner(self.contract).drain(), 2)
+        self.assertEqual([len(call.kwargs['asset_ids']) for call in processed.call_args_list], [16, 4])
+        self.service.tick()
+        self.assertEqual(upgrade_repairs._read(self.service.receipt)['queued'], {})
+        states = {asset_id: state for (rule, asset_id), (state, _) in self.items().items()}
+        self.assertEqual(states.pop(3), 'deferred')
+        self.assertEqual(set(states.values()), {'done'})
+        self.assertEqual(len(states), 19)
+
     def test_cloud_previews_without_a_rule_are_left_to_their_own_tool(self):
         snapshots = self.contract.snapshot_root / 'cloud' / '115'
         snapshots.mkdir(parents=True)
