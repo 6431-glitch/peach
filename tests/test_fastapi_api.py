@@ -3616,6 +3616,12 @@ class FastApiContractTests(unittest.IsolatedAsyncioTestCase):
         })
         self.assertEqual(denied.status_code, 401)
 
+    async def test_missing_poster_reports_which_step_failed(self):
+        """卡片按 `reason` 写缺图原因：没有接触印相时说的是缺印相，不是笼统的不可用。"""
+        missing = await self.client.get("/poster?id=999&c=4", headers={"X-Token": "secret"})
+        self.assertEqual(missing.status_code, 404)
+        self.assertEqual(missing.json(), {"error": "unavailable", "reason": "snapshot unavailable"})
+
     async def test_endcard_frame_is_authenticated_and_confined_to_evidence_root(self):
         denied = await self.client.get(
             "/endcard-frame?id=1&name=tail-000098000.png"

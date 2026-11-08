@@ -749,10 +749,11 @@ def sample_image(request: Request, code: str = "", n: int = 0,
 
 @router.api_route("/poster", methods=["GET", "HEAD"])
 def poster(request: Request, id: int, c: int = 4, args: dict[str, str] = Depends(require_auth)):
+    """作品卡的预览格。取不到时 `reason` 交出卡在哪一步，卡片据此写原因、决定给哪颗按钮。"""
     try:
         path = request.app.state.preview_service.poster(id, c)
-    except PreviewUnavailable:
-        return JSONResponse({"error": "unavailable"}, status_code=404)
+    except PreviewUnavailable as exc:
+        return JSONResponse({"error": "unavailable", "reason": str(exc)}, status_code=404)
     return _image_response(request, path, media_type="image/jpeg")
 
 

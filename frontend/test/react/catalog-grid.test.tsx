@@ -13,7 +13,8 @@ import {
 } from '../../src/react/catalog-grid/catalog-grid';
 import type { MediaCardActions, MediaCardHelpers, MediaCardLayout, MediaItem } from '../../src/react/catalog-grid/types';
 
-import { click, mount, settle } from './render';
+import { buttonNamed, click, fetchMock, mount, sentBody, settle } from './render';
+import { missingArtwork } from '../../src/react/components/artwork-gap';
 import { queryClient } from '../../src/react/query';
 import { peachHistory } from '../../src/history';
 import { PLAYBACK_PROGRESS_EVENT } from '../../src/player/telemetry';
@@ -513,6 +514,59 @@ describe('作品卡', () => {
     expect(pictureOf((await render(item(23, { ...cover, has_thumb: true }), { variant: 'short' })).host),
       '封面设置为官方封面时竖屏格照样用帧图').toBe('/poster?id=23&c=4');
     expect(pictureOf((await render(item(22, cover))).host)).toMatch(/^\/cover\?code=FC2-PPV-3189161/);
+  });
+
+  it.each([
+    [{ is_jav: true, code: 'ABC-001' }, false, '无封面', '还没取到官方封面', 'cover'],
+    [{ is_jav: true, code: 'ABC-001', location: 'local' }, true, '无预览', '还没抽帧', 'previews'],
+    [{ location: 'local', duration: -1 }, false, '无预览', '探查失败，没能抽帧', 'previews'],
+    [{ location: '115' }, false, '无预览', '网盘影片不自动抽帧', ''],
+    [{ location: 'online' }, false, '无预览', '在线来源不抽帧', ''],
+    [{ location: 'local', name: 'a.strm' }, false, '无预览', 'STRM 不抽帧', ''],
+    [{ location: 'local', name: 'a.ISO' }, false, '无预览', 'ISO 不抽帧', ''],
+  ] as [Partial<MediaItem>, boolean, string, string, string][])('没有图时按条目写缺什么、为什么缺、能不能补 %j', (fields, frameOnly, title, reason, fix) => {
+    expect(missingArtwork({ name: 'a.mp4', ...fields } as MediaItem, frameOnly)).toMatchObject({ title, reason, fix });
+  });
+
+  it('番号作品没有封面时当场抓取：按钮不打开详情，取到后卡片换上封面', async () => {
+    const fetcher = fetchMock(200, { has_cover: true, cover_version: 'v2', message: '' });
+    vi.stubGlobal('fetch', fetcher);
+    const target = item(30, { is_jav: true, code: 'ABC-001', has_cover: false, has_thumb: false });
+    const key = ['catalog-grid', 'catalog', 'gap-test', 0];
+    queryClient.setQueryData(key, { pages: [page([target])], pageParams: [0] });
+    const { host, onOpen } = await render(target);
+    expect(host.querySelector('[data-media-nopic]')?.textContent).toBe('无封面');
+    expect(host.querySelector('[data-artwork-gap]')?.textContent).toContain('还没取到官方封面');
+    await click(buttonNamed('抓取封面', host));
+    await settle();
+    expect(fetcher.mock.calls[0]?.[0]).toBe('/api/jav/cover');
+    expect(sentBody(fetcher)).toEqual({ code: 'ABC-001' });
+    expect(onOpen).not.toHaveBeenCalled();
+    const cached = queryClient.getQueryData<{ pages: GridPage[] }>(key)!.pages[0]!.items[0]!;
+    expect(cached).toMatchObject({ has_cover: true, cover_version: 'v2' });
+    queryClient.removeQueries({ queryKey: key });
+  });
+
+  it('有图却取失败时不留坏图：问服务端卡在哪一步，缺印相的本地影片给「补全预览」', async () => {
+    vi.stubGlobal('fetch', fetchMock(404, { error: 'unavailable', reason: 'snapshot unavailable' }));
+    const { host } = await render(item(31, { location: 'local', has_thumb: true }));
+    const img = host.querySelector('[data-media-art] img')!;
+    await act(async () => { img.dispatchEvent(new Event('error')) });
+    await settle();
+    expect(host.querySelector('[data-media-art] img')).toBeNull();
+    expect(host.querySelector('[data-media-nopic]')?.textContent).toBe('预览未取得');
+    expect(host.querySelector('[data-artwork-gap]')?.textContent).toContain('预览帧文件缺失');
+    expect(buttonNamed('补全预览', host)).not.toBeNull();
+  });
+
+  it('取失败后「重试」换一个地址重新取图', async () => {
+    vi.stubGlobal('fetch', fetchMock(404, { error: 'unavailable', reason: 'ffmpeg generation failed' }));
+    const { host } = await render(item(32, { location: '115', has_thumb: true }));
+    await act(async () => { host.querySelector('[data-media-art] img')!.dispatchEvent(new Event('error')) });
+    await settle();
+    expect(host.querySelector('[data-artwork-gap]')?.textContent).toContain('生成预览图失败');
+    await click(buttonNamed('重试', host));
+    expect(host.querySelector('[data-media-art] img')?.getAttribute('src')).toBe('/poster?id=32&c=4&r=1');
   });
 
   it('不合并分卷时一卷一张卡：名字、时长写这一卷自己的，不叠纸边、不标卷数，打开时条目原样交出', async () => {

@@ -22,7 +22,6 @@ import { memo, useCallback, useRef, useState, type CSSProperties, type MouseEven
 import { cardRatio as layoutRatio } from '@peach/appearance';
 import {
   cardArtwork, cardIdentity, entityAvatar, frameArtwork, performerLabel, relayoutCovers, releaseHover, wireHover,
-  withMissingNote,
 } from '@peach/card-art';
 import { esc, fmtDur, fmtSize } from '@peach/legacy/core';
 import { spinnerHtml } from '@peach/legacy/ui';
@@ -31,6 +30,7 @@ import { useEntityNames } from '../use-entity-names';
 
 import type { MediaCardActions, MediaCardHelpers, MediaCardLayout, MediaItem } from '../catalog-grid/types';
 import { ArtSlot } from './art-slot';
+import { ArtworkGapView, failedArtwork, missingArtwork, type ArtworkGap } from './artwork-gap';
 import { CardDate, CardTags, Icon, WhoLabel } from './card-meta';
 import { RecommendationReason } from './recommendation-reason';
 import { useLibraryTints } from './library-tint';
@@ -221,12 +221,27 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
   const size = jav ? layout.size : 'small';
   /* 竖屏格（竖屏带与筛竖屏的网格）只展示竖屏比例的视频，卡面只用视频自己的帧图；番号作品也
      不走官方封面，「JAV 默认封面」设置在这里不起作用：那张封面是整部作品的宣传图，多是横图，
-     和这一卷竖屏视频不是同一个画面。没有帧图就是「无预览」，番号作品在别处没有图就是「无封面」。 */
+     和这一卷竖屏视频不是同一个画面。没有图时写缺的是什么、为什么缺（`./artwork-gap.tsx`）。 */
   const frameOnly = ratio === PORTRAIT_RATIO && !!item.is_jav;
   const drawn = frameOnly ? frameArtwork(item, false) : cardArtwork(item, size, false, layout.javImage);
   const identity = frameOnly || size === 'small' ? drawn.html : cardArtwork(item, 'small', false, layout.javImage).html;
-  const artwork = withMissingNote(drawn);
-  const missing = item.is_jav && !frameOnly ? '无封面' : '无预览';
+  /* 取失败记在当时那段片段上：换了图（补到封面、改了「JAV 默认封面」）就不再算失败。重试给地址
+     添一个序号，身份跟着变，`ArtSlot` 才会换一个新元素重新取。 */
+  const [failure, setFailure] = useState<{ html: string; gap: ArtworkGap | null } | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const failed = failure?.html === drawn.html ? failure : null;
+  const artwork = attempt ? { ...drawn, html: drawn.html.replace(/ src="([^"]*)"/, (_all, src: string) =>
+    ` src="${src}${src.includes('?') ? '&amp;' : '?'}r=${attempt}"`) } : drawn;
+  const onFailed = useCallback((src: string) => {
+    const html = drawn.html;
+    setFailure({ html, gap: null });
+    void failedArtwork(src.replace(/&r=\d+$/, ''), drawn.kind).then(gap =>
+      setFailure(current => current?.html === html ? { html, gap } : current));
+  }, [drawn.html, drawn.kind]);
+  const retry = useCallback(() => { setFailure(null); setAttempt(count => count + 1) }, []);
+  const gap = !artwork.html ? missingArtwork(item, frameOnly) : failed
+    ? failed.gap || { key: 'checking', title: drawn.kind === 'cover' ? '封面未取得' : '预览未取得', reason: '正在查原因', fix: '' as const }
+    : null;
   const rawName = parts?.title || item.name || '';
   const shownName = helpers.displayName(item, rawName).trim() || UNNAMED;
   const titleHtml = helpers.titleHtml(item, rawName).trim() || esc(UNNAMED);
@@ -264,9 +279,10 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
   const pic = (
     <div data-media-pic="" data-pic-portrait={ratio === PORTRAIT_RATIO ? '' : undefined}
       style={{ '--card-ratio': String(ratio) } as CSSProperties}>
-      {artwork.html
-        ? <ArtSlot artwork={artwork} identity={identity} relayout={(root) => relayoutCovers(root, size)} />
-        : <span data-media-nopic="">{missing}</span>}
+      {gap
+        ? <ArtworkGapView gap={gap} item={item} onRetry={retry} />
+        : <ArtSlot artwork={artwork} identity={`${identity}#${attempt}`} relayout={(root) => relayoutCovers(root, size)}
+          onFailed={onFailed} />}
       <div data-media-badge="" dangerouslySetInnerHTML={{ __html: helpers.badgeHtml(item.location || '', item.cost || '') }} />
       <span data-media-check=""><Icon name="check" /></span>
       <span data-media-trash-mark=""><Icon name="trash" /><b>回收站</b></span>
