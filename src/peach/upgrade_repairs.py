@@ -18,6 +18,7 @@ from .followups import FollowupType, Attempts, attempts_root, register
 from .fsutil import atomic_path, atomic_write_text
 from .migrations import sqlite_backup
 from .task_runs import MAX_FOLLOWUPS
+from .update_tasks import UpdateBusy
 
 LOGGER = logging.getLogger(__name__)
 TASK_KEY = 'upgrade-repairs'
@@ -891,6 +892,9 @@ class UpgradeRepairs:
                 self.error = ''
             self.contract.followups.wake()
         except Timeout:
+            return
+        except UpdateBusy:
+            # 装更新或闸门正忙：这一轮不派，下一分钟再看，不算派发失败。
             return
         except Exception as exc:
             self.error = str(exc)

@@ -496,8 +496,8 @@ class TaskRunStore:
         root = parent.root_run_id or parent.id
         moment = stamp()
         from .task_control import initialize_speed
-        from .update_tasks import _mutex, state_for
-        with _mutex(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
+        from .update_tasks import gate, state_for
+        with gate(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
             # 父任务是裸任务时它就是这条链的根。补在这里而不是 `start`：开工那一刻还
             # 不知道这一轮会不会派后继，给每一行都填一个指向自己的 root 是无意义的噪声。
             connection.execute(
@@ -531,8 +531,8 @@ class TaskRunStore:
         if not self.enabled or not run.followup_key:
             return None
         from .task_control import initialize_speed
-        from .update_tasks import _mutex, state_for
-        with _mutex(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
+        from .update_tasks import gate, state_for
+        with gate(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
             try:
                 cursor = connection.execute(
                     "INSERT INTO task_run(task_key,trigger,status,mutex_key,pid,host,"
@@ -549,10 +549,13 @@ class TaskRunStore:
         return run_id
 
     def claim_followup(self, task_keys, first=()) -> TaskRun | None:
-        from .update_tasks import admission, UpdateBusy
+        """装更新期间返回 None；闸门锁被别人拿着时抛 `GateBusy`，调用方稍后再领。"""
+        from .update_tasks import admission, GateBusy, UpdateBusy
         try:
             with admission(self.database.db_path):
                 return self._claim_followup(task_keys, first)
+        except GateBusy:
+            raise
         except UpdateBusy:
             return None
 
