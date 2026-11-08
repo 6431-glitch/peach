@@ -141,6 +141,41 @@ def member_keys(key: str) -> list[str]:
     return [f'{MEDIA_TASK}:{rule}:{asset_id}' for asset_id in ids]
 
 
+def _batch_digest(key: str) -> str:
+    import hashlib
+    return hashlib.sha1(key.encode('utf-8')).hexdigest()[:16]
+
+
+def _checkpoint_files(state_file: Path) -> list[Path]:
+    """一份补修续跑状态在盘上的全部文件：状态文件、同名问题日志与 `<名>-items` 逐项检查点目录。"""
+    return [state_file, state_file.with_suffix('.issues.jsonl'), state_file.with_name(state_file.stem + '-items')]
+
+
+def _remove(path: Path) -> tuple[int, int]:
+    """删一个文件或目录，返回删掉的文件数与字节数；删不掉的（被占用、已不在）跳过。"""
+    import shutil
+    try:
+        if path.is_dir():
+            files = [item for item in path.rglob('*') if item.is_file()]
+            size = sum(item.stat().st_size for item in files)
+            shutil.rmtree(path)
+            return len(files), size
+        size = path.stat().st_size
+        path.unlink()
+        return 1, size
+    except OSError:
+        return 0, 0
+
+
+def discard_checkpoint(state_file: Path) -> None:
+    """补修有了结论、续跑用不上了：删掉它的状态文件、问题日志和逐项检查点。
+
+    完成的不会再跑；一批结算后延后的片子重派时编进新批次，换了键，旧检查点也认不上。
+    延后与失败的单部补修不走这里：同一个键重派时还能接着上次的进度跑。"""
+    for path in _checkpoint_files(state_file):
+        _remove(path)
+
+
 def _batched(planned) -> list:
     """同一规则的影片补全按 `BATCH_SIZE` 合成一批；显示尺寸补测与资料后继不动。"""
     from .followups import Followup
@@ -910,6 +945,46 @@ class UpgradeRepairs:
         except Exception:
             LOGGER.exception('清退已结束任务的控制文件失败')
 
+    def _prune_repair_checkpoints(self) -> None:
+        """旧版补修完不删的续跑状态一次清掉；之后每部、每批有了结论就当场删（`discard_checkpoint`）。
+
+        留下的只有还用得上的：回执队列里在跑的键，以及状态表里待补、延后、失败的影片（重派时接着跑）。
+        一小时内动过的也不碰，免得和刚派出的任务抢同一份文件。回执记删掉的文件数与字节数。
+        """
+        import re
+        key = 'upgrade-repair-checkpoints-1'
+        try:
+            with self.contract.database.read_connection() as connection:
+                if connection.execute('SELECT 1 FROM ledger_upgrade_repair WHERE id=?', (key,)).fetchone():
+                    return
+                keep = {str(row[0]) for row in connection.execute(
+                    "SELECT DISTINCT asset_id FROM ledger_upgrade_item WHERE rule LIKE 'media:%'"
+                    " AND state IN ('pending','queued','deferred','failed')")}
+            queued = list(_read(self.receipt).get('queued', {}))
+            keep |= {member.rsplit(':', 1)[1] for queued_key in queued for member in member_keys(queued_key)}
+            keep |= {f'batch-{_batch_digest(queued_key)}' for queued_key in queued if batch_members(queued_key)}
+            pattern = re.compile(r'^(\d+|batch-[0-9a-f]{16})(\.json|\.issues\.jsonl|-items)$')
+            cutoff = time.time() - 3600
+            removed = size = 0
+            for path in self.root.iterdir() if self.root.is_dir() else ():
+                found = pattern.match(path.name)
+                if not found or found.group(1) in keep:
+                    continue
+                try:
+                    if path.stat().st_mtime > cutoff:
+                        continue
+                except OSError:
+                    continue
+                files, total = _remove(path)
+                removed, size = removed + files, size + total
+            with self.contract.database.write_transaction() as connection:
+                connection.execute('INSERT OR IGNORE INTO ledger_upgrade_repair(id,applied_at,result_json) '
+                                   'VALUES(?,?,?)', (key, str(time.time()),
+                                                     json.dumps({'removed': removed, 'bytes': size})))
+            LOGGER.info('补修续跑状态：清掉 %s 个文件，%s 字节', removed, size)
+        except Exception:
+            LOGGER.exception('清退补修续跑状态失败')
+
     def _settle_verification(self) -> None:
         """核查差异的结算规则（ADR-0139）对存量候选跑一遍，规则版本变了才再跑。
 
@@ -1358,6 +1433,7 @@ class UpgradeRepairs:
             self.scheduler.add_job(self._release_studio_misses, max_instances=1)
             self.scheduler.add_job(self._clear_stale_codes, max_instances=1)
             self.scheduler.add_job(self._prune_task_controls, max_instances=1)
+            self.scheduler.add_job(self._prune_repair_checkpoints, max_instances=1)
             self.scheduler.start()
 
     def stop(self) -> None:
@@ -1429,6 +1505,7 @@ def _media_run(contract, key: str, handle) -> dict:
                       RepairDeferred('资料来源正在冷却，来源放开后再补全', COOLDOWN_RETRY_SECONDS))
     if not finished:
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
+    discard_checkpoint(state_file)
     return {'outcome': '影片升级补全完成', 'name': title, 'asset_id': asset_id}
 
 
@@ -1478,13 +1555,14 @@ def _batch_run(contract, key: str, handle) -> dict:
     if result.get('status') not in ('complete', 'succeeded') and result.get('outcome') != 'partial':
         raise RuntimeError(result.get('error') or '影片升级补全未完成，请在任务中心查看后重试')
     cooling = [asset_id for asset_id in targets if asset_id in set(result.get('paused_asset_ids', ()))]
-    return _settle_batch(contract, handle, rule, asset_ids, offline, cooling)
+    settled = _settle_batch(contract, handle, rule, asset_ids, offline, cooling)
+    discard_checkpoint(state_file)
+    return settled
 
 
 def _batch_checkpoint(contract, key: str) -> tuple[str, Path, dict]:
     """一批的任务号、断点文件与可续跑的断点；上一轮的问题计数清零，换了批次的断点不认。"""
-    import hashlib
-    digest = hashlib.sha1(key.encode('utf-8')).hexdigest()[:16]
+    digest = _batch_digest(key)
     job_id = f'{MEDIA_TASK}-batch-{digest}'
     state_file = Path(contract.follow_state_root) / 'upgrade-repairs' / f'batch-{digest}.json'
     previous = _read(state_file)
