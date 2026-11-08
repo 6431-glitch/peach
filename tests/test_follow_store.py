@@ -1678,8 +1678,10 @@ class EvidenceRetentionTests(_StoreCase):
             "last_seen_at) VALUES(?,?,?,'old',?,?,?)", (source_id, "old", "Old", "D:\\peach-data\\sources\\follow\\rule34video"
                                      f"\\legacy\\{raws[1].name}", "2026-08-01T00:00:00Z", "2026-08-01T00:00:00Z"))
         self.connection.commit()
+        from peach.task_runs import TaskRunStore
         database = LedgerDatabase(self.root / "ledger.db")
-        reclaim = Reclaim(self.root / "sources" / "follow", database)
+        runs = TaskRunStore(database)
+        reclaim = Reclaim(self.root / "sources" / "follow", database, runs=runs)
 
         def settle():
             while reclaim.worker is not None and reclaim.worker.is_alive():
@@ -1705,6 +1707,10 @@ class EvidenceRetentionTests(_StoreCase):
         self.assertEqual((done["state"], done["changed"]), ("done", 4))
         self.assertEqual([(row["title"], row["changed"]) for row in center["history"]],
                          [("清理关注抓取的旧快照", 4)])
+        # 删除这一轮在活动页登记：计数、结算与摘要都在任务中心。
+        run = runs.query(task_key="follow-evidence-reclaim")[0]
+        self.assertEqual((run.status, run.progress_current, run.progress_total, run.result_summary),
+                         ("succeeded", 4, 4, {"files_removed": 4, "bytes_reclaimed": 204}))
 
     def test_a_library_without_follow_snapshots_does_not_list_the_item(self):
         from peach import repair_center

@@ -100,6 +100,7 @@ TASK_LABELS = {
     "ledger-restore": "从备份恢复账本",
     "upgrade-repairs": "自动修复",
     "upgrade-library": "资料自动修复",
+    "follow-evidence-reclaim": "关注旧快照清理",
     "organize": "按模板整理",
     "batch": "批量操作",
     "scrape-codes": "番号资料刮削",

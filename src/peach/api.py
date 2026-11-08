@@ -653,7 +653,8 @@ def create_app(
     app.state.upgrade_repairs = upgrade_repairs
     from pathlib import Path
     from .follow_evidence import Reclaim
-    app.state.follow_evidence = Reclaim(Path(contract.follow_sources_root) / "follow", contract)
+    app.state.follow_evidence = Reclaim(Path(contract.follow_sources_root) / "follow", contract,
+                                        runs=contract.task_runs)
     app.state.push_discovery = push_discovery
     app.state.downloads = downloads
     app.state.jav_browser = jav_browser

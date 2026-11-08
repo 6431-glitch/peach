@@ -25,6 +25,8 @@ LOGGER = logging.getLogger(__name__)
 KEEP = 3
 #: 存量清退在 `ledger_upgrade_repair` 里的行 id 前缀；可以做多次，后缀是执行时刻。
 RECEIPT_PREFIX = 'follow-evidence-reclaim-'
+#: 删除这一轮在任务中心（`task_runs.TASK_LABELS`）的键。
+TASK_KEY = 'follow-evidence-reclaim'
 
 
 def reference_name(value) -> str:
@@ -123,10 +125,12 @@ class Reclaim:
     页面按 `done`/`total` 显示进度。删的时候逐个目录重新列、重新判，不用估算时的名单。
     """
 
-    def __init__(self, root: Path, database):
-        """`database` 提供 `read_connection()` 与 `write_transaction()`（`WebContract`）。"""
+    def __init__(self, root: Path, database, runs=None):
+        """`database` 提供 `read_connection()` 与 `write_transaction()`（`WebContract`）；
+        `runs` 是任务中心（`TaskRunStore`），删除这一轮在活动页登记、报进度。估算只读、十几秒，不登记。"""
         self.root = Path(root)
         self.database = database
+        self.runs = runs
         self._lock = threading.Lock()
         self._state: dict = {'phase': 'idle'}
         #: 最近一次起的后台线程（估算或删除）。
@@ -175,9 +179,22 @@ class Reclaim:
         with self._lock:
             self._state = state
 
+    def _task(self, call, *args, **kwargs):
+        """任务中心记录写不进去不影响删除本身：只记日志。"""
+        if self.runs is None:
+            return None
+        try:
+            return call(*args, **kwargs)
+        except Exception:  # noqa: BLE001
+            LOGGER.warning('关注快照清理没记进任务中心', exc_info=True)
+            return None
+
     def _run(self) -> None:
         removed = freed = 0
         error = None
+        run = self._task(lambda: self.runs.start(TASK_KEY, trigger='manual', mutex_key=TASK_KEY,
+                                                 total=self._state.get('total') or None, label='删除旧快照'))
+        run_id = getattr(run, 'id', None)
         try:
             referenced = self._referenced()
             for directory in directories(self.root):
@@ -186,9 +203,13 @@ class Reclaim:
                 freed += size
                 with self._lock:
                     self._state['done'] = removed
+                self._task(lambda: self.runs.progress(run_id, current=removed))
         except Exception as exc:  # noqa: BLE001 — 删了多少照实记进历史
             LOGGER.exception('关注快照清理中断')
             error = str(exc)
+        self._task(lambda: self.runs.progress(run_id, current=removed, throttle=0))
+        self._task(lambda: self.runs.finish(run_id, 'failed' if error else 'succeeded', error=error or '',
+                                            summary={'files_removed': removed, 'bytes_reclaimed': freed}))
         result = {'files': removed, 'bytes': freed, **({'error': error} if error else {})}
         try:
             with self.database.write_transaction() as connection:
