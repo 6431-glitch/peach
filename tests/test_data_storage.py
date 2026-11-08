@@ -734,6 +734,8 @@ class CapacityProtectionTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name).resolve()
+        # 前台检查在余量不足时会排后台清理，它往 state/ 写记录；删临时目录前先等它收尾。
+        self.addCleanup(self.join_background)
         self.config = settings_file.PeachConfig(self.root, self.root / 'config.toml')
         self.root.joinpath('state').mkdir()
         self.budget.invalidate_measurements()
@@ -748,6 +750,12 @@ class CapacityProtectionTests(unittest.TestCase):
             delay = patch.object(self.budget, name, 0)
             delay.start()
             self.addCleanup(delay.stop)
+
+    @staticmethod
+    def join_background():
+        for thread in threading.enumerate():
+            if thread.name.startswith(('PeachCapacityClean', 'PeachCapacityMeasure')):
+                thread.join(10)
 
     def join_cleaning(self):
         for thread in threading.enumerate():
