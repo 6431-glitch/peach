@@ -2,6 +2,7 @@
 import { loadMediaSources } from './../query/media-sources';
 import { buildBars, catalogState, dropOfflineFromDefaultLoc, homePath, loadCatalog, paintCatalogFilter, repaintCatalogGrid } from './catalog.js';
 import { appSettingsStore } from './../appearance/settings';
+import { interfaceLanguage, storedInterfaceLanguage } from '../i18n';
 import { entityDisplayName, setNameLanguage } from '../core/entity-names';
 import { playUiSound, setUiSoundsEnabled, wireUiSounds } from '../ui-kit/sounds';
 import { applyTheme, watchSystemTheme } from './../appearance/theme';
@@ -178,6 +179,11 @@ preferencesState.settingsEffects = {
     setNameLanguage(preferencesState.appSettings.performerNameLanguage);
     loadingState.syncPageTitle(location.href);
     catalogState.barsRendered='';buildBars();
+  },
+  /* 本地那份确实写进去了才重载：存储不可写时重载回来还是旧语言，会一直重载下去。 */
+  interfaceLanguage:()=>{
+    const next=preferencesState.appSettings.interfaceLanguage;
+    if(next!==interfaceLanguage&&storedInterfaceLanguage()===next)location.reload();
   },
   theme:()=>applyTheme(),
   /* 开这一格时立刻响一声开关音，人才知道它开了。关的那一声由 document 上的 change 监听

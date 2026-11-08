@@ -25,6 +25,7 @@ import {
   setActionBusy, setIconSwap, wireHorizontalScroller,
 } from '@peach/legacy/ui';
 
+import { isInterfaceLanguage, t, type InterfaceLanguage } from '../../i18n';
 import { normalizeJavImage } from '../../jav-artwork';
 import { boundedPreference } from '../../number-setting';
 import { GlowSettings } from './glow-settings';
@@ -382,6 +383,7 @@ function SettingsPanel({ host: current, view: shown }: { host: SettingsPanelHost
                 attr="data-theme-choice" variant="themeswitch" epoch={epoch}
                 onChoose={(choice) => { settings.theme = choice; save(); current.changed('theme') }} />
             </Row>
+            <InterfaceLanguageSetting host={current} epoch={epoch} />
             <div data-setting-row="">
               <label htmlFor="glassContrastSetting"><b>增加对比度</b></label>
               <input type="checkbox" id="glassContrastSetting" data-toggle="" role="switch" checked={current.highContrast()}
@@ -516,6 +518,34 @@ function JavGroup({ host: current, tab, epoch }: GroupProps) {
       ))}
     </Group>
   );
+}
+/* 语言名称写成各自语言的自称，不随界面语言翻译：看不懂当前界面的人也要认得出自己那一项。 */
+const LANGUAGE_CHOICES: readonly (readonly [InterfaceLanguage, string])[] = [['zh-CN', '简体中文'], ['en', 'English']];
+/* 存进数据库、回来交壳对账；壳发现本地那份变了就整页重载，换成新语言。 */
+function InterfaceLanguageSetting({ host: current, epoch }: { host: SettingsPanelHost; epoch: number }) {
+  const query = useQuery({ queryKey: SETTINGS_KEY, queryFn: ({ signal }) => fetchSettings(signal), staleTime: 0 });
+  const save = useSaveSettings();
+  const [pending, setPending] = useState<InterfaceLanguage | null>(null);
+  const language = query.data?.interfaceLanguage;
+  return <>
+    <Row title={t('settings:interfaceLanguage.title')}
+      description={<small>{t('settings:interfaceLanguage.help')}</small>}>
+      <SelectField id="interfaceLanguageSetting" label={t('settings:interfaceLanguage.title')} epoch={epoch}
+        options={LANGUAGE_CHOICES}
+        value={pending ?? language ?? current.store.value.interfaceLanguage}
+        disabled={query.isPending || query.isError || save.isPending || !language} busy={save.isPending}
+        onPick={(value) => {
+          if (save.isPending || !isInterfaceLanguage(value) || value === language) return;
+          setPending(value);
+          save.mutate({ interfaceLanguage: value }, {
+            onSuccess: (saved) => { current.receipt(t('settings:interfaceLanguage.saved')); current.syncRemote(saved) },
+            onError: (error) => current.failure(t('settings:interfaceLanguage.saveFailed'), error),
+            onSettled: () => setPending(null),
+          });
+        }} />
+    </Row>
+    {query.isError ? <Note tone="error">{t('settings:interfaceLanguage.unavailable')}</Note> : null}
+  </>;
 }
 function NameLanguageSetting({ host: current, epoch }: { host: SettingsPanelHost; epoch: number }) {
   const query = useQuery({ queryKey: SETTINGS_KEY, queryFn: ({ signal }) => fetchSettings(signal), staleTime: 0 });
