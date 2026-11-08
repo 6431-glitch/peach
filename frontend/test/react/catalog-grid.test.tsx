@@ -233,6 +233,33 @@ describe('续页', () => {
     queryClient.removeQueries({ queryKey: ['catalog-grid'] });
   });
 
+  it('补全状态条连竖屏带里的缺图卡一起数：竖屏格按视频帧判断，有封面没帧的番号作品也算缺图', async () => {
+    vi.stubGlobal('IntersectionObserver', FakeObserver);
+    const strip = [
+      item(51, { location: 'local', has_thumb: false }),
+      item(52, { location: 'pikpak', cost: 'metered', has_thumb: false }),
+      item(53, { location: 'local', is_jav: true, code: 'ABC-053', has_cover: true, cover_key: 'ABC-053', has_thumb: false }),
+    ];
+    const posts: unknown[] = [];
+    vi.stubGlobal('fetch', vi.fn((input: string, init?: RequestInit) => {
+      if (init?.method === 'POST') posts.push(JSON.parse(String(init.body)));
+      const url = new URL(String(input), 'http://peach.test');
+      const body = url.pathname === '/api/library-processing' ? { status: 'idle' }
+        : url.searchParams.get('orient') === '竖屏' ? { items: strip, total: strip.length, has_more: false }
+          : { items: [1, 2, 3].map((n) => item(n)), total: 3, has_more: false };
+      return Promise.resolve(reply(body));
+    }));
+    const host = await mount(<QueryClientProvider client={queryClient}>
+      <CatalogGridPage {...props({ sort: 'seed', q: '竖屏带缺图' })} shorts />
+    </QueryClientProvider>);
+    await until(() => !!host.querySelector('[data-library-completion]'), '状态条出现');
+    expect(host.querySelector('[data-library-completion]')?.textContent).toContain('这批影片中有 3 部暂无预览，其中 1 部在流量保护目录');
+    await click(buttonNamed('同步这些影片', host));
+    await until(() => posts.length > 0, '提交补全');
+    expect(posts[0]).toEqual({ stage: 'collect', asset_ids: [51, 53] });
+    queryClient.removeQueries({ queryKey: ['catalog-grid'] });
+  });
+
   it('竖屏带与主网格同一个「合并分卷与版本」：开着一组分卷只出一张整组卡，关着各卷各自成卡、不标卷数', async () => {
     vi.stubGlobal('IntersectionObserver', FakeObserver);
     const group = { key: 'FC2-PPV-3189161', seed_id: 41, count: 2, title: 'FC2-PPV-3189161', total_duration: 1200 };
