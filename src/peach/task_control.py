@@ -82,18 +82,47 @@ def initialize_speed(store, run_id, parent=None):
         atomic_write_text(path, json.dumps({'speed_mode': mode, 'at': time.time_ns()}))
 
 
-def prune_speeds(store):
+#: 控制意图：活跃后代和原地接续要沿用祖先或上一轮的速度与取消，留到运行行被清退。
+INTENT_KINDS = ('speed', 'request')
+#: 执行端即时状态：带写入进程的 pid，只有未结束的运行有读者，运行一结束就清。
+RUNTIME_KINDS = ('observed', 'resources')
+
+
+def prune_controls(store):
+    """清退控制文件，返回删掉的个数。
+
+    先列目录再查库：列出的文件若属于取样时仍活跃的运行就保留，终态不会再回到活跃。
+    登记新运行的事务在 `_mutex` 内写速度文件，查库和删控制意图都在锁里；即时状态只由
+    已登记的运行写，放到锁外删，首次清退存量时几万次删除不挡任务登记。
+    """
     from .update_tasks import _mutex
     db = store.database.db_path
+    files = []
+    for path in _root(db).glob('*.json'):
+        identity, _, kind = path.name.removesuffix('.json').partition('.')
+        if identity.isdigit() and kind in (*INTENT_KINDS, *RUNTIME_KINDS):
+            files.append((identity, kind, path))
+    if not files:
+        return 0
     with _mutex(state_for(db)):
         with store.database.read_connection() as connection:
-            retained = {str(row[0]) for row in connection.execute('SELECT id FROM task_run')}
-        for path in _root(db).glob('*.speed.json'):
-            if path.name.removesuffix('.speed.json') not in retained:
-                try:
-                    path.unlink(missing_ok=True)
-                except OSError:
-                    logging.getLogger(__name__).warning('任务速度文件清退失败：%s', path, exc_info=True)
+            active = {str(row[0]): bool(row[1]) for row in connection.execute(
+                "SELECT id,status IN ('pending','running') FROM task_run")}
+        removed = _unlink(path for identity, kind, path in files
+                          if kind in INTENT_KINDS and identity not in active)
+    return removed + _unlink(path for identity, kind, path in files
+                             if kind in RUNTIME_KINDS and not active.get(identity))
+
+
+def _unlink(paths):
+    removed = 0
+    for path in paths:
+        try:
+            path.unlink(missing_ok=True)
+            removed += 1
+        except OSError:
+            logging.getLogger(__name__).warning('任务控制文件清退失败：%s', path, exc_info=True)
+    return removed
 
 
 def projection(store, run, *, descendants_active=None):

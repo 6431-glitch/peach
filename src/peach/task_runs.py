@@ -693,6 +693,7 @@ class TaskRunStore:
         """每个 task_key 只留最近 `keep` 条终态记录，返回删掉多少条。
 
         活跃任务保留，指向已清退历史的父任务和根任务关联由删除触发器置空。
+        随后清退整个数据根里已结束运行的控制文件（`task_control.prune_controls`），不限本 task_key。
         后继使用 `keep_errors` 保留仍可重试的失败项；下载状态保留并清空已清退运行的链接。
         阈值用 `LIMIT 1 OFFSET keep` 取「第 keep+1 新的那条 id」。
         """
@@ -714,8 +715,8 @@ class TaskRunStore:
                     f"DELETE FROM task_run WHERE task_key=? AND status IN ({marks}) "
                     "AND id<=?", (task_key, threshold["id"]))
                 removed = cursor.rowcount
-        from .task_control import prune_speeds
-        prune_speeds(self)
+        from .task_control import prune_controls
+        prune_controls(self)
         return removed
 
     # -- 查询 --------------------------------------------------------------
