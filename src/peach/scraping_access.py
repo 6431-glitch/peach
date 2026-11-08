@@ -111,6 +111,14 @@ class SourceBudgetExhausted(SourcePaused):
     """本趟采集预算耗尽，不能作为单个来源的冷却跳过。"""
 
 
+#: 整趟预算三项到顶时的说明，键是 `SourceTransport` 的三个上限。
+BUDGET_SPENT = {
+    'requests': "本趟采集次数已用完，再跑一次接着采；已有图片保留",
+    'seconds': "本趟采集时间已用完，再跑一次接着采；已有图片保留",
+    'bytes': "本趟下载量已用完，再跑一次接着采；已有图片保留",
+}
+
+
 class SourceRefused(SourcePaused):
     """站方回的是拒绝这个出口的说明页（`sources.base.refusal_page`），来源已经记下冷却。
 
@@ -454,6 +462,18 @@ class SourceTransport:
                                   target, headers, None if response.status == 303 else request.body)
         raise ValueError("采集重定向次数超过上限")
 
+    def exhausted(self) -> str:
+        """本趟预算到顶时返回那一句说明，没到顶返回空串。
+
+        到顶之后这个传输再也发不出请求，调用方据此整趟停下，不必逐项去撞同一句话。"""
+        if self.max_requests and self.requests >= self.max_requests:
+            return BUDGET_SPENT['requests']
+        if self.deadline and self.deadline <= time.monotonic():
+            return BUDGET_SPENT['seconds']
+        if self.max_bytes and self.bytes >= self.max_bytes:
+            return BUDGET_SPENT['bytes']
+        return ''
+
     def _request(self, request: HttpRequest, timeout: float, max_bytes: int):
         """闸门到顶的三句话都写「本趟」和「再跑一次接着采」：这三条按任务重新计数，
         读的人要据以决定的是「现在重跑一遍」，不是去查哪里还有配额。"""
@@ -463,17 +483,15 @@ class SourceTransport:
             headers = {key: value for key, value in request.headers.items() if key.lower() != "accept-language"}
             request = HttpRequest(request.method, request.url,
                                   {**headers, "Accept-Language": "zh-CN,zh;q=0.9"}, request.body)
-        if self.max_requests and self.requests >= self.max_requests:
-            raise SourceBudgetExhausted("本趟采集次数已用完，再跑一次接着采；已有图片保留")
+        spent = self.exhausted()
+        if spent:
+            raise SourceBudgetExhausted(spent)
         if self.deadline:
             timeout = min(timeout, self.deadline - time.monotonic())
             if timeout <= 0:
-                raise SourceBudgetExhausted("本趟采集时间已用完，再跑一次接着采；已有图片保留")
+                raise SourceBudgetExhausted(BUDGET_SPENT['seconds'])
         if self.max_bytes:
-            remaining = self.max_bytes - self.bytes
-            if remaining <= 0:
-                raise SourceBudgetExhausted("本趟下载量已用完，再跑一次接着采；已有图片保留")
-            max_bytes = min(max_bytes, remaining - 1)
+            max_bytes = min(max_bytes, self.max_bytes - self.bytes - 1)
         key = source or hashlib.sha256(hostname_of(request.url).encode()).hexdigest()
         cooldown = cooldown_path(self.root, key)
         # 冷却只认这条路自己撞出来的账：直连 403 攒下的 `blocks` 与 `until` 不压到浏览器那条路上，反之亦然。

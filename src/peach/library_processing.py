@@ -817,8 +817,12 @@ class LibraryMetadataProvider:
         return True
 
     def reset(self):
-        """丢弃可能卡住的连接；下一个项目从新传输开始。"""
+        """丢弃可能卡住的连接；下一个项目从新传输开始。换连接不重置本趟预算。"""
         self.transport.renew()
+
+    def budget_spent(self):
+        """本趟采集预算（`MAX_SOURCE_*`）到顶时的说明，没到顶是空串。"""
+        return self.transport.exhausted()
 
     def close(self):
         self.transport.close()
@@ -1604,6 +1608,13 @@ class _RemoteSession:
         if self._provider is not None and hasattr(self._provider, 'reset'):
             self._provider.reset()
 
+    def budget_spent(self):
+        """本趟采集预算到顶时的说明。还没建 provider（一问都没发）或它不设预算时是空串；
+        只认字符串，替身 provider 自动长出来的属性不算到顶。"""
+        check = getattr(self._provider, 'budget_spent', None)
+        reason = check() if callable(check) else ''
+        return reason if isinstance(reason, str) else ''
+
     def close(self):
         if self._provider is not None and hasattr(self._provider, 'close'):
             self._provider.close()
@@ -2300,15 +2311,68 @@ class _NetworkGate:
         return True
 
 
+class _SourceBudget:
+    """整趟采集预算（`MAX_SOURCE_*`）到顶后，后面要出网的行一家都不问。
+
+    预算按任务算，换连接、暂停再继续都不重置。到顶之后每一问都只会回同一句「本趟已用完」，
+    逐行再问只是空转，还把这一句按来源各记一遍，几千条问题项盖住了真正的原因。
+    跳过的行不各记问题项：只进可重试名单（「重试失败项」接着采、增量处理不当它已完成）和
+    来源未轮到名单（升级补全据此延后），收尾时由 `summarize` 记一条汇总。
+    `state` 里的 `budget_skipped`、`budget_reason` 续跑时接着上次的数。
+    """
+
+    def __init__(self, remote, state):
+        self.remote, self.state = remote, state
+        self.skipped_row = None
+
+    def skips(self, row, code, missing, allowed, cover_root, *, answered):
+        reason = self.remote.budget_spent()
+        if not reason or not self.remote.asks(row, code, missing if 'metadata' in allowed else [],
+                                              cover_root, answered=answered,
+                                              fetch_cover='cover' in allowed):
+            return False
+        self.skipped_row = row['id']
+        self.state['budget_reason'] = reason
+        self.state['budget_skipped'] = self.state.get('budget_skipped', 0) + 1
+        for key in ('retryable_asset_ids', 'paused_asset_ids'):
+            ids = self.state.setdefault(key, [])
+            if row['id'] not in ids:
+                ids.append(row['id'])
+        return True
+
+    def checkpointed(self, row, entries):
+        """这一行要记进完成断点的证据。预算到顶没去问的行一条都不记：它只是没轮到，
+        续跑和增量处理都还要再问。"""
+        return [] if row['id'] == self.skipped_row else entries
+
+    def summarize(self, issue):
+        message = budget_summary(self.state)
+        if message:
+            issue(None, message, action='source_budget')
+
+
+def budget_summary(state):
+    """预算到顶跳过了几部时，任务卡与问题清单上的那一句；没跳过是空串。"""
+    skipped = state.get('budget_skipped') or 0
+    if not skipped:
+        return ''
+    from .scraping_access import BUDGET_SPENT
+    head = (state.get('budget_reason') or BUDGET_SPENT['seconds']).split('，')[0]
+    return f'{head}，还有 {skipped} 部没问外部来源，再跑一次接着采。'
+
+
 def _collect_allowed(remote, traffic, row, code, missing, allowed, cover_root, covered, *,
-                     update, issue, answered, received, succeeded, gate=_NetworkGate(None)):
+                     update, issue, answered, received, succeeded, gate=_NetworkGate(None), budget=None):
     """按这一行所属媒体库的处理方式问外部来源（ADR-0116），返回 (证据条目, 新落盘的封面数)。
 
     关掉的联网步骤不问：不补资料时不带缺失字段，不补封面时不找封面，两样都关就整行不联网。
     不补人物图片的媒体库，这一行换上的封面不记进 `covered`，不因此派补头像后继。
-    断网（`gate`）时要出网的行一家都不问，留一条问题项，不进断点。"""
+    断网（`gate`）时要出网的行一家都不问，留一条问题项，不进断点；本趟预算到顶（`budget`）时
+    同样不问，计进 `budget` 的汇总。"""
     found, covers = [], 0
     if gate.skips(remote, row, code, missing, allowed, cover_root, answered=answered, issue=issue):
+        return found, covers
+    if budget is not None and budget.skips(row, code, missing, allowed, cover_root, answered=answered):
         return found, covers
     if allowed & {'metadata', 'cover'}:
         traffic.start_metadata(code)
@@ -2801,7 +2865,8 @@ def _settle_collection_state(state, summary, rows, update):
     update(status='failed' if state['issue_count'] else 'complete', stage='处理结束',
            outcome='partial' if state['issue_count'] else 'complete',
            checked=len(rows), total=len(rows), **summary,
-           error=issue_summary(state['issue_count'], state['paused_count']),
+           error=' '.join(text for text in (budget_summary(state),
+                                            issue_summary(state['issue_count'], state['paused_count'])) if text),
            completed_at=time.time(), current_asset_id=None, current_asset_name='',
            current_action='', current_started_at=None, current_deadline_at=None)
 
@@ -2858,7 +2923,7 @@ def _restore_processing_counts(state, previous):
     for key in ('started_at', 'identified', 'covers', 'previews', 'probed', 'issue_count', 'paused_count',
                 'issue_preview', 'issues_truncated', 'notes', 'retryable_asset_ids', 'paused_asset_ids',
                 'junk_isolated', 'junk_review',
-                'offline_skipped'):
+                'offline_skipped', 'budget_skipped', 'budget_reason'):
         if key in previous:
             state[key] = previous[key]
     for key in ('scan_checkpoints', 'local_metadata'):
@@ -3252,6 +3317,7 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                                                      | blocked)
                 prepared = [entry for entry in prepared if entry[0]['id'] not in blocked]
                 update(current_action='', current_started_at=None, current_deadline_at=None)
+            budget = _SourceBudget(remote, state)
             for position, (row, code, verify_existing, local_fields, local_entries, local_ok) in enumerate(prepared):
                 local_ok = local_ok and row['id'] not in poster_failed
                 guard.check()
@@ -3267,17 +3333,20 @@ def process_library(config, db_path, candidate_root, cover_root, *, location='co
                     answered=() if verify_existing else _answered_sources(groups, target_key, missing),
                     received=lambda entries, row=row, code=code, fields=local_fields, verify=verify_existing:
                         publish(row, code, fields, verify, entries),
-                    succeeded=lambda before=issues_before: state['issue_count'] == before, gate=gate)
+                    succeeded=lambda before=issues_before: state['issue_count'] == before, gate=gate,
+                    budget=budget)
                 state['offline_skipped'] = gate.skipped
                 state['covers'] += covers
                 update(stage='保存待确认资料', current_action='writing_candidates',
                        current_started_at=time.time(), current_deadline_at=None)
-                checkpoints.queue_metadata(row, local_entries + found if local_ok else [], issues_before)
+                checkpoints.queue_metadata(row, budget.checkpointed(row, local_entries + found if local_ok else []),
+                                           issues_before)
                 flush_candidates()
                 update(checked=completed_count + position + 1, candidates=len(scoped_groups()),
                        current_asset_id=None, current_asset_name='', current_action='',
                        current_started_at=None, current_deadline_at=None)
             flush_candidates(force=True)
+            budget.summarize(issue)
             update(estimate_pending={}, stage='整理采集结果', checked=0, total=0)
             # 候选完整落盘后立即执行调用方注入的窄规则，不再等人打开复核页才触发。
             # 核心处理层不反向依赖 Web 复核层；CLI 与 Web 两个组装入口都传入同一实现。
