@@ -12,9 +12,6 @@ export interface RepairItem {
 export interface RepairHistory { id: string; title: string; at: number; changed: number; backups: { name: string; exists: boolean }[] }
 export interface RepairCenterData { available: boolean; items: RepairItem[]; history: RepairHistory[] }
 
-/** 页首说明。路由骨架（`management-skeletons.ts`）照写同一句，接管时不跳字。 */
-export const REPAIR_CENTER_INTRO = '开销小、只改自动写入资料的修复自动执行，你手动改过的不动；开销大或可能改错的等你确认。';
-
 export const REPAIRS_URL = '/api/configuration/repairs';
 export const REPAIRS_KEY = ['configuration', 'repairs'] as const;
 

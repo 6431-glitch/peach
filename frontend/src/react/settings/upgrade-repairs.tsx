@@ -34,7 +34,6 @@ export function UpgradeRepairs() {
     tone={state === 'failed' ? 'error' : state === 'running' ? 'progress' : state === 'review' ? 'warning'
       : state === 'complete' ? 'success' : 'neutral'}><span key={state}
         data-copy-key={`upgradeRepairs.${state}.status`}>{LABELS[state] || '未取得'}</span></StatusLabel>}>
-    <Stack><Help>升级后自动修正资料、更新缓存。</Help></Stack>
     <FactList>
       <Fact term="待完成"><span><AnimatedNumber value={pending} /> 项</span></Fact>
       <Fact term="失败"><span><AnimatedNumber value={failed} /> 项</span></Fact>

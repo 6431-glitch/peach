@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "10dd0e84-63d6-49d0-9d3a-0d9410dc3e69", e._sentryDebugIdIdentifier = "sentry-dbid-10dd0e84-63d6-49d0-9d3a-0d9410dc3e69");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "6d24ad09-7cf5-4331-af7e-0794af2106e1", e._sentryDebugIdIdentifier = "sentry-dbid-6d24ad09-7cf5-4331-af7e-0794af2106e1");
 	} catch {}
 })();
 import { AnimatedItems as e, Cell as t, ChartBackground as n, ChartContainer as r, ChartLegend as i, ChartLegendContent as a, ChartTip as o, ChartTooltip as s, ChartTooltipContent as c, Curve as l, DATA_ITEM_GRAPHICAL_ITEM_ID_ATTRIBUTE_NAME as u, DATA_ITEM_INDEX_ATTRIBUTE_NAME as d, DefaultZIndexes as f, EvilBarChart as p, LabelList as m, LabelListFromLabelProp as h, Layer as g, LoadingIndicator as _, PolarChart as v, PolarLabelContextProvider as y, PolarLabelListContextProvider as b, RegisterGraphicalItemId as x, Sector as S, SetPolarGraphicalItem as C, SetPolarLegendPayload as w, SetTooltipEntrySettings as T, Shape as ee, TIP_SWATCH as te, Text as ne, ZIndexLayer as re, adaptEventsOfChild as ie, arrayTooltipSearcher as ae, createSelector as oe, defaultPolarChartProps as se, findAllByType as ce, get as le, getClassNameFromUnknown as ue, getColorsCount as de, getMaxRadius as fe, getPercentValue as pe, getTooltipNameProp as me, getValueByDataKey as he, interpolate as ge, isNumber as _e, matchAppend as ve, mathSign as ye, polarToCartesian as be, resolveDefaultProps as xe, selectActiveTooltipDataKey as Se, selectActiveTooltipGraphicalItemId as Ce, selectActiveTooltipIndex as we, selectChartDataAndAlwaysIgnoreIndexes as Te, selectChartOffsetInternal as Ee, selectUnfilteredPolarItems as De, svgPropertiesNoEvents as Oe, svgPropertiesNoEventsFromUnknown as ke, tone as Ae, useAnimationCallbacks as je, useAppSelector as Me, useMouseClickItemDispatch as Ne, useMouseEnterItemDispatch as Pe, useMouseLeaveItemDispatch as Fe, usePolarChartLayout as Ie } from "./peach-app.chart-tip-CRxYp6KT.js";
@@ -2354,11 +2354,7 @@ function Pa({ initial: e, receipt: t }) {
 				children: [
 					n.job.state === "measuring" ? /* @__PURE__ */ (0, Q.jsx)(Ma, { job: n.job }) : null,
 					f?.capacity_error ? /* @__PURE__ */ (0, Q.jsxs)(k, { children: ["容量统计不完整：", f.capacity_error] }) : null,
-					f?.allocated_bytes == null ? null : /* @__PURE__ */ (0, Q.jsxs)(N, { children: [
-						"Peach 数据实际占盘 ",
-						J(f.allocated_bytes),
-						"；分类图按文件大小统计。"
-					] }),
+					f?.allocated_bytes == null ? null : /* @__PURE__ */ (0, Q.jsxs)(N, { children: ["Peach 数据实际占盘 ", J(f.allocated_bytes)] }),
 					f ? /* @__PURE__ */ (0, Q.jsxs)("div", {
 						"data-storage-result": "",
 						className: nn({
@@ -2908,7 +2904,6 @@ function Za() {
 			}, a)
 		}),
 		children: [
-			/* @__PURE__ */ (0, Q.jsx)(V, { children: /* @__PURE__ */ (0, Q.jsx)(N, { children: "升级后自动修正资料、更新缓存。" }) }),
 			/* @__PURE__ */ (0, Q.jsxs)(ut, { children: [
 				/* @__PURE__ */ (0, Q.jsx)(j, {
 					term: "待完成",
@@ -4579,7 +4574,7 @@ function Go({ receipt: e }) {
 		children: [
 			/* @__PURE__ */ (0, Q.jsx)(I, { children: /* @__PURE__ */ (0, Q.jsx)(B, {
 				label: "生成视频预览",
-				description: "为本地视频生成九宫格与时间轴预览；关闭后仍按入库规则探测时长与分辨率。",
+				description: "为本地视频生成九宫格与时间轴预览。",
 				children: /* @__PURE__ */ (0, Q.jsx)(U, {
 					"aria-label": "生成视频预览",
 					isSelected: !!t.data && !t.data.metadata_only,
@@ -5508,19 +5503,16 @@ function Ms({ revision: e, initial: t, receipt: n }) {
 			}) : null,
 			r.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: r.error }) : null,
 			h.error ? /* @__PURE__ */ (0, Q.jsx)(k, { children: h.error }) : null
-		] }), /* @__PURE__ */ (0, Q.jsxs)(M, {
-			status: r.enabled ? "Peach 重启后自动恢复。" : void 0,
-			children: [/* @__PURE__ */ (0, Q.jsx)(E, {
-				variant: r.named_available ? "secondary" : "primary",
-				onClick: () => v("toggle", !g, (e) => n(e.enabled ? "公网入口已启动" : "公网入口已停止")),
-				...K(h.busy === "toggle"),
-				children: g ? "停止公网入口" : "启动公网入口"
-			}), r.named_available ? /* @__PURE__ */ (0, Q.jsx)(E, {
-				type: "submit",
-				...K(h.busy === "save"),
-				children: "保存配置"
-			}) : null]
-		})]
+		] }), /* @__PURE__ */ (0, Q.jsxs)(M, { children: [/* @__PURE__ */ (0, Q.jsx)(E, {
+			variant: r.named_available ? "secondary" : "primary",
+			onClick: () => v("toggle", !g, (e) => n(e.enabled ? "公网入口已启动" : "公网入口已停止")),
+			...K(h.busy === "toggle"),
+			children: g ? "停止公网入口" : "启动公网入口"
+		}), r.named_available ? /* @__PURE__ */ (0, Q.jsx)(E, {
+			type: "submit",
+			...K(h.busy === "save"),
+			children: "保存配置"
+		}) : null] })]
 	});
 }
 // src/react/settings/network-settings.tsx
@@ -6296,4 +6288,4 @@ function tc({ data: e, receipt: t, reopenTutorial: n, section: r, diagnostics: i
 }
 export { Qs as ConfigurationPage };
 
-//# debugId=10dd0e84-63d6-49d0-9d3a-0d9410dc3e69
+//# debugId=6d24ad09-7cf5-4331-af7e-0794af2106e1

@@ -233,12 +233,12 @@ export function DuplicatesPage({ openItem, toast, failure }: DuplicatesProps) {
           </EmptyState>}
       {groups.length > 0 && data.total > groups.length
         ? <p className="text-center text-caption-1-regular text-text-secondary">
-            {`显示可回收最多的前 ${groups.length.toLocaleString()} 组，共 ${Number(data.total).toLocaleString()} 组；处理掉这些后，其余的会补上来。`}
+            {`显示可回收最多的前 ${groups.length.toLocaleString()} 组，共 ${Number(data.total).toLocaleString()} 组`}
           </p>
         : null}
       {data.kept
         ? <p className="mt-2 text-center text-caption-1-regular text-text-secondary">
-            {`另有 ${data.kept.toLocaleString()} 组标记了都保留，不再列出；组里文件有增减时会重新列出。`}
+            {`另有 ${data.kept.toLocaleString()} 组标记了都保留，不再列出`}
           </p>
         : null}
     </div>

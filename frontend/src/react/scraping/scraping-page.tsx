@@ -292,7 +292,7 @@ function CheckAllCard({ toast }: ScrapingProps) {
       <Stack>
         {taskQuery.isPending ? <div role="status" aria-label="正在读取连接检查状态" data-skeleton="" className="skeleton-sheen h-6 rounded-md" /> : null}
         {/* 说明写在一行里：拆行的 JSX 文本渲染时多出空格，改字工具就对不上源码。 */}
-        <Help>检查各来源页面与 DMM 高清图片服务器，最多四个来源同时进行；正在冷却的来源不再请求。可连接只说明检查地址可达，不代表登录有效。</Help>
+        <Help>检查各来源页面与 DMM 高清图片服务器。可连接只说明检查地址可达，不代表登录有效。</Help>
         {running
           ? <div className="flex flex-col gap-2">
               <Progress label="连接检查进度" value={job?.checked ?? 0} max={job?.total ?? 0} />

@@ -48,18 +48,6 @@ const UNNAMED = '未命名视频';
 const RESOURCE_LABELS: Record<string, string> = { image: '图片', audio: '音频', archive: '压缩包', other: '其它文件' };
 const DISPOSAL_LABELS = { manual: '手动', junk: '垃圾', duplicate: '重复', missing: '文件缺失' };
 
-function missingDuration(item: MediaItem): { key: string; label: string } {
-  // media_probe 将已探查但未取得时长记为 -1；NULL 才是尚未探查。
-  if (Number(item.duration) < 0) return { key: 'unavailable', label: '探查错误' };
-  if (item.duration != null) return { key: 'unknown', label: '时长未取得' };
-  if (item.location === 'online') return { key: 'online', label: '来源未提供时长' };
-  const path = String(item.path || item.name || '').toLowerCase();
-  if (item.is_strm || path.endsWith('.strm')) return { key: 'strm', label: 'STRM 不自动探查' };
-  if (path.endsWith('.iso')) return { key: 'iso', label: 'ISO 不自动探查' };
-  if (item.cost === 'metered') return { key: 'metered', label: '流量保护 · 未探查' };
-  return { key: 'pending', label: '尚未探查' };
-}
-
 function DisposalReason({ item }: { item: MediaItem }) {
   if (item.disposal !== 'trash') return null;
   const label = (item.disposal_reason && DISPOSAL_LABELS[item.disposal_reason]) || '原因未记录';
@@ -247,7 +235,6 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
   const titleHtml = helpers.titleHtml(item, rawName).trim() || esc(UNNAMED);
   const shownSize = parts?.total_size ?? item.size;
   const shownDuration = parts?.total_duration ?? item.duration;
-  const durationReason = Number(shownDuration) > 0 ? null : missingDuration(item);
   const watched = !parts && Number(item.play_seconds) > 0 && Number(item.duration) > 0
     ? Math.min(Number(item.play_seconds) / Number(item.duration), 1) : 0;
   const { avatar, who } = identityParts(item);
@@ -290,9 +277,7 @@ function VideoCard({ item, variant, layout, selected, selectMode, seekSeconds, h
       {editions
         ? <span data-media-group="" title={editions.editions.join(' · ')}>{`${Number(editions.count).toLocaleString()} 个版本`}</span>
         : null}
-      <span data-media-duration="" data-copy-key={durationReason ? `media.duration.${durationReason.key}` : undefined}>
-        {durationReason ? durationReason.label : fmtDur(shownDuration)}
-      </span>
+      {Number(shownDuration) > 0 ? <span data-media-duration="">{fmtDur(shownDuration)}</span> : null}
       {!selectMode && item.disposal === 'trash' ? <ResourceAction item={item} actions={actions} /> : null}
       {watched > 0
         ? (

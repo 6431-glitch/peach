@@ -553,7 +553,7 @@ function NameLanguageSetting({ host: current, epoch }: { host: SettingsPanelHost
   const [pending, setPending] = useState<'zh-CN' | 'ja' | null>(null);
   const language = query.data?.performerNameLanguage;
   return <>
-    <Row title="女优名称" description={<small data-copy-key="performer-name-language-help">名称与别名只显示所选语言的写法；缺少对应时保留当前名称。偏好保存在数据库，其他设备读取同一份设置。</small>}>
+    <Row title="女优名称" description={<small data-copy-key="performer-name-language-help">名称与别名只显示所选语言的写法；缺少对应时保留当前名称。</small>}>
       <SelectField id="performerNameLanguageSetting" label="女优名称" epoch={epoch}
         options={[["zh-CN", "中文"], ["ja", "日文原文"]]}
         value={pending ?? language ?? current.store.value.performerNameLanguage}

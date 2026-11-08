@@ -191,7 +191,7 @@ function RunCard(
           isOpen={detailOpen} onOpenChange={setDetailOpen}>
           {detail.error ? <Note tone="error">{errorMessage(detail.error)}</Note> : null}
           {shown < total
-            ? <p className="text-caption-1-regular text-text-secondary">列出其中 {shown.toLocaleString()} 项，正在处理的排在前面</p>
+            ? <p className="text-caption-1-regular text-text-secondary">列出其中 {shown.toLocaleString()} 项</p>
             : null}
           <FollowupList rows={listed} />
         </Disclosure>

@@ -191,7 +191,7 @@ export function StorageSettings({ initial, receipt }: { initial: StorageState; r
       <Stack divided>
         {storage.job.state === 'measuring' ? <Measuring job={storage.job} /> : null}
         {usage?.capacity_error ? <ErrorText>容量统计不完整：{usage.capacity_error}</ErrorText> : null}
-        {usage?.allocated_bytes != null ? <Help>Peach 数据实际占盘 {fmtSize(usage.allocated_bytes)}；分类图按文件大小统计。</Help> : null}
+        {usage?.allocated_bytes != null ? <Help>Peach 数据实际占盘 {fmtSize(usage.allocated_bytes)}</Help> : null}
         {usage
           ? <div data-storage-result="" className={cardClass({ variant: 'outlined', padding: 'none', className: 'flex flex-col' })}>
               <div className="border-b border-separator-border p-4"><StorageOverview storage={storage} /></div>
