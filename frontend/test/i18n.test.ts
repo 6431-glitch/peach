@@ -53,7 +53,7 @@ describe('界面文案的语言资源', () => {
     for (const ns of namespaces(SOURCE_LANGUAGE)) {
       const zh = read(SOURCE_LANGUAGE, ns), en = read('en', ns);
       for (const [key, text] of Object.entries(en)) {
-        const source = zh[key] ?? zh[`${base(key)}_other`] ?? '';
+        const source = zh[key] ?? zh[`${base(key)}_other`] ?? zh[base(key)] ?? '';
         expect(placeholders(text), `${ns}:${key}`).toEqual(placeholders(source));
       }
     }
@@ -65,10 +65,12 @@ describe('界面文案的语言资源', () => {
     for (const ns of namespaces(SOURCE_LANGUAGE)) {
       const zh = read(SOURCE_LANGUAGE, ns), en = read('en', ns);
       for (const [key, text] of Object.entries(en)) {
-        const source = zh[key] ?? zh[`${base(key)}_other`] ?? '';
+        const source = zh[key] ?? zh[`${base(key)}_other`] ?? zh[base(key)] ?? '';
+        /* 占位名是代码里的变量名（如 {{done}}），不是译文里的词。 */
+        const prose = text.replace(/\{\{[^}]*\}\}/g, ' ');
         for (const term of banned) {
           const word = new RegExp(`\\b${term.en.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-          if (source.includes(term.zh) && word.test(text)) hits.push(`${ns}:${key}「${source}」→ ${text}：${term.zh} 不写 ${term.en}`);
+          if (source.includes(term.zh) && word.test(prose)) hits.push(`${ns}:${key}「${source}」→ ${text}：${term.zh} 不写 ${term.en}`);
         }
       }
     }
@@ -98,6 +100,31 @@ describe('界面语言', () => {
     en.addResource('zh-CN', 'navigation', 'onlySource', '仅源文');
     expect(en.t('navigation:onlySource')).toBe('仅源文');
     expect(createTranslator('zh-CN').t('navigation:manage.configuration')).toBe('Peach 配置');
+  });
+
+  it('数字 count 选单复数并按语言加千位分隔', () => {
+    const en = createTranslator('en');
+    en.addResources('en', 'navigation', { items_one: '{{count, number}} item', items_other: '{{count, number}} items' });
+    en.addResource('zh-CN', 'navigation', 'items', '{{count, number}} 项');
+    expect([en.t('navigation:items', { count: 1 }), en.t('navigation:items', { count: 1234 })]).toEqual(['1 item', '1,234 items']);
+    expect(en.t('navigation:items', { count: 1234, lng: 'zh-CN' })).toBe('1,234 项');
+  });
+
+  it('count 传数字，不传格式化好的字符串', () => {
+    // 字符串 count 不走单复数，英文找不到不带后缀的键，整句会回落成中文。
+    const offenders: string[] = [];
+    const visit = (dir: string) => {
+      for (const entry of readdirSync(dir, { withFileTypes: true })) {
+        const path = join(dir, entry.name);
+        if (entry.isDirectory()) { if (entry.name !== 'locales') visit(path); continue; }
+        if (!/\.(ts|tsx|js)$/.test(entry.name)) continue;
+        readFileSync(path, 'utf8').split('\n').forEach((line, index) => {
+          if (/\bt\(\s*'[^']+'[^)]*\bcount:\s*[^,}]*toLocaleString\(/.test(line)) offenders.push(`${path}:${index + 1}`);
+        });
+      }
+    };
+    visit(join(frontend, 'src'));
+    expect(offenders).toEqual([]);
   });
 });
 
