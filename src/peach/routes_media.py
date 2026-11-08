@@ -572,8 +572,11 @@ def _subtitle_rows(state, asset_id: int):
         video = normalized_path(asset.path)
         if any(within_root(video, root) for root in state.media_engine.filesystem.allowed_roots):
             known = {str(normalized_path(row["path"])).casefold() for row in rows}
-            rows.extend(row for row in subtitles.discover_sidecars(video, VIDEO)
-                        if row["path"].casefold() not in known)
+            # 列表一次、每条轨各一次都走这里；目录列举按视频路径缓存，网盘目录不每次列一遍。
+            listings = getattr(state, "sidecar_listings", None)
+            found = (listings.discover(video, VIDEO) if listings is not None
+                     else subtitles.discover_sidecars(video, VIDEO))
+            rows.extend(row for row in found if row["path"].casefold() not in known)
     return asset, rows
 
 
