@@ -1,7 +1,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "93c8c63f-2ecb-4825-b647-be2c9d4d064a", e._sentryDebugIdIdentifier = "sentry-dbid-93c8c63f-2ecb-4825-b647-be2c9d4d064a");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "129a002d-9110-4165-bf68-50d66140f091", e._sentryDebugIdIdentifier = "sentry-dbid-129a002d-9110-4165-bf68-50d66140f091");
 	} catch {}
 })();
 import { $2ec61d1d4f780267$export$a8a3e93435678ff9 as e, $76d00c5a4edb230a$export$76ccd210b9029917 as t, $76d00c5a4edb230a$export$816b5d811295e6bc as n, $76d00c5a4edb230a$export$b59bdbef9ce70de2 as r, $76d00c5a4edb230a$export$f6f0c3fe4ec306ea as i, $76d00c5a4edb230a$export$f850895b287ef28e as a, $fe21c36db05242bb$export$d7b12c4107be0d61 as o, ArtSlot as s, Button as c, ButtonLink as l, Bx as u, COVER_STATE_TITLE as d, CatalogViewToggle as f, Checkbox as p, ChevronSortDown as m, Chip as h, CloudDownloadDialog as g, CoverQueue as _, DISCOVERY_METADATA_KEY as v, DISCOVERY_SORTS as y, DOWNLOADS_KEY as b, DOWNLOADS_URL as x, DataTableFooter as S, DataTableFrame as C, E3 as w, EmptyFocusButton as T, EmptyState as E, FilterGlassRows as ee, FilterIconButton as D, FilterPill as te, GlassPill as ne, Help as O, IndexSearch as k, Input as re, JAV_LAYOUTS as ie, JAV_RECOMMENDATION_GRID as ae, JAV_SELECTION_EVENT as A, JavHeader as j, LibraryShortcuts as M, M6 as N, ModalFrame as P, Note as F, P7 as I, PHASES as L, RELEASE_COLUMN_VISIBILITY_KEY as R, RELEASE_COLUMN_WIDTHS_KEY as oe, RELEASE_PAGE_SIZES as se, RELEASE_SORTS as ce, RELEASE_SORT_COLUMNS as z, SEGMENT as B, SEGMENTED_TRACK as V, SegmentedRadioGroup as le, Segments as ue, SelectionDock as de, Shuffle as fe, SortKeys as pe, SourceAvatar as me, Table as he, TableColumnControls as ge, TableColumnResizer as H, TaskProgress as _e, WANTS_KEY as U, WantMagnets as ve, Wt as ye, __toESM as be, addWant as xe, apiGet as Se, appSettingsStore as Ce, avatarInner as we, busyProps as W, cachedMagnetStates as Te, cardClass as Ee, cardRatio as De, catalogListSkeletonCellHtml as Oe, composingKey as ke, controlDiscoveryMetadata as Ae, coverArrived as je, coverFetching as Me, coverFetchingHtml as Ne, coverStateAction as Pe, coverUrl as Fe, discoveryArtwork as Ie, discoveryKey as Le, discoveryScore as Re, entityDisplayName as G, entityFaceImg as ze, entityPath as Be, errorMessage as K, esc as Ve, facePos as He, fetchCoverNow as Ue, fetchDiscoveries as We, fetchDiscoveryMetadata as Ge, fetchReleases as Ke, fetchWants as qe, firstGrapheme as Je, fmtDur as Ye, gridLayout as Xe, invalidateWants as q, javContentSkeleton as Ze, javLayout as Qe, javTagSkeleton as $e, keepPreviousData as et, leadingGraphemes as tt, logoUrl as nt, pageWindow as rt, qE as it, queryClient as at, recommendationScore as ot, relayoutCovers as st, releaseColumns as ct, releaseFilters as lt, releaseKey as ut, removeWants as dt, require_jsx_runtime as ft, require_react as pt, resetWants as mt, searchNote as ht, selectRange as gt, selectionSummary as _t, spriteGlyph as vt, storeJavLayout as yt, suppressShiftTextSelection as bt, textLang as xt, tierPlaceholdersHtml as St, useAction as J, useCatalogView as Ct, useEntityNames as wt, useQuery as Y, useTablePreferences as Tt, wantName as X, wireHorizontalScroller as Et, writeJavQuery as Z } from "./peach-app.js";
@@ -1496,7 +1496,7 @@ function cn({ readOnly: e, receipt: t, resource: n, query: r, navigate: i, clear
 		e !== "start" && await N.refetch({
 			cancelRefetch: !0,
 			throwOnError: !0
-		}), se.current = oe(n.metadata_job), at.setQueryData(v, n);
+		}), await at.cancelQueries({ queryKey: v }), se.current = oe(n.metadata_job), at.setQueryData(v, n);
 	}, de = (e) => {
 		V.run(e, (t) => le(e === "stop" ? "cancel" : "refresh", t), () => {});
 	}, fe = (0, Q.useRef)(!1), me = s === "external" && R?.status !== "running" && (N.data?.items || []).some((e) => e.metadata_state === "pending" || e.metadata_state === "stale");
@@ -1725,4 +1725,4 @@ function cn({ readOnly: e, receipt: t, resource: n, query: r, navigate: i, clear
 }
 export { sn as JavPage };
 
-//# debugId=93c8c63f-2ecb-4825-b647-be2c9d4d064a
+//# debugId=129a002d-9110-4165-bf68-50d66140f091

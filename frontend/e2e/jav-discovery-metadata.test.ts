@@ -12,7 +12,7 @@ describe('发现资料与排序', () => {
     const { page } = opened;
     /* 每次请求记一笔：`list` 是推荐列表（只读，带打分），`progress` 是进度轮询，`control:*` 是起停。 */
     const requests: string[] = [];
-    let details = 0, status = '', completed = false;
+    let details = 0, status = '', completed = false, polls = 0;
     const job = () => (status ? { job_id: 'fixed-batch', status, completed: completed ? 2 : 0, total: 2,
       failed: 0, requests: completed ? 4 : 0, bytes: 1000, message: status === 'stopped' ? '作品资料读取已停止' : '' } : null);
     const reply = () => ({ metadata_job: job(), ...(status === 'running' ? { poll_after_ms: 1000 } : {}) });
@@ -25,9 +25,11 @@ describe('发现资料与排序', () => {
           const { action } = route.request().postDataJSON() as { action: string };
           requests.push(`control:${action}`);
           status = action === 'cancel' ? 'stopped' : completed ? 'complete' : 'running';
+          polls = 0;
         } else {
           requests.push('progress');
-          if (status === 'running') { status = 'complete'; completed = true }
+          // 起任务后第二次轮询才读完：「停止读取」至少停留一个轮询间隔，负载高时也看得到。
+          if (status === 'running' && ++polls >= 2) { status = 'complete'; completed = true }
         }
         return route.fulfill({ json: reply() });
       });

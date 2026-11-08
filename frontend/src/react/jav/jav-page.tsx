@@ -113,6 +113,8 @@ function Discover({ readOnly, receipt, resource, query, navigate, clearText }: {
   const control = async (kind: 'start' | 'refresh' | 'cancel', signal?: AbortSignal) => {
     const result = await controlDiscoveryMetadata(kind, { sort, direction, jobId: metadata?.job_id }, signal);
     if (kind !== 'start') await discoveries.refetch({ cancelRefetch: true, throwOnError: true });
+    // 起停之前发出的进度请求晚回来会盖掉这份回执（比如挂载时那次），先取消。
+    await queryClient.cancelQueries({ queryKey: DISCOVERY_METADATA_KEY });
     answered.current = jobState(result.metadata_job);
     queryClient.setQueryData(DISCOVERY_METADATA_KEY, result);
   };
