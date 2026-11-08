@@ -63,6 +63,14 @@ class TranscodeNeedsSession(TranscodeUnavailable):
     """片源要整片转码，但请求没带可取消的流会话，也没有现成缓存。"""
 
 
+def _touch(path: Path) -> None:
+    """命中即续期：容量清理按修改时间判断「最久没用」，和 HLS 分段的做法一致。"""
+    try:
+        os.utime(path, None)
+    except OSError:
+        pass
+
+
 class TranscodeService:
     """Create immutable browser-playable MP4 cache entries without touching sources."""
 
@@ -177,6 +185,7 @@ class TranscodeService:
 
         target = self.cache_root / f"{asset_id}-{stat.st_size}-{stat.st_mtime_ns}.mp4"
         if target.is_file() and target.stat().st_size:
+            _touch(target)
             return target, True
         if not convert:
             raise TranscodeNeedsSession("conversion needs a stream session")
@@ -271,6 +280,7 @@ class TranscodeService:
                 deadline=min(deadline, time.monotonic() + PROBE_TIMEOUT_SECONDS),
                 label="ffprobe",
                 capture_stdout=True,
+                writes=False,
             )
         except (TranscodeCancelled, TranscodeCapacityDenied):
             raise
@@ -394,11 +404,14 @@ class TranscodeService:
         deadline: float,
         label: str,
         capture_stdout: bool = False,
+        writes: bool = True,
     ) -> tuple[int, bytes, bytes]:
+        """跑一条 FFmpeg 命令；`writes=False`（ffprobe 等只读探测）不过容量检查，磁盘满也能判断能否直放。"""
         from .jobs import DiskSpaceDenied
+        guard = self.capacity_guard if writes else None
         try:
-            if self.capacity_guard is not None:
-                self.capacity_guard.check(force=True)
+            if guard is not None:
+                guard.check(force=True)
         except DiskSpaceDenied as error:
             raise TranscodeCapacityDenied(str(error)) from error
         creationflags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
@@ -422,9 +435,9 @@ class TranscodeService:
                     stdout, stderr = process.communicate(timeout=0.5)
                     break
                 except subprocess.TimeoutExpired:
-                    if self.capacity_guard is not None:
+                    if guard is not None:
                         try:
-                            self.capacity_guard.check()
+                            guard.check()
                         except DiskSpaceDenied as error:
                             process.kill()
                             process.communicate()
