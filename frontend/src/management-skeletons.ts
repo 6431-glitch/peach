@@ -1,4 +1,6 @@
 import { islandButton, islandSelect, islandSummary } from './island-skeleton';
+import { RESULT_PANEL, RESULT_SECTION } from './react/components/fieldset';
+import { REPAIR_CENTER_INTRO } from './react/settings/repair-center-data';
 
 const placeholder = 'relative overflow-hidden skeleton-sheen bg-background-tertiary-default rounded-lg';
 const text = (width = '60%') => `<span class="${placeholder} inline-block max-w-full align-middle" style="width:${width};height:1em"></span>`;
@@ -102,5 +104,22 @@ export function qualityGoalsSkeleton(): string {
   return `<div class="peach-react"><div class="mx-auto flex w-full max-w-board flex-col gap-8">
     ${islandSummary('待升级')}
     <ul class="card-grid-cover gap-5">${card.repeat(6)}</ul>
+  </div></div>`;
+}
+
+/** 「修复与迁移」：页首说明与分区标题照写，结果面板里几行占位，和 `react/settings/repair-center.tsx`
+ *  的 `Row` 同一串类名：左边标题与说明，右边读数与状态标签。项数等数据才知道，按常见的三项画。 */
+export function repairCenterPanelSkeleton(rows = 3): string {
+  const row = `<div class="${RESULT_SECTION} flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+    <div class="flex min-w-0 flex-1 flex-col gap-0.5"><span class="text-body-medium">${text('7em')}</span><span class="text-body-2-regular">${text('62%')}</span></div>
+    <div class="flex shrink-0 items-center gap-3"><span class="text-body-2-regular">${text('4em')}</span><span class="${placeholder} inline-block h-6 w-14 rounded-full"></span></div>
+  </div>`;
+  return `<div class="${RESULT_PANEL}">${row.repeat(rows)}</div>`;
+}
+
+export function repairCenterSkeleton(): string {
+  return `<div class="peach-react"><div class="mx-auto flex w-full max-w-board flex-col gap-8">
+    <p class="text-body-regular text-text-secondary">${REPAIR_CENTER_INTRO}</p>
+    <section class="flex flex-col gap-4"><h2 class="text-title-2-medium! m-0! text-text-primary">修复项目</h2>${repairCenterPanelSkeleton()}</section>
   </div></div>`;
 }

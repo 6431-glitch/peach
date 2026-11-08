@@ -831,16 +831,12 @@ def client_updates(request: Request, _args=Depends(require_auth)):
 def _release_notice_facts(request: Request, connection) -> dict:
     """公告条目的显示条件：只看本机回执，不发外部请求。读不到的一项按不显示处理。"""
     from . import system_file_repair
-    from .display_dimensions_repair import RECEIPT_KEY
-    from .upgrade_repairs import _read
+    from .display_dimensions_repair import progress
     facts: dict[str, Any] = {}
     service = request.app.state.upgrade_repairs
-    try:
-        display = _read(service.receipt).get(RECEIPT_KEY, {}) if service.available else {}
-    except (OSError, ValueError, TypeError):
-        display = {}
-    if display.get('dimensions'):
-        facts['display_reprobe'] = {'done': len(display.get('completed', {})), 'total': len(display['dimensions'])}
+    done, total = progress(connection) if service.available else (0, 0)
+    if total:
+        facts['display_reprobe'] = {'done': done, 'total': total}
     row = connection.execute(
         'SELECT result_json FROM ledger_upgrade_repair WHERE json_type(result_json,?) IS NOT NULL '
         'ORDER BY applied_at DESC LIMIT 1', (f'$."{system_file_repair.RULE}"',)).fetchone()
@@ -911,9 +907,11 @@ def _repair_center(request: Request) -> dict:
         directories.append(ledger_backups.organize_dir(settings_file.active().directory('generated')))
     except (OSError, ValueError):
         pass
+    reclaim = getattr(request.app.state, 'follow_evidence', None)
     with request.app.state.web_contract.read_connection() as connection:
         result = repair_center.snapshot(connection, receipt, backup_directories=directories,
-                                        cloud_pending=service.cloud_display_videos() if service.available else 0)
+                                        cloud_pending=service.cloud_display_videos() if service.available else 0,
+                                        follow_evidence_status=reclaim.status() if reclaim and service.available else None)
     return {**result, 'available': service.available}
 
 
@@ -937,6 +935,20 @@ async def include_cloud_display_dimensions(request: Request, _args=Depends(requi
         await asyncio.to_thread(request.app.state.upgrade_repairs.include_cloud_display_dimensions)
         return _repair_center(request)
     except (ValueError, OSError, Timeout) as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@router.post('/api/configuration/repairs/follow-evidence')
+def reclaim_follow_evidence(request: Request, _args=Depends(require_auth)):
+    """关注抓取的旧快照不在升级时自动删，由用户在「修复与迁移」里看过数量与体积、确认后在后台删。"""
+    local_only(request)
+    same_origin(request)
+    try:
+        if not request.app.state.upgrade_repairs.available:
+            raise ValueError('只在本机写入端可用')
+        request.app.state.follow_evidence.start()
+        return _repair_center(request)
+    except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
 
 

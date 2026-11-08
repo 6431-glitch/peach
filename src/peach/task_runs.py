@@ -100,6 +100,7 @@ TASK_LABELS = {
     "ledger-restore": "从备份恢复账本",
     "upgrade-repairs": "自动修复",
     "upgrade-library": "资料自动修复",
+    "follow-evidence-reclaim": "关注旧快照清理",
     "organize": "按模板整理",
     "batch": "批量操作",
     "scrape-codes": "番号资料刮削",
@@ -496,8 +497,8 @@ class TaskRunStore:
         root = parent.root_run_id or parent.id
         moment = stamp()
         from .task_control import initialize_speed
-        from .update_tasks import _mutex, state_for
-        with _mutex(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
+        from .update_tasks import gate, state_for
+        with gate(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
             # 父任务是裸任务时它就是这条链的根。补在这里而不是 `start`：开工那一刻还
             # 不知道这一轮会不会派后继，给每一行都填一个指向自己的 root 是无意义的噪声。
             connection.execute(
@@ -531,8 +532,8 @@ class TaskRunStore:
         if not self.enabled or not run.followup_key:
             return None
         from .task_control import initialize_speed
-        from .update_tasks import _mutex, state_for
-        with _mutex(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
+        from .update_tasks import gate, state_for
+        with gate(state_for(self.database.db_path)), self.database.write_transaction(notify=False) as connection:
             try:
                 cursor = connection.execute(
                     "INSERT INTO task_run(task_key,trigger,status,mutex_key,pid,host,"
@@ -549,10 +550,13 @@ class TaskRunStore:
         return run_id
 
     def claim_followup(self, task_keys, first=()) -> TaskRun | None:
-        from .update_tasks import admission, UpdateBusy
+        """装更新期间返回 None；闸门锁被别人拿着时抛 `GateBusy`，调用方稍后再领。"""
+        from .update_tasks import admission, GateBusy, UpdateBusy
         try:
             with admission(self.database.db_path):
                 return self._claim_followup(task_keys, first)
+        except GateBusy:
+            raise
         except UpdateBusy:
             return None
 
@@ -693,6 +697,7 @@ class TaskRunStore:
         """每个 task_key 只留最近 `keep` 条终态记录，返回删掉多少条。
 
         活跃任务保留，指向已清退历史的父任务和根任务关联由删除触发器置空。
+        随后清退整个数据根里已结束运行的控制文件（`task_control.prune_controls`），不限本 task_key。
         后继使用 `keep_errors` 保留仍可重试的失败项；下载状态保留并清空已清退运行的链接。
         阈值用 `LIMIT 1 OFFSET keep` 取「第 keep+1 新的那条 id」。
         """
@@ -714,8 +719,8 @@ class TaskRunStore:
                     f"DELETE FROM task_run WHERE task_key=? AND status IN ({marks}) "
                     "AND id<=?", (task_key, threshold["id"]))
                 removed = cursor.rowcount
-        from .task_control import prune_speeds
-        prune_speeds(self)
+        from .task_control import prune_controls
+        prune_controls(self)
         return removed
 
     # -- 查询 --------------------------------------------------------------

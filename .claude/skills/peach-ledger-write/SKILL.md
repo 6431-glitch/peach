@@ -60,7 +60,7 @@ Windows 写者的托盘在启动与「重启服务」时、子服务停着的间
 
 ## 删除
 
-- 物理删除只有一条实现 `purge_assets()`，`/api/batch` 的 `delete` 与 `/api/trash/empty` 共用。
+- 物理删除只有一条实现：`stage_purge()` 在写事务外处理媒体，`commit_purge()` 在事务里复核后删行。
 - 顺序固定：先删媒体文件、再删账本行。删不掉的文件整条跳过并在 `blocked` 里回报，前端必须
   显示 `blocked`。反过来先删行会留下无人认领的媒体文件，那才是不可恢复的丢失。
 - `asset_search` 不列入 `ASSET_REFERENCE_TABLES`，FTS 行由 `0004` 的删除触发器负责。
