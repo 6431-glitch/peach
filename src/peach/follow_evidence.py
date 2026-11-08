@@ -17,6 +17,7 @@ import logging
 import os
 import threading
 import time
+from contextlib import nullcontext
 from pathlib import Path
 
 LOGGER = logging.getLogger(__name__)
@@ -83,10 +84,15 @@ def surplus(directory: Path, referenced, keep: int = KEEP, limit: int | None = N
     return doomed
 
 
-def remove(doomed) -> tuple[int, int]:
-    """删掉 `surplus` 给出的文件，返回删成的个数与字节数。别人先删了的不算失败。"""
+def remove(doomed, pace=None) -> tuple[int, int]:
+    """删掉 `surplus` 给出的文件，返回删成的个数与字节数。别人先删了的不算失败。
+
+    `pace(已删个数)` 在每份快照（`.raw` 打头、同名 `.json` 随后）开删前调一次：任务中心的暂停、
+    取消与速度档在这里生效，停在两份之间，不会只删半份。"""
     files = freed = 0
     for path, size in doomed:
+        if pace is not None and path.suffix == '.raw':
+            pace(files)
         try:
             path.unlink()
         except FileNotFoundError:
@@ -190,25 +196,39 @@ class Reclaim:
             return None
 
     def _run(self) -> None:
+        """删除这一轮。和其他后台任务一样登记进任务中心：`bind` 让活动页读得到这条线程的占用，
+        每份快照前过一次 `checkpoint('scan')`，暂停、取消与低占用 / 标准 / 高强度速度档都在那里生效。"""
+        from .task_control import Cancelled, bind, checkpoint
         removed = freed = 0
         error = None
+        status = 'succeeded'
         run = self._task(lambda: self.runs.start(TASK_KEY, trigger='manual', mutex_key=TASK_KEY,
                                                  total=self._state.get('total') or None, label='删除旧快照'))
         run_id = getattr(run, 'id', None)
+
+        def pace(done_here: int) -> None:
+            checkpoint('scan')
+            current = removed + done_here
+            with self._lock:
+                self._state['done'] = current
+            self._task(lambda: self.runs.progress(run_id, current=current))
+
         try:
-            referenced = self._referenced()
-            for directory in directories(self.root):
-                files, size = prune(directory, referenced)
-                removed += files
-                freed += size
-                with self._lock:
-                    self._state['done'] = removed
-                self._task(lambda: self.runs.progress(run_id, current=removed))
+            with bind(self.runs, run_id) if self.runs is not None else nullcontext():
+                referenced = self._referenced()
+                for directory in directories(self.root):
+                    files, size = remove(surplus(directory, referenced), pace)
+                    removed += files
+                    freed += size
+                    with self._lock:
+                        self._state['done'] = removed
+        except Cancelled:
+            status, error = 'cancelled', '用户停止任务'
         except Exception as exc:  # noqa: BLE001 — 删了多少照实记进历史
             LOGGER.exception('关注快照清理中断')
-            error = str(exc)
+            status, error = 'failed', str(exc)
         self._task(lambda: self.runs.progress(run_id, current=removed, throttle=0))
-        self._task(lambda: self.runs.finish(run_id, 'failed' if error else 'succeeded', error=error or '',
+        self._task(lambda: self.runs.finish(run_id, status, error='' if status == 'cancelled' else error or '',
                                             summary={'files_removed': removed, 'bytes_reclaimed': freed}))
         result = {'files': removed, 'bytes': freed, **({'error': error} if error else {})}
         try:

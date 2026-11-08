@@ -1712,6 +1712,58 @@ class EvidenceRetentionTests(_StoreCase):
         self.assertEqual((run.status, run.progress_current, run.progress_total, run.result_summary),
                          ("succeeded", 4, 4, {"files_removed": 4, "bytes_reclaimed": 204}))
 
+    def test_stock_cleanup_pauses_and_cancels_from_the_task_center(self):
+        """活动页的暂停停在两份快照之间，继续前不再删；取消结束这一轮，删了多少照实记，剩下的重新等确认。"""
+        import threading
+        import time
+        from unittest.mock import patch
+        from peach import follow_evidence, task_control
+        from peach.follow_evidence import Reclaim
+        from peach.repository import LedgerDatabase
+        from peach.task_runs import TaskRunStore
+        root = self.root / "sources" / "follow" / "rule34video"
+        first = [_old_snapshot(root / "a", index) for index in range(5)]
+        second = [_old_snapshot(root / "b", index) for index in range(5)]
+        database = LedgerDatabase(self.root / "ledger.db")
+        runs = TaskRunStore(database)
+        reclaim = Reclaim(self.root / "sources" / "follow", database, runs=runs)
+        reclaim.status()
+        reclaim.worker.join(10)
+        # 删完第一个目录后停在闸门前，等测试发出暂停再放行。
+        reached, release = threading.Event(), threading.Event()
+        listing = follow_evidence.directories
+
+        def gated(path):
+            for index, directory in enumerate(listing(path)):
+                if index == 1:
+                    reached.set()
+                    release.wait(10)
+                yield directory
+
+        def wait_for(predicate):
+            deadline = time.monotonic() + 10
+            while not predicate():
+                self.assertLess(time.monotonic(), deadline)
+                time.sleep(0.02)
+
+        with patch.object(follow_evidence, "directories", gated):
+            reclaim.start()
+            self.assertTrue(reached.wait(10))
+            run = runs.query(task_key="follow-evidence-reclaim")[0]
+            self.assertEqual(task_control.projection(runs, run)["actions"], ["pause", "cancel", "set_speed"])
+            task_control.request(runs, run.id, "pause")
+            release.set()
+            wait_for(lambda: task_control.projection(runs, runs.get(run.id))["state"] == "paused")
+            self.assertEqual([raw.exists() for raw in first], [False, False, True, True, True])
+            self.assertTrue(all(raw.exists() for raw in second), "暂停后不再删")
+            task_control.request(runs, run.id, "cancel")
+            reclaim.worker.join(10)
+        run = runs.get(run.id)
+        self.assertEqual((run.status, run.result_summary["files_removed"]), ("cancelled", 4))
+        self.assertTrue(all(raw.exists() for raw in second))
+        wait_for(lambda: reclaim.status()["phase"] == "ready")
+        self.assertEqual(reclaim.status()["files"], 4, "剩下的重新等确认")
+
     def test_a_library_without_follow_snapshots_does_not_list_the_item(self):
         from peach import repair_center
         from peach.follow_evidence import Reclaim

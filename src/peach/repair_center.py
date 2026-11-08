@@ -157,7 +157,7 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
                           'done': done, 'total': total},
         # 还有没进名单的网盘旧视频就等确认；名单里已有的网盘片照报进度：确认过的那批，
         # 以及早期版本准备名单时没排除网盘、因而没有确认记录的那批。
-        'display-cloud': {'state': 'waiting' if cloud_pending else 'none' if not cloud_total
+        'display-cloud': {'state': 'waiting' if cloud_pending else ('done' if included else 'none') if not cloud_total
                           else 'done' if cloud_done >= cloud_total else 'running',
                           'pending': cloud_pending, 'included': included,
                           **({'done': cloud_done, 'total': cloud_total} if cloud_total else {})},
