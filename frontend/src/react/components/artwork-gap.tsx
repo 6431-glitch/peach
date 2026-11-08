@@ -94,7 +94,7 @@ export function ArtworkGapView({ gap, item, onRetry }: { gap: ArtworkGap; item: 
   });
   const why = action.error || note || gap.reason;
   return <div data-artwork-gap={gap.key} onClick={stop}
-    className="relative z-[3] flex max-w-full flex-col items-center gap-1.5 px-4 text-center">
+    className="relative z-10 flex max-w-full flex-col items-center gap-1.5 px-4 text-center">
     <span data-media-nopic="" data-copy-key={`media.artwork.${gap.key}`}>{gap.title}</span>
     <span className="line-clamp-2 text-caption-1-regular text-text-secondary" title={why}>{why}</span>
     {fix === 'cover' ? <Button size="small" variant="secondary" className="mt-1" {...busyProps(action.busy === 'cover')}

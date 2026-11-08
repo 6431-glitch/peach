@@ -254,13 +254,7 @@ def _control_action(contract, config, body):
         identity = current_job_id.set(str(job_id))
         run = current_run.set(recovery.get('run_id'))
         try:
-            return w_library_processing(contract, {
-                'stage': previous.get('requested_stage') or ALL_STAGES,
-                'library_id': previous.get('library_id'),
-                **({'incremental': True} if previous.get('incremental') else
-                   {'asset_ids': previous['asset_ids']} if previous.get('asset_ids') else {}),
-                **({'allow_metered': True} if previous.get('allow_metered') else {}),
-                'speed_mode': control.mode}, resume=True)
+            return w_library_processing(contract, _resume_request(previous, control.mode), resume=True)
         finally:
             current_job_id.reset(identity)
             current_run.reset(run)
@@ -392,6 +386,18 @@ def _processing_request(contract, config, previous, body):
     if stage == PREVIEWS_STAGE and metadata_only(config.directory('state')):
         raise ValueError('视频预览生成已关闭，请先在媒体库设置中开启')
     return retry_ids, asset_ids, stage
+
+
+def _resume_request(previous, speed_mode):
+    """继续一趟暂停的任务：照原任务的阶段、媒体库、范围与流量保护授权重发，不另起范围。"""
+    return {
+        'stage': previous.get('requested_stage') or ALL_STAGES,
+        'library_id': previous.get('library_id'),
+        **({'incremental': True} if previous.get('incremental') else
+           {'asset_ids': previous['asset_ids']} if previous.get('asset_ids') else {}),
+        **({'allow_metered': True} if previous.get('allow_metered') else {}),
+        'speed_mode': speed_mode,
+    }
 
 
 def _metered_grant(body, stage, asset_ids):
