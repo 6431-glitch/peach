@@ -136,6 +136,18 @@ def _display_progress(connection, display: dict) -> dict[bool, tuple[int, int]]:
     return {where: (done, total) for where, (done, total) in split.items()}
 
 
+def _display_cloud(pending: int, included: bool, done: int, total: int) -> dict:
+    """网盘补测：确认前等确认，不画进度；确认后报这一批做到哪里。
+
+    待补测数连同名单里还没测的网盘片：早期版本准备名单时没排除网盘，那批片子在名单里却没有确认记录，
+    在用户看来同样还没开始。"""
+    if not included:
+        waiting = pending + total - done
+        return {'state': 'waiting' if waiting else 'none', 'pending': waiting, 'included': False}
+    return {'state': 'done' if done >= total else 'running', 'pending': 0, 'included': True,
+            **({'done': done, 'total': total} if total else {})}
+
+
 def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directories=(),
              follow_evidence_status: dict | None = None) -> dict:
     rows = sorted(((row[0], float(row[1] or 0), json.loads(row[2] or '{}')) for row in connection.execute(
@@ -155,12 +167,7 @@ def snapshot(connection, receipt: dict, *, cloud_pending: int, backup_directorie
                                        if key not in _NOT_CHANGES})},
         'display-local': {'state': 'none' if not total else 'done' if done >= total else 'running',
                           'done': done, 'total': total},
-        # 还有没进名单的网盘旧视频就等确认；名单里已有的网盘片照报进度：确认过的那批，
-        # 以及早期版本准备名单时没排除网盘、因而没有确认记录的那批。
-        'display-cloud': {'state': 'waiting' if cloud_pending else ('done' if included else 'none') if not cloud_total
-                          else 'done' if cloud_done >= cloud_total else 'running',
-                          'pending': cloud_pending, 'included': included,
-                          **({'done': cloud_done, 'total': cloud_total} if cloud_total else {})},
+        'display-cloud': _display_cloud(cloud_pending, included, cloud_done, cloud_total),
         'system-files': {'state': 'done' if isolated else 'none', 'changed': _count(isolated.get('isolated'))},
         'garbled-people': {'state': 'done' if garbled else 'none', 'changed': _count(garbled.get('links'))},
         'dangling-candidates': {'state': 'done' if dangling else 'none',

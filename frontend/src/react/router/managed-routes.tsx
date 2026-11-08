@@ -28,6 +28,7 @@ import { CLEANUP_TOOLS, type CleanupToolPath } from '../../cleanup-tools';
 import { prefetchEntityPage, type EntityPageProps } from '../entity-page/entity-page';
 import { EntityPage } from '../entity-page/entity-page-view';
 import { prefetchDuplicates } from '../duplicates/duplicates';
+import { prefetchRepairs } from '../settings/repair-center-data';
 import { prefetchDiagnostics } from '../diagnostics/diagnostics';
 import { prefetchFeedNew } from '../feed-new/feed-new';
 import { FeedNewPage } from '../feed-new/feed-new-page';
@@ -233,10 +234,10 @@ export const MANAGED_ROUTES: ManagedRouteTable = {
   '/settings/network': configurationRoute('/settings/network'),
   '/settings/maintenance': configurationRoute('/settings/maintenance'),
   '/settings/diagnostics': configurationRoute('/settings/diagnostics'),
-  /* 「应用与维护」之下的子页，不在配置页签里：页头画面包屑回到「应用与维护」，数据由页面自己取。 */
+  /* 「应用与维护」之下的子页，不在配置页签里：页头画面包屑回到「应用与维护」；首屏数据随路由预取，等待时画路由骨架。 */
   '/settings/maintenance/repairs': {
     element: <ManagedMatch path="/settings/maintenance/repairs" />,
-    prefetch: () => withPage(repairCenterPage, Promise.resolve()),
+    prefetch: (_open, signal) => withPage(repairCenterPage, prefetchRepairs(signal)),
     page: () => {
       const { RepairCenterPage } = repairCenterPage.get();
       return <RepairCenterPage />;
