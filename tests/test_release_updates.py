@@ -408,7 +408,7 @@ class ReleaseNoticeTests(unittest.TestCase):
         self.assertNotIn('macOS 应用内更新', titles(windows, '0.54.0'))
         self.assertEqual(windows['notice']['automatic'], [])
         self.assertEqual(docker['notice']['automatic'],
-                         [{'id': 'system-files', 'icon': 'server', 'title': '移出 NAS 系统文件',
+                         [{'id': 'system-files', 'icon': 'server', 'title': '移出系统附属文件',
                            'progress': {'count': 12}, 'body': docker['notice']['automatic'][0]['body']}])
 
     def test_acknowledging_only_moves_forward_and_hides_the_notice(self):
@@ -443,7 +443,7 @@ class ReleaseNoticeFactsTests(unittest.TestCase):
         self.addCleanup(connection.close)
         connection.execute('CREATE TABLE ledger_upgrade_repair(id TEXT, result_json TEXT, applied_at TEXT)')
         connection.executemany('INSERT INTO ledger_upgrade_repair VALUES(?,?,?)', [
-            ('a', json.dumps({'discovery-system-files-2': {'isolated': [{'id': 1}, {'id': 2}]}}), '1'),
+            ('a', json.dumps({'discovery-system-files-3': {'isolated': [{'id': 1}, {'id': 2}]}}), '1'),
             ('b', json.dumps({'garbled_people': {'links': [{'asset_id': 7}], 'tags': [], 'entities': []}}), '2'),
         ])
         request = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(

@@ -215,7 +215,7 @@ class IgnoreAndSourceTests(unittest.TestCase):
         for name in ('@creator', 'normal', '@eaDir-old', '#recycle-old', '.snapshot-old',
                      'Snapshots', 'Recycle Bin', 'Temporary Items', '.Trash-', '.Trash-1000-old',
                      '.Trash-user', '.Trash-١٠٠٠', '.snapshots-old', '.TemporaryItems-old',
-                     '.@#local-old', '@appshare'):
+                     '.@#local-old', '@appshare', '.DocumentRevisions-V100-old', '.DocumentRevisions-V100-bad-x'):
             with self.subTest(directory=name):
                 self.assertFalse(system_directory(name))
                 self.assertFalse(push.ignored(str(PureWindowsPath(r'R:\media', name, 'movie.mp4'))))

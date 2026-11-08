@@ -29,7 +29,7 @@ NOTICES: dict[str, dict] = {
             {"id": "display-dimensions", "icon": "resize", "when": "display_reprobe",
              "title": "补测视频尺寸", "body": "后台修正横竖屏判断"},
             {"id": "system-files", "icon": "server", "when": "system_files",
-             "title": "移出 NAS 系统文件", "body": "缩略图等不再算作视频"},
+             "title": "移出系统附属文件", "body": "NAS 缩略图、macOS 的 ._ 文件不再算作视频"},
             {"id": "garbled-performers", "icon": "person", "when": "garbled_performers",
              "title": "清理乱码人物", "body": "重新补采演员"},
         ],

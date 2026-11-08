@@ -634,6 +634,7 @@ class NasDirectoryTests(unittest.TestCase):
                          ".TemporaryItems", ".AppleDouble", ".AppleDB", ".@#local",
                          ".AppleDesktop", "Network Trash Folder", ".Spotlight-V100", ".Trashes",
                          ".fseventsd", "__MACOSX", "$Recycle.Bin", "System Volume Information",
+                         ".DocumentRevisions-V100", ".DocumentRevisions-V100-bad-1",
                          ".wfm_upload123", "normal", "@creator", ".hidden"):
                 folder = root / name
                 folder.mkdir(exist_ok=True)

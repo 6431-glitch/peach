@@ -20,7 +20,7 @@ _FILES = frozenset({
 def system_directory(name: str) -> bool:
     lowered = name.casefold()
     return (lowered in _DIRECTORIES or lowered.startswith('.wfm_upload')
-            or re.fullmatch(r'\.trash-[0-9]+', lowered) is not None)
+            or re.fullmatch(r'\.trash-[0-9]+|\.documentrevisions-v100(-bad-[0-9]+)?', lowered) is not None)
 
 
 def system_file(name: str) -> bool:
