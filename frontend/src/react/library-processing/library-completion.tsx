@@ -99,7 +99,7 @@ function Completion({ assetIds, meteredIds, onComplete, className }: {
   // 主按钮在最右：两批都有时「同步这些影片」是主操作，流量保护那批是它左边的次要按钮。
   return <section aria-label="补全预览" aria-live="polite" data-library-completion="" className={cx('@container', className)}>
     <Note tone={problem ? 'warning' : 'neutral'} action={<div className="flex flex-wrap items-center gap-2">
-      {meteredIds.length ? <Button size="small" variant={assetIds.length ? 'secondary' : 'primary'} disabled={!!blocked}
+      {meteredIds.length ? <Button variant={assetIds.length ? 'secondary' : 'primary'} disabled={!!blocked}
         title={blocked || undefined} {...busyProps(busy)} onClick={() => { void meteredRun() }}>
         {assetIds.length ? `补全流量保护的 ${metered} 部` : `补全这 ${metered} 部的预览`}</Button> : null}
       {assetIds.length ? <ProcessingActions busy={busy} metadataOnly={state?.metadata_only} onRun={command => {
