@@ -1076,6 +1076,13 @@ def processing_work(task_keys) -> list[dict]:
             for key in dict.fromkeys(task_keys)]
 
 
+def item_pending_work(contract: WebContract, asset_id: int) -> list[dict]:
+    """刚入库还在补资料的那一部：详情据此显示「补全中」并定时重取，补完就是空列表。"""
+    with contract.read_connection() as c:
+        busy = processing_assets(contract, c).get(asset_id)
+    return processing_work([busy] if busy else [])
+
+
 def q_item(contract: WebContract, aid):
     """按 id 直取。
     ⚠️ 没有这个接口时，前端只能用「带筛选条件再查一遍然后 find」的绕法：
@@ -1199,10 +1206,7 @@ def q_item(contract: WebContract, aid):
     d.pop("snapshot_path", None); d.pop("path", None)
     attach_multipart_groups(contract, [d])
     attach_edition_groups(contract, [d])
-    # 刚入库还在补资料的那一部：详情据此显示「补全中」并定时重取，补完自己消失。
-    with contract.read_connection() as c:
-        busy = processing_assets(contract, c).get(d["id"])
-    d["pending_work"] = processing_work([busy] if busy else [])
+    d["pending_work"] = item_pending_work(contract, d["id"])
     return d
 
 def _one_card_per_release(contract: WebContract, source_code, rows: list[dict]) -> list[dict]:
