@@ -34,6 +34,8 @@ NOTICES: dict[str, dict] = {
              "title": "移出系统附属文件", "body": "NAS 缩略图、macOS 的 ._ 文件不再算作视频"},
             {"id": "garbled-performers", "icon": "person", "when": "garbled_performers",
              "title": "清理乱码人物", "body": "重新补采演员"},
+            {"id": "javdb-entries", "icon": "switch", "when": "javdb_entries",
+             "title": "收起错配的 JavDB 入口", "body": "人物页不再给出同名旧艺名的空页"},
         ],
         "attention": [
             {"title": "网盘视频可以手动补测尺寸", "when": "display_cloud_pending",

@@ -856,6 +856,13 @@ def _release_notice_facts(request: Request, connection) -> dict:
     unlinked = json.loads(row[0])['garbled_people'].get('links') if row else None
     if unlinked:
         facts['garbled_performers'] = {'count': len(unlinked)}
+    # JavDB 入口补修（`upgrade_repairs.JAVDB_RECORDS_KEY`）的回执行 id 带规则号，结果里逐项记下收起的入口与停用的订阅。
+    row = connection.execute(
+        "SELECT result_json FROM ledger_upgrade_repair WHERE id GLOB 'javdb-actor-records-*' "
+        'ORDER BY applied_at DESC LIMIT 1').fetchone()
+    javdb = json.loads(row[0]) if row else {}
+    if hidden := len(javdb.get('hidden') or ()) + len(javdb.get('disabled_feeds') or ()):
+        facts['javdb_entries'] = {'count': hidden}
     if service.available and (cloud := service.cloud_display_videos()):
         facts['display_cloud_pending'] = {'count': cloud}
     return facts
