@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { createTranslator, resources, storedInterfaceLanguage, INTERFACE_LANGUAGES, SOURCE_LANGUAGE } from '../src/i18n';
+import { createTranslator, resolveInterfaceLanguage, resources, storedInterfaceLanguage, INTERFACE_LANGUAGES, SOURCE_LANGUAGE } from '../src/i18n';
 // @ts-expect-error 检查脚本是纯 ESM，没有类型声明
 import { BASELINE, countLiterals, scan } from '../scripts/i18n-literals.mjs';
 
@@ -86,12 +86,29 @@ describe('界面文案的语言资源', () => {
 });
 
 describe('界面语言', () => {
-  it('从本地偏好同步读出，没存或不认识时用源语言', () => {
+  it('选了固定语言就用它，不看浏览器', () => {
+    const storage = (value: unknown) => ({ getItem: () => JSON.stringify(value) });
+    expect(storedInterfaceLanguage(storage({ interfaceLanguage: 'en' }), ['zh-CN'])).toBe('en');
+    expect(storedInterfaceLanguage(storage({ interfaceLanguage: 'zh-CN' }), ['en-US'])).toBe('zh-CN');
+  });
+
+  it('自动：按浏览器语言的顺序取第一个有译文的，中文各种写法都给简体中文', () => {
+    expect(resolveInterfaceLanguage('auto', null, ['ja-JP', 'zh-TW', 'en-US'])).toBe('zh-CN');
+    expect(resolveInterfaceLanguage('auto', 'zh-CN', ['en-GB', 'zh-CN'])).toBe('en');
+    expect(resolveInterfaceLanguage('auto', null, ['zh-Hant-HK'])).toBe('zh-CN');
+  });
+
+  it('自动：浏览器语言都没有译文时看系统语言，再没有就用英文', () => {
+    expect(resolveInterfaceLanguage('auto', 'zh-CN', ['ja-JP', 'fr'])).toBe('zh-CN');
+    expect(resolveInterfaceLanguage('auto', null, ['ja-JP'])).toBe('en');
+    expect(resolveInterfaceLanguage('auto', 'de-DE', [])).toBe('en');
+  });
+
+  it('没存、存坏或不认识的选择按自动算，系统语言从本地缓存读', () => {
     const storage = (value: string | null) => ({ getItem: () => value });
-    expect(storedInterfaceLanguage(storage(JSON.stringify({ interfaceLanguage: 'en' })))).toBe('en');
-    expect(storedInterfaceLanguage(storage(JSON.stringify({ interfaceLanguage: 'fr' })))).toBe('zh-CN');
-    expect(storedInterfaceLanguage(storage('{坏掉'))).toBe('zh-CN');
-    expect(storedInterfaceLanguage(storage(null))).toBe('zh-CN');
+    expect(storedInterfaceLanguage(storage(null), ['zh-CN'])).toBe('zh-CN');
+    expect(storedInterfaceLanguage(storage('{坏掉'), ['en-US'])).toBe('en');
+    expect(storedInterfaceLanguage(storage(JSON.stringify({ interfaceLanguage: 'fr', systemLanguage: 'zh-CN' })), ['ja'])).toBe('zh-CN');
   });
 
   it('英文取英文，缺的键回落到源文', () => {

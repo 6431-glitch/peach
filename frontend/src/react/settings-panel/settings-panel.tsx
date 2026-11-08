@@ -25,7 +25,7 @@ import {
   setActionBusy, setIconSwap, wireHorizontalScroller,
 } from '@peach/legacy/ui';
 
-import { isInterfaceLanguage, t, type InterfaceLanguage } from '../../i18n';
+import { isInterfaceLanguageChoice, matchInterfaceLanguage, resolveInterfaceLanguage, t, type InterfaceLanguage, type InterfaceLanguageChoice } from '../../i18n';
 import { normalizeJavImage } from '../../jav-artwork';
 import { boundedPreference } from '../../number-setting';
 import { GlowSettings } from './glow-settings';
@@ -522,22 +522,27 @@ function JavGroup({ host: current, tab, epoch }: GroupProps) {
   );
 }
 /* 语言名称写成各自语言的自称，不随界面语言翻译：看不懂当前界面的人也要认得出自己那一项。 */
-const LANGUAGE_CHOICES: readonly (readonly [InterfaceLanguage, string])[] = [['zh-CN', '简体中文'], ['en', 'English']];
+const LANGUAGE_NAMES: Record<InterfaceLanguage, string> = { 'zh-CN': '简体中文', en: 'English' };
 /* 存进数据库、回来交壳对账；壳发现本地那份变了就整页重载，换成新语言。 */
 function InterfaceLanguageSetting({ host: current, epoch }: { host: SettingsPanelHost; epoch: number }) {
   const query = useQuery({ queryKey: SETTINGS_KEY, queryFn: ({ signal }) => fetchSettings(signal), staleTime: 0 });
   const save = useSaveSettings();
-  const [pending, setPending] = useState<InterfaceLanguage | null>(null);
+  const [pending, setPending] = useState<InterfaceLanguageChoice | null>(null);
   const language = query.data?.interfaceLanguage;
+  /* 「自动」那一项写明这台浏览器此刻会用哪种，免得人以为它坏了。 */
+  const detected = resolveInterfaceLanguage('auto', matchInterfaceLanguage(query.data?.systemLanguage) ?? current.store.value.systemLanguage);
+  const choices: readonly (readonly [InterfaceLanguageChoice, string])[] = [
+    ['auto', t('settings:interfaceLanguage.auto', { language: LANGUAGE_NAMES[detected] })],
+    ['zh-CN', LANGUAGE_NAMES['zh-CN']], ['en', LANGUAGE_NAMES.en]];
   return <>
     <Row title={t('settings:interfaceLanguage.title')}
       description={<small>{t('settings:interfaceLanguage.help')}</small>}>
       <SelectField id="interfaceLanguageSetting" label={t('settings:interfaceLanguage.title')} epoch={epoch}
-        options={LANGUAGE_CHOICES}
+        options={choices}
         value={pending ?? language ?? current.store.value.interfaceLanguage}
         disabled={query.isPending || query.isError || save.isPending || !language} busy={save.isPending}
         onPick={(value) => {
-          if (save.isPending || !isInterfaceLanguage(value) || value === language) return;
+          if (save.isPending || !isInterfaceLanguageChoice(value) || value === language) return;
           setPending(value);
           save.mutate({ interfaceLanguage: value }, {
             onSuccess: (saved) => { current.receipt(t('settings:interfaceLanguage.saved')); current.syncRemote(saved) },
