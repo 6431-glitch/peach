@@ -363,6 +363,51 @@ class TasksEndpointTests(unittest.TestCase):
         self.store.finish(run.id, 'succeeded')
         self.assertFalse(web_tasks.q_result_updates(self.contract, {})['busy'])
 
+    def _insert_asset(self, name, *, background):
+        from peach.repository import in_background
+
+        def write():
+            with self.contract.write_transaction() as connection:
+                connection.execute("INSERT INTO asset(path,name,location,medium) VALUES(?,?,'local','video')",
+                                   (f'A:/{name}', name))
+        worker = threading.Thread(target=in_background(write) if background else write)
+        worker.start()
+        worker.join(5)
+
+    def test_background_writes_change_the_page_wide_versions_at_most_every_interval(self):
+        """批处理每几秒提交一次；页面两秒轮询一次，版本一变就整组重取，有任务在跑时要按住。"""
+        now = [1000.0]
+        run = self.store.start('library-processing', trigger='manual')
+        with unittest.mock.patch('peach.web_tasks.time.monotonic', lambda: now[0]):
+            first = web_tasks.q_result_updates(self.contract, {})['result_versions']
+            self._insert_asset('one.mp4', background=True)
+            now[0] += 2
+            self.assertEqual(web_tasks.q_result_updates(self.contract, {})['result_versions'], first)
+            now[0] += web_tasks.RESULT_UPDATE_INTERVAL
+            held = web_tasks.q_result_updates(self.contract, {})['result_versions']
+            self.assertNotEqual(held['catalog'], first['catalog'])
+            # 用户自己点的写入立即放出。
+            self._insert_asset('two.mp4', background=False)
+            now[0] += 2
+            mine = web_tasks.q_result_updates(self.contract, {})['result_versions']
+            self.assertNotEqual(mine['catalog'], held['catalog'])
+            # 空闲时不节流。
+            self.store.finish(run.id, 'succeeded')
+            self._insert_asset('three.mp4', background=True)
+            now[0] += 2
+            self.assertNotEqual(web_tasks.q_result_updates(self.contract, {})['result_versions']['catalog'],
+                                mine['catalog'])
+
+    def test_a_refresh_landing_only_moves_the_keys_whose_tables_it_read(self):
+        """写回一份只读关注表的结果，不让馆藏那一组页面也跟着重取。"""
+        before = web_tasks.q_result_updates(self.contract, {})['result_versions']
+        with self.contract.cache_lock:
+            self.contract.cache_landed['follow_item'] = 1
+        after = web_tasks.q_result_updates(self.contract, {})['result_versions']
+        self.assertNotEqual(after['follow'], before['follow'])
+        self.assertEqual(after['catalog'], before['catalog'])
+        self.assertEqual(after['discoveries'], before['discoveries'])
+
     def test_finished_runs_are_listed_without_a_query_per_row(self):
         """最近完成那一页两百来条大多早已结束：控制状态与资源占用只问还有活动的那几条，连接数不随页长增长。"""
         from unittest import mock

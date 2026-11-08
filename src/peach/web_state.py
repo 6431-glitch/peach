@@ -210,8 +210,11 @@ class WebContract:
         self.foreground_generation = 0
         #: 最近一次后台提交之后的 `cache_generation`。进程外的写不经提交通知，两个数都不动。
         self.background_generation = 0
-        #: 后台重算写回新值的次数，随结果版本下发，页面据此再取一次（ADR-0146）。
-        self.cache_landed = 0
+        #: 后台重算写回新值的次数，按那份结果读到的表各记一次，随结果版本下发，页面据此再取一次
+        #: （ADR-0146）。按表记而不是一个总数：写回一份封面统计不该让关注、发现几组页面也跟着重取。
+        self.cache_landed: dict[str, int] = {}
+        #: `/api/result-updates` 上一次下发的结果版本，见 `web_tasks.q_result_updates` 的节流。
+        self.published_versions: tuple[float, dict, int] | None = None
         self.stale_refreshing: set[str] = set()
         self._stale_refresher = None
         self.follow_check_lock = threading.Lock()
@@ -455,7 +458,8 @@ class WebContract:
             try:
                 self._cached_by_tables(key, fn, inputs, tables)
                 with self.cache_lock:
-                    self.cache_landed += 1
+                    for table in set(tables):
+                        self.cache_landed[table] = self.cache_landed.get(table, 0) + 1
             except Exception:  # noqa: BLE001 - 后台重算失败时下一次读照旧当场重算，原因记日志
                 LOGGER.exception("后台重算缓存 %s 失败", key)
                 with self.cache_lock:

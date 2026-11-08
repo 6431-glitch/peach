@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import sqlite3
+import time
 from datetime import datetime
 
 from .ingest_notices import NOTICES
@@ -38,8 +39,33 @@ def q_result_updates(contract, _args):
         busy = any(contract.task_runs.query(status=status, limit=1) for status in ACTIVE_STATUSES)
     except sqlite3.OperationalError:
         busy = False
-    return {"ok": True, "result_versions": result_versions(contract),
+    return {"ok": True, "result_versions": _throttled_versions(contract, busy),
             "ingest_notices": NOTICES.snapshot(), "busy": busy}
+
+
+#: 有任务在跑时，结果版本最多隔这么久变一次（`_throttled_versions`）。
+RESULT_UPDATE_INTERVAL = 30.0
+
+
+def _throttled_versions(contract, busy: bool) -> dict:
+    """后台批处理期间，结果版本至多每 `RESULT_UPDATE_INTERVAL` 秒变一次。
+
+    页面每两秒轮询一次，版本一变就让网格、资料页、统计整组重取；批处理每几秒提交一次、
+    每写一张图就改一次目录版本，页面就背靠背地重取。有任务在跑时先按住上一次下发的版本，
+    满间隔再放出最新的。前台写入（用户自己点的）之后立即放出；空闲时不节流。
+    """
+    current = result_versions(contract)
+    now = time.monotonic()
+    foreground = contract.foreground_generation
+    published = contract.published_versions
+    if (busy and published is not None and current != published[1]
+            and now - published[0] < RESULT_UPDATE_INTERVAL and foreground == published[2]):
+        return published[1]
+    if published is None or current != published[1]:
+        contract.published_versions = (now, current, foreground)
+    elif foreground != published[2]:
+        contract.published_versions = (published[0], current, foreground)
+    return current
 
 
 def q_tasks(contract, args):
