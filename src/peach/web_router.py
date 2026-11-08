@@ -180,18 +180,27 @@ def _get_ads(contract, args):
     )
 
 
+#: `/api/related` 确定不读的账本表：订阅新作与复核结论。其余表一律算进版本：推荐卡要的
+#: 出镜者、关注卡、下载来源散在好几处，漏一张，那张表变了之后就一直回旧结果。
+RELATED_UNREAD_TABLES = ("feed_source", "feed_item", "feed_discovery", "feed_discovery_entity",
+                         "review_decision", "genre_decision")
+
+
 def _get_related(contract, args):
     """相关推荐走 LRU 缓存：打分是纯 Python 对几千个候选做 MMR，一次几百毫秒。
 
-    每打开一次资料页都现算太贵，而结果只读不写；写路径（标签、反馈、播放、复核）
-    本来就调 `cache_bust()`，缓存跟着一起作废。上面几个聚合用的是 `cached()`，
-    这里必须用 `cached_lru()`：键跟着浏览过的资产走，键空间不封闭。
+    每打开一次资料页都现算太贵，而结果只读不写。键跟着浏览过的资产走、键空间不封闭，
+    所以用 `cached_lru()`；按读到的账本表版本与图片目录版本核验，不随每次提交清空：
+    后台任务每几秒提交一次时，按提交清空的缓存存不住，几百毫秒的打分也写不回去。
     键里带上 limit——同一个资产要不同条数就是不同结果。
     """
     asset_id = int(args["id"])
     limit = min(int(args.get("limit", "24")), 60)
+    artwork = tuple(path_version(root) for root in (
+        contract.cover_root, contract.avatar_root, contract.logo_root, contract.poster_root))
     return contract.cached_lru(
-        f"related:{asset_id}:{limit}", lambda: q_related(contract, asset_id, limit))
+        f"related:{asset_id}:{limit}", lambda: q_related(contract, asset_id, limit),
+        tables=contract.ledger_tables_except(RELATED_UNREAD_TABLES), inputs=artwork)
 
 
 #: 按账本版本缓存的筛选项口径：状态页与取值有限的几组筛选。

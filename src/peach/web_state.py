@@ -199,7 +199,7 @@ class WebContract:
         self.cache: OrderedDict[str, tuple[float, object, object]] = OrderedDict()
         self.cache_lock = threading.Lock()
         #: 按资产取键的读缓存，LRU 限界。键空间不封闭的场景走这里，见 `cached_lru()`。
-        self.keyed_cache: OrderedDict[str, tuple[float, object]] = OrderedDict()
+        self.keyed_cache: OrderedDict[str, tuple[float, object, object]] = OrderedDict()
         #: 每次 cache_bust 递增。在途计算据此判断自己出发后缓存是否失效过。
         self.cache_generation = 0
         self.revision_cache_keys: set[str] = set()
@@ -333,23 +333,31 @@ class WebContract:
             self.revision_cache_keys.add(key)
         return self.cached(key, fn, ttl=ttl)
 
-    def cached_lru(self, key, fn, *, maxsize: int = 192, ttl: float = CACHE_TTL):
+    def cached_lru(self, key, fn, *, maxsize: int = 192, ttl: float = CACHE_TTL, tables=None, inputs=()):
         """带 TTL 的 LRU 读缓存，给键空间不封闭的场景用（`/api/related` 按资产取键）。
 
         与聚合缓存分开计量，容量和 TTL 可由调用方指定。计算在锁外进行，
         计算期间发生提交或显式失效时，结果不进入缓存。
+
+        给了 `tables`（结果读到的账本表）时改按这些表的版本与 `inputs` 核验：提交通知不清它，
+        计算期间有提交也照样写回（版本在计算前读好，期间有写入，下一次读到新版本照样重算）。
+        后台任务每几秒提交一次时，不按版本核验的结果几乎存不住，算得比提交间隔慢的永远写不进。
         """
         now = time.monotonic()
+        version = None
+        if tables is not None:
+            revision = self.ledger_revision(tables)
+            version = None if revision is None else (revision, *inputs)
         with self.cache_lock:
             hit = self.keyed_cache.get(key)
-            if hit and now - hit[0] < ttl:
+            if hit and now - hit[0] < ttl and hit[1] == version:
                 self.keyed_cache.move_to_end(key)
-                return hit[1]
+                return hit[2]
             generation = self.cache_generation
         value = fn()
         with self.cache_lock:
-            if generation == self.cache_generation:
-                self.keyed_cache[key] = (now, value)
+            if generation == self.cache_generation or version is not None:
+                self.keyed_cache[key] = (now, version, value)
                 self.keyed_cache.move_to_end(key)
                 while len(self.keyed_cache) > maxsize:
                     self.keyed_cache.popitem(last=False)
@@ -519,7 +527,9 @@ class WebContract:
         with self.cache_lock:
             self.cache = OrderedDict((key, value) for key, value in self.cache.items()
                                      if key in self.revision_cache_keys)
-            self.keyed_cache.clear()
+            # 按版本核验的那几条留着：版本没变就还是对的，变了下一次读自然重算。
+            self.keyed_cache = OrderedDict((key, value) for key, value in self.keyed_cache.items()
+                                           if value[1] is not None)
             # 在途计算靠这个数认出「我出发之后缓存失效过」，从而放弃写回。
             self.cache_generation += 1
             # 前台写入之后，出发更早的那份缓存不许再先回旧值：写的人要立刻看到自己写的。
