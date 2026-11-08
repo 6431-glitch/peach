@@ -199,7 +199,7 @@ class WebContract:
         self.cache: OrderedDict[str, tuple[float, object, object]] = OrderedDict()
         self.cache_lock = threading.Lock()
         #: 按资产取键的读缓存，LRU 限界。键空间不封闭的场景走这里，见 `cached_lru()`。
-        self.keyed_cache: OrderedDict[str, tuple[float, object]] = OrderedDict()
+        self.keyed_cache: OrderedDict[str, tuple[float, object, object]] = OrderedDict()
         #: 每次 cache_bust 递增。在途计算据此判断自己出发后缓存是否失效过。
         self.cache_generation = 0
         self.revision_cache_keys: set[str] = set()
@@ -210,8 +210,11 @@ class WebContract:
         self.foreground_generation = 0
         #: 最近一次后台提交之后的 `cache_generation`。进程外的写不经提交通知，两个数都不动。
         self.background_generation = 0
-        #: 后台重算写回新值的次数，随结果版本下发，页面据此再取一次（ADR-0146）。
-        self.cache_landed = 0
+        #: 后台重算写回新值的次数，按那份结果读到的表各记一次，随结果版本下发，页面据此再取一次
+        #: （ADR-0146）。按表记而不是一个总数：写回一份封面统计不该让关注、发现几组页面也跟着重取。
+        self.cache_landed: dict[str, int] = {}
+        #: `/api/result-updates` 上一次下发的结果版本，见 `web_tasks.q_result_updates` 的节流。
+        self.published_versions: tuple[float, dict, int] | None = None
         self.stale_refreshing: set[str] = set()
         self._stale_refresher = None
         self.follow_check_lock = threading.Lock()
@@ -333,23 +336,31 @@ class WebContract:
             self.revision_cache_keys.add(key)
         return self.cached(key, fn, ttl=ttl)
 
-    def cached_lru(self, key, fn, *, maxsize: int = 192, ttl: float = CACHE_TTL):
+    def cached_lru(self, key, fn, *, maxsize: int = 192, ttl: float = CACHE_TTL, tables=None, inputs=()):
         """带 TTL 的 LRU 读缓存，给键空间不封闭的场景用（`/api/related` 按资产取键）。
 
         与聚合缓存分开计量，容量和 TTL 可由调用方指定。计算在锁外进行，
         计算期间发生提交或显式失效时，结果不进入缓存。
+
+        给了 `tables`（结果读到的账本表）时改按这些表的版本与 `inputs` 核验：提交通知不清它，
+        计算期间有提交也照样写回（版本在计算前读好，期间有写入，下一次读到新版本照样重算）。
+        后台任务每几秒提交一次时，不按版本核验的结果几乎存不住，算得比提交间隔慢的永远写不进。
         """
         now = time.monotonic()
+        version = None
+        if tables is not None:
+            revision = self.ledger_revision(tables)
+            version = None if revision is None else (revision, *inputs)
         with self.cache_lock:
             hit = self.keyed_cache.get(key)
-            if hit and now - hit[0] < ttl:
+            if hit and now - hit[0] < ttl and hit[1] == version:
                 self.keyed_cache.move_to_end(key)
-                return hit[1]
+                return hit[2]
             generation = self.cache_generation
         value = fn()
         with self.cache_lock:
-            if generation == self.cache_generation:
-                self.keyed_cache[key] = (now, value)
+            if generation == self.cache_generation or version is not None:
+                self.keyed_cache[key] = (now, version, value)
                 self.keyed_cache.move_to_end(key)
                 while len(self.keyed_cache) > maxsize:
                     self.keyed_cache.popitem(last=False)
@@ -447,7 +458,8 @@ class WebContract:
             try:
                 self._cached_by_tables(key, fn, inputs, tables)
                 with self.cache_lock:
-                    self.cache_landed += 1
+                    for table in set(tables):
+                        self.cache_landed[table] = self.cache_landed.get(table, 0) + 1
             except Exception:  # noqa: BLE001 - 后台重算失败时下一次读照旧当场重算，原因记日志
                 LOGGER.exception("后台重算缓存 %s 失败", key)
                 with self.cache_lock:
@@ -519,7 +531,9 @@ class WebContract:
         with self.cache_lock:
             self.cache = OrderedDict((key, value) for key, value in self.cache.items()
                                      if key in self.revision_cache_keys)
-            self.keyed_cache.clear()
+            # 按版本核验的那几条留着：版本没变就还是对的，变了下一次读自然重算。
+            self.keyed_cache = OrderedDict((key, value) for key, value in self.keyed_cache.items()
+                                           if value[1] is not None)
             # 在途计算靠这个数认出「我出发之后缓存失效过」，从而放弃写回。
             self.cache_generation += 1
             # 前台写入之后，出发更早的那份缓存不许再先回旧值：写的人要立刻看到自己写的。
@@ -581,16 +595,21 @@ class WebContract:
         「新近修改」的做法，目录时间距今不足 `SETTLE_SECONDS` 时扫出的结果只按
         `SETTLE_TTL` 缓存，版本里另记一档，目录静下来之后重扫一次才按 `ttl` 缓存。
         `ttl` 为无穷时这一份不随提交通知清掉。
+
+        同一个目录的重扫单飞：封面刮削期间目录一直在变，一屏卡片的几个并发请求同时没命中时，
+        后到的等先到的那一次扫完直接命中，不各扫一遍（重建要读两千多份边车）。
         """
         version = path_version(root)
-        if version is None:
-            return self.cached(key, scan, version=None)
-        if ttl == math.inf:
-            with self.cache_lock:
+        with self.cache_lock:
+            lock = self.aggregate_locks.setdefault(key, threading.RLock())
+            if version is not None and ttl == math.inf:
                 self.revision_cache_keys.add(key)
-        settling = time.time_ns() - version < SETTLE_SECONDS * 1_000_000_000
-        return self.cached(key, scan, ttl=SETTLE_TTL if settling else ttl,
-                           version=(version, settling))
+        with lock:
+            if version is None:
+                return self.cached(key, scan, version=None)
+            settling = time.time_ns() - version < SETTLE_SECONDS * 1_000_000_000
+            return self.cached(key, scan, ttl=SETTLE_TTL if settling else ttl,
+                               version=(version, settling))
 
     def _scan_cover_root(self) -> dict[str, dict]:
         """一次目录扫描同时收集封面存在性和两份 sidecar。目录不存在就是空索引。"""

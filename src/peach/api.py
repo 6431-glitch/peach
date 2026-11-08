@@ -636,6 +636,8 @@ def create_app(
     app.state.media_engine = media_engine
     app.state.preview_service = preview_service
     app.state.photo_service = photo_service
+    from .subtitles import SidecarListings
+    app.state.sidecar_listings = SidecarListings()
     app.state.sample_cache = sample_cache
     app.state.entity_thumb_service = entity_thumb_service
     app.state.cover_thumb_service = cover_thumb_service

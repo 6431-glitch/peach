@@ -50,6 +50,8 @@ ACTIVE_STATUSES = ("pending", "running")
 #: 终态。只有这四种能进 `finish`，也只有这四种会被 `prune` 回收。
 TERMINAL_STATUSES = ("succeeded", "failed", "cancelled", "interrupted")
 TRIGGERS = ("manual", "scheduled", "startup", "cli")
+#: 任务中心列表每轮下发的已结束后继条数上限，见 `settled_followups`。
+SETTLED_FOLLOWUP_LIMIT = 50
 
 #: 心跳超过这么久没续，且进程也不在了，就按被打断处理。
 #: 取 5 分钟不是因为任务不会更久——单项外部动作的预算是 240 秒（`library_processing`
@@ -854,8 +856,12 @@ class TaskRunStore:
         page = [_row(row) for row in rows[:size]]
         return page + self.settled_followups([run.id for run in page]), len(rows) > size
 
-    def settled_followups(self, root_ids) -> list[TaskRun]:
-        """这几轮派出的、已经结束的后继，整条链上的都算。"""
+    def settled_followups(self, root_ids, *, limit: int | None = None) -> list[TaskRun]:
+        """这几轮派出的、已经结束的后继，整条链上的都算；每轮只取最近 `limit` 条。
+
+        任务中心有任务在跑时每两秒取一次，一轮派出上千条后继时不设上限就是每两秒几千行。
+        总数与失败数看 `followup_counts`，卡片展开时再按父任务取全（`/api/tasks/{id}`）。
+        """
         ids = [int(run_id) for run_id in root_ids]
         if not self.enabled or not ids:
             return []
@@ -863,9 +869,11 @@ class TaskRunStore:
         holes = ",".join("?" * len(ids))
         with self.database.read_connection() as connection:
             rows = connection.execute(
-                f"SELECT {_COLUMNS} FROM task_run WHERE root_run_id IN ({holes}) "
-                f"AND id NOT IN ({holes}) AND status IN ({marks}) ORDER BY id",
-                [*ids, *ids]).fetchall()
+                f"SELECT {_COLUMNS} FROM (SELECT *, ROW_NUMBER() OVER ("
+                "PARTITION BY root_run_id ORDER BY id DESC) AS recent FROM task_run "
+                f"WHERE root_run_id IN ({holes}) AND id NOT IN ({holes}) AND status IN ({marks})) "
+                "WHERE recent<=? ORDER BY id",
+                [*ids, *ids, max(1, int(SETTLED_FOLLOWUP_LIMIT if limit is None else limit))]).fetchall()
         return [_row(row) for row in rows]
 
     def active_parents(self) -> list[TaskRun]:
