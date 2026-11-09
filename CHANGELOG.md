@@ -25,6 +25,8 @@ Removed / Fixed / Security。
 
 ## [未发布]
 
+## [0.57.0] - 2026-11-09
+
 ### 新增
 
 - **配置**：新增容量保护，可给数据和缓存设上限，超限时先清最旧的播放缓存、暂停后台任务，不挡播放。
@@ -1009,7 +1011,8 @@ Removed / Fixed / Security。
 - **桌面**：独立包使用 UTF-8 启动日志。
 - **配置**：首次设置后的跳转目标取新鲜读到的 mDNS 名。
 
-[未发布]: https://github.com/peach-mitao/peach/compare/v0.56.0...HEAD
+[未发布]: https://github.com/peach-mitao/peach/compare/v0.57.0...HEAD
+[0.57.0]: https://github.com/peach-mitao/peach/compare/v0.56.0...v0.57.0
 [0.56.0]: https://github.com/peach-mitao/peach/compare/v0.55.1...v0.56.0
 [0.55.1]: https://github.com/peach-mitao/peach/compare/v0.55.0...v0.55.1
 [0.55.0]: https://github.com/peach-mitao/peach/compare/v0.54.0...v0.55.0
