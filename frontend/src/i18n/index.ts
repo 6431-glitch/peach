@@ -1,115 +1,95 @@
-// 基于 avonar69 的 peach-mitao/peach PR #145（提交 3fd6019b）改编。
-import en from './en.json';
-import generated from './en.generated.json';
-import { isLanguage, localeCatalogs, type Language } from './languages';
+/* 界面文案的翻译入口（ADR-0156）。
+ *
+ * 源文是 `locales/zh-CN/<命名空间>.json`，英文在 `locales/en/`，两份由同一个 PR 维护；其他语言经 Weblate 回流。
+ * 界面语言在模块求值时从本地偏好同步算出（默认「自动」：浏览器语言优先，其次系统语言），整页只有这一份实例：
+ * 导航词表这类模块在顶层就取译文，换语言靠整页重载，不做运行中切换。缺译文的键回落到 zh-CN。 */
+import i18next from 'i18next';
+
+import { SETTINGS_KEY } from '../settings-key';
+import enCleanup from '../locales/en/cleanup.json';
+import enNavigation from '../locales/en/navigation.json';
+import enSettings from '../locales/en/settings.json';
+import zhCleanup from '../locales/zh-CN/cleanup.json';
+import zhNavigation from '../locales/zh-CN/navigation.json';
+import zhSettings from '../locales/zh-CN/settings.json';
+
+export const INTERFACE_LANGUAGES = ['zh-CN', 'en'] as const;
+export type InterfaceLanguage = typeof INTERFACE_LANGUAGES[number];
+export const SOURCE_LANGUAGE: InterfaceLanguage = 'zh-CN';
+
+export const resources = {
+  'zh-CN': { navigation: zhNavigation, settings: zhSettings, cleanup: zhCleanup },
+  en: { navigation: enNavigation, settings: enSettings, cleanup: enCleanup },
+} as const;
+
+/** 设置里能选的值：`auto` 按浏览器与系统语言自动选，其余是固定的界面语言。 */
+export const INTERFACE_LANGUAGE_CHOICES = ['auto', ...INTERFACE_LANGUAGES] as const;
+export type InterfaceLanguageChoice = typeof INTERFACE_LANGUAGE_CHOICES[number];
+/** 都对不上时用英文：既读不懂中文、也没有自己语言译文的人，英文比中文更可能读得懂。 */
+const UNMATCHED_LANGUAGE: InterfaceLanguage = 'en';
+
+export const isInterfaceLanguage = (value: unknown): value is InterfaceLanguage =>
+  INTERFACE_LANGUAGES.includes(value as InterfaceLanguage);
+export const isInterfaceLanguageChoice = (value: unknown): value is InterfaceLanguageChoice =>
+  INTERFACE_LANGUAGE_CHOICES.includes(value as InterfaceLanguageChoice);
+
+/** 一个语言标签对应哪种界面语言：中文的各种写法（zh、zh-TW、zh-Hant…）都给简体中文。 */
+export function matchInterfaceLanguage(tag: unknown): InterfaceLanguage | null {
+  const primary = typeof tag === 'string' ? tag.trim().toLowerCase().split(/[-_]/)[0] : '';
+  return primary === 'zh' ? 'zh-CN' : primary === 'en' ? 'en' : null;
+}
+
+/** 浏览器给出的语言，按用户的偏好顺序；最后是 Intl 的默认区域，它跟着浏览器界面或系统区域走。 */
+export function browserLanguages(): string[] {
+  const nav = globalThis.navigator;
+  let intl = '';
+  try { intl = Intl.DateTimeFormat().resolvedOptions().locale } catch { /* 没有 Intl 就不看它 */ }
+  return [...(nav?.languages ?? []), nav?.language ?? '', intl].filter(Boolean);
+}
+
+/** 选「自动」时实际用哪种：先按浏览器语言的顺序找第一个有译文的，再看运行 Peach 的电脑的系统语言，都没有就用英文。 */
+export function resolveInterfaceLanguage(choice: unknown, systemLanguage: unknown, browser: readonly string[] = browserLanguages()): InterfaceLanguage {
+  if (isInterfaceLanguage(choice)) return choice;
+  for (const tag of browser) {
+    const match = matchInterfaceLanguage(tag);
+    if (match) return match;
+  }
+  return matchInterfaceLanguage(systemLanguage) ?? UNMATCHED_LANGUAGE;
+}
+
+/** 本地偏好里存的选择与系统语言算出来的界面语言；没存或存坏时按「自动」算。 */
+export function storedInterfaceLanguage(
+  storage: Pick<Storage, 'getItem'> | undefined = globalThis.localStorage, browser: readonly string[] = browserLanguages(),
+): InterfaceLanguage {
+  let saved: { interfaceLanguage?: unknown; systemLanguage?: unknown } = {};
+  try { saved = JSON.parse(storage?.getItem(SETTINGS_KEY) || '{}') ?? {} } catch { /* 坏掉的存量按自动算 */ }
+  if (saved.interfaceLanguage === undefined) {
+    try {
+      const previous = storage?.getItem('peach.language');
+      if (previous === 'en' || previous === 'zh-CN') return previous;
+    } catch { /* Continue with automatic language selection. */ }
+  }
+  return resolveInterfaceLanguage(saved.interfaceLanguage, saved.systemLanguage, browser);
+}
+
+/** 按给定语言建一份同步就绪的实例；页面用模块级那一份，测试用它比对各语言。 */
+export function createTranslator(language: InterfaceLanguage) {
+  const instance = i18next.createInstance();
+  void instance.init({
+    lng: language, fallbackLng: SOURCE_LANGUAGE, supportedLngs: [...INTERFACE_LANGUAGES],
+    resources, ns: Object.keys(resources[SOURCE_LANGUAGE]), defaultNS: 'navigation',
+    // 中文的句间分隔是空串（英文是空格），空串要原样返回，不能当成缺键。
+    initAsync: false, returnNull: false, returnEmptyString: true, interpolation: { escapeValue: false },
+  });
+  return instance;
+}
+
+export const interfaceLanguage = storedInterfaceLanguage();
+const translator = createTranslator(interfaceLanguage);
+if (typeof document !== 'undefined') document.documentElement.lang = interfaceLanguage;
+
+/** 取当前界面语言的译文，键写成 `命名空间:路径`。 */
+export const t = translator.t.bind(translator);
+// Preserve the fork's original text catalog while migrating to keyed translations.
+export { translate, formatTranslation, getLanguage, setLanguage, applyLanguage, catalog } from './legacy';
 export type { Language } from './languages';
-
-const KEY = 'peach.language';
-let startupLanguage: Language = 'en';
-try { const value = localStorage.getItem(KEY); if (isLanguage(value)) startupLanguage = value; } catch { /* 使用默认语言。 */ }
-export function getLanguage(): Language {
-  try {
-    const stored = localStorage.getItem(KEY);
-    return isLanguage(stored) ? stored : startupLanguage;
-  } catch { return startupLanguage; }
-}
-export function setLanguage(language: Language): void {
-  if (!isLanguage(language)) return;
-  localStorage.setItem(KEY, language);
-  location.reload();
-}
-export const catalog: Readonly<Record<string, string>> = { ...generated, ...en };
-function activeCatalog(): Readonly<Record<string, string>> {
-  return localeCatalogs[getLanguage()] ?? catalog;
-}
-const placeholder = /\{([a-zA-Z_][\w]*|\d+)\}/g;
-const escapePattern = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-const knownParts = new RegExp(Object.keys(catalog).filter(key => key.length >= 2 && key.length <= 100 && !key.includes('{')
-  && /[\u3400-\u9fff]/.test(key)).sort((a, b) => b.length - a.length).map(escapePattern).join('|'), 'g');
-function translateKnownParts(value: string): string {
-  if (getLanguage() === 'zh-CN') return value;
-  if (!/[\u3400-\u9fff]/.test(value)) return value;
-  const selected = activeCatalog();
-  const translated = value.replace(knownParts, key => ` ${selected[key] ?? catalog[key]} `).replace(/\s+/g, ' ').trim();
-  return /[\u3400-\u9fff]/.test(translated) ? value : translated;
-}
-function buildTemplates(selected: Readonly<Record<string, string>>, includeBase = true) { return Object.entries({ ...(includeBase ? catalog : {}), ...selected }).flatMap(([source, english]) => {
-  const matches = [...source.matchAll(placeholder)];
-  if (!matches.length) return [];
-  let offset = 0, pattern = '^';
-  for (const match of matches) {
-    pattern += escapePattern(source.slice(offset, match.index)) + '(.+?)';
-    offset = match.index! + match[0].length;
-  }
-  pattern += escapePattern(source.slice(offset)) + '$';
-  return [{ prefix: source.slice(0, matches[0]!.index), source, english, matches,
-    literalLength: source.replace(placeholder, '').length, curated: Object.hasOwn(en, source), pattern: new RegExp(pattern),
-    partial: source.endsWith('}') ? null : new RegExp(pattern.slice(0, -1)) }];
-}).sort((a, b) => b.literalLength - a.literalLength || Number(b.curated) - Number(a.curated)); }
-const templateCache = new Map<Language, ReturnType<typeof buildTemplates>>();
-// 动态文件名很多，缓存只保留有限的短文案，避免每次渲染重复遍历模板。
-const translationCache = new Map<string, string>();
-const CACHE_LIMIT = 2048;
-export function translate(text: string): string {
-  const language = getLanguage();
-  if (text.length > 512) return translateUncached(text, language);
-  const key = `${language}\u0000${text}`;
-  const cached = translationCache.get(key);
-  if (cached !== undefined) return cached;
-  const result = translateUncached(text, language);
-  if (translationCache.size >= CACHE_LIMIT) translationCache.delete(translationCache.keys().next().value!);
-  translationCache.set(key, result);
-  return result;
-}
-function translateUncached(text: string, language: Language): string {
-  const trimmed = text.trim();
-  const normalized = trimmed.replace(/\s+/g, ' ');
-  const selected = activeCatalog();
-  const translated = selected[trimmed] ?? selected[normalized] ?? (language === 'zh-CN' ? undefined : catalog[trimmed] ?? catalog[normalized]);
-  if (translated !== undefined) return text.replace(trimmed, translated);
-  if (language === 'en' && !/[\u3400-\u9fff]/.test(text)) return text;
-  if (language === 'zh-CN' && /[\u3400-\u9fff]/.test(text)) return text;
-  const shortcut = normalized.match(/^(.*?)((?:\s+(?:alt|ctrl|shift|meta)\+\S+)+)$/i);
-  if (shortcut) return text.replace(trimmed, translate(shortcut[1]!) + shortcut[2]);
-  if (!templateCache.has(language)) templateCache.set(language, buildTemplates(selected, language !== 'zh-CN'));
-  for (const template of templateCache.get(language)!) {
-    if (template.prefix && !normalized.startsWith(template.prefix)) continue;
-    const match = template.pattern.exec(normalized);
-    if (!match) {
-      if (!template.prefix || template.literalLength < 4 || !template.partial) continue;
-      const partial = template.partial.exec(normalized);
-      if (!partial || partial[0].length >= normalized.length) continue;
-      const values = new Map(template.matches.map((entry, index) => [entry[1], partial[index + 1]!]));
-      const first = template.english.replace(placeholder, (original, key: string) => values.get(key) ?? original);
-      return text.replace(trimmed, `${translateKnownParts(first).trimEnd()} ${translate(normalized.slice(partial[0].length))}`);
-    }
-    const values = new Map(template.matches.map((entry, index) => {
-      const value = match[index + 1]!;
-      return [entry[1], selected[value] ?? catalog[value] ?? value];
-    }));
-    const english = template.english.replace(placeholder, (original, key: string) => values.get(key) ?? original);
-    return text.replace(trimmed, translateKnownParts(english));
-  }
-  if (language === 'zh-CN') return text;
-  const scan = trimmed.match(/^完成设置后扫描并补全资料：(.+)$/);
-  if (scan) return `Scan and fetch metadata after setup: ${scan[1]}`;
-  const folders = trimmed.match(/^完成设置后扫描这 (\d+) 个文件夹并补全资料$/);
-  if (folders) return `Scan ${folders[1]} folders and fetch metadata after setup`;
-  const numbered = trimmed.match(/^(媒体库|媒体来源|媒体读取策略) (\d+)$/);
-  if (numbered) return `${catalog[numbered[1]!] || 'Media access policy'} ${numbered[2]}`;
-  const missing = trimmed.match(/^未检测到 (.+)。$/);
-  if (missing) return `${missing[1]} was not detected.`;
-  const download = trimmed.match(/^下载 (.+)$/);
-  if (download) return `Download ${download[1]}`;
-  return text;
-}
-
-export function applyLanguage(): void {
-  document.documentElement.lang = getLanguage();
-}
-
-/** 先翻译固定模板，再一次性填入值，保留文件名里的占位字符。 */
-export function formatTranslation(template: string, ...values: string[]): string {
-  return translate(template).replace(/\{(\d+)\}/g, (original, key: string) => values[Number(key)] ?? original);
-}
-if (typeof document !== 'undefined') applyLanguage();

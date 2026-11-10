@@ -27,6 +27,7 @@ import { CatalogGridPage } from '../catalog-grid/catalog-grid-page';
 import { patchCatalogItems, replaceCatalogItem } from '../catalog-grid/catalog-grid';
 import type { MediaItem } from '../catalog-grid/types';
 import { RetryNote } from '../components/grid-reveal';
+import { PendingWork, pendingRefetch } from '../components/pending-work';
 import { MixQueue, MixQueueRow } from '../components/mix-queue';
 import { RelatedSection } from '../components/related-section';
 import { DetailContinuation } from '../components/detail-continuation';
@@ -77,6 +78,7 @@ export function ItemDetailPage(props: ItemDetailProps) {
     queryKey: itemKey(id ?? 0),
     queryFn: ({ signal }) => fetchItem(id!, signal),
     enabled: id != null,
+    refetchInterval: pendingRefetch,
   });
   if (!result.data || (ref && !queue)) {
     const error = result.error || queueResult.error;
@@ -394,6 +396,7 @@ function Side({ item, queue, write, helpers, actions }: {
               <MetadataSearch key={item.id} item={item} actions={actions} onClose={() => setMetadataOpen(false)} />
             </ModalFrame> : null}
         {online ? null : <span data-title-state="" aria-live="polite">{write.sourceState}</span>}
+        <PendingWork work={item.pending_work} />
         <Rating item={item} write={write} />
         <div className="mono" data-stage-meta="" data-reveal-line="">
           {item.width && item.height
@@ -403,7 +406,7 @@ function Side({ item, queue, write, helpers, actions }: {
           {item.release_date ? <span data-spec-item=""><Glyph name="calendar" /><span>{item.release_date}</span></span> : null}
           {item.region_label ? (
             <button type="button" data-spec-item="" data-open-region={item.region || ''}
-              title={item.region_settled ? '已判定的产地；打开同产地的作品' : '按番号或厂牌推断的产地，批量判定后不再变；打开同产地的作品'}
+              title="打开同产地的作品"
               onClick={() => actions.openRegion(item.region || '')}>
               <Glyph name="globe" /><span>{item.region_label}{item.region_settled ? '' : '（推断）'}</span>
             </button>

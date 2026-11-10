@@ -17,6 +17,7 @@ import {
   type JunkItem, type JunkOperation, type JunkQueueActions, type JunkQueueHelpers, type JunkView,
 } from './junk-queue';
 import { suppressShiftTextSelection } from '../components/row-click';
+import { t } from '../../i18n';
 
 /** 雪碧图里的一枚字形，写法同遗留层 `icon()`：尺寸与描边由样式表按位置给。 */
 function Icon({ name }: { name: string }) {
@@ -84,9 +85,9 @@ function JunkCardView({ item, view, selected, selectMode, helpers, actions }: Ju
 
   const title = openable
     ? <button type="button" data-junk-title="" data-junk-open="" data-middle-truncate="" title={name}
-      onClick={clickTitle} dangerouslySetInnerHTML={{ __html: esc(name || '未命名资源') }} />
+      onClick={clickTitle} dangerouslySetInnerHTML={{ __html: esc(name || t('cleanup:junk.untitled')) }} />
     : <span data-junk-title="" data-middle-truncate="" title={name}
-      dangerouslySetInnerHTML={{ __html: esc(name || '未命名资源') }} />;
+      dangerouslySetInnerHTML={{ __html: esc(name || t('cleanup:junk.untitled')) }} />;
 
   return (
     <article ref={card} data-media-card="" data-variant="junk" data-junk-card="" data-id={item.id} data-junk-kind={kind}
@@ -106,13 +107,13 @@ function JunkCardView({ item, view, selected, selectMode, helpers, actions }: Ju
         <div data-junk-facts="">
           <span data-junk-who="">{label}</span>
           {item.why ? <span data-junk-why="">{item.why}</span> : null}
-          <span data-junk-size="">{Number(item.size) > 0 ? fmtSize(Number(item.size)) : '大小未知'}</span>
+          <span data-junk-size="">{Number(item.size) > 0 ? fmtSize(Number(item.size)) : t('cleanup:junk.unknownSize')}</span>
         </div>
       </div>
       <footer data-junk-actions="">
-        <button type="button" data-junk-action="reveal" title="在资源管理器中显示" aria-label="在资源管理器中显示"
+        <button type="button" data-junk-action="reveal" title={t('cleanup:junk.revealTitle')} aria-label={t('cleanup:junk.revealTitle')}
           {...busyAttrs('reveal')} onClick={reveal}>
-          {busy === 'reveal' ? <span data-junk-spinner="" dangerouslySetInnerHTML={{ __html: spinnerHtml('正在定位') }} /> : <Icon name="folder-open" />}
+          {busy === 'reveal' ? <span data-junk-spinner="" dangerouslySetInnerHTML={{ __html: spinnerHtml(t('cleanup:junk.locating')) }} /> : <Icon name="folder-open" />}
         </button>
         <button type="button" data-junk-action={decision.operation} title={decision.label} aria-label={decision.label}
           {...busyAttrs(decision.operation)} onClick={operate(decision.operation)}>
@@ -120,7 +121,7 @@ function JunkCardView({ item, view, selected, selectMode, helpers, actions }: Ju
             <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M4 3l16 18" />
           </svg> : <Icon name={decision.glyph} />}
         </button>
-        <button type="button" data-junk-action="dispose" title="移入回收站" aria-label="移入回收站"
+        <button type="button" data-junk-action="dispose" title={t('cleanup:duplicates.moveToTrash')} aria-label={t('cleanup:duplicates.moveToTrash')}
           {...busyAttrs('dispose')} onClick={operate('dispose')}>
           <Icon name="trash" />
         </button>

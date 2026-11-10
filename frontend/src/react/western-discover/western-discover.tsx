@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { apiGet, apiSend, errorMessage } from '../../api';
+import { formatTranslation, translate } from '../../i18n';
 import { Button } from '@/components/base/buttons/button';
 import { ModalFrame } from '../components/modal-frame';
 
@@ -58,8 +59,20 @@ function DiscoveryDownload({ title, close }: { title: string; close(): void }) {
   const search = async () => {
     setBusy(true); setError(''); setChosen(null); setSearched(false);
     try {
-      const result = await apiGet<{ items: Torrent[]; error?: string; warnings?: string[] }>(`/api/discover/search?${new URLSearchParams({ query, indexers: selected.join(',') })}`);
-      setItems(result.items); setSearched(true); setError(result.error || result.warnings?.join(' · ') || '');
+      const result = await apiGet<{ state: string; items: Torrent[]; error?: string; warnings?: string[] }>(`/api/discover/search?${new URLSearchParams({ query, indexers: selected.join(',') })}`);
+      const warnings = (result.warnings || []).map(warning => {
+        const rejected = warning.match(/^索引器返回了 (\d+) 条结果，都没通过筛选：(.+)$/);
+        if (rejected) {
+          const reasons = rejected[2]!.split('、').map(reason => {
+            const count = reason.match(/^(.*?) (\d+) 条$/);
+            return count ? `${translate(count[1]!)}: ${count[2]}` : translate(reason);
+          }).join(', ');
+          return formatTranslation('索引器返回了 {0} 条结果，都没通过筛选：{1}', rejected[1]!, reasons);
+        }
+        const separator = warning.indexOf('：');
+        return separator < 0 ? translate(warning) : `${warning.slice(0, separator)}: ${translate(warning.slice(separator + 1))}`;
+      });
+      setItems(result.items); setSearched(result.state === 'ready'); setError([result.error ? translate(result.error) : '', ...warnings].filter(Boolean).join(' · '));
     } catch (cause) { setError(errorMessage(cause)) } finally { setBusy(false) }
   };
   const submit = async () => {
