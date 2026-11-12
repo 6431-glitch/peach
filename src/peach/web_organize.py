@@ -66,10 +66,11 @@ def w_organize_preview(contract, body) -> dict:
     """出计划：写一份 CSV，回给界面会变的行（上限 200）与跳过统计。"""
     location, file_template, dir_template = _templates(contract, body)
     path_scope = organize.scope_path(location, body.get('path', ''))
+    destination = organize.scope_path(location, body.get('destination', ''))
     with contract.read_connection() as connection:
         plan = organize.build_plan(connection, location=location,
                                    file_template=file_template, dir_template=dir_template,
-                                   path=path_scope)
+                                   path=path_scope, destination=destination)
     path = organize.plan_path(contract.candidate_root, location)
     organize.write_plan(path, plan["rows"])
     changes = [row for row in plan["rows"] if row["action"] != "skip"]
@@ -113,6 +114,7 @@ def w_organize_apply(contract, body) -> dict:
         raise ValueError("整理需要确认")
     location, file_template, dir_template = _templates(contract, body)
     path_scope = organize.scope_path(location, body.get('path', ''))
+    destination = organize.scope_path(location, body.get('destination', ''))
     if organize.unverified_location(location):
         raise ValueError(f"{location} 挂载上的改名无法核验云端结果，界面只出预览，不执行")
     job = contract.organize_job
@@ -127,7 +129,7 @@ def w_organize_apply(contract, body) -> dict:
             with contract.read_connection() as connection:
                 plan = organize.build_plan(connection, location=location,
                                            file_template=file_template,
-                                           dir_template=dir_template, path=path_scope)
+                                           dir_template=dir_template, path=path_scope, destination=destination)
             if not job.checkpoint(job_id, plan=plan, batch_stamp=batch_stamp):
                 raise InterruptedError('整理已停止')
         job.update(job_id, total=plan["counts"]["change"], stage="正在整理")
@@ -141,7 +143,7 @@ def w_organize_apply(contract, body) -> dict:
     started = job.start(work, restart=True,
                      initial={"stage": "正在核对计划", "location": location, 'path': path_scope},
                      recovery={'confirm': True, 'location': location, 'file_template': file_template,
-                               'dir_template': dir_template, 'path': path_scope, 'action': 'apply'})
+                               'dir_template': dir_template, 'path': path_scope, 'destination': destination, 'action': 'apply'})
     return {key: value for key, value in started.items() if key not in ('plan', 'batch_stamp')}
 
 

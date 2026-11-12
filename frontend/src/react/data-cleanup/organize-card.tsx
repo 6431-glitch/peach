@@ -73,6 +73,8 @@ export function OrganizeCard(
   const edit = (patch: Partial<{ file: string; dir: string }>) => { setDraft({ ...fields, ...patch }); preview.reset() };
   const [scope, setScope] = useState({ location: '', path: '' });
   const path = scope.location === location ? scope.path : '';
+  const [destinationScope, setDestinationScope] = useState({ location: '', path: '' });
+  const destination = destinationScope.location === location ? destinationScope.path : '';
   const scopeRef = useRef({ location, path });
   scopeRef.current = { location, path };
   const [invalid, setInvalid] = useState<'file' | 'dir' | 'path' | null>(null);
@@ -96,7 +98,7 @@ export function OrganizeCard(
     input?.setSelectionRange(next.caret, next.caret);
   });
 
-  const request = () => ({ location, path: path.trim(), file_template: fields.file.trim(), dir_template: fields.dir.trim() });
+  const request = () => ({ location, path: path.trim(), ...(destination.trim() ? { destination: destination.trim() } : {}), file_template: fields.file.trim(), dir_template: fields.dir.trim() });
   const preview = useMutation({
     mutationFn: previewOrganize,
     /* 模板不合法时错误就出在两个框里的一个，所以除了说原因还要指出是哪一格。 */
@@ -161,7 +163,7 @@ export function OrganizeCard(
     const sent = preview.variables;
     if (!sent || !plan || !changes) return;
     void confirmModal({
-      title: t('cleanup:tools.organize'), body: APPLY_BODY(name, sent.path), confirmLabel: t('cleanup:tools.organize'),
+      title: t('cleanup:tools.organize'), body: APPLY_BODY(name, sent.path) + (sent.destination ? ` ${t('cleanup:organize.destinationConfirm', { path: sent.destination })}` : ''), confirmLabel: t('cleanup:tools.organize'),
       /* 确认执行时保存该来源的模板。 */
       onConfirm: async () => {
         await job.start.mutateAsync({ kind: 'apply', request: sent });
@@ -245,6 +247,9 @@ export function OrganizeCard(
           </div>
         </div>
         <p className="text-caption-1-regular text-text-secondary">{ORGANIZE_SCOPE_HINT}</p>
+        <Input label={t('cleanup:organize.destinationLabel')} placeholder={t('cleanup:organize.destinationPlaceholder')}
+          value={destination} autoComplete="off" spellCheck="false"
+          onChange={(value) => { setDestinationScope({ location, path: value }); preview.reset() }} />
         {picker.isError ? <Note tone="error" title={t('cleanup:organize.pickerFailed')}>{errorMessage(picker.error)}{t('cleanup:organize.pickerFallback')}</Note> : null}
         <Input label={t('cleanup:organize.fileTemplate')} placeholder="{code}[ {title}]" value={fields.file} ref={fileInput}
           spellCheck="false" isInvalid={invalid === 'file'}

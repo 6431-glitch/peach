@@ -36,7 +36,33 @@ class RandomizerTests(unittest.TestCase):
             randomizer.set_format_from_source(connection, 1, 'clip', 'review:stashdb')
         self.assertEqual(randomizer.get_format(self.db, 1), 'film')
 
+    def test_creator_format_has_its_own_draw(self):
+        randomizer.set_format(self.db, 1, 'creator')
+        self.assertEqual(randomizer.get_format(self.db, 1), 'creator')
+        self.assertEqual(randomizer.draw(self.db, 'creator')['id'], 1)
+        self.assertIsNone(randomizer.draw(self.db, 'clip'))
+
     def test_empty_and_invalid_modes(self):
         self.assertIsNone(randomizer.draw(self.db, 'film'))
         with self.assertRaises(ValueError):
             randomizer.draw(self.db, 'invalid')
+
+    def test_upgrade_preserves_existing_format_and_revision_triggers(self):
+        migration = (Path(__file__).resolve().parents[1] / 'migrations' / '0056_creator_video_format.sql').read_text()
+        connection = sqlite3.connect(':memory:')
+        self.addCleanup(connection.close)
+        connection.executescript("""
+            CREATE TABLE asset(id INTEGER PRIMARY KEY);
+            CREATE TABLE ledger_revision(tbl TEXT PRIMARY KEY, n INTEGER NOT NULL DEFAULT 0);
+            INSERT INTO ledger_revision VALUES('asset_format', 0);
+            INSERT INTO asset VALUES(1);
+        """)
+        original = (Path(__file__).resolve().parents[1] / 'migrations' / '0051_asset_format.sql').read_text()
+        connection.execute("DELETE FROM ledger_revision WHERE tbl='asset_format'")
+        connection.executescript(original)
+        connection.execute("INSERT INTO asset_format VALUES(1, 'film', 'user:manual', '2026-01-01')")
+        connection.executescript(migration)
+        self.assertEqual(connection.execute('SELECT * FROM asset_format').fetchone(), (1, 'film', 'user:manual', '2026-01-01'))
+        before = connection.execute("SELECT n FROM ledger_revision WHERE tbl='asset_format'").fetchone()[0]
+        connection.execute("UPDATE asset_format SET format='creator' WHERE asset_id=1")
+        self.assertEqual(connection.execute("SELECT n FROM ledger_revision WHERE tbl='asset_format'").fetchone()[0], before + 1)

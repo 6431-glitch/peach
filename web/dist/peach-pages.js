@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "699e39b9-fb05-4937-9a62-1146b2d657e0", e._sentryDebugIdIdentifier = "sentry-dbid-699e39b9-fb05-4937-9a62-1146b2d657e0");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "fad1a623-2364-4d5e-a1fc-9835db01fe2f", e._sentryDebugIdIdentifier = "sentry-dbid-fad1a623-2364-4d5e-a1fc-9835db01fe2f");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -1476,6 +1476,9 @@ var Ae = {
 		statusUnavailable: "Couldn't read media repair status"
 	},
 	organize: {
+		destinationLabel: "Destination folder",
+		destinationConfirm: "Destination: {{path}}.",
+		destinationPlaceholder: "Leave empty to use the source folder",
 		apply: "Organize now",
 		applyBodyAll: "Organizes all files in {{name}} by the templates. You can roll back the whole batch.",
 		applyBodyPath: "Organizes “{{path}}” and its subdirectories in {{name}} by the templates. You can roll back the whole batch.",
@@ -1930,6 +1933,9 @@ var Ae = {
 		statusUnavailable: "读不到媒体修复的状态"
 	},
 	organize: {
+		destinationLabel: "目标文件夹",
+		destinationConfirm: "目标：{{path}}。",
+		destinationPlaceholder: "留空则使用来源文件夹",
 		apply: "执行整理",
 		applyBodyAll: "将按模板整理「{{name}}」上的全部文件，可整批回滚。",
 		applyBodyPath: "将按模板整理「{{name}}」的「{{path}}」及子目录，可整批回滚。",
@@ -64276,4 +64282,4 @@ Xt();
 var Sb = document.getElementById("peach-page"), Cb = Sb ? xb[Sb.dataset.page ?? ""] : void 0;
 Sb && Cb && (0, on.createRoot)(Sb).render(/* @__PURE__ */ I(Cb, { data: { ...Sb.dataset } }));
 
-//# debugId=699e39b9-fb05-4937-9a62-1146b2d657e0
+//# debugId=fad1a623-2364-4d5e-a1fc-9835db01fe2f

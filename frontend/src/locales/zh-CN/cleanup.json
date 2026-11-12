@@ -138,6 +138,9 @@
     "statusUnavailable": "读不到媒体修复的状态"
   },
   "organize": {
+    "destinationLabel": "目标文件夹",
+    "destinationConfirm": "目标：{{path}}。",
+    "destinationPlaceholder": "留空则使用来源文件夹",
     "apply": "执行整理",
     "applyBodyAll": "将按模板整理「{{name}}」上的全部文件，可整批回滚。",
     "applyBodyPath": "将按模板整理「{{name}}」的「{{path}}」及子目录，可整批回滚。",

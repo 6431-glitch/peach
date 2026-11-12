@@ -163,6 +163,9 @@
     "statusUnavailable": "Couldn't read media repair status"
   },
   "organize": {
+    "destinationLabel": "Destination folder",
+    "destinationConfirm": "Destination: {{path}}.",
+    "destinationPlaceholder": "Leave empty to use the source folder",
     "apply": "Organize now",
     "applyBodyAll": "Organizes all files in {{name}} by the templates. You can roll back the whole batch.",
     "applyBodyPath": "Organizes “{{path}}” and its subdirectories in {{name}} by the templates. You can roll back the whole batch.",

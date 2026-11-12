@@ -17,6 +17,7 @@ import ntpath
 import os
 import sqlite3
 import time
+from datetime import date
 from collections.abc import Callable, Iterable, Sequence
 from contextlib import contextmanager
 from pathlib import Path, PureWindowsPath
@@ -133,6 +134,10 @@ def placeholder_values(row, performers: Sequence[str] = ()) -> dict[str, str]:
     name = str(row["name"] or "")
     title = str(row["catalog_title"] or "") or str(row["original_title"] or "")
     release_date = str(row["release_date"] or "")
+    try:
+        full_date = date.fromisoformat(release_date).strftime('%Y.%m.%d')
+    except ValueError:
+        full_date = ''
     marker = part_marker(name)
     return {
         "code": normalise_code_key(code) if is_jav_code(code) else code.strip(),
@@ -140,6 +145,7 @@ def placeholder_values(row, performers: Sequence[str] = ()) -> dict[str, str]:
         "studio": str(row["studio"] or "").strip(),
         "series": str(row["series"] or "").strip(),
         "year": release_date[:4] if len(release_date) >= 4 else "",
+        "date": full_date,
         # 四个以上就不再往文件名里塞：名字会长到在资源管理器里看不见番号。
         "actors": "、".join(list(performers)[:4]),
         "cd": marker.upper() if marker else "",
@@ -218,7 +224,7 @@ def scope_path(location: str, path: str = '', roots=None) -> str:
 def build_plan(connection: sqlite3.Connection, *, location: str,
                file_template: str = "", dir_template: str = "",
                roots=None, online: bool | None = None,
-               asset_ids: Sequence[int] | None = None, path: str = '') -> dict:
+               asset_ids: Sequence[int] | None = None, path: str = '', destination: str = '') -> dict:
     """按目录范围与可选模板生成逐文件整理计划。
 
     返回 `{"rows": [...], "counts": {...}}`：`rows` 只含会变的行与被跳过的行，
@@ -232,6 +238,11 @@ def build_plan(connection: sqlite3.Connection, *, location: str,
     dir_template = validate_template(dir_template, directory=True)
     declared = dict(location_roots() if roots is None else roots)
     selected_path = scope_path(location, path, declared)
+    destination_path = scope_path(location, destination, declared)
+    if destination_path and not selected_path:
+        raise OrganizeError('整理目标需要指定来源路径')
+    if destination_path and resolve_root(selected_path, declared)[:2] != resolve_root(destination_path, declared)[:2]:
+        raise OrganizeError('整理来源和目标必须在同一媒体根目录')
     rows = _rows(connection, location, asset_ids)
     if selected_path:
         selected = PureWindowsPath(selected_path)
@@ -274,7 +285,7 @@ def build_plan(connection: sqlite3.Connection, *, location: str,
             continue
         values = placeholder_values(row, performers.get(int(row["id"]), []))
         current_dir = ntpath.dirname(path)
-        target_dir = current_dir
+        target_dir = destination_path or current_dir
         missing: set[str] = set()
         if dir_template:
             rendered, absent = render(dir_template, values, directory=True)
@@ -282,7 +293,7 @@ def build_plan(connection: sqlite3.Connection, *, location: str,
             if not rendered:
                 skip(row, SKIP_MISSING_FIELD)
                 continue
-            target_dir = ntpath.join(selected_path or root, *rendered.split("/"))
+            target_dir = ntpath.join(destination_path or selected_path or root, *rendered.split("/"))
         name = str(row["name"] or ntpath.basename(path))
         target_name = clean_filename(name)
         if file_template:

@@ -59,7 +59,7 @@ export interface OrganizePlan {
 }
 
 /** 这一次要整理什么：来源与两份模板。 */
-export interface OrganizeRequest { location: string; file_template: string; dir_template: string; path: string }
+export interface OrganizeRequest { location: string; file_template: string; dir_template: string; path: string; destination?: string }
 
 /** 执行还是回滚。两条都起同一个后台任务，结果落在同一格里。 */
 export type OrganizeCommand = { kind: 'apply'; request: OrganizeRequest } | { kind: 'rollback' };

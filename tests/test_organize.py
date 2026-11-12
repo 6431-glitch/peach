@@ -64,6 +64,14 @@ class TemplateRenderTests(unittest.TestCase):
         _text, missing = render("{number}[ {title}]", {**VALUES, "title": ""})
         self.assertEqual(missing, frozenset())
 
+    def test_release_date_requires_a_valid_complete_date(self):
+        base = {'code': '', 'name': '', 'catalog_title': '', 'original_title': '',
+                'studio': '', 'series': '', 'width': None, 'height': None}
+        for value, expected in [('2025-05-16', '2025.05.16'), ('2025-05', ''),
+                                ('2025', ''), ('2025-02-30', ''), ('', '')]:
+            with self.subTest(value=value):
+                self.assertEqual(organize.placeholder_values({**base, 'release_date': value})['date'], expected)
+
     def test_directory_template_keeps_layers(self):
         text, _missing = render("{studio}/{number}", VALUES, directory=True)
         self.assertEqual(text, "厂牌/ABC-123")
@@ -208,6 +216,18 @@ class PlanTests(unittest.TestCase):
         self.assertEqual([row['asset_id'] for row in plan['rows']], [1, 2])
         self.assertEqual(plan['counts']['total'], 2)
         self.assertEqual(_plan(self.db_path, file_template='{number}', path='')['counts']['total'], 3)
+
+    def test_destination_moves_only_scoped_files_within_same_root(self):
+        _seed(self.db_path, [
+            {'id': 1, 'path': r'R:\media\pool\a.mp4', 'name': 'a.mp4', 'code': 'ABC-001', 'studio': 'Studio'},
+            {'id': 2, 'path': r'R:\media\other\b.mp4', 'name': 'b.mp4', 'code': 'ABC-002'},
+        ])
+        plan = _plan(self.db_path, path=r'R:\media\pool', destination=r'R:\media\organized',
+                     dir_template='{studio}', file_template='{code}')
+        self.assertEqual(plan['counts']['total'], 1)
+        self.assertEqual(plan['rows'][0]['target_path'], r'R:\media\organized\Studio\ABC-001.mp4')
+        with self.assertRaises(organize.OrganizeError):
+            _plan(self.db_path, destination=r'R:\media\organized')
 
     def test_scope_rejects_relative_outside_and_parent_paths(self):
         for path in ('合集', r'S:\media', r'R:\media2', r'R:\media\..\other'):

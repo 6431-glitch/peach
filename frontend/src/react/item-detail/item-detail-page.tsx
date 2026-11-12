@@ -670,7 +670,7 @@ function MetadataSearch({ item, actions, onClose }: { item: DetailItem; actions:
 function FormatIcon({ format }: { format: string }) {
   return <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"
     strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-    <use href={`#i-${format === 'film' ? 'video' : format === 'clip' ? 'film' : 'venetian-mask'}`} />
+    <use href={`#i-${format === 'film' ? 'video' : format === 'clip' ? 'film' : format === 'creator' ? 'user-round' : 'venetian-mask'}`} />
   </svg>;
 }
 
@@ -684,7 +684,7 @@ function VideoFormat({ assetId }: { assetId: number }) {
     onSuccess: () => { setError(''); void queryClient.invalidateQueries({ queryKey: key }) },
     onError: cause => setError(errorMessage(cause)) });
   const selected = format.data?.format || 'unknown';
-  const title = selected === 'film' ? 'DVD' : selected === 'clip' ? 'Scene' : 'Unclassified';
+  const title = selected === 'film' ? 'DVD' : selected === 'clip' ? 'Scene' : selected === 'creator' ? 'Creator' : 'Unclassified';
   return <>
     <button ref={trigger} type="button" aria-label={`Category: ${title}`} title={`Category: ${title}`}
       aria-haspopup="dialog" aria-expanded={open} disabled={format.isLoading || save.isPending} onClick={() => setOpen(true)}>
@@ -693,7 +693,7 @@ function VideoFormat({ assetId }: { assetId: number }) {
     <Popover triggerRef={trigger} isOpen={open} onOpenChange={setOpen} placement="bottom end" offset={4}
       className={`${MENU_POPOVER_SURFACE} min-w-48 p-2`}>
       <MenuDialog aria-label="Choose video category" className="flex flex-col gap-1 outline-none">
-        {([['film', 'DVD'], ['clip', 'Scene']] as const).map(([value, label]) =>
+        {([['film', 'DVD'], ['clip', 'Scene'], ['creator', 'Creator']] as const).map(([value, label]) =>
           <button key={value} type="button" className={`${MENU_ITEM} ${selected === value ? MENU_ITEM_ACTIVE : ''}`}
             aria-pressed={selected === value} disabled={save.isPending} onClick={() => { save.mutate(value); setOpen(false) }}>
             <span className="flex size-5 shrink-0 items-center justify-center [&_svg]:size-5"><FormatIcon format={value} /></span>{label}</button>)}

@@ -24,8 +24,8 @@ def get_format(database, asset_id):
 
 
 def set_format(database, asset_id, value):
-    if value not in ('film', 'clip', 'unknown'):
-        raise ValueError('Choose Film, Clip, or Unclassified.')
+    if value not in ('film', 'clip', 'creator', 'unknown'):
+        raise ValueError('Choose DVD, Scene, Creator, or Unclassified.')
     with database.write_transaction() as connection:
         asset = connection.execute("SELECT 1 FROM asset WHERE id=? AND medium='video' AND COALESCE(disposal,'') NOT IN ('trash','vanished')", (asset_id,)).fetchone()
         if asset is None:
@@ -37,8 +37,8 @@ def set_format(database, asset_id, value):
 
 
 def draw(database, mode, exclude=None):
-    if mode not in ('film', 'clip', 'actress'):
-        raise ValueError('Choose Film, Clip, or Actress.')
+    if mode not in ('film', 'clip', 'creator', 'actress'):
+        raise ValueError('Choose Film, Clip, Creator, or Actress.')
     with database.read_connection() as connection:
         if mode == 'actress':
             males = male_performer_ids(connection)

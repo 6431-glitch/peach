@@ -4,7 +4,7 @@ import { Button } from '@/components/base/buttons/button';
 import { Radio, RadioGroup } from '@/components/base/radio/radio';
 import './randomizer.css';
 
-type Mode = 'film' | 'clip' | 'actress';
+type Mode = 'film' | 'clip' | 'creator' | 'actress';
 type Pick = { id: number; name: string; cover_key?: string };
 
 export function RandomizerPage({ openItem, openEntity }: {
@@ -29,7 +29,7 @@ export function RandomizerPage({ openItem, openEntity }: {
       <p className="text-text-secondary">Pick a category and open your surprise.</p></header>
     <RadioGroup aria-label="Choose a draw" orientation="horizontal" className="flex-row flex-wrap gap-4" value={mode}
       onChange={value => { setMode(value as Mode); setResult(null); setDrawn(false); setError('') }}>
-      <Radio value="film">Film</Radio><Radio value="clip">Clip</Radio><Radio value="actress">Actress</Radio>
+      <Radio value="film">Film</Radio><Radio value="clip">Clip</Radio><Radio value="creator">Creator</Radio><Radio value="actress">Actress</Radio>
     </RadioGroup>
     <section className="flex min-h-64 flex-col items-center justify-center gap-4 rounded-2xl border border-separator-border bg-background-secondary-default p-6 text-center" aria-live="polite">
       {result ? <div key={`${mode}-${result.id}`} className="randomizer-reveal flex flex-col items-center gap-4"><span className="text-text-secondary">Your pick</span>
@@ -42,6 +42,6 @@ export function RandomizerPage({ openItem, openEntity }: {
       {error ? <p role="alert" className="text-text-error-primary">{error}</p> : null}
       <Button variant="primary" disabled={busy} onClick={() => void draw()}>{busy ? 'Drawing…' : result ? 'Draw again' : 'Open your pick'}</Button>
     </section>
-    <p className="text-text-secondary">Mark videos as Film or Clip in their details to add them to a draw. Performers without known gender information may appear in Actress draws.</p>
+    <p className="text-text-secondary">Choose DVD, Scene, or Creator in video details to add videos to a draw. Performers without known gender information may appear in Actress draws.</p>
   </main>;
 }
