@@ -4,6 +4,7 @@
  * 读到的是这几条的撤回预览与 token；撤回把同一个 token 交回去，服务端在写锁里重算，对不上就拒绝。 */
 import { apiGet, apiSend } from '../../api';
 import { localTime } from '../time';
+import { formatTranslation, translate } from '../../i18n';
 
 export const AUTO_LANDINGS_URL = '/api/review/auto-landings';
 export const AUTO_LANDING_REVERT_URL = '/api/review/auto-landings/revert';
@@ -85,8 +86,8 @@ export const writtenText = (item: AutoLandingWrite) =>
 
 /** 写入前的样子：覆盖写原值，并集写「只增不删」。 */
 export const previousText = (item: AutoLandingWrite) => item.tags.length
-  ? '原有标签保留'
-  : `原为 ${item.previous.length ? item.previous.map(shown).join('、') : '空'}`;
+  ? translate('原有标签保留')
+  : formatTranslation('原为 {0}', item.previous.length ? item.previous.map(shown).join('、') : translate('空'));
 
 /** 确认弹层里逐条列出的改动：改回的值、删掉的标签，最后是不动的那几条。 */
 export function previewLines(preview: AutoLandingPreview): string[] {

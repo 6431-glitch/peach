@@ -1,4 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { formatTranslation, translate } from '../../i18n';
 import {
   createColumnHelper, createPaginatedRowModel, createSortedRowModel, flexRender,
   rowPaginationFeature, rowSelectionFeature, rowSortingFeature, columnVisibilityFeature, tableFeatures, useTable,
@@ -107,7 +108,7 @@ export function DataTable<T extends RowData>({ label, items, columns, rowId, row
         <div data-toolbar-heading="">
         <h3 id={titleId} className="text-title-2-medium text-text-primary">{title}</h3>
         <span className="text-body-2-regular tabular-nums text-text-secondary">
-          {`${items.length.toLocaleString()} ${unit}`}
+          {`${items.length.toLocaleString()} ${translate(unit)}`}
         </span>
         </div>
         <div data-toolbar-actions="">
@@ -118,7 +119,7 @@ export function DataTable<T extends RowData>({ label, items, columns, rowId, row
         </div>
       </div>
       {description ? <p className="text-body-2-regular text-text-secondary">{description}</p> : null}
-      <SelectionDock label={`${label}批量操作`} visible={chosen.length > 0} count={`已选 ${chosen.length.toLocaleString()} ${unit}`}>
+      <SelectionDock label={`${label}批量操作`} visible={chosen.length > 0} count={formatTranslation('已选 {0} {1}', chosen.length.toLocaleString(), translate(unit))}>
         {actions(chosen, () => onSelected([]))}
         <Button variant="ghost" size="small" onClick={() => onSelected([])}>取消选择</Button>
       </SelectionDock>

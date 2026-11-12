@@ -1,23 +1,23 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "4ca14ed3-dffb-4e2b-b3b1-0924afc02212", e._sentryDebugIdIdentifier = "sentry-dbid-4ca14ed3-dffb-4e2b-b3b1-0924afc02212");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "3112a004-a648-4fa1-8c1b-e3d21abafd24", e._sentryDebugIdIdentifier = "sentry-dbid-3112a004-a648-4fa1-8c1b-e3d21abafd24");
 	} catch {}
 })();
-import { $ea3928288112382f$export$439d29a4e110a164 as e, $fe21c36db05242bb$export$d7b12c4107be0d61 as t, Button as n, ButtonLink as r, Checkbox as i, CheckboxGlyph as a, Chip as o, CollapseChevron as s, CollapseRegion as c, DEFAULT_CATEGORY as l, DataTableFooter as u, ENTITY_REVIEW_KINDS as d, Ea as f, EmptyState as ee, ExternalLink as p, FIELDSET_FOOT as m, FilterGlassRows as te, Gg as h, InputBase as g, LinkButton as _, Note as v, REVIEW_CATEGORIES as y, REVIEW_DECISION_LABELS as ne, REVIEW_KEY as b, REVIEW_LABELS as re, REVIEW_QUEUES as ie, REVIEW_QUEUE_LABELS as ae, RadioDot as x, RadioGroup as S, Select as C, SelectItem as w, SelectionActions as T, SelectionDock as E, SortableBoardTabs as D, TextField as O, Wt as k, __toESM as A, apiGet as j, apiSend as M, avatarInner as N, busyProps as P, canApprove as oe, cardClass as F, commonReviewSources as se, composingKey as I, confirmModal as ce, currentReviewRow as le, cx as L, decisionPayload as ue, decisionReceipt as de, defaultChoice as fe, errorMessage as R, fetchReview as pe, filterReviewRows as me, groupReviewRows as he, import_jsx_runtime as z, isReviewCategory as ge, jsx as B, jsxs as V, l7 as _e, localTime as ve, m7 as ye, mirrorText as be, pendingGenres as xe, queryClient as Se, recordGenre as Ce, reloadReview as H, require_react as we, reviewGroupingOptions as Te, reviewQueueData as Ee, reviewQueueOf as De, reviewWindow as Oe, rowEvidence as ke, rowFieldName as Ae, rowSubject as U, rowTags as W, rowTitle as G, selectReviewRange as je, settleReviewRows as Me, spinnerHtml as Ne, submitDecision as Pe, translate as Fe, useMutation as Ie, useNavigationOrder as Le, useOverlayScrollbar as Re, useQuery as ze, useViewGlide as K } from "./peach-app.js";
-import { Page as Be } from "./peach-app.page-CW3QRN2N.js";
-import { DataTable as Ve } from "./peach-app.data-table-DJ-wOupc.js";
-import { LEGACY_AVATAR_IMG as q } from "./peach-app.legacy-avatar-NSITxLRS.js";
+import { $ea3928288112382f$export$439d29a4e110a164 as e, $fe21c36db05242bb$export$d7b12c4107be0d61 as t, Button as n, ButtonLink as r, Checkbox as i, CheckboxGlyph as a, Chip as o, CollapseChevron as s, CollapseRegion as c, DEFAULT_CATEGORY as l, DataTableFooter as u, ENTITY_REVIEW_KINDS as d, Ea as f, EmptyState as ee, ExternalLink as p, FIELDSET_FOOT as m, FilterGlassRows as te, Gg as h, InputBase as g, LinkButton as _, Note as v, REVIEW_CATEGORIES as y, REVIEW_DECISION_LABELS as ne, REVIEW_KEY as b, REVIEW_LABELS as re, REVIEW_QUEUES as ie, REVIEW_QUEUE_LABELS as ae, RadioDot as x, RadioGroup as S, Select as C, SelectItem as w, SelectionActions as T, SelectionDock as E, SortableBoardTabs as D, TextField as O, Wt as k, __toESM as A, apiGet as j, apiSend as M, avatarInner as N, busyProps as P, canApprove as oe, cardClass as F, commonReviewSources as se, composingKey as I, confirmModal as ce, currentReviewRow as le, cx as L, decisionPayload as ue, decisionReceipt as de, defaultChoice as fe, errorMessage as R, fetchReview as pe, filterReviewRows as me, formatTranslation as he, groupReviewRows as ge, import_jsx_runtime as z, isReviewCategory as _e, jsx as B, jsxs as V, l7 as ve, localTime as ye, m7 as be, mirrorText as xe, pendingGenres as Se, queryClient as Ce, recordGenre as H, reloadReview as we, require_react as Te, reviewGroupingOptions as Ee, reviewQueueData as De, reviewQueueOf as Oe, reviewWindow as ke, rowEvidence as Ae, rowFieldName as U, rowSubject as W, rowTags as je, rowTitle as Me, selectReviewRange as Ne, settleReviewRows as Pe, spinnerHtml as Fe, submitDecision as Ie, translate as G, useMutation as Le, useNavigationOrder as Re, useOverlayScrollbar as K, useQuery as ze, useViewGlide as Be } from "./peach-app.js";
+import { Page as Ve } from "./peach-app.page-CW3QRN2N.js";
+import { DataTable as q } from "./peach-app.data-table-B_WL0g6J.js";
+import { LEGACY_AVATAR_IMG as He } from "./peach-app.legacy-avatar-NSITxLRS.js";
 // src/react/review/auto-landings.ts
-var J = /* @__PURE__ */ A(we(), 1), He = "/api/review/auto-landings", Ue = "/api/review/auto-landings/revert", We = ["review", "auto-landings"], Ge = (e) => j(He, e), Ke = (e) => j(`${He}?items=${encodeURIComponent(e.join("\n"))}`), qe = (e, t) => M(Ue, {
+var J = /* @__PURE__ */ A(Te(), 1), Ue = "/api/review/auto-landings", We = "/api/review/auto-landings/revert", Ge = ["review", "auto-landings"], Ke = (e) => j(Ue, e), qe = (e) => j(`${Ue}?items=${encodeURIComponent(e.join("\n"))}`), Je = (e, t) => M(We, {
 	items: e,
 	token: t
-}), Je = (e) => e.at === null ? "" : ve((/* @__PURE__ */ new Date(e.at * 1e3)).toISOString()), Y = (e) => e.code || e.name || (e.asset_id ? `#${e.asset_id}` : "未知作品"), X = (e) => e ? `「${e}」` : "空", Ye = (e) => e.tags.length ? e.tags.join("、") : e.value, Xe = (e) => e.tags.length ? "原有标签保留" : `原为 ${e.previous.length ? e.previous.map(X).join("、") : "空"}`;
+}), Y = (e) => e.at === null ? "" : ye((/* @__PURE__ */ new Date(e.at * 1e3)).toISOString()), X = (e) => e.code || e.name || (e.asset_id ? `#${e.asset_id}` : "未知作品"), Ye = (e) => e ? `「${e}」` : "空", Z = (e) => e.tags.length ? e.tags.join("、") : e.value, Xe = (e) => e.tags.length ? G("原有标签保留") : he("原为 {0}", e.previous.length ? e.previous.map(Ye).join("、") : G("空"));
 function Ze(e) {
 	return [
-		...e.restores.map((e) => `${Y(e)} ${e.field}：${X(e.current)} 改回 ${X(e.previous)}`),
-		...e.tags.map((e) => `${Y(e)} 删除标签「${e.tag}」`),
-		...e.changed.map((e) => e.gone ? `${Y(e)} ${e.field}：作品已不在账本中，跳过` : `${Y(e)} ${e.field}：之后已被修改，保留现值`)
+		...e.restores.map((e) => `${X(e)} ${e.field}：${Ye(e.current)} 改回 ${Ye(e.previous)}`),
+		...e.tags.map((e) => `${X(e)} 删除标签「${e.tag}」`),
+		...e.changed.map((e) => e.gone ? `${X(e)} ${e.field}：作品已不在账本中，跳过` : `${X(e)} ${e.field}：之后已被修改，保留现值`)
 	];
 }
 function Qe(e) {
@@ -28,13 +28,13 @@ function Qe(e) {
 		"撤回前会自动备份账本。下一轮资料处理仍按同一判据判断，可能再次写入。"
 	].filter(Boolean).join("");
 }
-function $e(e) {
+function Q(e) {
 	let t = [e.restored ? `改回 ${e.restored} 条资料` : "", e.removed_tags ? `删除 ${e.removed_tags} 个标签` : ""].filter(Boolean);
 	return `已撤回 ${e.decisions} 条自动写入${t.length ? `：${t.join("，")}` : ""}`;
 }
 // src/react/review/auto-landings-card.tsx
-var Z = "资料处理按确定判据自动写入的标题、发行日期与标签，一行一条。撤回会把覆盖的值改回写入前、删掉补上的标签；写入后又被修改过的作品保留现值。";
-function Q({ item: t, openItem: n }) {
+var $e = "资料处理按确定判据自动写入的标题、发行日期与标签，一行一条。撤回会把覆盖的值改回写入前、删掉补上的标签；写入后又被修改过的作品保留现值。";
+function et({ item: t, openItem: n }) {
 	let r = t.asset_id && !t.gone ? () => n(t.asset_id) : void 0;
 	return /* @__PURE__ */ V("span", {
 		className: "flex min-w-0 items-center gap-3",
@@ -51,12 +51,12 @@ function Q({ item: t, openItem: n }) {
 			}) : /* @__PURE__ */ B("span", {
 				className: "text-caption-1-regular text-text-secondary",
 				children: "无封面"
-			}), /* @__PURE__ */ B(e, { children: `打开作品 ${Y(t)}` })]
+			}), /* @__PURE__ */ B(e, { children: `打开作品 ${X(t)}` })]
 		}), /* @__PURE__ */ V("span", {
 			className: "flex min-w-0 flex-1 flex-col gap-0.5",
 			children: [/* @__PURE__ */ V("span", {
 				className: "truncate text-body-medium text-text-primary",
-				children: [Y(t), t.assets > 1 ? /* @__PURE__ */ B("small", {
+				children: [X(t), t.assets > 1 ? /* @__PURE__ */ B("small", {
 					className: "ml-1 text-caption-1-regular text-text-secondary",
 					children: `${t.assets} 个文件`
 				}) : null]
@@ -68,16 +68,16 @@ function Q({ item: t, openItem: n }) {
 		})]
 	});
 }
-function et({ item: e }) {
+function tt({ item: e }) {
 	return /* @__PURE__ */ V("span", {
 		className: "flex min-w-0 flex-col gap-0.5",
 		children: [/* @__PURE__ */ V("span", {
-			title: Ye(e),
+			title: Z(e),
 			className: "truncate text-body-regular text-text-primary",
 			children: [/* @__PURE__ */ B("span", {
 				className: "text-text-secondary",
-				children: `${e.field}：`
-			}), Ye(e)]
+				children: `${G(e.field)}：`
+			}), Z(e)]
 		}), /* @__PURE__ */ B("small", {
 			title: Xe(e),
 			className: "truncate text-caption-1-regular text-text-secondary",
@@ -85,23 +85,23 @@ function et({ item: e }) {
 		})]
 	});
 }
-function tt({ locked: e, openItem: t, toast: r }) {
+function nt({ locked: e, openItem: t, toast: r }) {
 	let [i, a] = (0, J.useState)([]), [o, s] = (0, J.useState)(null), c = ze({
-		queryKey: We,
-		queryFn: ({ signal: e }) => Ge(e)
-	}), l = c.data?.items ?? [], u = Ie({
+		queryKey: Ge,
+		queryFn: ({ signal: e }) => Ke(e)
+	}), l = c.data?.items ?? [], u = Le({
 		mutationFn: async (e) => {
-			let t = await Ke(e), { confirmed: n, result: r } = await ce({
+			let t = await qe(e), { confirmed: n, result: r } = await ce({
 				title: "撤回自动写入",
 				body: Qe(t),
 				items: Ze(t),
 				confirmLabel: "撤回",
-				onConfirm: () => qe(t.items, t.token)
+				onConfirm: () => Je(t.items, t.token)
 			});
 			return n ? r : null;
 		},
 		onSuccess: (e) => {
-			e && (s(e), a([]), r($e(e)), Se.invalidateQueries({ queryKey: b }));
+			e && (s(e), a([]), r(Q(e)), Ce.invalidateQueries({ queryKey: b }));
 		},
 		onError: (e) => r(R(e))
 	});
@@ -110,7 +110,7 @@ function tt({ locked: e, openItem: t, toast: r }) {
 		className: "flex flex-col gap-4",
 		children: [o ? /* @__PURE__ */ V(v, {
 			tone: "success",
-			title: $e(o),
+			title: Q(o),
 			children: [/* @__PURE__ */ B("p", {
 				className: "text-body-2-regular",
 				children: `撤回前的账本已备份为 ${o.backup}。`
@@ -122,14 +122,14 @@ function tt({ locked: e, openItem: t, toast: r }) {
 				}, `${e.asset_id}:${e.field}`) : /* @__PURE__ */ B(_, {
 					size: "small",
 					onClick: () => t(e.asset_id),
-					children: Y(e)
+					children: X(e)
 				}, `${e.asset_id}:${e.field}`))]
 			}) : null]
 		}) : null, c.isError ? /* @__PURE__ */ B(v, {
 			tone: "error",
 			title: "读取自动写入的资料失败",
 			children: R(c.error)
-		}) : l.length ? /* @__PURE__ */ B(Ve, {
+		}) : l.length ? /* @__PURE__ */ B(q, {
 			label: "自动写入的资料",
 			items: l,
 			columns: [
@@ -138,8 +138,8 @@ function tt({ locked: e, openItem: t, toast: r }) {
 					label: "作品",
 					width: 300,
 					min: 240,
-					value: (e) => Y(e),
-					render: (e) => /* @__PURE__ */ B(Q, {
+					value: (e) => X(e),
+					render: (e) => /* @__PURE__ */ B(et, {
 						item: e,
 						openItem: t
 					})
@@ -149,8 +149,8 @@ function tt({ locked: e, openItem: t, toast: r }) {
 					label: "写入",
 					width: 320,
 					min: 220,
-					value: (e) => `${e.field}${Ye(e)}`,
-					render: (e) => /* @__PURE__ */ B(et, { item: e })
+					value: (e) => `${e.field}${Z(e)}`,
+					render: (e) => /* @__PURE__ */ B(tt, { item: e })
 				},
 				{
 					id: "rule",
@@ -166,7 +166,7 @@ function tt({ locked: e, openItem: t, toast: r }) {
 							children: e.label
 						}), /* @__PURE__ */ B("small", {
 							className: "tabular-nums text-caption-1-regular",
-							children: Je(e) || "时间未知"
+							children: Y(e) || "时间未知"
 						})]
 					})
 				}
@@ -174,9 +174,9 @@ function tt({ locked: e, openItem: t, toast: r }) {
 			title: "自动写入的资料",
 			titleId: "auto-landings-title",
 			unit: "条",
-			description: Z,
+			description: $e,
 			rowId: (e) => e.item_key,
-			rowLabel: (e) => `${Y(e)} ${e.field}`,
+			rowLabel: (e) => `${X(e)} ${e.field}`,
 			selected: i,
 			onSelected: a,
 			actions: (t) => /* @__PURE__ */ B(n, {
@@ -185,14 +185,14 @@ function tt({ locked: e, openItem: t, toast: r }) {
 				disabled: e || !t.length,
 				...P(u.isPending),
 				onClick: () => u.mutate(t.map((e) => e.item_key)),
-				children: `撤回所选（${t.length}）`
+				children: he("撤回所选（{0}）", String(t.length))
 			})
 		}) : null]
 	});
 }
 // src/react/review/bulk-toolbar.tsx
-function nt(e) {
-	let { groupOptions: t, groupBy: r, onGroupBy: i, groups: a, filter: o, onFilter: s, pageKeys: c, selected: l, onSelected: u, selectedRows: d, metadata: f, approvable: ee, busy: p, feedback: m, onUnifySource: h, onRun: g, queueView: _ = "pending", queueCounts: v, onQueueChange: y, locked: ne, fields: b, fieldFilter: re, onFieldFilter: x } = e, S = c.filter((e) => l.has(e)), T = S.length > 0 && S.length === c.length, D = se(d), O = f && d.some((e) => (e.candidates?.length || 0) > 1), k = D.length ? "统一选择来源" : "所选项目无共同来源", A = (0, J.useRef)(null), j = (0, J.useRef)(null), M = (0, J.useRef)(null), [N, P] = (0, J.useState)(!1), oe = K(A, j, "[data-entity-state][aria-pressed=\"true\"]", _);
+function rt(e) {
+	let { groupOptions: t, groupBy: r, onGroupBy: i, groups: a, filter: o, onFilter: s, pageKeys: c, selected: l, onSelected: u, selectedRows: d, metadata: f, approvable: ee, busy: p, feedback: m, onUnifySource: h, onRun: g, queueView: _ = "pending", queueCounts: v, onQueueChange: y, locked: ne, fields: b, fieldFilter: re, onFieldFilter: x } = e, S = c.filter((e) => l.has(e)), T = S.length > 0 && S.length === c.length, D = se(d), O = f && d.some((e) => (e.candidates?.length || 0) > 1), k = D.length ? "统一选择来源" : "所选项目无共同来源", A = (0, J.useRef)(null), j = (0, J.useRef)(null), M = (0, J.useRef)(null), [N, P] = (0, J.useState)(!1), oe = Be(A, j, "[data-entity-state][aria-pressed=\"true\"]", _);
 	return (0, J.useLayoutEffect)(() => {
 		let e = j.current, t = M.current, n = e?.parentElement, r = e?.closest("[data-review-filter]");
 		if (!e || !t || !n || !r) return;
@@ -302,7 +302,7 @@ function nt(e) {
 			ne ? null : /* @__PURE__ */ B(n, {
 				variant: "secondary",
 				size: "small",
-				leadingIcon: _e,
+				leadingIcon: ve,
 				"aria-pressed": T,
 				disabled: p,
 				onClick: () => {
@@ -377,7 +377,7 @@ function nt(e) {
 	})] });
 }
 // src/react/boardui/components/base/radio/radio-card.tsx
-function rt({ className: e, title: n, description: r, ref: i, ...a }) {
+function it({ className: e, title: n, description: r, ref: i, ...a }) {
 	return /* @__PURE__ */ B(t, {
 		ref: i,
 		...a,
@@ -530,41 +530,41 @@ var $ = class {
 		}
 		return r;
 	}
-}, it = new class extends $ {}();
-function at(e, t, n) {
-	return it.diff(e, t, n);
+}, at = new class extends $ {}();
+function ot(e, t, n) {
+	return at.diff(e, t, n);
 }
 // node_modules/diff/libesm/util/string.js
-function ot(e, t) {
+function st(e, t) {
 	let n = 0;
 	for (; n < e.length && n < t.length; n++) if (e[n] != t[n]) return e.slice(0, n);
 	return e.slice(0, n);
 }
-function st(e, t) {
+function ct(e, t) {
 	let n;
 	if (!e || !t || e[e.length - 1] != t[t.length - 1]) return "";
 	for (n = 0; n < e.length && n < t.length; n++) if (e[e.length - (n + 1)] != t[t.length - (n + 1)]) return e.slice(-n);
 	return e.slice(-n);
 }
-function ct(e, t, n) {
+function lt(e, t, n) {
 	if (e.slice(0, t.length) != t) throw Error(`string ${JSON.stringify(e)} doesn't start with prefix ${JSON.stringify(t)}; this is a bug`);
 	return n + e.slice(t.length);
 }
-function lt(e, t, n) {
+function ut(e, t, n) {
 	if (!t) return e + n;
 	if (e.slice(-t.length) != t) throw Error(`string ${JSON.stringify(e)} doesn't end with suffix ${JSON.stringify(t)}; this is a bug`);
 	return e.slice(0, -t.length) + n;
-}
-function ut(e, t) {
-	return ct(e, t, "");
 }
 function dt(e, t) {
 	return lt(e, t, "");
 }
 function ft(e, t) {
-	return t.slice(0, pt(e, t));
+	return ut(e, t, "");
 }
 function pt(e, t) {
+	return t.slice(0, mt(e, t));
+}
+function mt(e, t) {
 	let n = 0;
 	e.length > t.length && (n = e.length - t.length);
 	let r = t.length;
@@ -582,7 +582,7 @@ function pt(e, t) {
 	}
 	return a;
 }
-function mt(e, t) {
+function ht(e, t) {
 	let n = [];
 	for (let r of Array.from(t.segment(e))) {
 		let e = r.segment;
@@ -590,25 +590,25 @@ function mt(e, t) {
 	}
 	return n;
 }
-function ht(e, t) {
-	if (t) return _t(e, t)[1];
+function gt(e, t) {
+	if (t) return vt(e, t)[1];
 	let n;
 	for (n = e.length - 1; n >= 0 && e[n].match(/\s/); n--);
 	return e.substring(n + 1);
 }
-function gt(e, t) {
-	if (t) return _t(e, t)[0];
+function _t(e, t) {
+	if (t) return vt(e, t)[0];
 	let n = e.match(/^\s*/);
 	return n ? n[0] : "";
 }
-function _t(e, t) {
-	if (!t) return [gt(e), ht(e)];
+function vt(e, t) {
+	if (!t) return [_t(e), gt(e)];
 	if (t.resolvedOptions().granularity != "word") throw Error("The segmenter passed must have a granularity of \"word\"");
-	let n = mt(e, t), r = n[0], i = n[n.length - 1];
+	let n = ht(e, t), r = n[0], i = n[n.length - 1];
 	return [/\s/.test(r) ? r : "", /\s/.test(i) ? i : ""];
 }
 // node_modules/diff/libesm/diff/word.js
-var vt = "a-zA-Z0-9_\\u{AD}\\u{C0}-\\u{D6}\\u{D8}-\\u{F6}\\u{F8}-\\u{2C6}\\u{2C8}-\\u{2D7}\\u{2DE}-\\u{2FF}\\u{1E00}-\\u{1EFF}", yt = RegExp(`[${vt}]+|\\s+|[^${vt}]`, "ug");
+var yt = "a-zA-Z0-9_\\u{AD}\\u{C0}-\\u{D6}\\u{D8}-\\u{F6}\\u{F8}-\\u{2C6}\\u{2C8}-\\u{2D7}\\u{2DE}-\\u{2FF}\\u{1E00}-\\u{1EFF}", bt = RegExp(`[${yt}]+|\\s+|[^${yt}]`, "ug");
 new class extends $ {
 	equals(e, t, n) {
 		return n.ignoreCase && (e = e.toLowerCase(), t = t.toLowerCase()), e.trim() === t.trim();
@@ -618,8 +618,8 @@ new class extends $ {
 		if (t.intlSegmenter) {
 			let r = t.intlSegmenter;
 			if (r.resolvedOptions().granularity != "word") throw Error("The segmenter passed must have a granularity of \"word\"");
-			n = mt(e, r);
-		} else n = e.match(yt) || [];
+			n = ht(e, r);
+		} else n = e.match(bt) || [];
 		let r = [], i = null;
 		return n.forEach((e) => {
 			/\s/.test(e) ? i == null ? r.push(e) : r.push(r.pop() + e) : i != null && /\s/.test(i) ? r[r.length - 1] == i ? r.push(r.pop() + e) : r.push(i + e) : r.push(e), i = e;
@@ -632,57 +632,57 @@ new class extends $ {
 		if (!e || t.oneChangePerToken) return e;
 		let n = null, r = null, i = null;
 		return e.forEach((e) => {
-			e.added ? r = e : e.removed ? i = e : ((r || i) && bt(n, i, r, e, t.intlSegmenter), n = e, r = null, i = null);
-		}), (r || i) && bt(n, i, r, null, t.intlSegmenter), e;
+			e.added ? r = e : e.removed ? i = e : ((r || i) && xt(n, i, r, e, t.intlSegmenter), n = e, r = null, i = null);
+		}), (r || i) && xt(n, i, r, null, t.intlSegmenter), e;
 	}
 }();
-function bt(e, t, n, r, i) {
+function xt(e, t, n, r, i) {
 	if (t && n) {
-		let [a, o] = _t(t.value, i), [s, c] = _t(n.value, i);
+		let [a, o] = vt(t.value, i), [s, c] = vt(n.value, i);
 		if (e) {
-			let r = ot(a, s);
-			e.value = lt(e.value, s, r), t.value = ut(t.value, r), n.value = ut(n.value, r);
+			let r = st(a, s);
+			e.value = ut(e.value, s, r), t.value = dt(t.value, r), n.value = dt(n.value, r);
 		}
 		if (r) {
-			let e = st(o, c);
-			r.value = ct(r.value, c, e), t.value = dt(t.value, e), n.value = dt(n.value, e);
+			let e = ct(o, c);
+			r.value = lt(r.value, c, e), t.value = ft(t.value, e), n.value = ft(n.value, e);
 		}
 	} else if (n) {
 		if (e) {
-			let e = gt(n.value, i);
+			let e = _t(n.value, i);
 			n.value = n.value.substring(e.length);
 		}
 		if (r) {
-			let e = gt(r.value, i);
+			let e = _t(r.value, i);
 			r.value = r.value.substring(e.length);
 		}
 	} else if (e && r) {
-		let n = gt(r.value, i), [a, o] = _t(t.value, i), s = ot(n, a);
-		t.value = ut(t.value, s);
-		let c = st(ut(n, s), o);
-		t.value = dt(t.value, c), r.value = ct(r.value, n, c), e.value = lt(e.value, n, n.slice(0, n.length - c.length));
+		let n = _t(r.value, i), [a, o] = vt(t.value, i), s = st(n, a);
+		t.value = dt(t.value, s);
+		let c = ct(dt(n, s), o);
+		t.value = ft(t.value, c), r.value = lt(r.value, n, c), e.value = ut(e.value, n, n.slice(0, n.length - c.length));
 	} else if (r) {
-		let e = gt(r.value, i), n = ft(ht(t.value, i), e);
-		t.value = dt(t.value, n);
+		let e = _t(r.value, i), n = pt(gt(t.value, i), e);
+		t.value = ft(t.value, n);
 	} else if (e) {
-		let n = ft(ht(e.value, i), gt(t.value, i));
-		t.value = ut(t.value, n);
+		let n = pt(gt(e.value, i), _t(t.value, i));
+		t.value = dt(t.value, n);
 	}
 }
 new class extends $ {
 	tokenize(e) {
-		let t = RegExp(`(\\r?\\n)|[${vt}]+|[^\\S\\n\\r]+|[^${vt}]`, "ug");
+		let t = RegExp(`(\\r?\\n)|[${yt}]+|[^\\S\\n\\r]+|[^${yt}]`, "ug");
 		return e.match(t) || [];
 	}
 }(), new class extends $ {
 	constructor() {
-		super(...arguments), this.tokenize = xt;
+		super(...arguments), this.tokenize = St;
 	}
 	equals(e, t, n) {
 		return n.ignoreWhitespace ? (n.newlineIsToken && e.includes("\n") || (e = e.trim()), n.newlineIsToken && t.includes("\n") || (t = t.trim())) : n.ignoreNewlineAtEof && !n.newlineIsToken && (e.endsWith("\n") && (e = e.slice(0, -1)), t.endsWith("\n") && (t = t.slice(0, -1))), super.equals(e, t, n);
 	}
 }();
-function xt(e, t) {
+function St(e, t) {
 	t.stripTrailingCr && (e = e.replace(/\r\n/g, "\n"));
 	let n = [], r = e.split(/(\n|\r\n)/);
 	r[r.length - 1] || r.pop();
@@ -693,7 +693,7 @@ function xt(e, t) {
 	return n;
 }
 // node_modules/diff/libesm/diff/sentence.js
-function St(e) {
+function Ct(e) {
 	return e == "." || e == "!" || e == "?";
 }
 new class extends $ {
@@ -704,7 +704,7 @@ new class extends $ {
 				t.push(e.slice(n));
 				break;
 			}
-			if (St(e[r]) && e[r + 1].match(/\s/)) {
+			if (Ct(e[r]) && e[r + 1].match(/\s/)) {
 				for (t.push(e.slice(n, r + 1)), r = n = r + 1; e[r + 1]?.match(/\s/);) r++;
 				t.push(e.slice(n, r + 1)), n = r + 1;
 			}
@@ -717,26 +717,26 @@ new class extends $ {
 	}
 }(), new class extends $ {
 	constructor() {
-		super(...arguments), this.tokenize = xt;
+		super(...arguments), this.tokenize = St;
 	}
 	get useLongestToken() {
 		return !0;
 	}
 	castInput(e, t) {
 		let { undefinedReplacement: n, stringifyReplacer: r = (e, t) => t === void 0 ? n : t } = t;
-		return typeof e == "string" ? e : JSON.stringify(Ct(e, null, null, r), null, "  ");
+		return typeof e == "string" ? e : JSON.stringify(wt(e, null, null, r), null, "  ");
 	}
 	equals(e, t, n) {
 		return super.equals(e.replace(/,([\r\n])/g, "$1"), t.replace(/,([\r\n])/g, "$1"), n);
 	}
 }();
-function Ct(e, t, n, r, i) {
+function wt(e, t, n, r, i) {
 	t ||= [], n ||= [], r && (e = r(i === void 0 ? "" : i, e));
 	let a = 0;
 	for (; a < t.length; a += 1) if (t[a] === e) return n[a];
 	let o;
 	if (Object.prototype.toString.call(e) === "[object Array]") {
-		for (t.push(e), o = Array(e.length), n.push(o), a = 0; a < e.length; a += 1) o[a] = Ct(e[a], t, n, r, String(a));
+		for (t.push(e), o = Array(e.length), n.push(o), a = 0; a < e.length; a += 1) o[a] = wt(e[a], t, n, r, String(a));
 		return t.pop(), n.pop(), o;
 	}
 	if (e && e.toJSON && (e = e.toJSON()), typeof e == "object" && e) {
@@ -745,7 +745,7 @@ function Ct(e, t, n, r, i) {
 		for (s in e)
  /* istanbul ignore else */
 		Object.prototype.hasOwnProperty.call(e, s) && i.push(s);
-		for (i.sort(), a = 0; a < i.length; a += 1) s = i[a], o[s] = Ct(e[s], t, n, r, s);
+		for (i.sort(), a = 0; a < i.length; a += 1) s = i[a], o[s] = wt(e[s], t, n, r, s);
 		t.pop(), n.pop();
 	} else o = e;
 	return o;
@@ -762,8 +762,8 @@ new class extends $ {
 	}
 }();
 // src/react/review/comparison-text.tsx
-function wt({ value: e, reference: t }) {
-	let n = (0, J.useMemo)(() => t ? at(t, e).filter((e) => !e.removed) : [{
+function Tt({ value: e, reference: t }) {
+	let n = (0, J.useMemo)(() => t ? ot(t, e).filter((e) => !e.removed) : [{
 		value: e,
 		added: !1
 	}], [e, t]);
@@ -774,7 +774,7 @@ function wt({ value: e, reference: t }) {
 	}, t) : /* @__PURE__ */ B("span", { children: e.value }, t)) });
 }
 // src/react/review/candidate-form.tsx
-function Tt(e) {
+function Et(e) {
 	if (typeof e != "string") return null;
 	try {
 		let t = new URL(e);
@@ -783,7 +783,7 @@ function Tt(e) {
 		return null;
 	}
 }
-var Et = {
+var Dt = {
 	title: "标题",
 	original_title: "原标题",
 	runtime: "来源时长",
@@ -793,14 +793,14 @@ var Et = {
 	cover_url: "封面",
 	screenshot_urls: "截图",
 	trailer_url: "预告片"
-}, Dt = "reviewgenretags";
-function Ot({ tags: e }) {
+}, Ot = "reviewgenretags";
+function kt({ tags: e }) {
 	return e.length ? /* @__PURE__ */ B("datalist", {
-		id: Dt,
+		id: Ot,
 		children: e.map((e) => /* @__PURE__ */ B("option", { value: e }, e))
 	}) : null;
 }
-function kt({ candidate: e, row: t }) {
+function At({ candidate: e, row: t }) {
 	let [r, i] = (0, J.useState)(!1), a = (0, J.useId)(), o = Object.entries(e.catalog_evidence || {}).filter(([, e]) => e && e.display_value);
 	return o.length ? /* @__PURE__ */ V("div", {
 		className: "min-w-0",
@@ -822,13 +822,13 @@ function kt({ candidate: e, row: t }) {
 			children: /* @__PURE__ */ B("dl", {
 				className: "flex min-w-0 flex-col gap-2 px-3 pt-2 pb-1",
 				children: o.map(([n, r]) => {
-					let i = n === "cover_url" || n === "poster_url" ? Tt(r.value) : null;
+					let i = n === "cover_url" || n === "poster_url" ? Et(r.value) : null;
 					return /* @__PURE__ */ V("div", {
 						className: "flex min-w-0 flex-wrap gap-x-2",
 						children: [
 							/* @__PURE__ */ B("dt", {
 								className: "text-caption-1-regular text-text-tertiary",
-								children: Et[n] || n
+								children: Dt[n] || n
 							}),
 							/* @__PURE__ */ B("dd", {
 								className: "min-w-0 text-body-2-regular break-words text-text-primary",
@@ -838,12 +838,12 @@ function kt({ candidate: e, row: t }) {
 									rel: "noopener noreferrer",
 									className: "text-brand-secondary hover:underline",
 									children: [
-										Fe(Et[n] || n),
+										G(Dt[n] || n),
 										" (",
 										i.hostname,
 										")"
 									]
-								}) : /* @__PURE__ */ B(wt, {
+								}) : /* @__PURE__ */ B(Tt, {
 									value: r.display_value || "",
 									reference: n === t.field && t.current_value ? t.current_value : t.candidates?.find((t) => t.candidate_key !== e.candidate_key && t.catalog_evidence?.[n]?.display_value)?.catalog_evidence?.[n]?.display_value
 								})
@@ -859,16 +859,16 @@ function kt({ candidate: e, row: t }) {
 		})]
 	}) : null;
 }
-function At(e) {
+function jt(e) {
 	let t = e.content_id || e.provider_id;
-	return `${e.source || Fe("未标注来源")}${e.official ? ` · ${Fe("官方优先")}` : ""}${t ? ` · ID ${t}` : ""}`;
+	return `${e.source || G("未标注来源")}${e.official ? ` · ${G("官方优先")}` : ""}${t ? ` · ID ${t}` : ""}`;
 }
-function jt({ candidate: e, reference: t }) {
+function Mt({ candidate: e, reference: t }) {
 	return /* @__PURE__ */ V("span", {
 		className: "flex min-w-0 flex-col gap-2 whitespace-normal wrap-anywhere",
 		children: [/* @__PURE__ */ B("span", {
 			className: "text-body-regular text-text-primary",
-			children: /* @__PURE__ */ B(wt, {
+			children: /* @__PURE__ */ B(Tt, {
 				value: e.display_value || "",
 				reference: t
 			})
@@ -878,7 +878,7 @@ function jt({ candidate: e, reference: t }) {
 		}, e))]
 	});
 }
-function Mt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
+function Nt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
 	let a = e.candidates || [];
 	return a.length ? a.length === 1 ? /* @__PURE__ */ V("div", {
 		className: "flex min-w-0 flex-col gap-2",
@@ -886,12 +886,12 @@ function Mt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
 			className: "flex min-w-0 flex-col gap-2 rounded-2lg bg-background-primary-default px-4 py-3",
 			children: [/* @__PURE__ */ B("p", {
 				className: "text-body-medium text-text-primary",
-				children: At(a[0])
-			}), /* @__PURE__ */ B(jt, {
+				children: jt(a[0])
+			}), /* @__PURE__ */ B(Mt, {
 				candidate: a[0],
 				reference: e.current_value || void 0
 			})]
-		}), /* @__PURE__ */ B(kt, {
+		}), /* @__PURE__ */ B(At, {
 			candidate: a[0],
 			row: e
 		})]
@@ -904,18 +904,18 @@ function Mt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
 			className: "flex min-w-0 flex-col gap-3",
 			children: a.map((t) => /* @__PURE__ */ V("div", {
 				className: "flex min-w-0 flex-col gap-1",
-				children: [/* @__PURE__ */ B(rt, {
+				children: [/* @__PURE__ */ B(it, {
 					value: t.candidate_key,
 					className: "relative items-start",
 					title: /* @__PURE__ */ B("span", {
-						title: At(t),
-						children: At(t)
+						title: jt(t),
+						children: jt(t)
 					}),
-					description: /* @__PURE__ */ B(jt, {
+					description: /* @__PURE__ */ B(Mt, {
 						candidate: t,
 						reference: e.current_value || a.find((e) => e.candidate_key !== t.candidate_key)?.display_value
 					})
-				}), /* @__PURE__ */ B(kt, {
+				}), /* @__PURE__ */ B(At, {
 					candidate: t,
 					row: e
 				})]
@@ -923,11 +923,11 @@ function Mt({ row: e, fieldName: t, value: n, onChange: r, locked: i }) {
 		})
 	}) : null;
 }
-function Nt({ genre: e, tags: t, locked: r, toast: i }) {
-	let [a, o] = (0, J.useState)(""), [s, c] = (0, J.useState)(""), l = Ie({
-		mutationFn: (t) => Ce(e, t),
+function Pt({ genre: e, tags: t, locked: r, toast: i }) {
+	let [a, o] = (0, J.useState)(""), [s, c] = (0, J.useState)(""), l = Le({
+		mutationFn: (t) => H(e, t),
 		onSuccess: async (t, n) => {
-			t.ok ? (i(n ? `已把「${e}」收录为标签「${n}」` : `已把「${e}」判为非内容标签`), await H()) : c(t.error || "服务端拒绝了这次收录");
+			t.ok ? (i(n ? `已把「${e}」收录为标签「${n}」` : `已把「${e}」判为非内容标签`), await we()) : c(t.error || "服务端拒绝了这次收录");
 		},
 		onError: (e) => c(R(e))
 	}), u = () => {
@@ -951,7 +951,7 @@ function Nt({ genre: e, tags: t, locked: r, toast: i }) {
 				className: "min-w-40 flex-1",
 				children: /* @__PURE__ */ B(g, {
 					size: "small",
-					list: t.length ? Dt : void 0,
+					list: t.length ? Ot : void 0,
 					autoComplete: "off",
 					placeholder: "中文标签",
 					onKeyDown: (e) => {
@@ -983,8 +983,8 @@ function Nt({ genre: e, tags: t, locked: r, toast: i }) {
 		]
 	});
 }
-function Pt({ row: e, tags: t, locked: n, toast: r }) {
-	let i = xe(e);
+function Ft({ row: e, tags: t, locked: n, toast: r }) {
+	let i = Se(e);
 	return i.length ? /* @__PURE__ */ V("div", {
 		role: "group",
 		"aria-label": "未收录 genre",
@@ -998,7 +998,7 @@ function Pt({ row: e, tags: t, locked: n, toast: r }) {
 			children: i.map((e, i) => /* @__PURE__ */ B("div", {
 				role: "listitem",
 				className: `py-3 first:pt-0 last:pb-0 ${i ? "border-t border-separator-border" : ""}`,
-				children: /* @__PURE__ */ B(Nt, {
+				children: /* @__PURE__ */ B(Pt, {
 					genre: e,
 					tags: t,
 					locked: n,
@@ -1009,12 +1009,12 @@ function Pt({ row: e, tags: t, locked: n, toast: r }) {
 	}) : null;
 }
 // src/react/review/review-evidence.tsx
-var Ft = (e = "") => /^https?:\/\//i.test(e) ? e : "", It = (e = "") => Ft(e) || (e.startsWith("/") && !e.startsWith("//") ? e : "");
-function Lt({ url: e }) {
-	let t = It(e || "");
-	return /* @__PURE__ */ B(Rt, { source: t }, t);
+var It = (e = "") => /^https?:\/\//i.test(e) ? e : "", Lt = (e = "") => It(e) || (e.startsWith("/") && !e.startsWith("//") ? e : "");
+function Rt({ url: e }) {
+	let t = Lt(e || "");
+	return /* @__PURE__ */ B(zt, { source: t }, t);
 }
-function Rt({ source: e }) {
+function zt({ source: e }) {
 	let [t, r] = (0, J.useState)("idle");
 	return (0, J.useEffect)(() => {
 		if (t !== "loading") return;
@@ -1025,7 +1025,7 @@ function Rt({ source: e }) {
 		children: [t === "loading" ? /* @__PURE__ */ V("span", {
 			role: "status",
 			className: "absolute flex items-center gap-2 text-body-2-regular text-text-secondary",
-			children: [/* @__PURE__ */ B("span", { dangerouslySetInnerHTML: { __html: Ne("正在加载图片") } }), "正在加载图片"]
+			children: [/* @__PURE__ */ B("span", { dangerouslySetInnerHTML: { __html: Fe("正在加载图片") } }), "正在加载图片"]
 		}) : null, e && (t === "loading" || t === "ready") ? /* @__PURE__ */ B("img", {
 			src: e,
 			alt: "来源提供的备选图片",
@@ -1052,7 +1052,7 @@ function Rt({ source: e }) {
 		})]
 	});
 }
-function zt({ asset: t, openItem: r }) {
+function Bt({ asset: t, openItem: r }) {
 	let i = t.name || "";
 	return /* @__PURE__ */ V("div", {
 		className: "flex min-w-0 items-center gap-3",
@@ -1085,14 +1085,14 @@ function zt({ asset: t, openItem: r }) {
 		})]
 	});
 }
-function Bt({ kind: e, name: t, works: n, avatar: r, openEntity: i }) {
+function Vt({ kind: e, name: t, works: n, avatar: r, openEntity: i }) {
 	return /* @__PURE__ */ V("div", {
 		className: "flex min-w-0 items-center gap-3",
 		children: [/* @__PURE__ */ B("button", {
 			type: "button",
 			"aria-label": `打开创作者页：${t}`,
 			onClick: () => i(e, t),
-			className: `relative inline-grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-background-secondary-default text-caption-1-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring ${q}`,
+			className: `relative inline-grid size-11 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-full bg-background-secondary-default text-caption-1-medium text-text-secondary outline-none focus-visible:ring-2 focus-visible:ring-border-focus-ring ${He}`,
 			dangerouslySetInnerHTML: { __html: r }
 		}), /* @__PURE__ */ V("div", {
 			className: "flex min-w-0 flex-col items-start",
@@ -1108,8 +1108,8 @@ function Bt({ kind: e, name: t, works: n, avatar: r, openEntity: i }) {
 		})]
 	});
 }
-function Vt({ row: e, openItem: t, openEntity: i, onReveal: a, revealing: o, note: s }) {
-	let c = Ft(e.profile_url || ""), l = (e.preview_assets || []).slice(0, 6), u = Math.max(0, Number(e.video_count || e.videos || 0));
+function Ht({ row: e, openItem: t, openEntity: i, onReveal: a, revealing: o, note: s }) {
+	let c = It(e.profile_url || ""), l = (e.preview_assets || []).slice(0, 6), u = Math.max(0, Number(e.video_count || e.videos || 0));
 	return /* @__PURE__ */ V("section", {
 		className: "flex flex-col gap-3",
 		children: [
@@ -1134,7 +1134,7 @@ function Vt({ row: e, openItem: t, openEntity: i, onReveal: a, revealing: o, not
 					children: `查看全部 ${u.toLocaleString()} 部作品`
 				})]
 			}),
-			/* @__PURE__ */ B(Lt, { url: e.preview_url }),
+			/* @__PURE__ */ B(Rt, { url: e.preview_url }),
 			l.length ? /* @__PURE__ */ V(z.Fragment, { children: [/* @__PURE__ */ B("h5", {
 				className: "text-body-medium text-text-primary",
 				children: "本地作品样本"
@@ -1173,7 +1173,7 @@ function Vt({ row: e, openItem: t, openEntity: i, onReveal: a, revealing: o, not
 		]
 	});
 }
-function Ht({ assets: t, picked: n, onPicked: r, locked: i }) {
+function Ut({ assets: t, picked: n, onPicked: r, locked: i }) {
 	let [o, s] = (0, J.useState)(null), c = new Set(n), l = (e, n) => {
 		if (i) return;
 		let a = new Set(c);
@@ -1240,22 +1240,22 @@ function Ht({ assets: t, picked: n, onPicked: r, locked: i }) {
 	});
 }
 // src/react/review/review-card.tsx
-var Ut = F({
+var Wt = F({
 	variant: "filled",
 	padding: "none",
 	className: "flex flex-col overflow-hidden"
-}), Wt = "flex min-h-6 min-w-0 items-center", Gt = 2, Kt = (e) => e === "western_identity" ? "h-review-card-tall" : "h-review-card";
-function qt(e) {
-	let { category: t, row: r, choice: a, onChoice: s, selected: c, onSelect: l, locked: u, busy: p, problem: te, genreTags: h, onDecide: g, handlers: v, queueView: y = "pending" } = e, b = (0, J.useRef)(!1), re = Re(), ie = t === "metadata_fields", ae = d[t] || "", x = String(r.creator || "").trim(), S = !!ae && !!x, C = G(t, r), w = Ae(t, r), T = U(t, r), E = ke(r), D = W(r), O = oe(t, r), k = r.comparison_assets || [], A = r.preview_assets || [], j = ne[r.decision || ""], M = k.length > 1 ? /* @__PURE__ */ V("div", {
+}), Gt = "flex min-h-6 min-w-0 items-center", Kt = 2, qt = (e) => e === "western_identity" ? "h-review-card-tall" : "h-review-card";
+function Jt(e) {
+	let { category: t, row: r, choice: a, onChoice: s, selected: c, onSelect: l, locked: u, busy: p, problem: te, genreTags: h, onDecide: g, handlers: v, queueView: y = "pending" } = e, b = (0, J.useRef)(!1), re = K(), ie = t === "metadata_fields", ae = d[t] || "", x = String(r.creator || "").trim(), S = !!ae && !!x, C = Me(t, r), w = U(t, r), T = W(t, r), E = Ae(r), D = je(r), O = oe(t, r), k = r.comparison_assets || [], A = r.preview_assets || [], j = ne[r.decision || ""], M = k.length > 1 ? /* @__PURE__ */ V("div", {
 		className: "flex flex-col gap-3",
-		children: [k.slice(0, Gt).map((e) => /* @__PURE__ */ B(zt, {
+		children: [k.slice(0, Kt).map((e) => /* @__PURE__ */ B(Bt, {
 			asset: e,
 			openItem: v.openItem
-		}, e.id)), k.length > Gt ? /* @__PURE__ */ B("p", {
+		}, e.id)), k.length > Kt ? /* @__PURE__ */ B("p", {
 			className: "text-body-2-regular text-text-secondary",
-			children: `另有 ${(k.length - Gt).toLocaleString()} 部对照作品`
+			children: `另有 ${(k.length - Kt).toLocaleString()} 部对照作品`
 		}) : null]
-	}) : S ? /* @__PURE__ */ B(Bt, {
+	}) : S ? /* @__PURE__ */ B(Vt, {
 		kind: ae,
 		name: x,
 		works: Number(r.video_count || r.videos || 0),
@@ -1266,7 +1266,7 @@ function qt(e) {
 			image_version: r.image_version,
 			avatar_focus: r.avatar_focus
 		} : null, null, ae)
-	}) : r.asset_id ? /* @__PURE__ */ B(zt, {
+	}) : r.asset_id ? /* @__PURE__ */ B(Bt, {
 		openItem: v.openItem,
 		asset: {
 			id: r.asset_id,
@@ -1274,7 +1274,7 @@ function qt(e) {
 			code: r.code,
 			preview_url: r.asset_preview_url
 		}
-	}) : null, F = ie ? /* @__PURE__ */ B(Mt, {
+	}) : null, F = ie ? /* @__PURE__ */ B(Nt, {
 		row: r,
 		fieldName: w,
 		value: a.candidateKey,
@@ -1283,7 +1283,7 @@ function qt(e) {
 			candidateKey: e
 		}),
 		locked: u
-	}) : t === "creator_tags" ? A.length ? /* @__PURE__ */ B(Ht, {
+	}) : t === "creator_tags" ? A.length ? /* @__PURE__ */ B(Ut, {
 		assets: A,
 		picked: a.assets,
 		locked: u,
@@ -1296,15 +1296,15 @@ function qt(e) {
 		icon: f,
 		title: "这批作品尚未抽帧",
 		children: `${r.video_count || ""} 条作品还没有可用预览；批准后仍会按所选资料写入标签。`
-	}) : t === "fc2_similarity" ? null : t === "western_identity" ? /* @__PURE__ */ B(Vt, {
+	}) : t === "fc2_similarity" ? null : t === "western_identity" ? /* @__PURE__ */ B(Ht, {
 		row: r,
 		openItem: v.openItem,
 		openEntity: v.openEntity,
 		onReveal: v.onReveal,
 		revealing: v.revealing,
 		note: v.revealNote
-	}) : /* @__PURE__ */ B(Lt, { url: r.preview_url }), se = S ? M : w ? /* @__PURE__ */ V("h4", {
-		className: L(Wt, "flex-wrap gap-2"),
+	}) : /* @__PURE__ */ B(Rt, { url: r.preview_url }), se = S ? M : w ? /* @__PURE__ */ V("h4", {
+		className: L(Gt, "flex-wrap gap-2"),
 		children: [/* @__PURE__ */ B("span", {
 			title: w,
 			className: "flex max-w-full min-w-0 overflow-hidden rounded-md",
@@ -1319,7 +1319,7 @@ function qt(e) {
 			children: T
 		})]
 	}) : /* @__PURE__ */ B("h4", {
-		className: Wt,
+		className: Gt,
 		children: /* @__PURE__ */ B("span", {
 			title: C,
 			className: "min-w-0 truncate text-body-medium text-text-primary",
@@ -1329,13 +1329,13 @@ function qt(e) {
 	return /* @__PURE__ */ V("section", {
 		"aria-label": C,
 		"data-review-key": r.item_key,
-		className: L(Ut, Kt(t)),
+		className: L(Wt, qt(t)),
 		children: [
 			/* @__PURE__ */ V("header", {
 				className: "flex min-w-0 shrink-0 items-center gap-2 border-b border-separator-border px-5 py-4",
 				children: [
 					u ? null : /* @__PURE__ */ B("span", {
-						className: L(Wt, "shrink-0"),
+						className: L(Gt, "shrink-0"),
 						onPointerDownCapture: (e) => {
 							b.current = e.shiftKey;
 						},
@@ -1393,7 +1393,7 @@ function qt(e) {
 								}),
 								/* @__PURE__ */ B("p", {
 									className: "text-body-2-regular text-text-primary wrap-anywhere",
-									children: r.current_value === void 0 ? E : r.current_value ? /* @__PURE__ */ B(wt, {
+									children: r.current_value === void 0 ? E : r.current_value ? /* @__PURE__ */ B(Tt, {
 										value: r.current_value,
 										reference: (r.candidates?.find((e) => e.candidate_key === a.candidateKey) || r.candidates?.[0])?.display_value
 									}) : "尚无资料"
@@ -1430,7 +1430,7 @@ function qt(e) {
 							}) : null]
 						}) : null,
 						F,
-						/* @__PURE__ */ B(Pt, {
+						/* @__PURE__ */ B(Ft, {
 							row: r,
 							tags: h,
 							locked: u,
@@ -1490,14 +1490,14 @@ function qt(e) {
 	});
 }
 // src/react/review/review-page.tsx
-var Jt = "flex cursor-pointer items-center justify-between gap-2";
-function Yt(e) {
-	let t = Le("review").keys.filter(ge), [r, i] = (0, J.useState)(() => matchMedia("(max-width:900px)").matches);
+var Yt = "flex cursor-pointer items-center justify-between gap-2";
+function Xt(e) {
+	let t = Re("review").keys.filter(_e), [r, i] = (0, J.useState)(() => matchMedia("(max-width:900px)").matches);
 	(0, J.useEffect)(() => {
 		let e = matchMedia("(max-width:900px)"), t = () => i(e.matches);
 		return e.addEventListener("change", t), () => e.removeEventListener("change", t);
 	}, []);
-	let { route: a, openItem: o, openEntity: s, revealSource: c, toast: d, readOnly: f, readOnlyMessage: m, writerUrl: te } = e, [h, g] = (0, J.useState)(ge(e.category) ? e.category : l), [_, ne] = (0, J.useState)(() => De(e.queue)), [x, S] = (0, J.useState)("candidates"), [C, w] = (0, J.useState)(""), [T, E] = (0, J.useState)(""), [O, k] = (0, J.useState)(1), [A, j] = (0, J.useState)(20), [M, N] = (0, J.useState)(/* @__PURE__ */ new Set()), [P, F] = (0, J.useState)(/* @__PURE__ */ new Map()), [se, I] = (0, J.useState)(/* @__PURE__ */ new Map()), [ce, L] = (0, J.useState)(""), z = (0, J.useRef)(null), [_e, ve] = (0, J.useState)(0), [xe, Se] = (0, J.useState)(""), Ce = (0, J.useRef)(!0);
+	let { route: a, openItem: o, openEntity: s, revealSource: c, toast: d, readOnly: f, readOnlyMessage: m, writerUrl: te } = e, [h, g] = (0, J.useState)(_e(e.category) ? e.category : l), [_, ne] = (0, J.useState)(() => Oe(e.queue)), [x, S] = (0, J.useState)("candidates"), [C, w] = (0, J.useState)(""), [T, E] = (0, J.useState)(""), [O, k] = (0, J.useState)(1), [A, j] = (0, J.useState)(20), [M, N] = (0, J.useState)(/* @__PURE__ */ new Set()), [P, F] = (0, J.useState)(/* @__PURE__ */ new Map()), [se, I] = (0, J.useState)(/* @__PURE__ */ new Map()), [ce, L] = (0, J.useState)(""), he = (0, J.useRef)(null), [z, ve] = (0, J.useState)(0), [ye, Se] = (0, J.useState)(""), Ce = (0, J.useRef)(!0);
 	(0, J.useEffect)(() => () => {
 		Ce.current = !1;
 	}, []);
@@ -1517,7 +1517,7 @@ function Yt(e) {
 				counts: {}
 			}
 		}
-	}, ke = Ee(we, _), Ae = H.data ? Object.fromEntries(ie.map((e) => [e, y.reduce((t, n) => t + Number(Ee(we, e).counts[n] || 0), 0)])) : void 0, U = ke.sections[h] || [], W = h === "metadata_fields", G = f;
+	}, Te = De(we, _), Ae = H.data ? Object.fromEntries(ie.map((e) => [e, y.reduce((t, n) => t + Number(De(we, e).counts[n] || 0), 0)])) : void 0, U = Te.sections[h] || [], W = h === "metadata_fields", je = f;
 	(0, J.useEffect)(() => {
 		let e = new Set(U.map((e) => e.item_key));
 		N((t) => {
@@ -1531,15 +1531,15 @@ function Yt(e) {
 			return n.length === t.size ? t : new Map(n);
 		});
 	}, [U]);
-	let Ne = (0, J.useMemo)(() => W ? he(U, "field") : [], [U, W]), Re = Ne.some((e) => e.key === T) ? T : "", K = (0, J.useMemo)(() => W ? me(U, "field", Re) : U, [
+	let Me = (0, J.useMemo)(() => W ? ge(U, "field") : [], [U, W]), Fe = Me.some((e) => e.key === T) ? T : "", K = (0, J.useMemo)(() => W ? me(U, "field", Fe) : U, [
 		U,
 		W,
-		Re
-	]), Ve = (0, J.useMemo)(() => Te(K, W), [K, W]), q = Ve.some(([e]) => e === x) ? x : "candidates", He = (0, J.useMemo)(() => he(K, q), [K, q]), Ue = He.some((e) => e.key === C) ? C : "", We = (0, J.useMemo)(() => me(K, q, Ue), [
+		Fe
+	]), Be = (0, J.useMemo)(() => Ee(K, W), [K, W]), q = Be.some(([e]) => e === x) ? x : "candidates", He = (0, J.useMemo)(() => ge(K, q), [K, q]), Ue = He.some((e) => e.key === C) ? C : "", We = (0, J.useMemo)(() => me(K, q, Ue), [
 		K,
 		q,
 		Ue
-	]), Ge = (0, J.useMemo)(() => Oe(We, O, A), [
+	]), Ge = (0, J.useMemo)(() => ke(We, O, A), [
 		We,
 		O,
 		A
@@ -1549,32 +1549,32 @@ function Yt(e) {
 	})).filter((e) => e.rows.length), Y = (e) => P.get(e.item_key) || fe(e), X = (0, J.useMemo)(() => U.filter((e) => M.has(e.item_key)), [U, M]), Ye = (e) => {
 		let t = new Set(e);
 		N((e) => new Set([...e].filter((e) => !t.has(e)))), F((e) => new Map([...e].filter(([e]) => !t.has(e)))), I((e) => new Map([...e].filter(([e]) => !t.has(e))));
-	}, Xe = (e, t) => I((n) => new Map(n).set(e, t)), Ze = () => {
-		S("candidates"), w(""), E(""), k(1), N(/* @__PURE__ */ new Set()), F(/* @__PURE__ */ new Map()), I(/* @__PURE__ */ new Map()), L(""), z.current = null;
-	}, Qe = (e) => {
-		g(e), Ze(), a({
+	}, Z = (e, t) => I((n) => new Map(n).set(e, t)), Xe = () => {
+		S("candidates"), w(""), E(""), k(1), N(/* @__PURE__ */ new Set()), F(/* @__PURE__ */ new Map()), I(/* @__PURE__ */ new Map()), L(""), he.current = null;
+	}, Ze = (e) => {
+		g(e), Xe(), a({
 			category: e === "metadata_fields" ? "" : e,
 			queue: _ === "pending" ? "" : _
 		});
-	}, $e = (e) => {
-		ne(e), Ze(), a({
+	}, Qe = (e) => {
+		ne(e), Xe(), a({
 			category: h === "metadata_fields" ? "" : h,
 			queue: e === "pending" ? "" : e
 		});
-	}, Z = Ie({
-		mutationFn: ({ row: e, status: t, category: n }) => Pe(ue(n, le(n, e), t, Y(e))),
+	}, Q = Le({
+		mutationFn: ({ row: e, status: t, category: n }) => Ie(ue(n, le(n, e), t, Y(e))),
 		onSuccess: (e, { row: t, status: n, category: r }) => {
-			e.ok ? (Me(r, [t.item_key], n), Ye([t.item_key]), d(de(n))) : Xe(t.item_key, e.error || "服务端拒绝了这次判定");
+			e.ok ? (Pe(r, [t.item_key], n), Ye([t.item_key]), d(de(n))) : Z(t.item_key, e.error || "服务端拒绝了这次判定");
 		},
-		onError: (e, { row: t }) => Xe(t.item_key, R(e))
-	}), Q = Ie({
+		onError: (e, { row: t }) => Z(t.item_key, R(e))
+	}), $e = Le({
 		mutationFn: async ({ status: e, category: t, rows: n }) => {
 			let r = [], i = [];
 			for (let [a, o] of n.entries()) {
 				if (!Ce.current) break;
 				L(`正在处理 ${a} / ${n.length}`);
 				try {
-					let n = await Pe(ue(t, le(t, o), e, Y(o)));
+					let n = await Ie(ue(t, le(t, o), e, Y(o)));
 					if (!n.ok) throw Error(n.error || "服务端未采用该项");
 					r.push(o.item_key);
 				} catch (e) {
@@ -1589,7 +1589,7 @@ function Yt(e) {
 			};
 		},
 		onSuccess: ({ status: e, category: t, done: n, failures: r }) => {
-			Me(t, n, e), Ye(n), r.forEach(([e, t]) => Xe(e, t)), L("");
+			Pe(t, n, e), Ye(n), r.forEach(([e, t]) => Z(e, t)), L("");
 			let i = {
 				approved: "通过",
 				rejected: "忽略",
@@ -1602,12 +1602,12 @@ function Yt(e) {
 			L(R(e));
 		}
 	}), et = (e) => {
-		!Q.isPending && X.length && (e === "approved" && W && X.some((e) => !Y(e).candidateKey) ? L("请先为所选资料选择要采用的来源。") : (L(""), Q.mutate({
+		!$e.isPending && X.length && (e === "approved" && W && X.some((e) => !Y(e).candidateKey) ? L("请先为所选资料选择要采用的来源。") : (L(""), $e.mutate({
 			status: e,
 			category: h,
 			rows: X
 		})));
-	}, rt = (e) => {
+	}, tt = (e) => {
 		F((t) => {
 			let n = new Map(t);
 			for (let t of X) {
@@ -1619,23 +1619,23 @@ function Yt(e) {
 			}
 			return n;
 		}), L(`已选择 ${e}，点击通过所选采用。`);
-	}, $ = async (e) => {
-		if (_e) return;
+	}, it = async (e) => {
+		if (z) return;
 		ve(e), Se("");
 		let t = await c(e);
 		Ce.current && (ve(0), Se(t));
-	}, it = be(we.mirror, m), at = we.genre_tags || [], ot = {
+	}, $ = xe(we.mirror, m), at = we.genre_tags || [], ot = {
 		openItem: o,
 		openEntity: s,
-		onReveal: $,
-		revealing: _e,
-		revealNote: xe,
+		onReveal: it,
+		revealing: z,
+		revealNote: ye,
 		toast: d
 	};
-	return /* @__PURE__ */ B(Be, { children: /* @__PURE__ */ V("div", {
+	return /* @__PURE__ */ B(Ve, { children: /* @__PURE__ */ V("div", {
 		className: "flex flex-col gap-5 pb-10",
 		children: [
-			G ? /* @__PURE__ */ B(v, {
+			je ? /* @__PURE__ */ B(v, {
 				tone: "warning",
 				title: "本机只能浏览",
 				extra: te ? /* @__PURE__ */ B("p", {
@@ -1645,9 +1645,9 @@ function Yt(e) {
 						children: "前往写入端复核"
 					})
 				}) : void 0,
-				children: it
+				children: $
 			}) : null,
-			/* @__PURE__ */ B(Ot, { tags: at }),
+			/* @__PURE__ */ B(kt, { tags: at }),
 			/* @__PURE__ */ V("div", {
 				className: "flex flex-col gap-5 review-split:flex-row review-split:items-start review-split:gap-6",
 				children: [/* @__PURE__ */ V("div", {
@@ -1660,15 +1660,15 @@ function Yt(e) {
 						group: "review",
 						label: "复核分类",
 						value: h,
-						onChange: Qe,
+						onChange: Ze,
 						orientation: r ? "horizontal" : "vertical",
 						panelPrefix: "review",
 						sectionItems: !0,
 						className: "",
-						itemClassName: Jt,
-						disabled: Z.isPending || Q.isPending,
+						itemClassName: Yt,
+						disabled: Q.isPending || $e.isPending,
 						tabs: y.map((e) => {
-							let t = Number(ke.counts[e] || 0);
+							let t = Number(Te.counts[e] || 0);
 							return {
 								value: e,
 								label: re[e],
@@ -1685,17 +1685,17 @@ function Yt(e) {
 					"aria-labelledby": `review-tab-${h}`,
 					className: "flex min-w-0 flex-1 flex-col gap-5",
 					children: [
-						/* @__PURE__ */ B(nt, {
+						/* @__PURE__ */ B(rt, {
 							queueView: _,
 							queueCounts: Ae,
-							onQueueChange: $e,
-							locked: G,
-							fields: Ne,
-							fieldFilter: Re,
+							onQueueChange: Qe,
+							locked: je,
+							fields: Me,
+							fieldFilter: Fe,
 							onFieldFilter: (e) => {
 								E(e), w(""), k(1);
 							},
-							groupOptions: Ve,
+							groupOptions: Be,
 							groupBy: q,
 							onGroupBy: (e) => {
 								S(e), w(""), k(1);
@@ -1711,9 +1711,9 @@ function Yt(e) {
 							selectedRows: X,
 							metadata: W,
 							approvable: X.every((e) => oe(h, e)),
-							busy: Q.isPending || Z.isPending,
+							busy: $e.isPending || Q.isPending,
 							feedback: ce,
-							onUnifySource: rt,
+							onUnifySource: tt,
 							onRun: et
 						}),
 						Ge.rows.length ? Je.map((e) => /* @__PURE__ */ V("section", {
@@ -1722,8 +1722,8 @@ function Yt(e) {
 								className: "flex flex-wrap items-center gap-2",
 								children: [/* @__PURE__ */ B("h3", {
 									className: "text-body-medium text-text-primary",
-									children: `${Fe(e.title)} · ${e.rows.length}`
-								}), G ? null : /* @__PURE__ */ B(n, {
+									children: `${G(e.title)} · ${e.rows.length}`
+								}), je ? null : /* @__PURE__ */ B(n, {
 									variant: "ghost",
 									size: "small",
 									onClick: () => {
@@ -1735,7 +1735,7 @@ function Yt(e) {
 								})]
 							}) : null, /* @__PURE__ */ B("div", {
 								className: "review-grid gap-5",
-								children: e.rows.map((e) => /* @__PURE__ */ B(qt, {
+								children: e.rows.map((e) => /* @__PURE__ */ B(Jt, {
 									category: h,
 									row: e,
 									queueView: _,
@@ -1749,14 +1749,14 @@ function Yt(e) {
 									selected: M.has(e.item_key),
 									onSelect: (t, n) => N((r) => {
 										let i = new Set(r);
-										return z.current = je(i, Ke, z.current, e.item_key, t, n), i;
+										return he.current = Ne(i, Ke, he.current, e.item_key, t, n), i;
 									}),
-									locked: G,
-									busy: Q.isPending || Z.isPending && Z.variables?.row.item_key === e.item_key,
+									locked: je,
+									busy: $e.isPending || Q.isPending && Q.variables?.row.item_key === e.item_key,
 									problem: se.get(e.item_key) || "",
 									genreTags: at,
 									onDecide: (t) => {
-										Z.isPending || Q.isPending || (I((t) => new Map([...t].filter(([t]) => t !== e.item_key))), t === "approved" && h === "metadata_fields" && !Y(e).candidateKey ? Xe(e.item_key, "批准资料字段时，请先选择要采用的来源") : Z.mutate({
+										Q.isPending || $e.isPending || (I((t) => new Map([...t].filter(([t]) => t !== e.item_key))), t === "approved" && h === "metadata_fields" && !Y(e).candidateKey ? Z(e.item_key, "批准资料字段时，请先选择要采用的来源") : Q.mutate({
 											row: e,
 											status: t,
 											category: h
@@ -1777,13 +1777,13 @@ function Yt(e) {
 							}),
 							children: R(H.error)
 						}) : /* @__PURE__ */ B(ee, {
-							icon: ye,
+							icon: be,
 							title: `此分类没有${ae[_]}项目`,
-							actions: y.some((e) => e !== h && Number(ke.counts[e] || 0) > 0) ? /* @__PURE__ */ B(n, {
+							actions: y.some((e) => e !== h && Number(Te.counts[e] || 0) > 0) ? /* @__PURE__ */ B(n, {
 								size: "small",
 								onClick: () => {
-									let e = t.find((e) => e !== h && Number(ke.counts[e] || 0) > 0);
-									e && Qe(e);
+									let e = t.find((e) => e !== h && Number(Te.counts[e] || 0) > 0);
+									e && Ze(e);
 								},
 								children: "查看其他分类"
 							}) : void 0,
@@ -1800,8 +1800,8 @@ function Yt(e) {
 								k(e.pageIndex + 1), j(e.pageSize);
 							}
 						}) : null,
-						W && _ === "pending" ? /* @__PURE__ */ B(tt, {
-							locked: G,
+						W && _ === "pending" ? /* @__PURE__ */ B(nt, {
+							locked: je,
 							openItem: o,
 							toast: d
 						}) : null
@@ -1811,6 +1811,6 @@ function Yt(e) {
 		]
 	}) });
 }
-export { Yt as ReviewPage };
+export { Xt as ReviewPage };
 
-//# debugId=4ca14ed3-dffb-4e2b-b3b1-0924afc02212
+//# debugId=3112a004-a648-4fa1-8c1b-e3d21abafd24

@@ -1,4 +1,5 @@
 import type { SortingState } from '@tanstack/react-table';
+import { formatTranslation, translate } from '../../i18n';
 import { Button } from '@/components/base/buttons/button';
 import { Select, SelectItem } from './select';
 import { Pagination } from './table-pagination';
@@ -37,12 +38,12 @@ export function DataTableFooter({ label, total, pagination, onChange, unit = '�
   const end = Math.min((pageIndex + 1) * pagination.pageSize, total);
   return <div data-table-pagination className="flex flex-wrap items-center justify-between gap-3">
     <span className="mr-auto text-body-2-regular tabular-nums text-text-secondary">
-      {`${start.toLocaleString()}–${end.toLocaleString()} / ${total.toLocaleString()} ${unit}`}
+      {`${start.toLocaleString()}–${end.toLocaleString()} / ${total.toLocaleString()} ${translate(unit)}`}
     </span>
     <div data-toolbar-actions="">
     <Select aria-label="每页显示数量" size="sm" selectedKey={String(pagination.pageSize)}
       onSelectionChange={(key) => { if (key !== null) onChange({ pageIndex: 0, pageSize: Number(key) }); }}>
-      {pageSizes.map((size) => <SelectItem key={size} id={String(size)}>{`每页 ${size} ${pageUnit}`}</SelectItem>)}
+      {pageSizes.map((size) => <SelectItem key={size} id={String(size)}>{formatTranslation('每页 {0} {1}', String(size), translate(pageUnit))}</SelectItem>)}
     </Select>
     <Pagination label={`${label}分页`} page={pageIndex + 1} pages={pages}
       onPage={(page) => onChange({ ...pagination, pageIndex: page - 1 })} />

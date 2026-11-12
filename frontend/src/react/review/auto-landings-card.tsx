@@ -12,6 +12,7 @@ import { confirmModal } from '@peach/legacy/ui';
 import { Button } from '@/components/base/buttons/button';
 import { LinkButton } from '@/components/base/buttons/link-button';
 import { errorMessage } from '../../api';
+import { formatTranslation, translate } from '../../i18n';
 import { DataTable, type DataColumn } from '../components/data-table';
 import { Note } from '../components/note';
 import { queryClient } from '../query';
@@ -53,7 +54,7 @@ function Written({ item }: { item: AutoLandingWrite }) {
   return (
     <span className="flex min-w-0 flex-col gap-0.5">
       <span title={writtenText(item)} className="truncate text-body-regular text-text-primary">
-        <span className="text-text-secondary">{`${item.field}：`}</span>{writtenText(item)}
+        <span className="text-text-secondary">{`${translate(item.field)}：`}</span>{writtenText(item)}
       </span>
       <small title={previousText(item)} className="truncate text-caption-1-regular text-text-secondary">{previousText(item)}</small>
     </span>
@@ -130,7 +131,7 @@ export function AutoLandingsCard(
           actions={(chosen) => (
             <Button variant="secondary" size="small" disabled={locked || !chosen.length}
               {...busyProps(revert.isPending)} onClick={() => revert.mutate(chosen.map((item) => item.item_key))}>
-              {`撤回所选（${chosen.length}）`}
+              {formatTranslation('撤回所选（{0}）', String(chosen.length))}
             </Button>
           )} />
       ) : null}

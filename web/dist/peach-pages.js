@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "c9c3757e-66bf-4046-9e3a-8d40ca578b03", e._sentryDebugIdIdentifier = "sentry-dbid-c9c3757e-66bf-4046-9e3a-8d40ca578b03");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "699e39b9-fb05-4937-9a62-1146b2d657e0", e._sentryDebugIdIdentifier = "sentry-dbid-699e39b9-fb05-4937-9a62-1146b2d657e0");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -4462,7 +4462,19 @@ var Ae = {
 	"扫描目录发现文件，再补全资料和视频属性，并生成预览图": "Scan folders for files, complete metadata and video properties, and generate previews",
 	"批准资料字段时，请先选择要采用的来源": "Select a source above before approving this metadata field.",
 	需选择来源: "Choose a source",
-	官方优先: "Official source"
+	官方优先: "Official source",
+	自动写入的资料: "Automatically applied metadata",
+	"资料处理按确定判据自动写入的标题、发行日期与标签，一行一条。撤回会把覆盖的值改回写入前、删掉补上的标签；写入后又被修改过的作品保留现值。": "Titles, release dates, and tags applied automatically using deterministic rules appear here. Reverting restores overwritten values and removes added tags; later edits are preserved.",
+	写入: "Applied",
+	规则与时间: "Rule and time",
+	原有标签保留: "Existing tags retained",
+	"原为 {0}": "Previously {0}",
+	空: "empty",
+	"撤回所选（{0}）": "Revert selected ({0})",
+	条: "items",
+	条记录: "items",
+	"每页 {0} {1}": "{0} {1} per page",
+	"已选 {0} {1}": "Selected {0} {1}"
 }, Le = {
 	"\" href=\"/subscriptions?tab=add\">添加关注": "\" href=\"/subscriptions?tab=add\">Add follow",
 	"# 浏览记录口味分析": "# Browse record taste analysis",
@@ -64264,4 +64276,4 @@ Xt();
 var Sb = document.getElementById("peach-page"), Cb = Sb ? xb[Sb.dataset.page ?? ""] : void 0;
 Sb && Cb && (0, on.createRoot)(Sb).render(/* @__PURE__ */ I(Cb, { data: { ...Sb.dataset } }));
 
-//# debugId=c9c3757e-66bf-4046-9e3a-8d40ca578b03
+//# debugId=699e39b9-fb05-4937-9a62-1146b2d657e0
