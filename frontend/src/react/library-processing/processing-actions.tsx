@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { translate } from '../../i18n';
+import { formatTranslation, translate } from '../../i18n';
 import { createPortal } from 'react-dom';
 import { RiArrowDownSLine, RiArrowRightLine } from '@remixicon/react';
 import { Dialog, Popover } from 'react-aria-components';
@@ -140,10 +140,10 @@ export function ProcessingActions({ busy, occupied = false, scan = false, metada
       : command.stage === 'metadata' ? '读取配套资料，补全影片资料、封面和人物资料'
       : `${command.stage === 'collect' ? '为已入库影片补全资料和视频属性' : '扫描目录发现文件，再补全资料和视频属性'}${metadataOnly ? '' : '，并生成预览图'}`;
     const dialog = formModal({
-      title,
-      description: `${libraryName ? `媒体库「${libraryName}」：` : '所有媒体库：'}${work}，可能让电脑变慢。需要同时使用电脑时，可选择低占用模式。`,
+      title: translate(title),
+      description: `${libraryName ? formatTranslation('媒体库「{0}」：', libraryName) : translate('所有媒体库：')}${translate(work)}${translate('，可能让电脑变慢。需要同时使用电脑时，可选择低占用模式。')}`,
       body: '<div class="peach-react" data-processing-prompt></div>',
-      confirmLabel: title,
+      confirmLabel: translate(title),
       confirmDisabled: true,
       onConfirm: async () => {
         await onRun({ ...command, ...(selectedSpeed.current === speedMode ? {} : { speed_mode: selectedSpeed.current }) });

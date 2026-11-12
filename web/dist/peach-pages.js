@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "ee5d5607-cd19-4286-a230-13f135b64e95", e._sentryDebugIdIdentifier = "sentry-dbid-ee5d5607-cd19-4286-a230-13f135b64e95");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "0a5f2846-62c6-4ff3-9389-9788e999d412", e._sentryDebugIdIdentifier = "sentry-dbid-0a5f2846-62c6-4ff3-9389-9788e999d412");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -4443,7 +4443,15 @@ var Ae = {
 	预览图: "Previews",
 	"从视频抽帧生成的九宫格、海报与进度条预览": "Contact sheets, posters, and timeline previews generated from video frames",
 	封面与网络资料: "Covers and online metadata",
-	任务与复核记录: "Task and review records"
+	任务与复核记录: "Task and review records",
+	"所有媒体库：": "All libraries: ",
+	"媒体库「{0}」：": "Library “{0}”: ",
+	"，可能让电脑变慢。需要同时使用电脑时，可选择低占用模式。": ", which may slow down your computer. Choose low resource usage if you need to use it at the same time.",
+	"发现新文件，仅补全新增及未完成影片的资料和视频属性，并生成预览图": "Discover new files, complete metadata and video properties for new and unfinished videos, and generate previews",
+	"发现新文件，仅补全新增及未完成影片的资料和视频属性": "Discover new files and complete metadata and video properties for new and unfinished videos",
+	"为已入库的视频补全九宫格预览图，跳过流量保护目录，会读取视频并占用处理器": "Generate contact sheets for registered videos, excluding traffic-protected folders; this reads videos and uses CPU",
+	"为已入库影片补全资料和视频属性，并生成预览图": "Complete metadata and video properties for registered videos and generate previews",
+	"扫描目录发现文件，再补全资料和视频属性，并生成预览图": "Scan folders for files, complete metadata and video properties, and generate previews"
 }, Le = {
 	"\" href=\"/subscriptions?tab=add\">添加关注": "\" href=\"/subscriptions?tab=add\">Add follow",
 	"# 浏览记录口味分析": "# Browse record taste analysis",
@@ -64245,4 +64253,4 @@ Xt();
 var Sb = document.getElementById("peach-page"), Cb = Sb ? xb[Sb.dataset.page ?? ""] : void 0;
 Sb && Cb && (0, on.createRoot)(Sb).render(/* @__PURE__ */ I(Cb, { data: { ...Sb.dataset } }));
 
-//# debugId=ee5d5607-cd19-4286-a230-13f135b64e95
+//# debugId=0a5f2846-62c6-4ff3-9389-9788e999d412
