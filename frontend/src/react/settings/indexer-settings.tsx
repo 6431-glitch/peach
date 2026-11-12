@@ -6,6 +6,7 @@ import { Button } from '@/components/base/buttons/button';
 import { Checkbox } from '@/components/base/checkbox/checkbox';
 import { Input } from '@/components/base/input/input';
 import { apiGet, apiSend, errorMessage } from '../../api';
+import { translate } from '../../i18n';
 import { indexersSkeleton, rememberShape } from '../../configuration-skeleton';
 import { randomId } from '../../core/random-id';
 import { Disclosure, ErrorText, ExternalLink, Footer, Help, Section, SectionSkeleton, Stack } from './section';
@@ -38,7 +39,7 @@ function IndexerSummary({ row, index }: { row: Indexer; index: number }) {
     row.api_key_set && !row.clear_api_key ? '已保存 API key' : row.api_key ? 'API key 待保存' : '没有 API key'];
   return <span className="flex min-w-0 items-baseline gap-3">
     <span className="shrink-0 text-text-primary">{row.name || `索引器 ${index + 1}`}</span>
-    <span className="truncate text-body-2-regular text-text-secondary">{facts.join(' · ')}</span>
+    <span className="truncate text-body-2-regular text-text-secondary">{facts.map((fact, index) => index === 0 && row.url ? fact : translate(fact)).join(' · ')}</span>
   </span>;
 }
 

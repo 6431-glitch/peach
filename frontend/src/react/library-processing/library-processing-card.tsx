@@ -53,7 +53,7 @@ function LibraryLabel({ library }: { library: Pick<LibraryTint, 'id' | 'name' | 
     <span data-library={library.id} className="inline-flex shrink-0 text-(--library-color)">
       <SourceMark mark={library.icon} />
     </span>
-    <span className="truncate">{library.name}</span>
+    <span className="truncate">{library.id ? library.name : translate(library.name)}</span>
   </span>;
 }
 
@@ -174,7 +174,7 @@ function Outcome(
               : exportButton ? <div className="-mx-3 mt-3 flex justify-end border-t border-current/20 px-3 pt-3">{exportButton}</div>
               : null}
             </>}>
-            {body}
+            {body.split('\n').map(translate).join('\n')}
           </Note>
         : null}
       {state.archived && archivedHere === state.job_id && !problem

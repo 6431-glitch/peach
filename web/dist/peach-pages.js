@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e761796e-fefe-4f2e-9b81-7fbf91726d97", e._sentryDebugIdIdentifier = "sentry-dbid-e761796e-fefe-4f2e-9b81-7fbf91726d97");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "90993ab1-4b81-4be1-bc38-1a2c2818ce88", e._sentryDebugIdIdentifier = "sentry-dbid-90993ab1-4b81-4be1-bc38-1a2c2818ce88");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -4359,7 +4359,50 @@ var Ae = {
 	番号不符: "Release code does not match",
 	体积不在区间: "Size is outside the range",
 	没有人做种: "No seeders",
-	"取不到 infohash": "Info hash unavailable"
+	"取不到 infohash": "Info hash unavailable",
+	"发现新文件，补全新增及未完成影片的资料和预览。先选择媒体库，再选择同步范围。": "Discover new files and complete metadata and previews for new or unfinished videos. Choose a library and sync scope first.",
+	所有媒体库: "All libraries",
+	同步所有媒体库: "Sync all libraries",
+	同步所选媒体库: "Sync selected library",
+	"检查所选范围的全部文件，补全缺失资料和预览": "Check all files in the selected scope and complete missing metadata and previews",
+	"补资料和视频属性，生成预览图": "Complete metadata and video properties, and generate previews",
+	"为已入库的视频生成九宫格，跳过流量保护目录": "Generate contact sheets for library videos, excluding traffic-protected directories",
+	归档: "Archive",
+	"{0} 项需要处理，可重试未完成的部分。": "{0} items need attention. You can retry the unfinished items.",
+	"近 7 天有更新的来源按这个间隔检查，久未更新的逐级放慢，最长一天一次": "Sources updated in the past 7 days use this interval; inactive sources are checked less often, up to once a day.",
+	"新关注的来源第一次回看多久以前的内容。": "How far back to look when first collecting from a newly followed source.",
+	"重新获取关注创作者的头像。": "Fetch followed creators’ profile images again.",
+	"重新获取来源站点的图标。": "Fetch source site icons again.",
+	已停用: "Disabled",
+	修复项目: "Repair items",
+	历史记录: "History",
+	本地视频显示尺寸: "Local video display dimensions",
+	"重新读取本机与局域网视频的文件头，修正横竖屏判断": "Read local and network video headers again to correct orientation detection.",
+	网盘视频显示尺寸: "Cloud video display dimensions",
+	"要逐部读取网盘里的视频，网盘缓存和流量会增加，确认后才开始": "Rechecking cloud videos increases cache use and traffic. It starts after confirmation.",
+	核查差异结算: "Resolve verification differences",
+	厂牌查询缓存: "Studio lookup cache",
+	资料与番号整理: "Metadata and release-code cleanup",
+	"按新规则修正番号、标题等自动写入的资料，你手动改过的不动": "Correct automatically populated release codes and titles using updated rules; manual edits are preserved.",
+	系统附属文件: "System sidecar files",
+	"NAS 系统目录里的缩略图、macOS 的 ._ 附属文件等移出馆藏，文件本身不删": "Remove NAS thumbnails and macOS ._ sidecars from the library without deleting the files.",
+	乱码人物: "Garbled performer records",
+	"解除早期采集乱码留下的人物关联，重新补采演员": "Remove garbled performer associations from earlier metadata fetches and fetch performers again.",
+	失效的复核候选: "Stale review candidates",
+	"资产删除后留下的候选改挂到同一文件的新编号，对不上的撤下": "Relink candidates to the new record for the same file, or remove them if no match exists.",
+	"人物页的 JavDB 入口": "JavDB links on performer pages",
+	"和作品署名同为有码或同为无码的同名演员页不再给入口，订着它的订阅停用": "Hide mismatched JavDB performer links and disable their subscriptions.",
+	关注抓取的旧快照: "Old subscription snapshots",
+	"每个关注来源只留最近 3 份原始快照和条目引用的那几份，其余删除，删除后不能恢复": "Keep the three latest snapshots and those referenced by items; delete the rest permanently.",
+	清除误认的番号: "Clear incorrect release codes",
+	清理关注抓取的旧快照: "Clean up old subscription snapshots",
+	修复前的账本备份: "Backup before repair",
+	修复前的备份已清理: "The pre-repair backup has been removed",
+	"改动 {0} 项": "{0} items changed",
+	无改动: "No changes",
+	"Docker 镜像": "Docker image",
+	本版更新说明: "Release notes",
+	"资料与预览正在后台补全。": "Metadata and previews are being completed in the background."
 }, Le = {
 	"\" href=\"/subscriptions?tab=add\">添加关注": "\" href=\"/subscriptions?tab=add\">Add follow",
 	"# 浏览记录口味分析": "# Browse record taste analysis",
@@ -64161,4 +64204,4 @@ Xt();
 var Sb = document.getElementById("peach-page"), Cb = Sb ? xb[Sb.dataset.page ?? ""] : void 0;
 Sb && Cb && (0, on.createRoot)(Sb).render(/* @__PURE__ */ I(Cb, { data: { ...Sb.dataset } }));
 
-//# debugId=e761796e-fefe-4f2e-9b81-7fbf91726d97
+//# debugId=90993ab1-4b81-4be1-bc38-1a2c2818ce88

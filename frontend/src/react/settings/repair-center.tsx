@@ -11,6 +11,7 @@ import { confirmModal } from '@peach/legacy/ui';
 import { Button } from '@/components/base/buttons/button';
 import { LinkButton } from '@/components/base/buttons/link-button';
 import { apiSend } from '../../api';
+import { formatTranslation, translate } from '../../i18n';
 import { repairCenterPanelSkeleton } from '../../management-skeletons';
 import { RESULT_PANEL, RESULT_SECTION, SectionHeading } from '../components/fieldset';
 import { Note } from '../components/note';
@@ -56,8 +57,8 @@ function Row({ title, description, progress, children }: {
   return (
     <div className={`${RESULT_SECTION} flex flex-wrap items-center justify-between gap-x-4 gap-y-2`}>
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-body-medium text-text-primary">{title}</span>
-        <span className="text-body-2-regular text-text-secondary">{description}</span>
+        <span className="text-body-medium text-text-primary">{translate(title)}</span>
+        <span className="text-body-2-regular text-text-secondary">{translate(description)}</span>
         {progress ? <div className="pt-2">{progress}</div> : null}
       </div>
       <div className="flex shrink-0 items-center gap-3">{children}</div>
@@ -129,7 +130,7 @@ export function RepairCenterPage() {
       <div className={RESULT_PANEL}>
         {data.history.map(row => (
           <Row key={row.id} title={row.title}
-            description={`${stamp(row.at)} · ${row.changed ? `改动 ${number(row.changed)} 项` : '无改动'}`}>
+            description={`${stamp(row.at)} · ${row.changed ? formatTranslation('改动 {0} 项', number(row.changed)) : translate('无改动')}`}>
             {backupNote(row)}
           </Row>
         ))}
