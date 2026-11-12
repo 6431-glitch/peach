@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "e5be6ca4-f5c1-4d88-9e7d-581f9f07d281", e._sentryDebugIdIdentifier = "sentry-dbid-e5be6ca4-f5c1-4d88-9e7d-581f9f07d281");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "2cbf3147-f9b0-42e0-8ca2-bcf13da72202", e._sentryDebugIdIdentifier = "sentry-dbid-2cbf3147-f9b0-42e0-8ca2-bcf13da72202");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -1752,6 +1752,10 @@ var Ae = {
 		resourceSyncDescription: "Check files against collection records for dead entries, empty directories, and cache."
 	}
 }, je = {
+	sound: {
+		enable: "Enable interface sounds",
+		disable: "Mute interface sounds"
+	},
 	sidebar: {
 		home: "Home",
 		performers: "Performers",
@@ -2155,6 +2159,10 @@ var Ae = {
 		resourceSyncDescription: "核对文件与馆藏记录，检查失效条目、空文件夹和缓存。"
 	}
 }, Pe = {
+	sound: {
+		enable: "开启界面音效",
+		disable: "关闭界面音效"
+	},
 	sidebar: {
 		home: "首页",
 		performers: "艺人",
@@ -64254,4 +64262,4 @@ Xt();
 var Sb = document.getElementById("peach-page"), Cb = Sb ? xb[Sb.dataset.page ?? ""] : void 0;
 Sb && Cb && (0, on.createRoot)(Sb).render(/* @__PURE__ */ I(Cb, { data: { ...Sb.dataset } }));
 
-//# debugId=e5be6ca4-f5c1-4d88-9e7d-581f9f07d281
+//# debugId=2cbf3147-f9b0-42e0-8ca2-bcf13da72202

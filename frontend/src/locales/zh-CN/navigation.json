@@ -1,4 +1,5 @@
 {
+  "sound": { "enable": "开启界面音效", "disable": "关闭界面音效" },
   "sidebar": {
     "home": "首页",
     "performers": "艺人",

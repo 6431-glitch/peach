@@ -1,4 +1,5 @@
 {
+  "sound": { "enable": "Enable interface sounds", "disable": "Mute interface sounds" },
   "sidebar": {
     "home": "Home",
     "performers": "Performers",

@@ -11,6 +11,7 @@ import { preferencesState } from './preferences.js';
 import { applyTheme } from './../appearance/theme';
 import { wireGlowButton } from './../appearance/glow';
 import { loadGlowPicker } from '../react/application-residents';
+import { t } from '../i18n';
 export const chromeState = {  };
 
 
@@ -129,6 +130,23 @@ boardFoot.innerHTML=`<div class="board-theme-toggle" role="group" aria-label="�
    `#i-` 前缀的线条件。它和设置分区「界面」那一枚是同一个意思——这枚钮的弹层底部「详细
    设置」开的正是那一页，两处说的都是外观，同一个意思本来就只该有一枚字形。 */
 boardFoot.insertAdjacentHTML('beforeend',`<div class="board-foot-actions"><button type="button" class="board-glow-toggle" id="boardGlowBtn" aria-label="光晕配色" aria-haspopup="dialog" aria-expanded="false" aria-controls="boardGlowMenu"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ri-palette-line"/></svg><span class="board-glow-mark" aria-hidden="true"><span class="board-glow-mark-glow"></span><span class="board-glow-mark-accent"></span></span></button></div>`);
+const soundButton=document.createElement('button');
+soundButton.type='button';soundButton.className='board-sound-toggle';
+boardFoot.querySelector('.board-foot-actions').prepend(soundButton);
+const soundStore=appSettingsStore();
+const syncSoundButton=()=>{
+  const enabled=soundStore.value.uiSounds;
+  const label=t(enabled?'navigation:sound.disable':'navigation:sound.enable');
+  soundButton.setAttribute('aria-label',label);soundButton.setAttribute('title',label);
+  soundButton.setAttribute('aria-pressed',String(enabled));
+  soundButton.innerHTML=icon(enabled?'player-volume':'player-volume-muted');
+};
+effects.own(soundStore.subscribe(syncSoundButton));
+effects.handler(soundButton,'onclick',()=>{
+  soundStore.value.uiSounds=!soundStore.value.uiSounds;
+  soundStore.save();preferencesState.settingsEffects.uiSounds();
+});
+syncSoundButton();
 boardFoot.querySelector('.board-foot-actions').append(document.querySelector('#settingsBtn'));
 document.querySelector('#drawer').append(boardFoot);
 boardFoot.querySelectorAll('[data-board-theme]').forEach(button=>effects.handler(button, 'onclick', ()=>{if(button.getAttribute('aria-pressed')==='true')return;transitionTheme(button,()=>{preferencesState.appSettings.theme=button.dataset.boardTheme;preferencesState.saveSettings();applyTheme()})}));

@@ -470,6 +470,10 @@ button,input,select,textarea{font-family:inherit}
 .board-library-menu[data-placement=right]{transform-origin:left}
 .board-sidebar-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:none;padding:12px}
 .board-foot-actions{display:flex;align-items:center;gap:6px}
+.board-sound-toggle{display:grid;place-items:center;width:36px;height:36px;flex:none;padding:0;border:0;border-radius:8px;background:transparent;color:var(--muted);cursor:pointer}
+.board-sound-toggle svg{width:20px;height:20px;fill:currentColor;stroke:none}
+.board-sound-toggle:hover{background:transparent;color:var(--ink)}
+.board-sound-toggle:focus-visible{outline:2px solid var(--tungsten);outline-offset:2px}
 .board-foot-actions>#settingsBtn{width:36px;height:36px;padding:0;display:grid;place-items:center;border-radius:8px;background:transparent;flex:none}
 .board-foot-actions>#settingsBtn svg{width:20px;height:20px;margin:0}
 /* 「光晕配色」和它旁边的设置钮是同一排里的两枚图标键，所以穿同一身盒子：36×36、8px
