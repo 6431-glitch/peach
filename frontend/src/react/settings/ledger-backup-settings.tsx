@@ -11,6 +11,7 @@ import { SettingsRow } from '@/components/application/settings/settings-rows';
 import { Button } from '@/components/base/buttons/button';
 
 import { apiGet, apiSend } from '../../api';
+import { translate } from '../../i18n';
 import { LoadingDots } from '../components/loading-dots';
 import { Progress } from '../components/progress';
 import { ErrorText, Footer, Help, Rows, Section, Stack, TaskCenterLink } from './section';
@@ -50,7 +51,7 @@ export interface LedgerBackupState {
 const when = (backup: LedgerBackup) => new Date(backup.modified_at * 1000).toLocaleString();
 
 function describe(backup: LedgerBackup) {
-  return [backup.source === 'manual' ? '手动' : `自动 · ${backup.purpose}`, fmtSize(backup.bytes)].join(' · ');
+  return [backup.source === 'manual' ? translate('手动') : `${translate('自动')} · ${translate(backup.purpose)}`, fmtSize(backup.bytes)].join(' · ');
 }
 
 /** 进行中的那一个任务：知道页数就画进度条，否则只说在做哪一步。 */
