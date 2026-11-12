@@ -2261,5 +2261,6 @@
   "发现新文件，仅补全新增及未完成影片的资料和视频属性": "Discover new files and complete metadata and video properties for new and unfinished videos",
   "为已入库的视频补全九宫格预览图，跳过流量保护目录，会读取视频并占用处理器": "Generate contact sheets for registered videos, excluding traffic-protected folders; this reads videos and uses CPU",
   "为已入库影片补全资料和视频属性，并生成预览图": "Complete metadata and video properties for registered videos and generate previews",
-  "扫描目录发现文件，再补全资料和视频属性，并生成预览图": "Scan folders for files, complete metadata and video properties, and generate previews"
+  "扫描目录发现文件，再补全资料和视频属性，并生成预览图": "Scan folders for files, complete metadata and video properties, and generate previews",
+  "批准资料字段时，请先选择要采用的来源": "Select a source above before approving this metadata field."
 }

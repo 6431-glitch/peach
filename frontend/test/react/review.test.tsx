@@ -117,6 +117,16 @@ const stateNamed = (root: ParentNode, name: string) =>
 const statusText = (root: ParentNode) =>
   [...root.querySelectorAll('[role="status"]')].map((node) => node.textContent?.trim());
 
+it('asks for a source before approving a multi-source metadata field', async () => {
+  const { host, fetcher } = await open({ data: review({ sections: { metadata_fields: [row(1)] } }) });
+  const card = cards(host)[0]!;
+  await click(buttonIn(card, '通过'));
+  expect(card.textContent).toContain('批准资料字段时，请先选择要采用的来源');
+  expect(fetcher.mock.calls.some(([url]) => url === REVIEW_DECISION_URL)).toBe(false);
+  await click(card.querySelector('input[type="radio"]'));
+  expect(card.textContent).not.toContain('批准资料字段时，请先选择要采用的来源');
+});
+
 it('展开来源依据不选择候选，也不提交资料判定', async () => {
   const entry = row(1);
   entry.candidates![0]!.catalog_evidence = { runtime: { display_value: '120 分钟' } };
@@ -270,6 +280,7 @@ it('判过的行从缓存里摘掉并同步计数，不为一次判定重取整�
   const { host, fetcher, props } = await open();
   const reads = () => fetcher.mock.calls.filter(([url]) => String(url) === REVIEW_URL).length;
   expect(reads()).toBe(1);
+  await click(cards(host)[0]!.querySelector('input[type="radio"]'));
   await click(buttonIn(cards(host)[0]!, '通过'));
   await settle();
   expect(props.toast).toHaveBeenCalledWith('已通过资料');
@@ -281,6 +292,7 @@ it('判过的行从缓存里摘掉并同步计数，不为一次判定重取整�
 
 it('服务端拒绝这次判定时说出原因，那一行留在屏幕上', async () => {
   const { host, props } = await open({ decisions: [{ ok: false, error: '字段已有值' }] });
+  await click(cards(host)[0]!.querySelector('input[type="radio"]'));
   await click(buttonIn(cards(host)[0]!, '通过'));
   await settle();
   expect(cards(host)[0]?.textContent).toContain('字段已有值');

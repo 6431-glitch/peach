@@ -311,7 +311,10 @@ export function ReviewPage(props: ReviewProps) {
                 {group.rows.map((row) => (
                   <ReviewCard key={row.item_key} category={category} row={row} queueView={queueView}
                     choice={choiceOf(row)}
-                    onChoice={(next) => setChoices((now) => new Map(now).set(row.item_key, next))}
+                    onChoice={(next) => {
+                      setChoices((now) => new Map(now).set(row.item_key, next));
+                      setErrors((now) => { const updated = new Map(now); updated.delete(row.item_key); return updated });
+                    }}
                     selected={selected.has(row.item_key)}
                     onSelect={(range, checked) => setSelected((now) => {
                       const next = new Set(now);
@@ -326,6 +329,10 @@ export function ReviewPage(props: ReviewProps) {
                     onDecide={(status) => {
                       if (decide.isPending || bulk.isPending) return;
                       setErrors((now) => new Map([...now].filter(([key]) => key !== row.item_key)));
+                      if (status === 'approved' && category === 'metadata_fields' && !choiceOf(row).candidateKey) {
+                        fail(row.item_key, '批准资料字段时，请先选择要采用的来源');
+                        return;
+                      }
                       decide.mutate({ row, status, category });
                     }}
                     handlers={handlers} />
