@@ -53,7 +53,7 @@ export const ENTITY_REVIEW_KINDS: Partial<Record<ReviewCategory, string>> = {
 /** 默认每页 20 张；接口读取整条队列，页面按所选数量挂载候选表单。 */
 export const REVIEW_PAGE_SIZE = 20;
 
-export interface CatalogEvidence { display_value?: string; warnings?: string[] }
+export interface CatalogEvidence { value?: unknown; display_value?: string; warnings?: string[] }
 
 /** 一个来源给出的候选值。选中它就是把 `display_value` 写进数据库。 */
 export interface ReviewCandidate {

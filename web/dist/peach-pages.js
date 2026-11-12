@@ -2,7 +2,7 @@
 (function() {
 	try {
 		var e = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {}, t = new e.Error().stack;
-		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "2cbf3147-f9b0-42e0-8ca2-bcf13da72202", e._sentryDebugIdIdentifier = "sentry-dbid-2cbf3147-f9b0-42e0-8ca2-bcf13da72202");
+		t && (e._sentryDebugIds = e._sentryDebugIds || {}, e._sentryDebugIds[t] = "c9c3757e-66bf-4046-9e3a-8d40ca578b03", e._sentryDebugIdIdentifier = "sentry-dbid-c9c3757e-66bf-4046-9e3a-8d40ca578b03");
 	} catch {}
 })();
 var e = Object.create, t = Object.defineProperty, n = Object.getOwnPropertyDescriptor, r = Object.getOwnPropertyNames, i = Object.getPrototypeOf, a = Object.prototype.hasOwnProperty, o = (e, t) => () => (t || (e((t = { exports: {} }).exports, t, t.exports), e = null), t.exports), s = (e, i, o, s) => {
@@ -4460,7 +4460,9 @@ var Ae = {
 	"为已入库的视频补全九宫格预览图，跳过流量保护目录，会读取视频并占用处理器": "Generate contact sheets for registered videos, excluding traffic-protected folders; this reads videos and uses CPU",
 	"为已入库影片补全资料和视频属性，并生成预览图": "Complete metadata and video properties for registered videos and generate previews",
 	"扫描目录发现文件，再补全资料和视频属性，并生成预览图": "Scan folders for files, complete metadata and video properties, and generate previews",
-	"批准资料字段时，请先选择要采用的来源": "Select a source above before approving this metadata field."
+	"批准资料字段时，请先选择要采用的来源": "Select a source above before approving this metadata field.",
+	需选择来源: "Choose a source",
+	官方优先: "Official source"
 }, Le = {
 	"\" href=\"/subscriptions?tab=add\">添加关注": "\" href=\"/subscriptions?tab=add\">Add follow",
 	"# 浏览记录口味分析": "# Browse record taste analysis",
@@ -64262,4 +64264,4 @@ Xt();
 var Sb = document.getElementById("peach-page"), Cb = Sb ? xb[Sb.dataset.page ?? ""] : void 0;
 Sb && Cb && (0, on.createRoot)(Sb).render(/* @__PURE__ */ I(Cb, { data: { ...Sb.dataset } }));
 
-//# debugId=2cbf3147-f9b0-42e0-8ca2-bcf13da72202
+//# debugId=c9c3757e-66bf-4046-9e3a-8d40ca578b03

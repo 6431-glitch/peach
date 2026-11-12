@@ -16,6 +16,7 @@ import { RiCheckboxCircleLine } from '@remixicon/react';
 import { Button } from '@/components/base/buttons/button';
 import type { ReviewProps } from '../bundle';
 import { errorMessage } from '../../api';
+import { translate } from '../../i18n';
 import { DataTableFooter } from '../components/table-controls';
 import { EmptyState } from '../components/empty-state';
 import { Note } from '../components/note';
@@ -292,7 +293,7 @@ export function ReviewPage(props: ReviewProps) {
               {pageGroups.length > 1 || activeGroupBy !== 'candidates' ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <h3 className="text-body-medium text-text-primary">
-                    {`${group.title} · ${group.rows.length}`}
+                    {`${translate(group.title)} · ${group.rows.length}`}
                   </h3>
                   {locked ? null : (
                     <Button variant="ghost" size="small" onClick={() => {

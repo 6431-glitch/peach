@@ -16,6 +16,15 @@ import type { ReviewCandidate, ReviewRow } from './review';
 import { pendingGenres, recordGenre, reloadReview } from './review';
 import { ComparisonText } from './comparison-text';
 import { composingKey } from '../components/ime';
+import { translate } from '../../i18n';
+
+function evidenceUrl(value: unknown): URL | null {
+  if (typeof value !== 'string') return null;
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'https:' || url.protocol === 'http:') && !url.username && !url.password ? url : null;
+  } catch { return null }
+}
 
 /** 候选顺带交回来的那些字段在界面上叫什么。表里没有的按原名显示。 */
 const EVIDENCE_LABELS: Record<string, string> = {
@@ -54,17 +63,19 @@ function CandidateEvidence({ candidate, row }: { candidate: ReviewCandidate; row
       </Button>
       <CollapseRegion id={panel} open={open}>
         <dl className="flex min-w-0 flex-col gap-2 px-3 pt-2 pb-1">
-          {evidence.map(([field, item]) => (
+          {evidence.map(([field, item]) => {
+            const url = field === 'cover_url' || field === 'poster_url' ? evidenceUrl(item.value) : null;
+            return (
             <div key={field} className="flex min-w-0 flex-wrap gap-x-2">
               <dt className="text-caption-1-regular text-text-tertiary">
                 {EVIDENCE_LABELS[field] || field}
               </dt>
               <dd className="min-w-0 text-body-2-regular break-words text-text-primary">
-                <ComparisonText value={item.display_value || ''}
+                {url ? <a href={url.href} target="_blank" rel="noopener noreferrer" className="text-brand-secondary hover:underline">{translate(EVIDENCE_LABELS[field] || field)} ({url.hostname})</a> : <ComparisonText value={item.display_value || ''}
                   reference={field === row.field && row.current_value
                     ? row.current_value
                     : row.candidates?.find(peer => peer.candidate_key !== candidate.candidate_key
-                        && peer.catalog_evidence?.[field]?.display_value)?.catalog_evidence?.[field]?.display_value} />
+                        && peer.catalog_evidence?.[field]?.display_value)?.catalog_evidence?.[field]?.display_value} />}
               </dd>
               {(item.warnings || []).map((warning) => (
                 <small key={warning} className="w-full text-caption-1-regular text-status-yellow-text">
@@ -72,7 +83,7 @@ function CandidateEvidence({ candidate, row }: { candidate: ReviewCandidate; row
                 </small>
               ))}
             </div>
-          ))}
+          )})}
         </dl>
       </CollapseRegion>
     </div>
@@ -81,7 +92,7 @@ function CandidateEvidence({ candidate, row }: { candidate: ReviewCandidate; row
 
 function candidateHeading(candidate: ReviewCandidate) {
   const id = candidate.content_id || candidate.provider_id;
-  return `${candidate.source || '未标注来源'}${candidate.official ? ' · 官方优先' : ''}${id ? ` · ID ${id}` : ''}`;
+  return `${candidate.source || translate('未标注来源')}${candidate.official ? ` · ${translate('官方优先')}` : ''}${id ? ` · ID ${id}` : ''}`;
 }
 
 function CandidateValue({ candidate, reference }: { candidate: ReviewCandidate; reference?: string }) {

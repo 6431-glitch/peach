@@ -129,7 +129,11 @@ it('asks for a source before approving a multi-source metadata field', async () 
 
 it('展开来源依据不选择候选，也不提交资料判定', async () => {
   const entry = row(1);
-  entry.candidates![0]!.catalog_evidence = { runtime: { display_value: '120 分钟' } };
+  entry.candidates![0]!.catalog_evidence = {
+    runtime: { display_value: '120 分钟' },
+    cover_url: { value: 'https://example.com/cover.jpg', display_value: '封面（example.com）' },
+    poster_url: { value: 'javascript:alert(1)', display_value: '海报' },
+  };
   const { host, fetcher } = await open({ data: review({ sections: { metadata_fields: [entry] } }) });
   const card = cards(host)[0]!;
   const toggle = card.querySelector('button[aria-label="展开 javdb 的来源依据"]')!;
@@ -139,6 +143,10 @@ it('展开来源依据不选择候选，也不提交资料判定', async () => {
   expect([...card.querySelectorAll<HTMLInputElement>('input[type="radio"]')].every(input => !input.checked)).toBe(true);
   expect(fetcher.mock.calls.some(([url]) => url === REVIEW_DECISION_URL)).toBe(false);
   expect(card.textContent).toContain('120 分钟');
+  const cover = card.querySelector<HTMLAnchorElement>('a[href="https://example.com/cover.jpg"]');
+  expect(cover?.target).toBe('_blank');
+  expect(cover?.rel).toContain('noopener');
+  expect(card.querySelector('a[href^="javascript:"]')).toBeNull();
 });
 
 it('当前值独立显示人工归属，不混入旧说明中的维护实现细节', async () => {
